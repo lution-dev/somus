@@ -1,4 +1,4 @@
-◇ injected env (0) from .env // tip: ⌘ custom filepath { path: '/custom/path/.env' }
+◇ injected env (0) from .env // tip: ◈ secrets for agents [www.dotenvx.com]
 ## MEMÓRIA GLOBAL LIDTEK
 > Task: setup inicial do projeto
 > Tokens injetados: ~197 de 900 máx

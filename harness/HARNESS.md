@@ -69,21 +69,21 @@ Se sensor falha → corrija → rode → só então marque.
 ### Início de sessão:
 **Windows:**
 ```powershell
-node "C:\Users\Lucas\OneDrive\Documentos\Projetos\lidtek-memoria\hooks\entrada.js" "[task]" "Somus" | Out-File harness\MEMORY_CONTEXT.md -Encoding utf8
+node "c:\Users\Lucas\OneDrive\Documentos\Projetos\lidtek-memoria\hooks\entrada.js" "[task]" "Somus" | Out-File harness\MEMORY_CONTEXT.md -Encoding utf8
 ```
 **Linux/Mac:**
 ```bash
-node "C:\Users\Lucas\OneDrive\Documentos\Projetos\lidtek-memoria/hooks/entrada.js" "[task]" "Somus" > harness/MEMORY_CONTEXT.md
+node "c:\Users\Lucas\OneDrive\Documentos\Projetos\lidtek-memoria/hooks/entrada.js" "[task]" "Somus" > harness/MEMORY_CONTEXT.md
 ```
 
 ### Fim de sessão:
 **Windows:**
 ```powershell
-node "C:\Users\Lucas\OneDrive\Documentos\Projetos\lidtek-memoria\hooks\saida.js" "Somus" "[resumo]"
+node "c:\Users\Lucas\OneDrive\Documentos\Projetos\lidtek-memoria\hooks\saida.js" "Somus" "[resumo]"
 ```
 **Linux/Mac:**
 ```bash
-node "C:\Users\Lucas\OneDrive\Documentos\Projetos\lidtek-memoria/hooks/saida.js" "Somus" "[resumo]"
+node "c:\Users\Lucas\OneDrive\Documentos\Projetos\lidtek-memoria/hooks/saida.js" "Somus" "[resumo]"
 ```
 
 ---
