@@ -3,11 +3,12 @@ import { useLocation } from 'wouter'
 import { Home, ArrowLeftRight, Wallet, Heart } from 'lucide-react'
 import { BottomNav } from '../ui'
 import type { NavItem } from '../ui'
+import SomusLogo from '../ui/SomusLogo'
 
 export const NAV_ITEMS: NavItem[] = [
   { path: '/home',      label: 'Home',      icon: <Home size={20} strokeWidth={1.75} />,           activeIcon: <Home size={20} strokeWidth={2} /> },
   { path: '/fluxo',     label: 'Fluxo',     icon: <ArrowLeftRight size={20} strokeWidth={1.75} />,  activeIcon: <ArrowLeftRight size={20} strokeWidth={2} /> },
-  { path: '/caixinhas', label: 'Caixinhas', icon: <Wallet size={20} strokeWidth={1.75} />,          activeIcon: <Wallet size={20} strokeWidth={2} /> },
+  { path: '/caixinhas', label: 'Divisões', icon: <Wallet size={20} strokeWidth={1.75} />,          activeIcon: <Wallet size={20} strokeWidth={2} /> },
   { path: '/casal',     label: 'Casal',     icon: <Heart size={20} strokeWidth={1.75} />,           activeIcon: <Heart size={20} strokeWidth={2} /> },
 ]
 
@@ -26,13 +27,7 @@ function Sidebar() {
       {/* Logo */}
       <div style={{ padding: '28px 20px 20px', borderBottom: '1px solid var(--color-border)' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <div style={{
-            width: 32, height: 32, borderRadius: 10, flexShrink: 0,
-            background: 'var(--color-accent-primary)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-          }}>
-            <span style={{ color: 'white', fontWeight: 800, fontSize: 14 }}>S</span>
-          </div>
+          <SomusLogo size={28} />
           <div>
             <p style={{ fontSize: 14, fontWeight: 700, color: 'var(--color-text-primary)', lineHeight: 1.2, margin: 0 }}>Somus</p>
             <p style={{ fontSize: 11, color: 'var(--color-text-tertiary)', lineHeight: 1.3, margin: 0 }}>Finanças do casal</p>
@@ -101,8 +96,9 @@ export function AppLayout({ children }: AppLayoutProps) {
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
+          background: 'var(--color-bg-primary)',
         }}>
-          <div style={{ width: '100%', maxWidth: 1200, padding: '0 32px', flex: 1 }}>
+          <div style={{ width: '100%', maxWidth: 960, padding: '0 40px', flex: 1 }}>
             {children}
           </div>
         </div>

@@ -1,18 +1,22 @@
+import { useState } from 'react'
+import { useLocation } from 'wouter'
 import { useAppStore } from '../stores/useAppStore'
 import { useShallow } from 'zustand/react/shallow'
 import { formatCurrency } from '../lib/calculations'
 import { ProgressBar, PageHeader } from '../components/ui'
 import { useIsMobile } from '../hooks/useIsMobile'
-import { Target, Plane, Car, Share2, Copy } from 'lucide-react'
+import { Target, Share2, Copy, Heart, CheckCircle2, Building2 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 
 const OBJ_ICONS: Record<string, LucideIcon> = {
-  'obj-viagem': Plane,
-  'obj-carro': Car,
+  'obj-casamento': Heart,
+  'obj-apto': Building2,
 }
 function getObjIcon(id: string): LucideIcon { return OBJ_ICONS[id] || Target }
 
 export default function Casal() {
+  const [copied, setCopied] = useState(false)
+  const [, navigate] = useLocation()
   const currentUser = useAppStore(s => s.currentUser)
   const partner     = useAppStore(s => s.partner)
   const objetivos   = useAppStore(useShallow(s => s.objetivos))
@@ -30,22 +34,69 @@ export default function Casal() {
   ]
 
   const isMobile = useIsMobile()
+  const HERO_BG = '#001442'
 
   return (
     <div style={{ minHeight: '100%', paddingBottom: 24 }}>
       {/* Header */}
       {isMobile ? (
-        <PageHeader title="♥ Casal" subtitle="Visão consolidada" />
+        <>
+          <PageHeader title="Casal" bg={HERO_BG} />
+          <div style={{
+            background: HERO_BG,
+            borderRadius: '0 0 24px 24px',
+            padding: '0 16px 20px',
+            marginBottom: 20,
+          }}>
+
+          {/* Card total patrimônio */}
+          <div style={{
+            background: 'rgba(255,255,255,0.06)',
+            border: '1px solid rgba(139,92,246,0.2)',
+            borderRadius: 'var(--radius-card)',
+            padding: 20, marginBottom: 16,
+          }}>
+            <p className="section-label" style={{ marginBottom: 4 }}>Patrimônio do casal</p>
+            <p style={{ fontSize: 32, fontWeight: 700, color: 'var(--color-text-primary)', margin: '0 0 16px', lineHeight: 1 }}>
+              {formatCurrency(totalCouple)}
+            </p>
+
+            {/* Barra de contribuição */}
+            <div style={{ display: 'flex', borderRadius: 99, overflow: 'hidden', height: 8, background: 'rgba(255,255,255,0.08)', marginBottom: 12 }}>
+              <div style={{ width: `${lucasPct}%`, background: 'var(--color-lucas)', height: '100%', transition: 'width 0.5s ease' }} />
+              <div style={{ width: `${mirianPct}%`, background: 'var(--color-mirian)', height: '100%', transition: 'width 0.5s ease' }} />
+            </div>
+
+            {/* Legenda */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
+              {profiles.map(({ user, accent, balance }) => user ? (
+                <div key={user.id} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <div style={{ width: 8, height: 8, borderRadius: '50%', flexShrink: 0, background: accent }} />
+                  <div>
+                    <p style={{ fontSize: 12, color: 'var(--color-text-secondary)', margin: 0 }}>{user.name.split(' ')[0]}</p>
+                    <p style={{ fontSize: 14, fontWeight: 700, color: 'var(--color-text-primary)', margin: 0 }}>{formatCurrency(balance)}</p>
+                  </div>
+                </div>
+              ) : null)}
+            </div>
+          </div>
+
+          </div>
+        </>
       ) : (
         <div style={{ paddingTop: 32, marginBottom: 24 }}>
-          <h1 style={{ fontSize: 24, fontWeight: 600, color: 'var(--color-accent-couple)', margin: 0 }}>♥ Casal</h1>
+          <h1 style={{ fontSize: 24, fontWeight: 600, color: 'var(--color-accent-couple)', margin: 0, display: 'flex', alignItems: 'center', gap: 8 }}>
+            <Heart size={20} fill="var(--color-accent-couple)" />
+            Casal
+          </h1>
           <p style={{ fontSize: 14, color: 'var(--color-text-secondary)', margin: '4px 0 0' }}>Visão consolidada</p>
         </div>
       )}
 
-      <div style={{ padding: isMobile ? '8px 16px 0' : 0 }}>
+      <div style={{ padding: isMobile ? '0 16px' : 0 }}>
 
-      {/* Card total patrimônio */}
+      {/* Desktop: Card total patrimônio (moved below hero for mobile) */}
+      {!isMobile && (
       <div style={{
         background: 'var(--color-bg-secondary)',
         border: '1px solid rgba(139,92,246,0.2)',
@@ -76,6 +127,7 @@ export default function Casal() {
           ) : null)}
         </div>
       </div>
+      )}
 
       {/* Cards de perfil — grid 1fr 1fr */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 20 }}>
@@ -116,13 +168,17 @@ export default function Casal() {
               const pct     = Math.min(100, (obj.currentAmount / obj.targetAmount) * 100)
               const ObjIcon = getObjIcon(obj.id)
               return (
-                <div
+                <button
                   key={obj.id}
+                  onClick={() => navigate(`/casal/objetivo/${obj.id}`)}
+                  className="card-interactive"
                   style={{
+                    width: '100%', textAlign: 'left', cursor: 'pointer',
                     background: 'var(--color-bg-secondary)',
                     border: '1px solid var(--color-border)',
                     borderRadius: 'var(--radius-card)',
                     padding: 16,
+                    fontFamily: 'var(--font-sans)',
                   }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
@@ -147,7 +203,7 @@ export default function Casal() {
                     <p style={{ fontSize: 12, color: 'var(--color-text-secondary)', margin: 0 }}>{formatCurrency(obj.currentAmount)}</p>
                     <p style={{ fontSize: 12, color: 'var(--color-text-tertiary)', margin: 0 }}>meta {formatCurrency(obj.targetAmount)}</p>
                   </div>
-                </div>
+                </button>
               )
             })}
           </div>
@@ -167,7 +223,7 @@ export default function Casal() {
               <Share2 size={12} />
               Código de convite
             </p>
-            <p style={{ fontSize: 20, fontWeight: 700, fontFamily: 'monospace', color: 'var(--color-accent-couple)', margin: 0 }}>
+            <p style={{ fontSize: 20, fontWeight: 700, fontFamily: 'var(--font-sans)', letterSpacing: '0.12em', color: 'var(--color-accent-couple)', margin: 0 }}>
               {currentUser?.partnerCode ?? 'SOMUS-0001'}
             </p>
             <p style={{ fontSize: 12, color: 'var(--color-text-tertiary)', margin: '4px 0 0' }}>Compartilhe com seu parceiro(a)</p>
@@ -177,14 +233,22 @@ export default function Casal() {
               display: 'flex', alignItems: 'center', gap: 6,
               fontSize: 12, fontWeight: 600, padding: '8px 12px',
               borderRadius: 'var(--radius-card)', cursor: 'pointer',
-              background: 'rgba(139,92,246,0.1)', color: 'var(--color-accent-couple)',
-              border: '1px solid rgba(139,92,246,0.2)',
+              background: copied ? 'rgba(16,185,129,0.1)' : 'rgba(139,92,246,0.1)',
+              color: copied ? 'var(--color-success)' : 'var(--color-accent-couple)',
+              border: `1px solid ${copied ? 'rgba(16,185,129,0.2)' : 'rgba(139,92,246,0.2)'}`,
               fontFamily: 'var(--font-sans)',
+              transition: 'all 200ms ease',
+              minWidth: 90,
+              justifyContent: 'center',
             }}
-            onClick={() => navigator.clipboard.writeText(currentUser?.partnerCode ?? 'SOMUS-0001')}
+            onClick={() => {
+              navigator.clipboard.writeText(currentUser?.partnerCode ?? 'SOMUS-0001')
+              setCopied(true)
+              setTimeout(() => setCopied(false), 2000)
+            }}
           >
-            <Copy size={13} />
-            Copiar
+            {copied ? <CheckCircle2 size={13} /> : <Copy size={13} />}
+            {copied ? 'Copiado!' : 'Copiar'}
           </button>
         </div>
       </div>

@@ -1,8 +1,8 @@
 # CONTEXT.md — Somus
 > Estado atual do projeto. Atualizado ao final de cada sessão.
 
-**Última atualização:** 2026-04-29
-**Status geral:** ✅ Sprint MVP completo — 9/9 tasks concluídas
+**Última atualização:** 2026-04-30
+**Status geral:** ✅ Sprint MVP completo + UI/UX Audit (9+9 tasks)
 
 ## O Que É
 App de planejamento financeiro para casais com renda variável. Mobile-first, dark mode only. Resolve o problema de apps que exigem renda fixa no início do mês — o Somus permite lançar entradas incrementais conforme caem e distribui automaticamente por caixinhas (método Nati Arcuri adaptado).

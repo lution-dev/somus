@@ -44,12 +44,13 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
             ref={ref}
             id={inputId}
             className={className}
+            autoComplete="off"
             style={{
               width: '100%', height: 44,
               background: 'var(--color-bg-tertiary)',
               border: `1px solid ${error ? 'var(--color-danger)' : 'var(--color-border)'}`,
               borderRadius: 'var(--radius-card)',
-              fontSize: 14, color: 'var(--color-text-primary)',
+              fontSize: 16, color: 'var(--color-text-primary)',
               fontFamily: 'var(--font-sans)',
               paddingLeft: leftIcon || prefix ? 40 : 16,
               paddingRight: rightIcon ? 40 : 16,

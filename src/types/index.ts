@@ -94,10 +94,18 @@ export interface SaidaVariavel {
   amount: number
   description: string
   category: string
+  subcategory?: string
+  paymentMethod: PaymentMethod
   date: string
 }
 
-// ─── Objetivos ──────────────────────────────────────────────────────────────
+export interface ObjetivoMovement {
+  id: string
+  date: string
+  amount: number
+  description: string
+  type: 'deposit' | 'withdraw'
+}
 
 export interface Objetivo {
   id: string
@@ -109,6 +117,8 @@ export interface Objetivo {
   targetDate?: string
   imageUrl?: string
   caixinhaId?: string
+  createdAt?: string
+  movements: ObjetivoMovement[]
 }
 
 // ─── App State ──────────────────────────────────────────────────────────────

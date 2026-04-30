@@ -120,3 +120,108 @@
 - [x] Toggle Pessoal / Casal no topo
 - [x] Valores futuros com prefixo ~ e cor âmbar (RN06)
 **Status:** ✅ Concluído
+
+---
+
+## Batch UI/UX Audit — Skill ui-ux-pro-max (9 tasks)
+
+> Origem: Auditoria visual tela a tela, 30/04/2026.
+> Modo: BATCH. Melhorias de UX/UI identificadas pela skill ui-ux-pro-max.
+
+---
+
+#### T-AD-01: CSS Global — border contrast, active states, card-interactive
+**Tipo:** Visual
+**Critérios:**
+- [x] --color-border de #1E1E1E → #2A2A2A (contrast visível)
+- [x] .btn-primary:active com scale(0.98)
+- [x] .card-interactive:hover sem cor hardcoded
+**Status:** ✅ Concluído
+
+---
+
+#### T-AD-02: BottomNav — active indicator dot
+**Tipo:** Visual
+**Critérios:**
+- [x] Dot indicator abaixo do ícone ativo
+- [x] Transição suave no active state
+**Status:** ✅ Concluído
+
+---
+
+#### T-AD-03: Home — highlight "Hoje", icon na section label, spacing
+**Tipo:** Visual
+**Critérios:**
+- [x] ProximosDias item "Hoje" com fundo sutil vermelho
+- [x] section-label "Caixinhas" com ícone Wallet
+- [x] Ajuste de spacing balance card
+**Status:** ✅ Concluído
+
+---
+
+#### T-AD-04: Fluxo — touch target, dot size, mobile subtitle
+**Tipo:** UX
+**Critérios:**
+- [x] SaidaItem checkbox: hit area ≥44px
+- [x] Dot 6→8px
+- [x] Subtitle mês no PageHeader mobile
+**Status:** ✅ Concluído
+
+---
+
+#### T-AD-05: Caixinhas — tap feedback, chevron, mobile total
+**Tipo:** UX
+**Critérios:**
+- [x] :active state nos cards (via CSS .card-interactive:active)
+- [x] ChevronRight opacity 0.5→0.7
+- [x] Subtitle total no PageHeader mobile
+**Status:** ✅ Concluído
+
+---
+
+#### T-AD-06: Casal — emoji→SVG, copy feedback, monospace→Inter
+**Tipo:** Visual/UX
+**Critérios:**
+- [x] ♥ substituído por <Heart> SVG
+- [x] Botão Copiar com estado "Copiado!" por 2s
+- [x] monospace substituído por Inter + letter-spacing
+**Status:** ✅ Concluído
+
+---
+
+#### T-AD-07: CaixinhaDetalhe — hex color fix
+**Tipo:** Bug
+**Critérios:**
+- [x] border: `${color}25` corrigido para hexToRgba()
+**Status:** ✅ Concluído
+
+---
+
+#### T-AD-08: LancarEntradaModal — footer order, success cleanup
+**Tipo:** UX
+**Critérios:**
+- [x] DialogFooter: Confirmar no topo, Cancelar embaixo
+- [x] Success text: ✓ substituído por texto limpo
+**Status:** ✅ Concluído
+
+---
+
+#### T-AD-09: Onboarding — back button, icon sizes
+**Tipo:** Visual
+**Critérios:**
+- [x] Back button: 14px + ghost style + ← prefixo
+- [x] Step4 ícones: 16→18px
+**Status:** ✅ Concluído
+
+---
+
+#### T-AD-10: PWA Install Prompt + Ícones
+**Tipo:** Infra + UX
+**Critérios:**
+- [x] Gerar ícones PWA (192x192, 512x512) e apple-touch-icon
+- [x] Hook `usePWAInstall` para capturar `beforeinstallprompt`
+- [x] Componente `PWAInstallPrompt` com hint que aparece 1x (localStorage) e depois some
+- [x] Animação fluida (Framer Motion spring) + design dark mode
+- [x] Montar no App.tsx dentro do layout protegido
+**Status:** ✅ Concluído
+

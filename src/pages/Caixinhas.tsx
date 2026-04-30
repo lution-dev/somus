@@ -1,11 +1,13 @@
+import { useState } from 'react'
 import { useLocation } from 'wouter'
 import { useAppStore, selectCurrentCaixinhas, selectExpectedMonthlyIncome } from '../stores/useAppStore'
 import { useShallow } from 'zustand/react/shallow'
 import { formatCurrency } from '../lib/calculations'
 import { getCaixinhaIcon } from '../lib/icons'
-import { ProgressBar, PageHeader } from '../components/ui'
+import { DIVISAO_INFO, DIVISAO_ORDER } from '../lib/divisoes'
+import { ProgressBar, PageHeader, Dialog } from '../components/ui'
 import { useIsMobile } from '../hooks/useIsMobile'
-import { ChevronRight, AlertTriangle, CheckCircle2 } from 'lucide-react'
+import { ChevronRight, AlertTriangle, CheckCircle2, Info } from 'lucide-react'
 
 export default function Caixinhas() {
   const [, navigate]   = useLocation()
@@ -13,18 +15,50 @@ export default function Caixinhas() {
   const expectedIncome = useAppStore(selectExpectedMonthlyIncome)
   const totalBalance   = caixinhas.reduce((s, cx) => s + cx.balance, 0)
   const isMobile = useIsMobile()
+  const [infoOpen, setInfoOpen] = useState(false)
+  const [expandedId, setExpandedId] = useState<string | null>(null)
 
   return (
     <div style={{ minHeight: '100%', paddingBottom: 24 }}>
       {/* Header */}
       {isMobile ? (
-        <PageHeader title="Caixinhas" subtitle={`Total · ${formatCurrency(totalBalance)}`} />
+        <PageHeader
+          title="Divisões"
+          bg="#001442"
+          rightAction={
+            <button
+              onClick={() => setInfoOpen(true)}
+              style={{
+                background: 'rgba(59,130,246,0.15)', border: 'none',
+                borderRadius: 8, padding: 6, cursor: 'pointer',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}
+            >
+              <Info size={16} color="var(--color-accent-primary)" />
+            </button>
+          }
+        />
       ) : (
-        <div style={{ paddingTop: 32, marginBottom: 24 }}>
-          <h1 style={{ fontSize: 24, fontWeight: 600, color: 'var(--color-text-primary)', margin: 0 }}>Caixinhas</h1>
-          <p style={{ fontSize: 14, color: 'var(--color-text-secondary)', margin: '4px 0 0' }}>
-            Total · <span style={{ fontWeight: 600, color: 'var(--color-text-primary)' }}>{formatCurrency(totalBalance)}</span>
-          </p>
+        <div style={{ paddingTop: 32, marginBottom: 24, display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+          <div>
+            <h1 style={{ fontSize: 24, fontWeight: 600, color: 'var(--color-text-primary)', margin: 0 }}>Divisões</h1>
+            <p style={{ fontSize: 14, color: 'var(--color-text-secondary)', margin: '4px 0 0' }}>
+              Total · <span style={{ fontWeight: 600, color: 'var(--color-text-primary)' }}>{formatCurrency(totalBalance)}</span>
+            </p>
+          </div>
+          <button
+            onClick={() => setInfoOpen(true)}
+            title="Entenda as divisões"
+            style={{
+              background: 'rgba(59,130,246,0.1)', border: '1px solid rgba(59,130,246,0.2)',
+              borderRadius: 8, padding: '6px 10px', cursor: 'pointer',
+              display: 'flex', alignItems: 'center', gap: 6, fontFamily: 'var(--font-sans)',
+              fontSize: 12, fontWeight: 500, color: 'var(--color-accent-primary)',
+              transition: 'background 150ms ease',
+            }}
+          >
+            <Info size={14} /> Entenda
+          </button>
         </div>
       )}
 
@@ -76,7 +110,7 @@ export default function Caixinhas() {
                         <p style={{ fontSize: 11, color: 'var(--color-text-tertiary)', margin: 0 }}>meta {formatCurrency(cx.targetAmount)}</p>
                       )}
                     </div>
-                    <ChevronRight size={16} color="var(--color-text-tertiary)" style={{ opacity: 0.5 }} />
+                    <ChevronRight size={16} color="var(--color-text-tertiary)" style={{ opacity: 0.7 }} />
                   </div>
                 </div>
 
@@ -112,6 +146,60 @@ export default function Caixinhas() {
           )
         })}
       </div>
+
+      {/* Info Dialog */}
+      <Dialog open={infoOpen} onClose={() => { setInfoOpen(false); setExpandedId(null) }} title="Entenda as divisões" size="lg">
+        <p style={{ fontSize: 13, color: 'var(--color-text-secondary)', margin: '0 0 16px', lineHeight: 1.5 }}>
+          Baseado no Método Nati Arcuri, cada divisão tem um propósito específico para manter suas finanças equilibradas.
+        </p>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {DIVISAO_ORDER.map((id) => {
+            const info = DIVISAO_INFO[id]
+            const { Icon, color } = getCaixinhaIcon(id)
+            const isOpen = expandedId === id
+            return (
+              <button
+                key={id}
+                type="button"
+                onClick={() => setExpandedId(isOpen ? null : id)}
+                style={{
+                  background: isOpen ? `${color}08` : 'var(--color-bg-tertiary)',
+                  border: `1px solid ${isOpen ? color + '30' : 'var(--color-border)'}`,
+                  borderRadius: 10, padding: '10px 12px',
+                  display: 'flex', flexDirection: 'column', gap: isOpen ? 8 : 0,
+                  cursor: 'pointer', width: '100%', textAlign: 'left',
+                  fontFamily: 'var(--font-sans)',
+                  transition: 'all 200ms ease',
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, width: '100%' }}>
+                  <div style={{
+                    width: 28, height: 28, borderRadius: 7,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+                    background: `${color}15`,
+                  }}>
+                    <Icon size={15} style={{ color }} />
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text-primary)', margin: 0 }}>{info.name}</p>
+                  </div>
+                  <span style={{ fontSize: 14, fontWeight: 700, color, flexShrink: 0 }}>{info.pct}%</span>
+                </div>
+                {isOpen && (
+                  <div style={{
+                    paddingLeft: 38, paddingTop: 4,
+                    fontSize: 12, lineHeight: 1.6,
+                    color: 'var(--color-text-secondary)',
+                  }}>
+                    <p style={{ margin: '0 0 4px', fontWeight: 500, color: 'var(--color-text-primary)', fontSize: 12 }}>{info.short}</p>
+                    {info.detail}
+                  </div>
+                )}
+              </button>
+            )
+          })}
+        </div>
+      </Dialog>
     </div>
   )
 }

@@ -93,7 +93,7 @@ export const MOCK_CAIXINHAS_LUCAS: Caixinha[] = [
   {
     id: 'cx-reserva',
     userId: 'lucas',
-    name: 'Reserva de Emergência',
+    name: 'Liberdade Financeira',
     emoji: '🛡️',
     percentage: 8,
     targetAmount: 10000,
@@ -244,24 +244,40 @@ export const MOCK_SAIDAS_FIXAS_LUCAS: SaidaFixa[] = [
 
 export const MOCK_OBJETIVOS_LUCAS: Objetivo[] = [
   {
-    id: 'obj-viagem',
+    id: 'obj-casamento',
     userId: 'lucas',
-    name: 'Viagem Europa',
-    emoji: '✈️',
-    targetAmount: 15000,
+    name: 'Casamento',
+    emoji: '💍',
+    targetAmount: 25000,
     currentAmount: 3120,
-    targetDate: '2027-06-01',
+    targetDate: '2027-12-01',
     caixinhaId: 'cx-objetivos',
+    createdAt: '2026-02-01',
+    movements: [
+      { id: 'om1', date: '2026-04-05', amount: 1000, description: 'Distribuição — Salário', type: 'deposit' },
+      { id: 'om2', date: '2026-04-10', amount: 400, description: 'Distribuição — Lucro', type: 'deposit' },
+      { id: 'om3', date: '2026-03-05', amount: 1000, description: 'Distribuição — Salário', type: 'deposit' },
+      { id: 'om4', date: '2026-03-10', amount: 400, description: 'Distribuição — Lucro', type: 'deposit' },
+      { id: 'om5', date: '2026-02-05', amount: 320, description: 'Depósito inicial', type: 'deposit' },
+    ],
   },
   {
-    id: 'obj-carro',
+    id: 'obj-apto',
     userId: 'lucas',
-    name: 'Carro Novo',
-    emoji: '🚗',
-    targetAmount: 50000,
+    name: 'Entrada Apartamento',
+    emoji: '🏠',
+    targetAmount: 60000,
     currentAmount: 8500,
-    targetDate: '2028-01-01',
+    targetDate: '2028-06-01',
     caixinhaId: 'cx-objetivos',
+    createdAt: '2025-06-01',
+    movements: [
+      { id: 'om6', date: '2026-04-05', amount: 500, description: 'Distribuição — Salário', type: 'deposit' },
+      { id: 'om7', date: '2026-03-05', amount: 500, description: 'Distribuição — Salário', type: 'deposit' },
+      { id: 'om8', date: '2026-02-05', amount: 500, description: 'Distribuição — Salário', type: 'deposit' },
+      { id: 'om9', date: '2025-12-20', amount: 2000, description: 'Bônus de fim de ano', type: 'deposit' },
+      { id: 'om10', date: '2025-06-01', amount: 5000, description: 'Depósito inicial', type: 'deposit' },
+    ],
   },
 ]
 
@@ -277,7 +293,7 @@ export const MOCK_ENTRADAS_LUCAS: Entrada[] = [
     date: '2026-04-05',
     distribution: [
       { caixinhaId: 'cx-dizimo',    caixinhaName: 'Dízimo',              amount: 500,  percentage: 10 },
-      { caixinhaId: 'cx-reserva',   caixinhaName: 'Reserva de Emergência', amount: 400, percentage: 8  },
+      { caixinhaId: 'cx-reserva',   caixinhaName: 'Liberdade Financeira', amount: 400, percentage: 8  },
       { caixinhaId: 'cx-objetivos', caixinhaName: 'Objetivos',           amount: 1000, percentage: 20 },
       { caixinhaId: 'cx-essencial', caixinhaName: 'Essencial',           amount: 2750, percentage: 55 },
       { caixinhaId: 'cx-educacao',  caixinhaName: 'Educação',            amount: 250,  percentage: 5  },
@@ -293,7 +309,7 @@ export const MOCK_ENTRADAS_LUCAS: Entrada[] = [
     date: '2026-04-10',
     distribution: [
       { caixinhaId: 'cx-dizimo',    caixinhaName: 'Dízimo',              amount: 200,  percentage: 10 },
-      { caixinhaId: 'cx-reserva',   caixinhaName: 'Reserva de Emergência', amount: 160, percentage: 8  },
+      { caixinhaId: 'cx-reserva',   caixinhaName: 'Liberdade Financeira', amount: 160, percentage: 8  },
       { caixinhaId: 'cx-objetivos', caixinhaName: 'Objetivos',           amount: 400,  percentage: 20 },
       { caixinhaId: 'cx-essencial', caixinhaName: 'Essencial',           amount: 1100, percentage: 55 },
       { caixinhaId: 'cx-educacao',  caixinhaName: 'Educação',            amount: 100,  percentage: 5  },

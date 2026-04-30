@@ -3,22 +3,21 @@ import { ChevronLeft } from 'lucide-react'
 
 interface PageHeaderProps {
   title: string
-  subtitle?: string
   /** Show back arrow and navigate back */
   back?: boolean
   /** Custom back path (default: browser back) */
   backTo?: string
   /** Right-side action element */
   rightAction?: React.ReactNode
-  /** Make the header transparent (for pages with hero cards) */
-  transparent?: boolean
+  /** Custom background color (for hero headers) */
+  bg?: string
   /** Extra height for the spacer (default: 56) */
   height?: number
 }
 
 const HEADER_H = 56
 
-export function PageHeader({ title, subtitle, back, backTo, rightAction, transparent, height }: PageHeaderProps) {
+export function PageHeader({ title, back, backTo, rightAction, bg, height }: PageHeaderProps) {
   const [, navigate] = useLocation()
   const h = height ?? HEADER_H
 
@@ -40,7 +39,7 @@ export function PageHeader({ title, subtitle, back, backTo, rightAction, transpa
           left: 0,
           right: 0,
           zIndex: 50,
-          background: transparent ? 'transparent' : 'var(--color-bg-primary)',
+          background: bg || 'var(--color-bg-primary)',
           paddingTop: 'env(safe-area-inset-top, 0px)',
         }}
       >
@@ -54,8 +53,8 @@ export function PageHeader({ title, subtitle, back, backTo, rightAction, transpa
             gap: 12,
           }}
         >
-          {/* Left: back button or spacer */}
-          {back ? (
+          {/* Left: back button */}
+          {back && (
             <button
               onClick={handleBack}
               aria-label="Voltar"
@@ -69,46 +68,34 @@ export function PageHeader({ title, subtitle, back, backTo, rightAction, transpa
             >
               <ChevronLeft size={20} strokeWidth={2} />
             </button>
-          ) : (
-            <div style={{ width: 36, flexShrink: 0 }} />
           )}
 
-          {/* Center: title */}
-          <div style={{ flex: 1, textAlign: 'center', minWidth: 0 }}>
+          {/* Title */}
+          <div style={{ flex: 1, textAlign: back ? 'center' : 'left', minWidth: 0 }}>
             <p style={{
-              fontSize: 16, fontWeight: 600,
+              fontSize: 18, fontWeight: 600,
               color: 'var(--color-text-primary)',
               margin: 0, lineHeight: 1.2,
               overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
             }}>
               {title}
             </p>
-            {subtitle && (
-              <p style={{
-                fontSize: 12, color: 'var(--color-text-secondary)',
-                margin: '2px 0 0', lineHeight: 1,
-              }}>
-                {subtitle}
-              </p>
-            )}
           </div>
 
-          {/* Right: action or spacer */}
+          {/* Right: action or spacer (only when back to balance centering) */}
           {rightAction ? (
             <div style={{ flexShrink: 0 }}>{rightAction}</div>
-          ) : (
+          ) : back ? (
             <div style={{ width: 36, flexShrink: 0 }} />
-          )}
+          ) : null}
         </div>
 
         {/* Bottom border */}
-        {!transparent && (
-          <div style={{ height: 1, background: 'var(--color-border)', opacity: 0.5 }} />
-        )}
+        {!bg && <div style={{ height: 1, background: 'var(--color-border)', opacity: 0.5 }} />}
       </header>
 
       {/* Spacer to push content below the fixed header */}
-      <div style={{ height: h, flexShrink: 0 }} />
+      <div style={{ height: h, flexShrink: 0, background: bg || 'transparent' }} />
     </>
   )
 }

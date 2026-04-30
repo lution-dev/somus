@@ -1,5 +1,5 @@
 ## MEMÓRIA GLOBAL LIDTEK
-> Task: sessão geral - teste do wrapper
+> Task: Configurar PWA instalável com hint de instalação que aparece uma vez e depois some
 > Tokens injetados: ~197 de 900 máx
 
 ### Regras Globais

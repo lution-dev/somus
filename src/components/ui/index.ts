@@ -23,3 +23,8 @@ export { ContextToggle } from './ContextToggle'
 export type { ContextToggleProps } from './ContextToggle'
 
 export { PageHeader } from './PageHeader'
+
+export { default as SearchBar } from './SearchBar'
+
+export { MonthHeader, groupByMonth } from './MonthGroup'
+export type { MonthGroup } from './MonthGroup'

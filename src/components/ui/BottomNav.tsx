@@ -22,7 +22,7 @@ export function BottomNav({ items }: BottomNavProps) {
         bottom: 'calc(12px + env(safe-area-inset-bottom, 0px))',
         left: 16, right: 16,
         zIndex: 40,
-        background: 'rgba(20,20,20,0.92)',
+        background: 'rgba(23,23,23,0.92)',
         backdropFilter: 'blur(20px)',
         WebkitBackdropFilter: 'blur(20px)',
         border: '1px solid rgba(255,255,255,0.08)',
@@ -43,9 +43,10 @@ export function BottomNav({ items }: BottomNavProps) {
                 gap: 3, flex: 1, height: '100%', cursor: 'pointer',
                 background: 'none', border: 'none', fontFamily: 'var(--font-sans)',
                 color: isActive ? 'var(--color-accent-primary)' : 'var(--color-text-tertiary)',
+                transition: 'color 150ms ease',
               }}
             >
-              <span style={{ display: 'flex' }}>
+              <span style={{ display: 'flex', position: 'relative' }}>
                 {(isActive && item.activeIcon) ? item.activeIcon : item.icon}
               </span>
               <span style={{
@@ -54,6 +55,7 @@ export function BottomNav({ items }: BottomNavProps) {
               }}>
                 {item.label}
               </span>
+
             </button>
           )
         })}

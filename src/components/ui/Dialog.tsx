@@ -13,6 +13,11 @@ interface DialogProps {
 }
 
 const SIZE_WIDTHS = { sm: 384, md: 448, lg: 512, full: '100%' }
+const MOBILE_BP = 768
+
+function getIsMobile() {
+  return typeof window !== 'undefined' && window.innerWidth < MOBILE_BP
+}
 
 export function Dialog({
   open, onClose, title, description, children,
@@ -33,13 +38,17 @@ export function Dialog({
     }
   }, [open, handleKeyDown])
 
+  const isMobile = getIsMobile()
+
   return (
     <AnimatePresence>
       {open && (
         <div style={{
           position: 'fixed', inset: 0, zIndex: 50,
-          display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
-          padding: 0,
+          display: 'flex',
+          alignItems: isMobile ? 'flex-end' : 'center',
+          justifyContent: 'center',
+          padding: isMobile ? 0 : 24,
         }} role="dialog" aria-modal="true">
           {/* Backdrop */}
           <motion.div
@@ -57,27 +66,32 @@ export function Dialog({
 
           {/* Panel */}
           <motion.div
-            initial={{ opacity: 0, y: 60 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 40 }}
+            initial={isMobile ? { opacity: 0, y: 60 } : { opacity: 0, scale: 0.95 }}
+            animate={isMobile ? { opacity: 1, y: 0 } : { opacity: 1, scale: 1 }}
+            exit={isMobile ? { opacity: 0, y: 40 } : { opacity: 0, scale: 0.95 }}
             transition={{ duration: 0.25, ease: [0.25, 0.46, 0.45, 0.94] }}
             style={{
               position: 'relative', zIndex: 10, width: '100%',
               maxWidth: SIZE_WIDTHS[size],
+              maxHeight: isMobile ? '90dvh' : '80dvh',
+              overflowY: 'auto',
               background: 'var(--color-bg-secondary)',
               border: '1px solid var(--color-border)',
-              borderRadius: '20px 20px 0 0',
+              borderRadius: isMobile ? '20px 20px 0 0' : 16,
               overflow: 'hidden',
+              boxShadow: isMobile ? 'none' : '0 16px 48px rgba(0,0,0,0.4)',
             }}
           >
-            {/* Drag handle (mobile) */}
-            <div style={{ display: 'flex', justifyContent: 'center', paddingTop: 12 }}>
-              <div style={{ width: 40, height: 4, borderRadius: 99, background: 'var(--color-border)' }} />
-            </div>
+            {/* Drag handle (mobile only) */}
+            {isMobile && (
+              <div style={{ display: 'flex', justifyContent: 'center', paddingTop: 12 }}>
+                <div style={{ width: 40, height: 4, borderRadius: 99, background: 'var(--color-border)' }} />
+              </div>
+            )}
 
             {/* Header */}
             {(title || showClose) && (
-              <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', padding: '16px 20px 8px' }}>
+              <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', padding: isMobile ? '16px 20px 8px' : '20px 24px 8px' }}>
                 <div>
                   {title && (
                     <h2 style={{ fontSize: 18, fontWeight: 600, color: 'var(--color-text-primary)', margin: 0 }}>{title}</h2>
@@ -106,7 +120,7 @@ export function Dialog({
             )}
 
             {/* Content */}
-            <div style={{ padding: '8px 20px 20px' }}>
+            <div style={{ padding: isMobile ? '8px 20px 20px' : '8px 24px 24px' }}>
               {children}
             </div>
           </motion.div>
@@ -122,7 +136,7 @@ export function DialogFooter({ children, className = '', style, ...props }: Dial
   return (
     <div
       className={className}
-      style={{ display: 'flex', flexDirection: 'column-reverse', gap: 8, marginTop: 16, ...style }}
+      style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 16, ...style }}
       {...props}
     >
       {children}
