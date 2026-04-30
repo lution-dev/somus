@@ -4,14 +4,30 @@ import { useLocation } from 'wouter'
 import { useAppStore } from '../stores/useAppStore'
 import { Button, Input } from '../components/ui'
 import type { User } from '../types'
+import {
+  Hand,
+  Users,
+  Wallet,
+  Receipt,
+  Plane,
+  DollarSign,
+  HandHeart,
+  Shield,
+  Target,
+  Home,
+  BookOpen,
+  Sparkles,
+} from 'lucide-react'
 
 // ─── Passo 1: Identidade ──────────────────────────────────────────────────────
 
 function Step1({ name, setName, onNext }: { name: string; setName: (v: string) => void; onNext: () => void }) {
   return (
     <div className="flex flex-col gap-6">
-      <div>
-        <p className="text-4xl mb-3 text-center">👋</p>
+      <div className="flex flex-col items-center">
+        <div className="w-16 h-16 rounded-full bg-[rgba(59,130,246,0.12)] flex items-center justify-center mb-4">
+          <Hand size={28} className="text-[var(--color-accent)]" />
+        </div>
         <h2 className="text-2xl font-extrabold text-center text-[var(--color-text-primary)]">Bem-vindo ao Somus</h2>
         <p className="text-sm text-center text-[var(--color-text-secondary)] mt-2">Finanças do casal, simplificadas.</p>
       </div>
@@ -26,8 +42,10 @@ function Step1({ name, setName, onNext }: { name: string; setName: (v: string) =
 function Step2({ onNext, onSkip }: { onNext: () => void; onSkip: () => void }) {
   return (
     <div className="flex flex-col gap-6">
-      <div>
-        <p className="text-4xl mb-3 text-center">💑</p>
+      <div className="flex flex-col items-center">
+        <div className="w-16 h-16 rounded-full bg-[rgba(139,92,246,0.12)] flex items-center justify-center mb-4">
+          <Users size={28} className="text-[var(--color-accent-couple)]" />
+        </div>
         <h2 className="text-2xl font-extrabold text-center text-[var(--color-text-primary)]">Convidar parceiro(a)</h2>
         <p className="text-sm text-center text-[var(--color-text-secondary)] mt-2">
           Conecte sua conta para uma visão financeira compartilhada.
@@ -58,8 +76,10 @@ function Step3({ onNext }: { onNext: () => void }) {
 
   return (
     <div className="flex flex-col gap-5">
-      <div>
-        <p className="text-4xl mb-3 text-center">💰</p>
+      <div className="flex flex-col items-center">
+        <div className="w-16 h-16 rounded-full bg-[rgba(16,185,129,0.12)] flex items-center justify-center mb-4">
+          <DollarSign size={28} className="text-[var(--color-success)]" />
+        </div>
         <h2 className="text-2xl font-extrabold text-center text-[var(--color-text-primary)]">Fontes de renda</h2>
         <p className="text-sm text-center text-[var(--color-text-secondary)] mt-2">Suas fontes pré-configuradas (você pode editar depois)</p>
       </div>
@@ -83,31 +103,39 @@ function Step3({ onNext }: { onNext: () => void }) {
 
 function Step4({ onNext }: { onNext: () => void }) {
   const caixinhas = [
-    { emoji: '🕊️', name: 'Dízimo',              pct: 10 },
-    { emoji: '🛡️', name: 'Reserva Emergência',  pct: 8  },
-    { emoji: '🎯', name: 'Objetivos',            pct: 20 },
-    { emoji: '🏠', name: 'Essencial',            pct: 55 },
-    { emoji: '📚', name: 'Educação',             pct: 5  },
-    { emoji: '✨', name: 'Livre',                pct: 2  },
+    { icon: HandHeart, name: 'Dízimo',              pct: 10, color: '#F59E0B' },
+    { icon: Shield,    name: 'Reserva Emergência',  pct: 8,  color: '#10B981' },
+    { icon: Target,    name: 'Objetivos',            pct: 20, color: '#8B5CF6' },
+    { icon: Home,      name: 'Essencial',            pct: 55, color: '#3B82F6' },
+    { icon: BookOpen,  name: 'Educação',             pct: 5,  color: '#06B6D4' },
+    { icon: Sparkles,  name: 'Livre',                pct: 2,  color: '#EC4899' },
   ]
 
   return (
     <div className="flex flex-col gap-5">
-      <div>
-        <p className="text-4xl mb-3 text-center">🏦</p>
+      <div className="flex flex-col items-center">
+        <div className="w-16 h-16 rounded-full bg-[rgba(59,130,246,0.12)] flex items-center justify-center mb-4">
+          <Wallet size={28} className="text-[var(--color-accent)]" />
+        </div>
         <h2 className="text-2xl font-extrabold text-center text-[var(--color-text-primary)]">Suas caixinhas</h2>
         <p className="text-sm text-center text-[var(--color-text-secondary)] mt-2">Método Nati Arcuri — adaptado para você</p>
       </div>
       <div className="grid grid-cols-2 gap-2">
-        {caixinhas.map((cx, i) => (
-          <div key={i} className="bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded-[var(--radius-md)] p-3 flex items-center gap-2.5">
-            <span className="text-xl">{cx.emoji}</span>
-            <div className="min-w-0">
-              <p className="text-xs font-semibold text-[var(--color-text-primary)] truncate">{cx.name}</p>
-              <p className="text-lg font-extrabold text-[var(--color-accent)]">{cx.pct}%</p>
+        {caixinhas.map((cx, i) => {
+          const IconComp = cx.icon
+          return (
+            <div key={i} className="bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded-[var(--radius-md)] p-3 flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-[var(--radius-sm)] flex items-center justify-center shrink-0"
+                style={{ background: `${cx.color}15` }}>
+                <IconComp size={16} style={{ color: cx.color }} />
+              </div>
+              <div className="min-w-0">
+                <p className="text-xs font-semibold text-[var(--color-text-primary)] truncate">{cx.name}</p>
+                <p className="text-lg font-extrabold text-[var(--color-accent)]">{cx.pct}%</p>
+              </div>
             </div>
-          </div>
-        ))}
+          )
+        })}
       </div>
       <Button variant="primary" fullWidth onClick={onNext}>Adorei!</Button>
     </div>
@@ -125,8 +153,10 @@ function Step5({ onNext }: { onNext: () => void }) {
 
   return (
     <div className="flex flex-col gap-5">
-      <div>
-        <p className="text-4xl mb-3 text-center">📋</p>
+      <div className="flex flex-col items-center">
+        <div className="w-16 h-16 rounded-full bg-[rgba(239,68,68,0.12)] flex items-center justify-center mb-4">
+          <Receipt size={28} className="text-[var(--color-danger)]" />
+        </div>
         <h2 className="text-2xl font-extrabold text-center text-[var(--color-text-primary)]">Saídas fixas</h2>
         <p className="text-sm text-center text-[var(--color-text-secondary)] mt-2">Contas recorrentes pré-cadastradas</p>
       </div>
@@ -151,13 +181,17 @@ function Step5({ onNext }: { onNext: () => void }) {
 function Step6({ onFinish }: { onFinish: () => void }) {
   return (
     <div className="flex flex-col gap-5">
-      <div>
-        <p className="text-4xl mb-3 text-center">✈️</p>
+      <div className="flex flex-col items-center">
+        <div className="w-16 h-16 rounded-full bg-[rgba(139,92,246,0.12)] flex items-center justify-center mb-4">
+          <Plane size={28} className="text-[var(--color-accent-couple)]" />
+        </div>
         <h2 className="text-2xl font-extrabold text-center text-[var(--color-text-primary)]">Seu primeiro objetivo</h2>
         <p className="text-sm text-center text-[var(--color-text-secondary)] mt-2">Viagem Europa — R$ 15.000 — Jun/2027</p>
       </div>
-      <div className="bg-gradient-to-br from-[rgba(139,92,246,0.2)] to-[rgba(59,130,246,0.2)] border border-[rgba(139,92,246,0.3)] rounded-[var(--radius-xl)] p-5 text-center">
-        <p className="text-5xl mb-3">✈️</p>
+      <div className="bg-gradient-to-br from-[rgba(139,92,246,0.15)] to-[rgba(59,130,246,0.15)] border border-[rgba(139,92,246,0.25)] rounded-[var(--radius-xl)] p-5 text-center">
+        <div className="w-14 h-14 rounded-full bg-[rgba(139,92,246,0.15)] flex items-center justify-center mx-auto mb-3">
+          <Plane size={24} className="text-[var(--color-accent-couple)]" />
+        </div>
         <p className="text-xl font-bold text-white">Viagem Europa</p>
         <p className="text-sm text-[var(--color-text-secondary)] mt-1">Meta: R$ 15.000</p>
         <div className="mt-3 h-2 bg-[var(--color-bg-tertiary)] rounded-full overflow-hidden">
@@ -166,7 +200,7 @@ function Step6({ onFinish }: { onFinish: () => void }) {
         <p className="text-xs text-[var(--color-text-tertiary)] mt-1.5">R$ 3.120 de R$ 15.000 — 20,8%</p>
       </div>
       <Button variant="couple" fullWidth onClick={onFinish}>
-        Vamos começar! 🚀
+        Vamos começar!
       </Button>
     </div>
   )

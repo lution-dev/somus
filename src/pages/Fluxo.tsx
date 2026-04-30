@@ -3,226 +3,253 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useAppStore, selectCurrentSaidasFixas, selectCurrentEntradas } from '../stores/useAppStore'
 import { useShallow } from 'zustand/react/shallow'
 import { formatCurrency, isPaidThisMonth, getDueDayLabel, getDaysUntil } from '../lib/calculations'
-import { Badge } from '../components/ui'
 import LancarEntradaModal from '../components/features/LancarEntradaModal'
+import { Check, RefreshCw, Plus, Inbox, ArrowUpRight } from 'lucide-react'
 
-// ─── Ícones ───────────────────────────────────────────────────────────────────
+// ─── Item de Saída ────────────────────────────────────────────────────────────
 
-const CheckIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-    <polyline points="20 6 9 17 4 12" />
-  </svg>
-)
-
-const AutoIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M21 12a9 9 0 1 1-6.219-8.56" />
-  </svg>
-)
-
-// ─── Saída Item ───────────────────────────────────────────────────────────────
-
-function SaidaItem({ sf }: { sf: ReturnType<typeof selectCurrentSaidasFixas>[0] }) {
-  const markPaid = useAppStore(s => s.markSaidaFixaPaid)
+function SaidaItem({ sf, isLast }: { sf: ReturnType<typeof selectCurrentSaidasFixas>[0]; isLast: boolean }) {
+  const markPaid   = useAppStore(s => s.markSaidaFixaPaid)
   const markUnpaid = useAppStore(s => s.markSaidaFixaUnpaid)
-  const paid = isPaidThisMonth(sf.paidDates)
-  const today = new Date().toISOString().slice(0, 10)
-  const daysUntil = getDaysUntil(sf.dueDay)
-  const isOverdue = !paid && daysUntil > 20
+  const paid       = isPaidThisMonth(sf.paidDates)
+  const today      = new Date().toISOString().slice(0, 10)
+  const daysUntil  = getDaysUntil(sf.dueDay)
+  const isUrgent   = !paid && daysUntil <= 3
 
   return (
-    <motion.div
-      layout
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      className={[
-        'flex items-center gap-3 px-4 py-3.5 border-b border-[var(--color-border)] last:border-0',
-        paid ? 'opacity-60' : '',
-      ].join(' ')}
+    <div
+      className="flex items-center gap-3 px-4 py-3.5"
+      style={{ borderBottom: isLast ? 'none' : '1px solid var(--color-border)', opacity: paid ? 0.55 : 1 }}
     >
-      {/* Dot cor */}
-      <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: sf.color || '#3B82F6' }} />
+      {/* Cor/dot */}
+      <div className="w-1.5 h-1.5 rounded-full shrink-0 mt-0.5" style={{ background: sf.color || 'var(--color-accent)' }} />
 
       {/* Info */}
       <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2 mb-0.5">
-          <span className={`text-sm font-semibold ${paid ? 'line-through text-[var(--color-text-tertiary)]' : 'text-[var(--color-text-primary)]'}`}>
+        <div className="flex items-center gap-1.5">
+          <span
+            className="text-sm font-medium text-[var(--color-text-primary)] truncate"
+            style={{ textDecoration: paid ? 'line-through' : 'none' }}
+          >
             {sf.name}
           </span>
-          {sf.autoDebit && (
-            <span className="text-[var(--color-text-tertiary)]"><AutoIcon /></span>
-          )}
+          {sf.autoDebit && <RefreshCw size={11} className="text-[var(--color-text-tertiary)] shrink-0" />}
         </div>
-        <span className={`text-xs ${isOverdue ? 'text-[var(--color-danger)]' : 'text-[var(--color-text-tertiary)]'}`}>
-          {paid ? 'Pago ✓' : getDueDayLabel(sf.dueDay)}
+        <span
+          className="text-xs"
+          style={{ color: isUrgent ? 'var(--color-danger)' : 'var(--color-text-secondary)' }}
+        >
+          {paid ? 'Pago · ' + getDueDayLabel(sf.dueDay) : getDueDayLabel(sf.dueDay)}
         </span>
       </div>
 
       {/* Valor */}
-      <span className={`text-sm font-bold mr-2 ${paid ? 'text-[var(--color-text-tertiary)]' : 'text-[var(--color-text-primary)]'}`}>
+      <span className="text-sm font-semibold text-[var(--color-text-primary)] shrink-0 mr-2">
         {formatCurrency(sf.amount)}
       </span>
 
-      {/* Botão pagar */}
-      {!sf.autoDebit && (
-        <motion.button
-          whileTap={{ scale: 0.93 }}
-          onClick={() => paid ? markUnpaid(sf.id, today) : markPaid(sf.id, today)}
-          className={[
-            'w-8 h-8 rounded-full flex items-center justify-center border-2 cursor-pointer transition-all duration-200 shrink-0',
-            paid
-              ? 'bg-[var(--color-success)] border-[var(--color-success)] text-white'
-              : 'border-[var(--color-border-strong)] text-[var(--color-text-tertiary)] hover:border-[var(--color-success)] hover:text-[var(--color-success)]',
-          ].join(' ')}
+      {/* Check / auto badge */}
+      {sf.autoDebit ? (
+        <span
+          className="text-[10px] font-semibold px-2 py-0.5 rounded-full shrink-0"
+          style={{
+            background: paid ? 'rgba(16,185,129,0.12)' : 'rgba(148,163,184,0.1)',
+            color: paid ? 'var(--color-success)' : 'var(--color-text-tertiary)',
+          }}
         >
-          <CheckIcon />
-        </motion.button>
-      )}
-      {sf.autoDebit && (
-        <Badge variant={paid ? 'success' : 'default'} size="sm">
           {paid ? 'Debitado' : 'Auto'}
-        </Badge>
+        </span>
+      ) : (
+        <button
+          onClick={() => paid ? markUnpaid(sf.id, today) : markPaid(sf.id, today)}
+          className="w-7 h-7 rounded-full border-2 flex items-center justify-center cursor-pointer transition-all duration-150 shrink-0"
+          style={{
+            background: paid ? 'var(--color-success)' : 'transparent',
+            borderColor: paid ? 'var(--color-success)' : 'var(--color-border-strong)',
+          }}
+        >
+          <Check size={13} strokeWidth={2.5} style={{ color: paid ? 'white' : 'var(--color-text-tertiary)' }} />
+        </button>
       )}
-    </motion.div>
+    </div>
   )
 }
 
 // ─── Fluxo Page ───────────────────────────────────────────────────────────────
 
 export default function Fluxo() {
-  const [tab, setTab] = useState<'saidas' | 'entradas'>('saidas')
+  const [tab, setTab]         = useState<'saidas' | 'entradas'>('saidas')
   const [lancarOpen, setLancarOpen] = useState(false)
 
   const saidasFixas = useAppStore(useShallow(selectCurrentSaidasFixas))
-  const entradas = useAppStore(useShallow(selectCurrentEntradas))
+  const entradas    = useAppStore(useShallow(selectCurrentEntradas))
 
-  const { paid, pending } = useMemo(() => ({
-    paid:    saidasFixas.filter(sf => isPaidThisMonth(sf.paidDates)),
-    pending: saidasFixas.filter(sf => !isPaidThisMonth(sf.paidDates)).sort((a, b) => getDaysUntil(a.dueDay) - getDaysUntil(b.dueDay)),
+  const { pending, paid } = useMemo(() => ({
+    pending: saidasFixas
+      .filter(sf => !isPaidThisMonth(sf.paidDates))
+      .sort((a, b) => getDaysUntil(a.dueDay) - getDaysUntil(b.dueDay)),
+    paid: saidasFixas.filter(sf => isPaidThisMonth(sf.paidDates)),
   }), [saidasFixas])
 
-  const totalPaid    = paid.reduce((s, sf) => s + sf.amount, 0)
   const totalPending = pending.reduce((s, sf) => s + sf.amount, 0)
+  const totalPaid    = paid.reduce((s, sf) => s + sf.amount, 0)
 
   const currentMonth = new Date().toLocaleString('pt-BR', { month: 'long', year: 'numeric' })
 
   return (
-    <div className="min-h-full pb-6">
+    <div className="min-h-full pb-6 px-4 pt-12 md:pt-8">
+
       {/* Header */}
-      <div className="px-4 pt-12 pb-4">
+      <div className="mb-5">
         <h1 className="text-2xl font-bold text-[var(--color-text-primary)]">Fluxo</h1>
         <p className="text-sm text-[var(--color-text-secondary)] capitalize">{currentMonth}</p>
       </div>
 
-      {/* Resumo */}
-      <div className="grid grid-cols-2 gap-3 mx-4 mb-4">
-        <div className="bg-[rgba(239,68,68,0.1)] border border-[rgba(239,68,68,0.25)] rounded-[var(--radius-lg)] p-3.5">
-          <p className="text-xs text-[var(--color-danger)] font-semibold uppercase tracking-wide mb-1">A pagar</p>
+      {/* Resumo cards */}
+      <div className="grid grid-cols-2 gap-3 mb-5">
+        {/* A pagar */}
+        <div
+          className="rounded-[var(--radius-lg)] p-4"
+          style={{ background: 'rgba(239,68,68,0.06)', border: '1px solid rgba(239,68,68,0.18)' }}
+        >
+          <p className="text-xs font-semibold text-[var(--color-danger)] mb-1.5">A pagar</p>
           <p className="text-xl font-bold text-[var(--color-text-primary)]">{formatCurrency(totalPending)}</p>
-          <p className="text-xs text-[var(--color-text-tertiary)] mt-0.5">{pending.length} conta{pending.length !== 1 ? 's' : ''}</p>
+          <p className="text-xs text-[var(--color-text-secondary)] mt-0.5">{pending.length} conta{pending.length !== 1 ? 's' : ''}</p>
         </div>
-        <div className="bg-[rgba(16,185,129,0.1)] border border-[rgba(16,185,129,0.25)] rounded-[var(--radius-lg)] p-3.5">
-          <p className="text-xs text-[var(--color-success)] font-semibold uppercase tracking-wide mb-1">Pago</p>
+
+        {/* Pago */}
+        <div
+          className="rounded-[var(--radius-lg)] p-4"
+          style={{ background: 'rgba(16,185,129,0.06)', border: '1px solid rgba(16,185,129,0.18)' }}
+        >
+          <p className="text-xs font-semibold text-[var(--color-success)] mb-1.5">Pago</p>
           <p className="text-xl font-bold text-[var(--color-text-primary)]">{formatCurrency(totalPaid)}</p>
-          <p className="text-xs text-[var(--color-text-tertiary)] mt-0.5">{paid.length} conta{paid.length !== 1 ? 's' : ''}</p>
+          <p className="text-xs text-[var(--color-text-secondary)] mt-0.5">{paid.length} conta{paid.length !== 1 ? 's' : ''}</p>
         </div>
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 mx-4 mb-3 bg-[var(--color-bg-secondary)] p-1 rounded-[var(--radius-md)]">
+      <div
+        className="flex gap-1 p-1 rounded-[var(--radius-md)] mb-4"
+        style={{ background: 'var(--color-bg-card)', border: '1px solid var(--color-border)' }}
+      >
         {(['saidas', 'entradas'] as const).map(t => (
           <button
             key={t}
             onClick={() => setTab(t)}
-            className={[
-              'flex-1 py-2 text-sm font-semibold rounded-[var(--radius-sm)] cursor-pointer transition-all duration-200',
-              tab === t
-                ? 'bg-[var(--color-accent)] text-white'
-                : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]',
-            ].join(' ')}
+            className="flex-1 py-2 text-sm font-semibold rounded-[10px] cursor-pointer transition-all duration-150"
+            style={{
+              background: tab === t ? 'var(--color-accent)' : 'transparent',
+              color: tab === t ? 'white' : 'var(--color-text-secondary)',
+            }}
           >
-            {t === 'saidas' ? 'Saídas Fixas' : 'Entradas'}
+            {t === 'saidas' ? 'Saídas fixas' : 'Entradas'}
           </button>
         ))}
       </div>
 
-      {/* Content */}
+      {/* Conteúdo da tab */}
       <AnimatePresence mode="wait">
-        {tab === 'saidas' ? (
-          <motion.div
-            key="saidas"
-            initial={{ opacity: 0, x: -10 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: 10 }}
-            transition={{ duration: 0.18 }}
-            className="mx-4 bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded-[var(--radius-lg)] overflow-hidden"
-          >
-            {pending.length === 0 && paid.length === 0 ? (
-              <p className="text-center text-[var(--color-text-tertiary)] py-10 text-sm">Nenhuma conta cadastrada</p>
-            ) : (
-              <>
-                {pending.length > 0 && (
-                  <div>
-                    <p className="text-xs text-[var(--color-text-tertiary)] px-4 pt-3 pb-1 font-semibold uppercase tracking-wide">Pendentes</p>
-                    {pending.map(sf => <SaidaItem key={sf.id} sf={sf} />)}
+        <motion.div
+          key={tab}
+          initial={{ opacity: 0, y: 4 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -4 }}
+          transition={{ duration: 0.15 }}
+          className="rounded-[var(--radius-lg)] overflow-hidden"
+          style={{ background: 'var(--color-bg-card)', border: '1px solid var(--color-border)' }}
+        >
+          {tab === 'saidas' ? (
+            <>
+              {pending.length === 0 && paid.length === 0 ? (
+                <EmptyState label="Nenhuma conta cadastrada" />
+              ) : (
+                <>
+                  {pending.length > 0 && (
+                    <>
+                      <SectionLabel>Pendentes</SectionLabel>
+                      {pending.map((sf, i) => <SaidaItem key={sf.id} sf={sf} isLast={i === pending.length - 1 && paid.length === 0} />)}
+                    </>
+                  )}
+                  {paid.length > 0 && (
+                    <>
+                      <SectionLabel>Pagos</SectionLabel>
+                      {paid.map((sf, i) => <SaidaItem key={sf.id} sf={sf} isLast={i === paid.length - 1} />)}
+                    </>
+                  )}
+                </>
+              )}
+            </>
+          ) : (
+            <>
+              {entradas.length === 0 ? (
+                <EmptyState label="Nenhuma entrada lançada" />
+              ) : (
+                [...entradas].reverse().map((e, i, arr) => (
+                  <div
+                    key={e.id}
+                    className="flex items-center gap-3 px-4 py-3.5"
+                    style={{ borderBottom: i < arr.length - 1 ? '1px solid var(--color-border)' : 'none' }}
+                  >
+                    <div
+                      className="w-8 h-8 rounded-full flex items-center justify-center shrink-0"
+                      style={{ background: 'rgba(91,156,246,0.12)' }}
+                    >
+                      <ArrowUpRight size={15} className="text-[var(--color-accent)]" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-[var(--color-text-primary)] truncate">{e.sourceName}</p>
+                      <p className="text-xs text-[var(--color-text-secondary)]">
+                        {new Date(e.date + 'T12:00:00').toLocaleDateString('pt-BR')}
+                      </p>
+                    </div>
+                    <span className="text-sm font-bold text-[var(--color-success)] shrink-0">
+                      +{formatCurrency(e.amount)}
+                    </span>
                   </div>
-                )}
-                {paid.length > 0 && (
-                  <div>
-                    <p className="text-xs text-[var(--color-text-tertiary)] px-4 pt-3 pb-1 font-semibold uppercase tracking-wide">Pagos</p>
-                    {paid.map(sf => <SaidaItem key={sf.id} sf={sf} />)}
-                  </div>
-                )}
-              </>
-            )}
-          </motion.div>
-        ) : (
-          <motion.div
-            key="entradas"
-            initial={{ opacity: 0, x: 10 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -10 }}
-            transition={{ duration: 0.18 }}
-            className="mx-4 bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded-[var(--radius-lg)] overflow-hidden"
-          >
-            {entradas.length === 0 ? (
-              <p className="text-center text-[var(--color-text-tertiary)] py-10 text-sm">Nenhuma entrada lançada</p>
-            ) : (
-              [...entradas].reverse().map((e) => (
-                <div key={e.id} className="flex items-center gap-3 px-4 py-3.5 border-b border-[var(--color-border)] last:border-0">
-                  <div className="w-8 h-8 rounded-full bg-[rgba(59,130,246,0.15)] flex items-center justify-center shrink-0">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--color-accent-lucas)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                      <line x1="12" y1="19" x2="12" y2="5" /><polyline points="5 12 12 5 19 12" />
-                    </svg>
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-[var(--color-text-primary)] truncate">{e.sourceName}</p>
-                    <p className="text-xs text-[var(--color-text-tertiary)]">{new Date(e.date + 'T12:00:00').toLocaleDateString('pt-BR')}</p>
-                  </div>
-                  <span className="text-sm font-bold text-[var(--color-success)]">+{formatCurrency(e.amount)}</span>
-                </div>
-              ))
-            )}
-          </motion.div>
-        )}
+                ))
+              )}
+            </>
+          )}
+        </motion.div>
       </AnimatePresence>
 
-      {/* FAB */}
-      <div className="mx-4 mt-4">
+      {/* CTA */}
+      <div className="mt-4">
         <motion.button
-          whileTap={{ scale: 0.97 }}
+          whileTap={{ scale: 0.98 }}
           onClick={() => setLancarOpen(true)}
-          className="w-full h-12 rounded-[var(--radius-lg)] bg-[var(--color-accent)] text-white font-bold text-sm flex items-center justify-center gap-2 cursor-pointer"
-          style={{ boxShadow: '0 0 24px rgba(59,130,246,0.4)' }}
+          className="w-full h-12 rounded-[var(--radius-lg)] font-semibold text-sm text-white flex items-center justify-center gap-2 cursor-pointer"
+          style={{ background: 'var(--color-accent)', boxShadow: '0 4px 16px rgba(91,156,246,0.22)' }}
         >
-          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
-          </svg>
-          Lançar Entrada
+          <Plus size={18} strokeWidth={2.5} />
+          Lançar entrada
         </motion.button>
       </div>
 
       <LancarEntradaModal open={lancarOpen} onClose={() => setLancarOpen(false)} />
+    </div>
+  )
+}
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+function SectionLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <p
+      className="text-[11px] font-semibold uppercase tracking-[0.1em] px-4 py-2.5"
+      style={{ color: 'var(--color-text-tertiary)', borderBottom: '1px solid var(--color-border)' }}
+    >
+      {children}
+    </p>
+  )
+}
+
+function EmptyState({ label }: { label: string }) {
+  return (
+    <div className="flex flex-col items-center justify-center py-12 gap-2">
+      <Inbox size={28} className="text-[var(--color-text-tertiary)]" />
+      <p className="text-sm text-[var(--color-text-secondary)]">{label}</p>
     </div>
   )
 }

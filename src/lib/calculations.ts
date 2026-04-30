@@ -137,7 +137,7 @@ export function formatFutureAmount(value: number): string {
 // ─── Cor por contexto ────────────────────────────────────────────────────────
 
 export const CONTEXT_COLORS = {
-  lucas:  { accent: '#3B82F6', glow: 'rgba(59,130,246,0.3)',  text: 'text-[var(--color-accent-lucas)]' },
+  lucas:  { accent: '#5B9CF6', glow: 'rgba(91,156,246,0.3)',  text: 'text-[var(--color-accent-lucas)]' },
   mirian: { accent: '#EC4899', glow: 'rgba(236,72,153,0.3)', text: 'text-[var(--color-accent-mirian)]' },
   couple: { accent: '#8B5CF6', glow: 'rgba(139,92,246,0.3)', text: 'text-[var(--color-accent-couple)]' },
 } as const

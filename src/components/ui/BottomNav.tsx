@@ -18,7 +18,8 @@ export function BottomNav({ items }: BottomNavProps) {
   return (
     <nav
       aria-label="Navegação principal"
-      className="fixed bottom-0 left-0 right-0 z-40 glass border-t border-[var(--color-border)] pb-[var(--spacing-safe-bottom)]"
+      className="fixed bottom-0 left-0 right-0 z-40 glass border-t border-[var(--color-border)]"
+      style={{ paddingBottom: 'var(--safe-bottom)' }}
     >
       <div className="flex items-center justify-around px-2 h-16">
         {items.map((item) => {
