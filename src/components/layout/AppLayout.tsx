@@ -113,7 +113,7 @@ export function AppLayout({ children }: AppLayoutProps) {
         className="somus-mobile"
         style={{ minHeight: '100dvh', flexDirection: 'column', background: 'var(--color-bg-primary)' }}
       >
-        <main style={{ flex: 1, overflowY: 'auto', paddingBottom: 'calc(72px + env(safe-area-inset-bottom, 0px))' }}>
+        <main style={{ flex: 1, overflowY: 'auto', paddingBottom: 'calc(88px + env(safe-area-inset-bottom, 0px))' }}>
           {children}
         </main>
         <BottomNav items={NAV_ITEMS} />

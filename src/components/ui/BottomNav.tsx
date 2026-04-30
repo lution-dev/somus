@@ -18,13 +18,18 @@ export function BottomNav({ items }: BottomNavProps) {
     <nav
       aria-label="Navegação principal"
       style={{
-        position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 40,
-        background: 'var(--color-bg-primary)',
-        borderTop: '1px solid var(--color-border)',
-        paddingBottom: 'var(--safe-bottom)',
+        position: 'fixed',
+        bottom: 'calc(12px + env(safe-area-inset-bottom, 0px))',
+        left: 16, right: 16,
+        zIndex: 40,
+        background: 'rgba(20,20,20,0.92)',
+        backdropFilter: 'blur(20px)',
+        WebkitBackdropFilter: 'blur(20px)',
+        border: '1px solid rgba(255,255,255,0.08)',
+        borderRadius: 22,
       }}
     >
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-around', padding: '0 8px', height: 64 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-around', padding: '0 4px', height: 56 }}>
         {items.map((item) => {
           const isActive = location === item.path || location.startsWith(item.path + '/')
           return (
@@ -35,18 +40,11 @@ export function BottomNav({ items }: BottomNavProps) {
               aria-current={isActive ? 'page' : undefined}
               style={{
                 display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                gap: 2, flex: 1, height: '100%', cursor: 'pointer',
+                gap: 3, flex: 1, height: '100%', cursor: 'pointer',
                 background: 'none', border: 'none', fontFamily: 'var(--font-sans)',
                 color: isActive ? 'var(--color-accent-primary)' : 'var(--color-text-tertiary)',
-                position: 'relative',
               }}
             >
-              {isActive && (
-                <div style={{
-                  position: 'absolute', top: 4, left: '50%', transform: 'translateX(-50%)',
-                  width: 4, height: 4, borderRadius: '50%', background: 'var(--color-accent-primary)',
-                }} />
-              )}
               <span style={{ display: 'flex' }}>
                 {(isActive && item.activeIcon) ? item.activeIcon : item.icon}
               </span>

@@ -12,10 +12,15 @@ interface PageHeaderProps {
   rightAction?: React.ReactNode
   /** Make the header transparent (for pages with hero cards) */
   transparent?: boolean
+  /** Extra height for the spacer (default: 56) */
+  height?: number
 }
 
-export function PageHeader({ title, subtitle, back, backTo, rightAction, transparent }: PageHeaderProps) {
+const HEADER_H = 56
+
+export function PageHeader({ title, subtitle, back, backTo, rightAction, transparent, height }: PageHeaderProps) {
   const [, navigate] = useLocation()
+  const h = height ?? HEADER_H
 
   const handleBack = () => {
     if (backTo) {
@@ -26,76 +31,84 @@ export function PageHeader({ title, subtitle, back, backTo, rightAction, transpa
   }
 
   return (
-    <header
-      style={{
-        position: 'sticky',
-        top: 0,
-        zIndex: 30,
-        background: transparent ? 'transparent' : 'var(--color-bg-primary)',
-        paddingTop: 'env(safe-area-inset-top, 0px)',
-      }}
-    >
-      <div
+    <>
+      {/* Fixed header */}
+      <header
         style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          height: 56,
-          padding: '0 16px',
-          gap: 12,
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          zIndex: 50,
+          background: transparent ? 'transparent' : 'var(--color-bg-primary)',
+          paddingTop: 'env(safe-area-inset-top, 0px)',
         }}
       >
-        {/* Left: back button or spacer */}
-        {back ? (
-          <button
-            onClick={handleBack}
-            aria-label="Voltar"
-            style={{
-              width: 36, height: 36, borderRadius: 12,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              background: 'rgba(255,255,255,0.06)',
-              border: 'none', cursor: 'pointer', color: 'var(--color-text-primary)',
-              flexShrink: 0,
-            }}
-          >
-            <ChevronLeft size={20} strokeWidth={2} />
-          </button>
-        ) : (
-          <div style={{ width: 36, flexShrink: 0 }} />
-        )}
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            height: h,
+            padding: '0 16px',
+            gap: 12,
+          }}
+        >
+          {/* Left: back button or spacer */}
+          {back ? (
+            <button
+              onClick={handleBack}
+              aria-label="Voltar"
+              style={{
+                width: 36, height: 36, borderRadius: 12,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                background: 'rgba(255,255,255,0.06)',
+                border: 'none', cursor: 'pointer', color: 'var(--color-text-primary)',
+                flexShrink: 0,
+              }}
+            >
+              <ChevronLeft size={20} strokeWidth={2} />
+            </button>
+          ) : (
+            <div style={{ width: 36, flexShrink: 0 }} />
+          )}
 
-        {/* Center: title */}
-        <div style={{ flex: 1, textAlign: 'center', minWidth: 0 }}>
-          <p style={{
-            fontSize: 16, fontWeight: 600,
-            color: 'var(--color-text-primary)',
-            margin: 0, lineHeight: 1.2,
-            overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-          }}>
-            {title}
-          </p>
-          {subtitle && (
+          {/* Center: title */}
+          <div style={{ flex: 1, textAlign: 'center', minWidth: 0 }}>
             <p style={{
-              fontSize: 12, color: 'var(--color-text-secondary)',
-              margin: '2px 0 0', lineHeight: 1,
+              fontSize: 16, fontWeight: 600,
+              color: 'var(--color-text-primary)',
+              margin: 0, lineHeight: 1.2,
+              overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
             }}>
-              {subtitle}
+              {title}
             </p>
+            {subtitle && (
+              <p style={{
+                fontSize: 12, color: 'var(--color-text-secondary)',
+                margin: '2px 0 0', lineHeight: 1,
+              }}>
+                {subtitle}
+              </p>
+            )}
+          </div>
+
+          {/* Right: action or spacer */}
+          {rightAction ? (
+            <div style={{ flexShrink: 0 }}>{rightAction}</div>
+          ) : (
+            <div style={{ width: 36, flexShrink: 0 }} />
           )}
         </div>
 
-        {/* Right: action or spacer */}
-        {rightAction ? (
-          <div style={{ flexShrink: 0 }}>{rightAction}</div>
-        ) : (
-          <div style={{ width: 36, flexShrink: 0 }} />
+        {/* Bottom border */}
+        {!transparent && (
+          <div style={{ height: 1, background: 'var(--color-border)', opacity: 0.5 }} />
         )}
-      </div>
+      </header>
 
-      {/* Bottom border */}
-      {!transparent && (
-        <div style={{ height: 1, background: 'var(--color-border)', opacity: 0.5 }} />
-      )}
-    </header>
+      {/* Spacer to push content below the fixed header */}
+      <div style={{ height: h, flexShrink: 0 }} />
+    </>
   )
 }

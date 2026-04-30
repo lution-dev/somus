@@ -110,7 +110,7 @@ export default function Fluxo() {
     <div style={{ minHeight: '100%', paddingBottom: 24 }}>
       {/* Header */}
       {isMobile ? (
-        <PageHeader title="Fluxo" subtitle={currentMonth} />
+        <PageHeader title="Fluxo" />
       ) : (
         <div style={{ paddingTop: 32, marginBottom: 20 }}>
           <h1 style={{ fontSize: 24, fontWeight: 600, color: 'var(--color-text-primary)', margin: 0 }}>Fluxo</h1>

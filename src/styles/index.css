@@ -6,10 +6,10 @@
 /* ─── Design Tokens ─── */
 :root {
   /* ── Backgrounds ── */
-  --color-bg-primary:   #0D1B2A;
-  --color-bg-secondary: #1A2D42;
-  --color-bg-tertiary:  #243B55;
-  --color-bg-sidebar:   #0F1E2E;
+  --color-bg-primary:   #0A0A0A;
+  --color-bg-secondary: #141414;
+  --color-bg-tertiary:  #1E1E1E;
+  --color-bg-sidebar:   #111111;
 
   /* ── Accent ── */
   --color-accent-primary:  #3B82F6;
@@ -31,7 +31,7 @@
   --color-text-tertiary:  #64748B;
 
   /* ── Borders ── */
-  --color-border: #1E3A5F;
+  --color-border: #1E1E1E;
 
   /* ── Typography ── */
   --font-sans: 'Inter', system-ui, -apple-system, sans-serif;

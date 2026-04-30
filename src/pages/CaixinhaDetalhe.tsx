@@ -2,7 +2,7 @@ import { useParams, useLocation } from 'wouter'
 import { useAppStore } from '../stores/useAppStore'
 import { formatCurrency } from '../lib/calculations'
 import { getCaixinhaIcon } from '../lib/icons'
-import { ProgressBar, PageHeader } from '../components/ui'
+import { ProgressBar } from '../components/ui'
 import { useIsMobile } from '../hooks/useIsMobile'
 import { ChevronLeft, ArrowUpRight, ArrowDownRight, Info, AlertTriangle, CheckCircle2 } from 'lucide-react'
 
@@ -39,7 +39,48 @@ export default function CaixinhaDetalhe() {
     <div style={{ minHeight: '100%', paddingBottom: 24 }}>
       {/* Header */}
       {isMobile ? (
-        <PageHeader title={caixinha.name} subtitle={`${caixinha.percentage}% da renda`} back backTo="/caixinhas" />
+        <>
+          {/* Fixed back bar */}
+          <header style={{
+            position: 'fixed', top: 0, left: 0, right: 0, zIndex: 50,
+            background: 'var(--color-bg-primary)',
+            paddingTop: 'env(safe-area-inset-top, 0px)',
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', height: 56, padding: '0 16px' }}>
+              <button
+                onClick={() => navigate('/caixinhas')}
+                aria-label="Voltar"
+                style={{
+                  width: 36, height: 36, borderRadius: 12,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  background: 'rgba(255,255,255,0.06)',
+                  border: 'none', cursor: 'pointer', color: 'var(--color-text-primary)',
+                }}
+              >
+                <ChevronLeft size={20} strokeWidth={2} />
+              </button>
+            </div>
+          </header>
+          {/* Spacer */}
+          <div style={{ height: 56 }} />
+
+          {/* Hero: icon + name */}
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '12px 16px 20px', gap: 10 }}>
+            <div style={{
+              width: 56, height: 56, borderRadius: 18,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              background: `${color}18`, border: `1px solid ${color}30`,
+            }}>
+              <Icon size={26} style={{ color }} />
+            </div>
+            <div style={{ textAlign: 'center' }}>
+              <h1 style={{ fontSize: 20, fontWeight: 700, color: 'var(--color-text-primary)', margin: 0 }}>{caixinha.name}</h1>
+              <p style={{ fontSize: 13, color: 'var(--color-text-secondary)', margin: '4px 0 0' }}>
+                Meta: {formatCurrency(expectedBal)} · {caixinha.percentage}% do total
+              </p>
+            </div>
+          </div>
+        </>
       ) : (
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20, paddingTop: 32 }}>
           <button
@@ -66,7 +107,7 @@ export default function CaixinhaDetalhe() {
         </div>
       )}
 
-      <div style={{ padding: isMobile ? '8px 16px 0' : 0 }}>
+      <div style={{ padding: isMobile ? '0 16px' : 0 }}>
 
       {/* Card de saldo */}
       <div style={{
