@@ -21,3 +21,5 @@ export type { ProgressBarProps } from './ProgressBar'
 
 export { ContextToggle } from './ContextToggle'
 export type { ContextToggleProps } from './ContextToggle'
+
+export { PageHeader } from './PageHeader'

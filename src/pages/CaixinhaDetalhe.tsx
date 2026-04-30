@@ -2,7 +2,8 @@ import { useParams, useLocation } from 'wouter'
 import { useAppStore } from '../stores/useAppStore'
 import { formatCurrency } from '../lib/calculations'
 import { getCaixinhaIcon } from '../lib/icons'
-import { ProgressBar } from '../components/ui'
+import { ProgressBar, PageHeader } from '../components/ui'
+import { useIsMobile } from '../hooks/useIsMobile'
 import { ChevronLeft, ArrowUpRight, ArrowDownRight, Info, AlertTriangle, CheckCircle2 } from 'lucide-react'
 
 export default function CaixinhaDetalhe() {
@@ -30,36 +31,42 @@ export default function CaixinhaDetalhe() {
   const pct             = expectedBal > 0 ? Math.min(100, (caixinha.balance / expectedBal) * 100) : 100
   const isLow           = pct < 50 && expectedBal > 0
   const isFull          = pct >= 100
+  const isMobile = useIsMobile()
 
   const movements = [...caixinha.movements].sort((a, b) => b.date.localeCompare(a.date))
 
   return (
-    <div style={{ minHeight: '100%', paddingBottom: 24, paddingTop: 32 }}>
-
+    <div style={{ minHeight: '100%', paddingBottom: 24 }}>
       {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
-        <button
-          onClick={() => navigate('/caixinhas')}
-          style={{
-            cursor: 'pointer', color: 'var(--color-text-secondary)',
-            padding: 6, marginLeft: -6, borderRadius: 8,
-            background: 'none', border: 'none',
-          }}
-        >
-          <ChevronLeft size={20} />
-        </button>
-        <div style={{
-          width: 36, height: 36, borderRadius: 12,
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          background: `${color}18`,
-        }}>
-          <Icon size={18} style={{ color }} />
+      {isMobile ? (
+        <PageHeader title={caixinha.name} subtitle={`${caixinha.percentage}% da renda`} back backTo="/caixinhas" />
+      ) : (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20, paddingTop: 32 }}>
+          <button
+            onClick={() => navigate('/caixinhas')}
+            style={{
+              cursor: 'pointer', color: 'var(--color-text-secondary)',
+              padding: 6, marginLeft: -6, borderRadius: 8,
+              background: 'none', border: 'none',
+            }}
+          >
+            <ChevronLeft size={20} />
+          </button>
+          <div style={{
+            width: 36, height: 36, borderRadius: 12,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            background: `${color}18`,
+          }}>
+            <Icon size={18} style={{ color }} />
+          </div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <h1 style={{ fontSize: 18, fontWeight: 600, color: 'var(--color-text-primary)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{caixinha.name}</h1>
+            <p style={{ fontSize: 12, color: 'var(--color-text-secondary)', margin: 0 }}>{caixinha.percentage}% da renda</p>
+          </div>
         </div>
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <h1 style={{ fontSize: 18, fontWeight: 600, color: 'var(--color-text-primary)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{caixinha.name}</h1>
-          <p style={{ fontSize: 12, color: 'var(--color-text-secondary)', margin: 0 }}>{caixinha.percentage}% da renda</p>
-        </div>
-      </div>
+      )}
+
+      <div style={{ padding: isMobile ? '8px 16px 0' : 0 }}>
 
       {/* Card de saldo */}
       <div style={{
@@ -155,6 +162,7 @@ export default function CaixinhaDetalhe() {
             ))
           )}
         </div>
+      </div>
       </div>
     </div>
   )

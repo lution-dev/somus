@@ -3,7 +3,8 @@ import { useAppStore, selectCurrentCaixinhas, selectExpectedMonthlyIncome } from
 import { useShallow } from 'zustand/react/shallow'
 import { formatCurrency } from '../lib/calculations'
 import { getCaixinhaIcon } from '../lib/icons'
-import { ProgressBar } from '../components/ui'
+import { ProgressBar, PageHeader } from '../components/ui'
+import { useIsMobile } from '../hooks/useIsMobile'
 import { ChevronRight, AlertTriangle, CheckCircle2 } from 'lucide-react'
 
 export default function Caixinhas() {
@@ -11,20 +12,24 @@ export default function Caixinhas() {
   const caixinhas      = useAppStore(useShallow(selectCurrentCaixinhas))
   const expectedIncome = useAppStore(selectExpectedMonthlyIncome)
   const totalBalance   = caixinhas.reduce((s, cx) => s + cx.balance, 0)
+  const isMobile = useIsMobile()
 
   return (
-    <div style={{ minHeight: '100%', paddingBottom: 24, paddingTop: 32 }}>
-
+    <div style={{ minHeight: '100%', paddingBottom: 24 }}>
       {/* Header */}
-      <div style={{ marginBottom: 24 }}>
-        <h1 style={{ fontSize: 24, fontWeight: 600, color: 'var(--color-text-primary)', margin: 0 }}>Caixinhas</h1>
-        <p style={{ fontSize: 14, color: 'var(--color-text-secondary)', margin: '4px 0 0' }}>
-          Total · <span style={{ fontWeight: 600, color: 'var(--color-text-primary)' }}>{formatCurrency(totalBalance)}</span>
-        </p>
-      </div>
+      {isMobile ? (
+        <PageHeader title="Caixinhas" subtitle={`Total · ${formatCurrency(totalBalance)}`} />
+      ) : (
+        <div style={{ paddingTop: 32, marginBottom: 24 }}>
+          <h1 style={{ fontSize: 24, fontWeight: 600, color: 'var(--color-text-primary)', margin: 0 }}>Caixinhas</h1>
+          <p style={{ fontSize: 14, color: 'var(--color-text-secondary)', margin: '4px 0 0' }}>
+            Total · <span style={{ fontWeight: 600, color: 'var(--color-text-primary)' }}>{formatCurrency(totalBalance)}</span>
+          </p>
+        </div>
+      )}
 
       {/* Lista */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 12, maxWidth: 800, margin: '0 auto' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: isMobile ? 8 : 12, maxWidth: 800, margin: '0 auto', padding: isMobile ? '8px 16px 0' : 0 }}>
         {caixinhas.map((cx) => {
           const { Icon, color }  = getCaixinhaIcon(cx.id)
           const expectedBal      = (cx.percentage / 100) * expectedIncome

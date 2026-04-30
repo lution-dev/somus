@@ -4,6 +4,8 @@ import { useAppStore, selectCurrentSaidasFixas, selectCurrentEntradas } from '..
 import { useShallow } from 'zustand/react/shallow'
 import { formatCurrency, isPaidThisMonth, getDueDayLabel, getDaysUntil } from '../lib/calculations'
 import LancarEntradaModal from '../components/features/LancarEntradaModal'
+import { PageHeader } from '../components/ui'
+import { useIsMobile } from '../hooks/useIsMobile'
 import { Check, RefreshCw, Plus, Inbox, ArrowUpRight } from 'lucide-react'
 
 // ─── Item de Saída ────────────────────────────────────────────────────────────
@@ -87,6 +89,7 @@ function SaidaItem({ sf, isLast }: { sf: ReturnType<typeof selectCurrentSaidasFi
 export default function Fluxo() {
   const [tab, setTab]         = useState<'saidas' | 'entradas'>('saidas')
   const [lancarOpen, setLancarOpen] = useState(false)
+  const isMobile = useIsMobile()
 
   const saidasFixas = useAppStore(useShallow(selectCurrentSaidasFixas))
   const entradas    = useAppStore(useShallow(selectCurrentEntradas))
@@ -104,13 +107,18 @@ export default function Fluxo() {
   const currentMonth = new Date().toLocaleString('pt-BR', { month: 'long', year: 'numeric' })
 
   return (
-    <div style={{ minHeight: '100%', paddingBottom: 24, paddingTop: 32 }}>
-
+    <div style={{ minHeight: '100%', paddingBottom: 24 }}>
       {/* Header */}
-      <div style={{ marginBottom: 20 }}>
-        <h1 style={{ fontSize: 24, fontWeight: 600, color: 'var(--color-text-primary)', margin: 0 }}>Fluxo</h1>
-        <p style={{ fontSize: 14, color: 'var(--color-text-secondary)', textTransform: 'capitalize', margin: '4px 0 0' }}>{currentMonth}</p>
-      </div>
+      {isMobile ? (
+        <PageHeader title="Fluxo" subtitle={currentMonth} />
+      ) : (
+        <div style={{ paddingTop: 32, marginBottom: 20 }}>
+          <h1 style={{ fontSize: 24, fontWeight: 600, color: 'var(--color-text-primary)', margin: 0 }}>Fluxo</h1>
+          <p style={{ fontSize: 14, color: 'var(--color-text-secondary)', textTransform: 'capitalize', margin: '4px 0 0' }}>{currentMonth}</p>
+        </div>
+      )}
+
+      <div style={{ padding: isMobile ? '8px 16px 0' : 0 }}>
 
       {/* Resumo cards */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 20 }}>
@@ -250,6 +258,7 @@ export default function Fluxo() {
         </button>
       </div>
 
+      </div>
       <LancarEntradaModal open={lancarOpen} onClose={() => setLancarOpen(false)} />
     </div>
   )

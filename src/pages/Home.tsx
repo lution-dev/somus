@@ -10,8 +10,9 @@ import {
 import { useShallow } from 'zustand/react/shallow'
 import { formatCurrency, getMonthSummary, getDaysUntil, isPaidThisMonth } from '../lib/calculations'
 import { getCaixinhaIcon } from '../lib/icons'
-import { ContextToggle, ProgressBar } from '../components/ui'
+import { ContextToggle, ProgressBar, PageHeader } from '../components/ui'
 import type { Context } from '../components/ui/ContextToggle'
+import { useIsMobile } from '../hooks/useIsMobile'
 import LancarEntradaModal from '../components/features/LancarEntradaModal'
 import {
   Plus,
@@ -233,6 +234,7 @@ function CaixinhasSection() {
 export default function Home() {
   const [ctx, setCtx]       = useState<Context>('personal')
   const [lancarOpen, setLancarOpen] = useState(false)
+  const isMobile = useIsMobile()
 
   const caixinhas      = useAppStore(useShallow(selectCurrentCaixinhas))
   const entradas       = useAppStore(useShallow(selectCurrentEntradas))
@@ -249,15 +251,25 @@ export default function Home() {
   const greeting = hour < 12 ? 'Bom dia' : hour < 18 ? 'Boa tarde' : 'Boa noite'
 
   return (
-    <div style={{ minHeight: '100%', paddingBottom: 16, paddingTop: 32 }}>
-      {/* Saudação + toggle */}
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, paddingBottom: 4 }}>
-        <div style={{ minWidth: 0 }}>
-          <p style={{ fontSize: 12, color: 'var(--color-text-secondary)', fontWeight: 500, margin: 0 }}>{greeting}</p>
-          <h1 style={{ fontSize: 24, fontWeight: 600, color: 'var(--color-text-primary)', lineHeight: 1.2, margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{firstName}</h1>
+    <div style={{ minHeight: '100%', paddingBottom: 16 }}>
+      {/* Mobile: native header */}
+      {isMobile ? (
+        <PageHeader
+          title={`${greeting}, ${firstName}`}
+          rightAction={<ContextToggle value={ctx} onChange={setCtx} />}
+          transparent
+        />
+      ) : (
+        <div style={{ paddingTop: 32, display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, paddingBottom: 4 }}>
+          <div style={{ minWidth: 0 }}>
+            <p style={{ fontSize: 12, color: 'var(--color-text-secondary)', fontWeight: 500, margin: 0 }}>{greeting}</p>
+            <h1 style={{ fontSize: 24, fontWeight: 600, color: 'var(--color-text-primary)', lineHeight: 1.2, margin: 0 }}>{firstName}</h1>
+          </div>
+          <ContextToggle value={ctx} onChange={setCtx} style={{ flexShrink: 0 }} />
         </div>
-        <ContextToggle value={ctx} onChange={setCtx} style={{ flexShrink: 0 }} />
-      </div>
+      )}
+
+      <div style={{ padding: isMobile ? '0 16px' : 0 }}>
 
       {/* Balance card */}
       <BalanceCard
@@ -284,6 +296,7 @@ export default function Home() {
       {/* Caixinhas */}
       <CaixinhasSection />
 
+      </div>
       <LancarEntradaModal open={lancarOpen} onClose={() => setLancarOpen(false)} />
     </div>
   )

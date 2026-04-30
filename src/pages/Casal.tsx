@@ -1,7 +1,8 @@
 import { useAppStore } from '../stores/useAppStore'
 import { useShallow } from 'zustand/react/shallow'
 import { formatCurrency } from '../lib/calculations'
-import { ProgressBar } from '../components/ui'
+import { ProgressBar, PageHeader } from '../components/ui'
+import { useIsMobile } from '../hooks/useIsMobile'
 import { Target, Plane, Car, Share2, Copy } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 
@@ -28,14 +29,21 @@ export default function Casal() {
     { user: partner,     accent: 'var(--color-mirian)', balance: mirianBalance, tipo: 'Renda fixa' },
   ]
 
-  return (
-    <div style={{ minHeight: '100%', paddingBottom: 24, paddingTop: 32 }}>
+  const isMobile = useIsMobile()
 
+  return (
+    <div style={{ minHeight: '100%', paddingBottom: 24 }}>
       {/* Header */}
-      <div style={{ marginBottom: 24 }}>
-        <h1 style={{ fontSize: 24, fontWeight: 600, color: 'var(--color-accent-couple)', margin: 0 }}>♥ Casal</h1>
-        <p style={{ fontSize: 14, color: 'var(--color-text-secondary)', margin: '4px 0 0' }}>Visão consolidada</p>
-      </div>
+      {isMobile ? (
+        <PageHeader title="♥ Casal" subtitle="Visão consolidada" />
+      ) : (
+        <div style={{ paddingTop: 32, marginBottom: 24 }}>
+          <h1 style={{ fontSize: 24, fontWeight: 600, color: 'var(--color-accent-couple)', margin: 0 }}>♥ Casal</h1>
+          <p style={{ fontSize: 14, color: 'var(--color-text-secondary)', margin: '4px 0 0' }}>Visão consolidada</p>
+        </div>
+      )}
+
+      <div style={{ padding: isMobile ? '8px 16px 0' : 0 }}>
 
       {/* Card total patrimônio */}
       <div style={{
@@ -179,6 +187,7 @@ export default function Casal() {
             Copiar
           </button>
         </div>
+      </div>
       </div>
     </div>
   )

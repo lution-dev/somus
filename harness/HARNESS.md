@@ -1,4 +1,4 @@
-# HARNESS.md — Somus
+﻿# HARNESS.md — Somus
 > Leia este arquivo INTEIRO antes de qualquer ação. Ele é sua única instrução obrigatória.
 
 ## STEP 0 — OBRIGATÓRIO: Memória Global Lidtek
@@ -24,8 +24,9 @@ node "c:\Users\Lucas\OneDrive\Documentos\Projetos\lidtek-memoria\hooks\saida.js"
 3. **CONTEXT.md** — estado atual do projeto (LEIA SEMPRE)
 4. **BACKLOG.md** — tasks ativas (LEIA SEMPRE)
 5. ARCHITECTURE.md — padrões técnicos (leia quando for modificar código)
-6. SPEC.md — spec do produto (leia quando precisar de regra de negócio)
-7. archive/ — histórico (NUNCA leia automaticamente)
+6. **DESIGN.md** — design system, cores, componentes (LEIA quando for modificar UI)
+7. SPEC.md — spec do produto (leia quando precisar de regra de negócio)
+8. archive/ — histórico (NUNCA leia automaticamente)
 
 ---
 
