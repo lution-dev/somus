@@ -11,55 +11,64 @@ interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
 }
 
 const Input = forwardRef<HTMLInputElement, InputProps>(
-  ({ label, hint, error, leftIcon, rightIcon, prefix, className = '', id, ...props }, ref) => {
+  ({ label, hint, error, leftIcon, rightIcon, prefix, className = '', id, style, ...props }, ref) => {
     const inputId = id || label?.toLowerCase().replace(/\s+/g, '-')
 
     return (
-      <div className="flex flex-col gap-1.5 w-full">
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 6, width: '100%' }}>
         {label && (
           <label
             htmlFor={inputId}
-            className="text-xs font-semibold text-[var(--color-text-secondary)] uppercase tracking-wide"
+            className="section-label"
+            style={{ marginBottom: 0 }}
           >
             {label}
           </label>
         )}
-        <div className="relative flex items-center">
+        <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
           {prefix && (
-            <span className="absolute left-3.5 text-[var(--color-text-secondary)] text-sm font-medium pointer-events-none select-none">
+            <span style={{
+              position: 'absolute', left: 14,
+              color: 'var(--color-text-secondary)', fontSize: 14, fontWeight: 500,
+              pointerEvents: 'none', userSelect: 'none',
+            }}>
               {prefix}
             </span>
           )}
           {leftIcon && !prefix && (
-            <span className="absolute left-3 text-[var(--color-text-tertiary)] pointer-events-none">
+            <span style={{ position: 'absolute', left: 12, color: 'var(--color-text-tertiary)', pointerEvents: 'none' }}>
               {leftIcon}
             </span>
           )}
           <input
             ref={ref}
             id={inputId}
-            className={[
-              'w-full h-11 bg-[var(--color-bg-secondary)] border rounded-[var(--radius-md)]',
-              'text-sm text-[var(--color-text-primary)] placeholder:text-[var(--color-text-tertiary)]',
-              'transition-all duration-[var(--transition-fast)]',
-              'focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)] focus:ring-offset-1 focus:ring-offset-[var(--color-bg-primary)]',
-              error
-                ? 'border-[var(--color-danger)] focus:ring-[var(--color-danger)]'
-                : 'border-[var(--color-border)] hover:border-[var(--color-border-strong)]',
-              leftIcon || prefix ? 'pl-10' : 'pl-4',
-              rightIcon ? 'pr-10' : 'pr-4',
-              className,
-            ].join(' ')}
+            className={className}
+            style={{
+              width: '100%', height: 44,
+              background: 'var(--color-bg-tertiary)',
+              border: `1px solid ${error ? 'var(--color-danger)' : 'var(--color-border)'}`,
+              borderRadius: 'var(--radius-card)',
+              fontSize: 14, color: 'var(--color-text-primary)',
+              fontFamily: 'var(--font-sans)',
+              paddingLeft: leftIcon || prefix ? 40 : 16,
+              paddingRight: rightIcon ? 40 : 16,
+              outline: 'none',
+              transition: 'border-color 150ms ease',
+              ...style,
+            }}
+            onFocus={e => { e.currentTarget.style.borderColor = 'var(--color-accent-primary)' }}
+            onBlur={e => { e.currentTarget.style.borderColor = error ? 'var(--color-danger)' : 'var(--color-border)' }}
             {...props}
           />
           {rightIcon && (
-            <span className="absolute right-3 text-[var(--color-text-tertiary)] pointer-events-none">
+            <span style={{ position: 'absolute', right: 12, color: 'var(--color-text-tertiary)', pointerEvents: 'none' }}>
               {rightIcon}
             </span>
           )}
         </div>
         {(error || hint) && (
-          <p className={`text-xs ${error ? 'text-[var(--color-danger)]' : 'text-[var(--color-text-tertiary)]'}`}>
+          <p style={{ fontSize: 12, color: error ? 'var(--color-danger)' : 'var(--color-text-tertiary)', margin: 0 }}>
             {error || hint}
           </p>
         )}

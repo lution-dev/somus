@@ -15,8 +15,8 @@ export default defineConfig({
         name: 'Somus — Finanças do Casal',
         short_name: 'Somus',
         description: 'App de planejamento financeiro para casais com renda variável',
-        theme_color: '#0F1923',
-        background_color: '#0F1923',
+        theme_color: '#0D1B2A',
+        background_color: '#0D1B2A',
         display: 'standalone',
         orientation: 'portrait',
         start_url: '/',
@@ -44,6 +44,10 @@ export default defineConfig({
       },
     }),
   ],
+  server: {
+    port: 1619,
+    host: true,
+  },
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),

@@ -18,57 +18,64 @@ function SaidaItem({ sf, isLast }: { sf: ReturnType<typeof selectCurrentSaidasFi
 
   return (
     <div
-      className="flex items-center gap-3 px-4 py-3.5"
-      style={{ borderBottom: isLast ? 'none' : '1px solid var(--color-border)', opacity: paid ? 0.55 : 1 }}
+      style={{
+        display: 'flex', alignItems: 'center', gap: 12,
+        padding: '14px 16px',
+        borderBottom: isLast ? 'none' : '1px solid var(--color-border)',
+        opacity: paid ? 0.55 : 1,
+      }}
     >
-      {/* Cor/dot */}
-      <div className="w-1.5 h-1.5 rounded-full shrink-0 mt-0.5" style={{ background: sf.color || 'var(--color-accent)' }} />
+      {/* Dot */}
+      <div style={{ width: 6, height: 6, borderRadius: '50%', flexShrink: 0, background: sf.color || 'var(--color-accent-primary)' }} />
 
       {/* Info */}
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-1.5">
-          <span
-            className="text-sm font-medium text-[var(--color-text-primary)] truncate"
-            style={{ textDecoration: paid ? 'line-through' : 'none' }}
-          >
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <span style={{
+            fontSize: 14, fontWeight: 500, color: 'var(--color-text-primary)',
+            overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+            textDecoration: paid ? 'line-through' : 'none',
+          }}>
             {sf.name}
           </span>
-          {sf.autoDebit && <RefreshCw size={11} className="text-[var(--color-text-tertiary)] shrink-0" />}
+          {sf.autoDebit && <RefreshCw size={11} color="var(--color-text-tertiary)" style={{ flexShrink: 0 }} />}
         </div>
-        <span
-          className="text-xs"
-          style={{ color: isUrgent ? 'var(--color-danger)' : 'var(--color-text-secondary)' }}
-        >
+        <span style={{
+          fontSize: 12,
+          color: isUrgent ? 'var(--color-danger)' : 'var(--color-text-secondary)',
+        }}>
           {paid ? 'Pago · ' + getDueDayLabel(sf.dueDay) : getDueDayLabel(sf.dueDay)}
         </span>
       </div>
 
       {/* Valor */}
-      <span className="text-sm font-semibold text-[var(--color-text-primary)] shrink-0 mr-2">
+      <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-text-primary)', flexShrink: 0, marginRight: 8 }}>
         {formatCurrency(sf.amount)}
       </span>
 
       {/* Check / auto badge */}
       {sf.autoDebit ? (
-        <span
-          className="text-[10px] font-semibold px-2 py-0.5 rounded-full shrink-0"
-          style={{
-            background: paid ? 'rgba(16,185,129,0.12)' : 'rgba(148,163,184,0.1)',
-            color: paid ? 'var(--color-success)' : 'var(--color-text-tertiary)',
-          }}
-        >
+        <span style={{
+          fontSize: 11, fontWeight: 500, padding: '3px 8px',
+          borderRadius: 'var(--radius-badge)', flexShrink: 0,
+          background: paid ? 'rgba(16,185,129,0.12)' : 'rgba(59,130,246,0.15)',
+          color: paid ? 'var(--color-success)' : 'var(--color-accent-electric)',
+        }}>
           {paid ? 'Debitado' : 'Auto'}
         </span>
       ) : (
         <button
           onClick={() => paid ? markUnpaid(sf.id, today) : markPaid(sf.id, today)}
-          className="w-7 h-7 rounded-full border-2 flex items-center justify-center cursor-pointer transition-all duration-150 shrink-0"
           style={{
+            width: 28, height: 28, borderRadius: '50%',
+            border: `2px solid ${paid ? 'var(--color-success)' : 'var(--color-border)'}`,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            cursor: 'pointer', flexShrink: 0,
             background: paid ? 'var(--color-success)' : 'transparent',
-            borderColor: paid ? 'var(--color-success)' : 'var(--color-border-strong)',
+            transition: 'all 150ms ease',
           }}
         >
-          <Check size={13} strokeWidth={2.5} style={{ color: paid ? 'white' : 'var(--color-text-tertiary)' }} />
+          <Check size={13} strokeWidth={2.5} color={paid ? 'white' : 'var(--color-text-tertiary)'} />
         </button>
       )}
     </div>
@@ -97,50 +104,60 @@ export default function Fluxo() {
   const currentMonth = new Date().toLocaleString('pt-BR', { month: 'long', year: 'numeric' })
 
   return (
-    <div className="min-h-full pb-6 px-4 pt-12 md:pt-8">
+    <div style={{ minHeight: '100%', paddingBottom: 24, paddingTop: 32 }}>
 
       {/* Header */}
-      <div className="mb-5">
-        <h1 className="text-2xl font-bold text-[var(--color-text-primary)]">Fluxo</h1>
-        <p className="text-sm text-[var(--color-text-secondary)] capitalize">{currentMonth}</p>
+      <div style={{ marginBottom: 20 }}>
+        <h1 style={{ fontSize: 24, fontWeight: 600, color: 'var(--color-text-primary)', margin: 0 }}>Fluxo</h1>
+        <p style={{ fontSize: 14, color: 'var(--color-text-secondary)', textTransform: 'capitalize', margin: '4px 0 0' }}>{currentMonth}</p>
       </div>
 
       {/* Resumo cards */}
-      <div className="grid grid-cols-2 gap-3 mb-5">
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 20 }}>
         {/* A pagar */}
-        <div
-          className="rounded-[var(--radius-lg)] p-4"
-          style={{ background: 'rgba(239,68,68,0.06)', border: '1px solid rgba(239,68,68,0.18)' }}
-        >
-          <p className="text-xs font-semibold text-[var(--color-danger)] mb-1.5">A pagar</p>
-          <p className="text-xl font-bold text-[var(--color-text-primary)]">{formatCurrency(totalPending)}</p>
-          <p className="text-xs text-[var(--color-text-secondary)] mt-0.5">{pending.length} conta{pending.length !== 1 ? 's' : ''}</p>
+        <div style={{
+          borderRadius: 'var(--radius-card)', padding: 16,
+          background: 'rgba(239,68,68,0.06)',
+          border: '1px solid rgba(239,68,68,0.18)',
+        }}>
+          <p className="section-label" style={{ color: 'var(--color-danger)', marginBottom: 6 }}>A pagar</p>
+          <p style={{ fontSize: 20, fontWeight: 700, color: 'var(--color-text-primary)', margin: 0 }}>{formatCurrency(totalPending)}</p>
+          <p style={{ fontSize: 12, color: 'var(--color-text-secondary)', margin: '2px 0 0' }}>{pending.length} conta{pending.length !== 1 ? 's' : ''}</p>
         </div>
 
         {/* Pago */}
-        <div
-          className="rounded-[var(--radius-lg)] p-4"
-          style={{ background: 'rgba(16,185,129,0.06)', border: '1px solid rgba(16,185,129,0.18)' }}
-        >
-          <p className="text-xs font-semibold text-[var(--color-success)] mb-1.5">Pago</p>
-          <p className="text-xl font-bold text-[var(--color-text-primary)]">{formatCurrency(totalPaid)}</p>
-          <p className="text-xs text-[var(--color-text-secondary)] mt-0.5">{paid.length} conta{paid.length !== 1 ? 's' : ''}</p>
+        <div style={{
+          borderRadius: 'var(--radius-card)', padding: 16,
+          background: 'rgba(16,185,129,0.06)',
+          border: '1px solid rgba(16,185,129,0.18)',
+        }}>
+          <p className="section-label" style={{ color: 'var(--color-success)', marginBottom: 6 }}>Pago</p>
+          <p style={{ fontSize: 20, fontWeight: 700, color: 'var(--color-text-primary)', margin: 0 }}>{formatCurrency(totalPaid)}</p>
+          <p style={{ fontSize: 12, color: 'var(--color-text-secondary)', margin: '2px 0 0' }}>{paid.length} conta{paid.length !== 1 ? 's' : ''}</p>
         </div>
       </div>
 
       {/* Tabs */}
-      <div
-        className="flex gap-1 p-1 rounded-[var(--radius-md)] mb-4"
-        style={{ background: 'var(--color-bg-card)', border: '1px solid var(--color-border)' }}
-      >
+      <div style={{
+        display: 'flex', gap: 4, padding: 4,
+        borderRadius: 'var(--radius-card)',
+        background: 'var(--color-bg-secondary)',
+        border: '1px solid var(--color-border)',
+        marginBottom: 16,
+      }}>
         {(['saidas', 'entradas'] as const).map(t => (
           <button
             key={t}
             onClick={() => setTab(t)}
-            className="flex-1 py-2 text-sm font-semibold rounded-[10px] cursor-pointer transition-all duration-150"
             style={{
-              background: tab === t ? 'var(--color-accent)' : 'transparent',
+              flex: 1, padding: '8px 0',
+              fontSize: 14, fontWeight: 600,
+              borderRadius: 'var(--radius-button)',
+              cursor: 'pointer', border: 'none',
+              fontFamily: 'var(--font-sans)',
+              background: tab === t ? 'var(--color-accent-primary)' : 'transparent',
               color: tab === t ? 'white' : 'var(--color-text-secondary)',
+              transition: 'background 150ms ease, color 150ms ease',
             }}
           >
             {t === 'saidas' ? 'Saídas fixas' : 'Entradas'}
@@ -156,8 +173,12 @@ export default function Fluxo() {
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -4 }}
           transition={{ duration: 0.15 }}
-          className="rounded-[var(--radius-lg)] overflow-hidden"
-          style={{ background: 'var(--color-bg-card)', border: '1px solid var(--color-border)' }}
+          style={{
+            borderRadius: 'var(--radius-card)',
+            overflow: 'hidden',
+            background: 'var(--color-bg-secondary)',
+            border: '1px solid var(--color-border)',
+          }}
         >
           {tab === 'saidas' ? (
             <>
@@ -188,22 +209,26 @@ export default function Fluxo() {
                 [...entradas].reverse().map((e, i, arr) => (
                   <div
                     key={e.id}
-                    className="flex items-center gap-3 px-4 py-3.5"
-                    style={{ borderBottom: i < arr.length - 1 ? '1px solid var(--color-border)' : 'none' }}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: 12,
+                      padding: '14px 16px',
+                      borderBottom: i < arr.length - 1 ? '1px solid var(--color-border)' : 'none',
+                    }}
                   >
-                    <div
-                      className="w-8 h-8 rounded-full flex items-center justify-center shrink-0"
-                      style={{ background: 'rgba(91,156,246,0.12)' }}
-                    >
-                      <ArrowUpRight size={15} className="text-[var(--color-accent)]" />
+                    <div style={{
+                      width: 32, height: 32, borderRadius: '50%',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+                      background: 'rgba(59,130,246,0.12)',
+                    }}>
+                      <ArrowUpRight size={15} color="var(--color-accent-primary)" />
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-[var(--color-text-primary)] truncate">{e.sourceName}</p>
-                      <p className="text-xs text-[var(--color-text-secondary)]">
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <p style={{ fontSize: 14, fontWeight: 500, color: 'var(--color-text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', margin: 0 }}>{e.sourceName}</p>
+                      <p style={{ fontSize: 12, color: 'var(--color-text-secondary)', margin: 0 }}>
                         {new Date(e.date + 'T12:00:00').toLocaleDateString('pt-BR')}
                       </p>
                     </div>
-                    <span className="text-sm font-bold text-[var(--color-success)] shrink-0">
+                    <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--color-success)', flexShrink: 0 }}>
                       +{formatCurrency(e.amount)}
                     </span>
                   </div>
@@ -215,16 +240,14 @@ export default function Fluxo() {
       </AnimatePresence>
 
       {/* CTA */}
-      <div className="mt-4">
-        <motion.button
-          whileTap={{ scale: 0.98 }}
+      <div style={{ marginTop: 16 }}>
+        <button
           onClick={() => setLancarOpen(true)}
-          className="w-full h-12 rounded-[var(--radius-lg)] font-semibold text-sm text-white flex items-center justify-center gap-2 cursor-pointer"
-          style={{ background: 'var(--color-accent)', boxShadow: '0 4px 16px rgba(91,156,246,0.22)' }}
+          className="btn-primary"
         >
           <Plus size={18} strokeWidth={2.5} />
           Lançar entrada
-        </motion.button>
+        </button>
       </div>
 
       <LancarEntradaModal open={lancarOpen} onClose={() => setLancarOpen(false)} />
@@ -237,8 +260,8 @@ export default function Fluxo() {
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
     <p
-      className="text-[11px] font-semibold uppercase tracking-[0.1em] px-4 py-2.5"
-      style={{ color: 'var(--color-text-tertiary)', borderBottom: '1px solid var(--color-border)' }}
+      className="section-label"
+      style={{ padding: '10px 16px', margin: 0, borderBottom: '1px solid var(--color-border)' }}
     >
       {children}
     </p>
@@ -247,9 +270,9 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
 
 function EmptyState({ label }: { label: string }) {
   return (
-    <div className="flex flex-col items-center justify-center py-12 gap-2">
-      <Inbox size={28} className="text-[var(--color-text-tertiary)]" />
-      <p className="text-sm text-[var(--color-text-secondary)]">{label}</p>
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '48px 0', gap: 8 }}>
+      <Inbox size={28} color="var(--color-text-tertiary)" />
+      <p style={{ fontSize: 14, color: 'var(--color-text-secondary)', margin: 0 }}>{label}</p>
     </div>
   )
 }

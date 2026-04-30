@@ -1,4 +1,3 @@
-import { motion } from 'framer-motion'
 import { useAppStore } from '../stores/useAppStore'
 import { useShallow } from 'zustand/react/shallow'
 import { formatCurrency } from '../lib/calculations'
@@ -25,128 +24,122 @@ export default function Casal() {
   const mirianPct     = 100 - lucasPct
 
   const profiles = [
-    { user: currentUser, accent: 'var(--color-accent-lucas)', balance: lucasBalance, tipo: 'Renda variável' },
-    { user: partner,     accent: 'var(--color-accent-mirian)', balance: mirianBalance, tipo: 'Renda fixa' },
+    { user: currentUser, accent: 'var(--color-lucas)', balance: lucasBalance, tipo: 'Renda variável' },
+    { user: partner,     accent: 'var(--color-mirian)', balance: mirianBalance, tipo: 'Renda fixa' },
   ]
 
   return (
-    <div className="min-h-full pb-6 px-4 pt-12 md:pt-8">
+    <div style={{ minHeight: '100%', paddingBottom: 24, paddingTop: 32 }}>
 
       {/* Header */}
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gradient-couple">Casal</h1>
-        <p className="text-sm text-[var(--color-text-secondary)] mt-0.5">Visão consolidada</p>
+      <div style={{ marginBottom: 24 }}>
+        <h1 style={{ fontSize: 24, fontWeight: 600, color: 'var(--color-accent-couple)', margin: 0 }}>♥ Casal</h1>
+        <p style={{ fontSize: 14, color: 'var(--color-text-secondary)', margin: '4px 0 0' }}>Visão consolidada</p>
       </div>
 
-      {/* Card total */}
-      <motion.div
-        initial={{ opacity: 0, y: -8 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="rounded-[var(--radius-xl)] p-5 mb-4 relative overflow-hidden"
-        style={{
-          background: 'linear-gradient(145deg, rgba(91,156,246,0.08) 0%, var(--color-bg-secondary) 50%, rgba(236,72,153,0.08) 100%)',
-          border: '1px solid rgba(139,92,246,0.2)',
-        }}
-      >
-        <p className="text-xs font-medium text-[var(--color-text-secondary)] mb-1">Patrimônio do casal</p>
-        <p className="text-[2rem] font-extrabold text-white mb-4 tracking-tight">{formatCurrency(totalCouple)}</p>
+      {/* Card total patrimônio */}
+      <div style={{
+        background: 'var(--color-bg-secondary)',
+        border: '1px solid rgba(139,92,246,0.2)',
+        borderRadius: 'var(--radius-card)',
+        padding: 20, marginBottom: 16,
+      }}>
+        <p className="section-label" style={{ marginBottom: 4 }}>Patrimônio do casal</p>
+        <p style={{ fontSize: 32, fontWeight: 700, color: 'var(--color-text-primary)', margin: '0 0 16px', lineHeight: 1 }}>
+          {formatCurrency(totalCouple)}
+        </p>
 
         {/* Barra de contribuição */}
-        <div className="flex rounded-full overflow-hidden mb-3" style={{ height: '8px', background: 'var(--color-bg-tertiary)' }}>
-          <motion.div
-            initial={{ width: 0 }}
-            animate={{ width: `${lucasPct}%` }}
-            transition={{ duration: 0.8, ease: [0.25,0.46,0.45,0.94] }}
-            style={{ background: 'var(--color-accent-lucas)', height: '100%' }}
-          />
-          <motion.div
-            initial={{ width: 0 }}
-            animate={{ width: `${mirianPct}%` }}
-            transition={{ duration: 0.8, ease: [0.25,0.46,0.45,0.94], delay: 0.1 }}
-            style={{ background: 'var(--color-accent-mirian)', height: '100%' }}
-          />
+        <div style={{ display: 'flex', borderRadius: 99, overflow: 'hidden', height: 8, background: 'var(--color-bg-tertiary)', marginBottom: 12 }}>
+          <div style={{ width: `${lucasPct}%`, background: 'var(--color-lucas)', height: '100%', transition: 'width 0.5s ease' }} />
+          <div style={{ width: `${mirianPct}%`, background: 'var(--color-mirian)', height: '100%', transition: 'width 0.5s ease' }} />
         </div>
 
         {/* Legenda */}
-        <div className="flex items-center gap-5">
+        <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
           {profiles.map(({ user, accent, balance }) => user ? (
-            <div key={user.id} className="flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full shrink-0" style={{ background: accent }} />
+            <div key={user.id} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <div style={{ width: 8, height: 8, borderRadius: '50%', flexShrink: 0, background: accent }} />
               <div>
-                <p className="text-xs text-[var(--color-text-secondary)]">{user.name.split(' ')[0]}</p>
-                <p className="text-sm font-bold text-white">{formatCurrency(balance)}</p>
+                <p style={{ fontSize: 12, color: 'var(--color-text-secondary)', margin: 0 }}>{user.name.split(' ')[0]}</p>
+                <p style={{ fontSize: 14, fontWeight: 700, color: 'var(--color-text-primary)', margin: 0 }}>{formatCurrency(balance)}</p>
               </div>
             </div>
           ) : null)}
         </div>
-      </motion.div>
+      </div>
 
-      {/* Cards de perfil */}
-      <div className="grid grid-cols-2 gap-3 mb-5">
-        {profiles.map(({ user, accent, balance, tipo }, i) => user ? (
-          <motion.div
+      {/* Cards de perfil — grid 1fr 1fr */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 20 }}>
+        {profiles.map(({ user, accent, balance, tipo }) => user ? (
+          <div
             key={user.id}
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.08 }}
-            className="rounded-[var(--radius-lg)] p-4"
-            style={{ background: 'var(--color-bg-card)', border: `1px solid ${accent}25` }}
+            style={{
+              background: 'var(--color-bg-secondary)',
+              border: `1px solid ${accent}`,
+              borderRadius: 'var(--radius-card)',
+              padding: 16,
+            }}
           >
-            <div
-              className="w-10 h-10 rounded-full flex items-center justify-center font-bold text-white text-sm mb-2.5"
-              style={{ background: accent }}
-            >
+            <div style={{
+              width: 40, height: 40, borderRadius: '50%',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontWeight: 700, color: 'white', fontSize: 14,
+              background: accent, marginBottom: 10,
+            }}>
               {user.name.charAt(0)}
             </div>
-            <p className="text-sm font-semibold text-[var(--color-text-primary)]">{user.name.split(' ')[0]}</p>
-            <p className="text-xs text-[var(--color-text-secondary)] mb-2">{tipo}</p>
-            <p className="text-base font-bold" style={{ color: accent }}>{formatCurrency(balance)}</p>
-          </motion.div>
+            <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-text-primary)', margin: 0 }}>{user.name.split(' ')[0]}</p>
+            <p style={{ fontSize: 12, color: 'var(--color-text-secondary)', margin: '2px 0 8px' }}>{tipo}</p>
+            <p style={{ fontSize: 16, fontWeight: 700, color: accent, margin: 0 }}>{formatCurrency(balance)}</p>
+          </div>
         ) : null)}
       </div>
 
       {/* Objetivos */}
       {objetivos.length > 0 && (
-        <div className="mb-5">
-          <p className="text-xs font-semibold text-[var(--color-text-secondary)] mb-3 flex items-center gap-1.5">
+        <div style={{ marginBottom: 20 }}>
+          <p className="section-label" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
             <Target size={13} />
             Objetivos do casal
           </p>
-          <div className="flex flex-col gap-2.5">
-            {objetivos.map((obj, i) => {
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {objetivos.map((obj) => {
               const pct     = Math.min(100, (obj.currentAmount / obj.targetAmount) * 100)
               const ObjIcon = getObjIcon(obj.id)
               return (
-                <motion.div
+                <div
                   key={obj.id}
-                  initial={{ opacity: 0, x: -8 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: i * 0.07 }}
-                  className="rounded-[var(--radius-lg)] p-4"
-                  style={{ background: 'var(--color-bg-card)', border: '1px solid var(--color-border)' }}
+                  style={{
+                    background: 'var(--color-bg-secondary)',
+                    border: '1px solid var(--color-border)',
+                    borderRadius: 'var(--radius-card)',
+                    padding: 16,
+                  }}
                 >
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-2.5">
-                      <div
-                        className="w-9 h-9 rounded-xl flex items-center justify-center"
-                        style={{ background: 'rgba(139,92,246,0.12)' }}
-                      >
-                        <ObjIcon size={17} style={{ color: 'var(--color-accent-couple)' }} />
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                      <div style={{
+                        width: 36, height: 36, borderRadius: 12,
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        background: 'rgba(139,92,246,0.12)',
+                      }}>
+                        <ObjIcon size={17} color="var(--color-accent-couple)" />
                       </div>
-                      <p className="text-sm font-semibold text-[var(--color-text-primary)]">{obj.name}</p>
+                      <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-text-primary)', margin: 0 }}>{obj.name}</p>
                     </div>
-                    <p className="text-sm font-bold" style={{ color: 'var(--color-accent-couple)' }}>
+                    <p style={{ fontSize: 14, fontWeight: 700, color: 'var(--color-accent-couple)', margin: 0 }}>
                       {Math.round(pct)}%
                     </p>
                   </div>
 
-                  <ProgressBar value={pct} variant="couple" size="sm" animated={false} />
+                  <ProgressBar value={pct} variant="couple" size="sm" />
 
-                  <div className="flex justify-between mt-2">
-                    <p className="text-xs text-[var(--color-text-secondary)]">{formatCurrency(obj.currentAmount)}</p>
-                    <p className="text-xs text-[var(--color-text-tertiary)]">meta {formatCurrency(obj.targetAmount)}</p>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 8 }}>
+                    <p style={{ fontSize: 12, color: 'var(--color-text-secondary)', margin: 0 }}>{formatCurrency(obj.currentAmount)}</p>
+                    <p style={{ fontSize: 12, color: 'var(--color-text-tertiary)', margin: 0 }}>meta {formatCurrency(obj.targetAmount)}</p>
                   </div>
-                </motion.div>
+                </div>
               )
             })}
           </div>
@@ -154,24 +147,32 @@ export default function Casal() {
       )}
 
       {/* Código de convite */}
-      <div
-        className="rounded-[var(--radius-lg)] p-4"
-        style={{ background: 'var(--color-bg-card)', border: '1px solid var(--color-border)' }}
-      >
-        <div className="flex items-center justify-between">
+      <div style={{
+        background: 'var(--color-bg-secondary)',
+        border: '1px solid var(--color-border)',
+        borderRadius: 'var(--radius-card)',
+        padding: 16,
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div>
-            <p className="text-xs font-medium text-[var(--color-text-secondary)] mb-1 flex items-center gap-1.5">
+            <p style={{ fontSize: 12, fontWeight: 500, color: 'var(--color-text-secondary)', margin: '0 0 4px', display: 'flex', alignItems: 'center', gap: 6 }}>
               <Share2 size={12} />
               Código de convite
             </p>
-            <p className="text-xl font-bold font-mono" style={{ color: 'var(--color-accent-couple)' }}>
+            <p style={{ fontSize: 20, fontWeight: 700, fontFamily: 'monospace', color: 'var(--color-accent-couple)', margin: 0 }}>
               {currentUser?.partnerCode ?? 'SOMUS-0001'}
             </p>
-            <p className="text-xs text-[var(--color-text-tertiary)] mt-1">Compartilhe com seu parceiro(a)</p>
+            <p style={{ fontSize: 12, color: 'var(--color-text-tertiary)', margin: '4px 0 0' }}>Compartilhe com seu parceiro(a)</p>
           </div>
           <button
-            className="flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-[var(--radius-md)] cursor-pointer transition-all duration-150"
-            style={{ background: 'rgba(139,92,246,0.1)', color: 'var(--color-accent-couple)', border: '1px solid rgba(139,92,246,0.2)' }}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 6,
+              fontSize: 12, fontWeight: 600, padding: '8px 12px',
+              borderRadius: 'var(--radius-card)', cursor: 'pointer',
+              background: 'rgba(139,92,246,0.1)', color: 'var(--color-accent-couple)',
+              border: '1px solid rgba(139,92,246,0.2)',
+              fontFamily: 'var(--font-sans)',
+            }}
             onClick={() => navigator.clipboard.writeText(currentUser?.partnerCode ?? 'SOMUS-0001')}
           >
             <Copy size={13} />

@@ -1,13 +1,30 @@
 # HARNESS.md — Somus
 > Leia este arquivo INTEIRO antes de qualquer ação. Ele é sua única instrução obrigatória.
 
-## Arquivos (ordem de leitura)
+## STEP 0 — OBRIGATÓRIO: Memória Global Lidtek
+
+**ANTES de qualquer outra ação**, rode o hook de entrada para carregar contexto da memória global:
+```powershell
+node "c:\Users\Lucas\OneDrive\Documentos\Projetos\lidtek-memoria\hooks\entrada.js" "[descreva a task aqui]" "Somus" | Out-File harness\MEMORY_CONTEXT.md -Encoding utf8
+```
+Depois leia o `harness/MEMORY_CONTEXT.md` gerado. Ele contém regras globais e aprendizados de outros projetos relevantes para a task atual.
+
+**Ao ENCERRAR a sessão**, rode o hook de saída para salvar aprendizados:
+```powershell
+node "c:\Users\Lucas\OneDrive\Documentos\Projetos\lidtek-memoria\hooks\saida.js" "Somus" "[resumo do que foi feito e aprendido]"
+```
+
+> ⚠️ Pular o Step 0 é PROIBIDO. A memória global evita repetir erros já resolvidos em outros projetos.
+
+---
+
+## Arquivos (ordem de leitura — após Step 0)
 1. **Este arquivo** (HARNESS.md) — regras, protocolo, sensores
-2. **CONTEXT.md** — estado atual do projeto (LEIA SEMPRE)
-3. **BACKLOG.md** — tasks ativas (LEIA SEMPRE)
-4. ARCHITECTURE.md — padrões técnicos (leia quando for modificar código)
-5. SPEC.md — spec do produto (leia quando precisar de regra de negócio)
-6. MEMORY_CONTEXT.md — memória global Lidtek (leia quando disponível)
+2. **MEMORY_CONTEXT.md** — memória global gerada pelo Step 0 (LEIA SEMPRE)
+3. **CONTEXT.md** — estado atual do projeto (LEIA SEMPRE)
+4. **BACKLOG.md** — tasks ativas (LEIA SEMPRE)
+5. ARCHITECTURE.md — padrões técnicos (leia quando for modificar código)
+6. SPEC.md — spec do produto (leia quando precisar de regra de negócio)
 7. archive/ — histórico (NUNCA leia automaticamente)
 
 ---
@@ -63,28 +80,6 @@ Rode após CADA task (não ao final do sprint):
 Se sensor falha → corrija → rode → só então marque.
 
 ---
-
-## Memória Global Lidtek
-
-### Início de sessão:
-**Windows:**
-```powershell
-node "c:\Users\Lucas\OneDrive\Documentos\Projetos\lidtek-memoria\hooks\entrada.js" "[task]" "Somus" | Out-File harness\MEMORY_CONTEXT.md -Encoding utf8
-```
-**Linux/Mac:**
-```bash
-node "c:\Users\Lucas\OneDrive\Documentos\Projetos\lidtek-memoria/hooks/entrada.js" "[task]" "Somus" > harness/MEMORY_CONTEXT.md
-```
-
-### Fim de sessão:
-**Windows:**
-```powershell
-node "c:\Users\Lucas\OneDrive\Documentos\Projetos\lidtek-memoria\hooks\saida.js" "Somus" "[resumo]"
-```
-**Linux/Mac:**
-```bash
-node "c:\Users\Lucas\OneDrive\Documentos\Projetos\lidtek-memoria/hooks/saida.js" "Somus" "[resumo]"
-```
 
 ---
 

@@ -1,5 +1,4 @@
 import { useLocation } from 'wouter'
-import { motion } from 'framer-motion'
 
 interface NavItem {
   path: string
@@ -18,10 +17,14 @@ export function BottomNav({ items }: BottomNavProps) {
   return (
     <nav
       aria-label="Navegação principal"
-      className="fixed bottom-0 left-0 right-0 z-40 glass border-t border-[var(--color-border)]"
-      style={{ paddingBottom: 'var(--safe-bottom)' }}
+      style={{
+        position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 40,
+        background: 'var(--color-bg-primary)',
+        borderTop: '1px solid var(--color-border)',
+        paddingBottom: 'var(--safe-bottom)',
+      }}
     >
-      <div className="flex items-center justify-around px-2 h-16">
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-around', padding: '0 8px', height: 64 }}>
         {items.map((item) => {
           const isActive = location === item.path || location.startsWith(item.path + '/')
           return (
@@ -30,30 +33,27 @@ export function BottomNav({ items }: BottomNavProps) {
               onClick={() => navigate(item.path)}
               aria-label={item.label}
               aria-current={isActive ? 'page' : undefined}
-              className="relative flex flex-col items-center justify-center gap-0.5 flex-1 h-full cursor-pointer select-none group"
+              style={{
+                display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                gap: 2, flex: 1, height: '100%', cursor: 'pointer',
+                background: 'none', border: 'none', fontFamily: 'var(--font-sans)',
+                color: isActive ? 'var(--color-accent-primary)' : 'var(--color-text-tertiary)',
+                position: 'relative',
+              }}
             >
               {isActive && (
-                <motion.div
-                  layoutId="bottom-nav-indicator"
-                  className="absolute top-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-[var(--color-accent)]"
-                  transition={{ type: 'spring', stiffness: 500, damping: 35 }}
-                />
+                <div style={{
+                  position: 'absolute', top: 4, left: '50%', transform: 'translateX(-50%)',
+                  width: 4, height: 4, borderRadius: '50%', background: 'var(--color-accent-primary)',
+                }} />
               )}
-              <motion.span
-                animate={{
-                  color: isActive ? 'var(--color-accent)' : 'var(--color-text-tertiary)',
-                  scale: isActive ? 1.1 : 1,
-                }}
-                transition={{ duration: 0.2 }}
-                className="transition-transform"
-              >
+              <span style={{ display: 'flex' }}>
                 {(isActive && item.activeIcon) ? item.activeIcon : item.icon}
-              </motion.span>
-              <span
-                className={`text-[10px] font-medium transition-colors duration-200 ${
-                  isActive ? 'text-[var(--color-accent)]' : 'text-[var(--color-text-tertiary)]'
-                }`}
-              >
+              </span>
+              <span style={{
+                fontSize: 10, fontWeight: isActive ? 600 : 500,
+                color: isActive ? 'var(--color-accent-primary)' : 'var(--color-text-tertiary)',
+              }}>
                 {item.label}
               </span>
             </button>

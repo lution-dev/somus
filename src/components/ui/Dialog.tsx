@@ -12,21 +12,11 @@ interface DialogProps {
   showClose?: boolean
 }
 
-const sizeStyles = {
-  sm:   'max-w-sm',
-  md:   'max-w-md',
-  lg:   'max-w-lg',
-  full: 'max-w-full mx-3',
-}
+const SIZE_WIDTHS = { sm: 384, md: 448, lg: 512, full: '100%' }
 
 export function Dialog({
-  open,
-  onClose,
-  title,
-  description,
-  children,
-  size = 'md',
-  showClose = true,
+  open, onClose, title, description, children,
+  size = 'md', showClose = true,
 }: DialogProps) {
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
     if (e.key === 'Escape') onClose()
@@ -46,50 +36,65 @@ export function Dialog({
   return (
     <AnimatePresence>
       {open && (
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4" role="dialog" aria-modal="true">
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 50,
+          display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
+          padding: 0,
+        }} role="dialog" aria-modal="true">
           {/* Backdrop */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            style={{
+              position: 'absolute', inset: 0,
+              background: 'rgba(0,0,0,0.6)',
+              backdropFilter: 'blur(4px)',
+            }}
             onClick={onClose}
           />
 
           {/* Panel */}
           <motion.div
-            initial={{ opacity: 0, y: 60, scale: 0.96 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 40, scale: 0.97 }}
-            transition={{ type: 'spring', stiffness: 380, damping: 30 }}
-            className={[
-              'relative z-10 w-full glass rounded-t-[var(--radius-xl)] sm:rounded-[var(--radius-xl)]',
-              'shadow-[var(--shadow-lg)] overflow-hidden',
-              sizeStyles[size],
-            ].join(' ')}
+            initial={{ opacity: 0, y: 60 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 40 }}
+            transition={{ duration: 0.25, ease: [0.25, 0.46, 0.45, 0.94] }}
+            style={{
+              position: 'relative', zIndex: 10, width: '100%',
+              maxWidth: SIZE_WIDTHS[size],
+              background: 'var(--color-bg-secondary)',
+              border: '1px solid var(--color-border)',
+              borderRadius: '20px 20px 0 0',
+              overflow: 'hidden',
+            }}
           >
             {/* Drag handle (mobile) */}
-            <div className="flex justify-center pt-3 sm:hidden">
-              <div className="w-10 h-1 rounded-full bg-[var(--color-border-strong)]" />
+            <div style={{ display: 'flex', justifyContent: 'center', paddingTop: 12 }}>
+              <div style={{ width: 40, height: 4, borderRadius: 99, background: 'var(--color-border)' }} />
             </div>
 
             {/* Header */}
             {(title || showClose) && (
-              <div className="flex items-start justify-between px-5 pt-4 pb-2">
+              <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', padding: '16px 20px 8px' }}>
                 <div>
                   {title && (
-                    <h2 className="text-lg font-bold text-[var(--color-text-primary)]">{title}</h2>
+                    <h2 style={{ fontSize: 18, fontWeight: 600, color: 'var(--color-text-primary)', margin: 0 }}>{title}</h2>
                   )}
                   {description && (
-                    <p className="text-sm text-[var(--color-text-secondary)] mt-0.5">{description}</p>
+                    <p style={{ fontSize: 14, color: 'var(--color-text-secondary)', marginTop: 4 }}>{description}</p>
                   )}
                 </div>
                 {showClose && (
                   <button
                     onClick={onClose}
                     aria-label="Fechar"
-                    className="ml-4 mt-0.5 p-1.5 rounded-[var(--radius-sm)] text-[var(--color-text-tertiary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-tertiary)] transition-colors cursor-pointer shrink-0"
+                    style={{
+                      marginLeft: 16, padding: 6, borderRadius: 8,
+                      color: 'var(--color-text-tertiary)', background: 'none', border: 'none',
+                      cursor: 'pointer', flexShrink: 0,
+                    }}
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                       <line x1="18" y1="6" x2="6" y2="18" />
@@ -101,7 +106,7 @@ export function Dialog({
             )}
 
             {/* Content */}
-            <div className="px-5 pb-5 pt-2">
+            <div style={{ padding: '8px 20px 20px' }}>
               {children}
             </div>
           </motion.div>
@@ -113,9 +118,13 @@ export function Dialog({
 
 export interface DialogFooterProps extends HTMLAttributes<HTMLDivElement> {}
 
-export function DialogFooter({ children, className = '', ...props }: DialogFooterProps) {
+export function DialogFooter({ children, className = '', style, ...props }: DialogFooterProps) {
   return (
-    <div className={`flex flex-col-reverse sm:flex-row gap-2 mt-4 ${className}`} {...props}>
+    <div
+      className={className}
+      style={{ display: 'flex', flexDirection: 'column-reverse', gap: 8, marginTop: 16, ...style }}
+      {...props}
+    >
       {children}
     </div>
   )

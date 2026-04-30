@@ -1,44 +1,35 @@
 import { forwardRef } from 'react'
 import type { HTMLAttributes } from 'react'
-import { motion } from 'framer-motion'
-import type { MotionProps } from 'framer-motion'
 
-type CardVariant = 'default' | 'glass' | 'elevated' | 'lucas' | 'mirian' | 'couple'
+type CardVariant = 'default' | 'lucas' | 'mirian' | 'couple'
 
 interface CardProps extends HTMLAttributes<HTMLDivElement> {
   variant?: CardVariant
   pressable?: boolean
-  motionProps?: MotionProps
 }
 
-const variantStyles: Record<CardVariant, string> = {
-  default:  'bg-[var(--color-bg-secondary)] border border-[var(--color-border)]',
-  glass:    'glass',
-  elevated: 'bg-[var(--color-bg-elevated)] border border-[var(--color-border)] shadow-[var(--shadow-md)]',
-  lucas:    'bg-[var(--color-bg-secondary)] border border-[rgba(59,130,246,0.3)] shadow-[0_0_20px_rgba(59,130,246,0.12)]',
-  mirian:   'bg-[var(--color-bg-secondary)] border border-[rgba(236,72,153,0.3)] shadow-[0_0_20px_rgba(236,72,153,0.12)]',
-  couple:   'bg-[var(--color-bg-secondary)] border border-[rgba(139,92,246,0.3)] shadow-[0_0_20px_rgba(139,92,246,0.12)]',
+const BORDER_COLORS: Record<CardVariant, string> = {
+  default: 'var(--color-border)',
+  lucas:   'rgba(59,130,246,0.3)',
+  mirian:  'rgba(236,72,153,0.3)',
+  couple:  'rgba(139,92,246,0.3)',
 }
 
 const Card = forwardRef<HTMLDivElement, CardProps>(
-  ({ variant = 'default', pressable = false, children, className = '', motionProps, ...props }, ref) => {
+  ({ variant = 'default', pressable = false, children, className = '', style, ...props }, ref) => {
     return (
-      <motion.div
+      <div
         ref={ref}
-        whileHover={pressable ? { scale: 1.01, y: -2 } : undefined}
-        whileTap={pressable ? { scale: 0.98 } : undefined}
-        transition={{ type: 'spring', stiffness: 350, damping: 28 }}
-        className={[
-          'rounded-[var(--radius-lg)] overflow-hidden',
-          pressable ? 'cursor-pointer' : '',
-          variantStyles[variant],
-          className,
-        ].join(' ')}
-        {...motionProps}
-        {...(props as any)}
+        className={`card ${pressable ? 'card-interactive' : ''} ${className}`}
+        style={{
+          borderColor: BORDER_COLORS[variant],
+          cursor: pressable ? 'pointer' : undefined,
+          ...style,
+        }}
+        {...props}
       >
         {children}
-      </motion.div>
+      </div>
     )
   }
 )
@@ -46,15 +37,15 @@ const Card = forwardRef<HTMLDivElement, CardProps>(
 Card.displayName = 'Card'
 
 const CardHeader = ({ children, className = '', ...props }: HTMLAttributes<HTMLDivElement>) => (
-  <div className={`p-4 pb-0 ${className}`} {...props}>{children}</div>
+  <div className={className} style={{ padding: '16px 16px 0' }} {...props}>{children}</div>
 )
 
 const CardBody = ({ children, className = '', ...props }: HTMLAttributes<HTMLDivElement>) => (
-  <div className={`p-4 ${className}`} {...props}>{children}</div>
+  <div className={className} style={{ padding: 16 }} {...props}>{children}</div>
 )
 
 const CardFooter = ({ children, className = '', ...props }: HTMLAttributes<HTMLDivElement>) => (
-  <div className={`p-4 pt-0 flex items-center gap-2 ${className}`} {...props}>{children}</div>
+  <div className={className} style={{ padding: '0 16px 16px', display: 'flex', alignItems: 'center', gap: 8 }} {...props}>{children}</div>
 )
 
 export { Card, CardHeader, CardBody, CardFooter }

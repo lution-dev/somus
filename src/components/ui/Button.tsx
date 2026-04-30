@@ -1,6 +1,5 @@
 import { forwardRef } from 'react'
 import type { ButtonHTMLAttributes } from 'react'
-import { motion } from 'framer-motion'
 
 type Variant = 'primary' | 'secondary' | 'ghost' | 'danger' | 'lucas' | 'mirian' | 'couple'
 type Size = 'sm' | 'md' | 'lg' | 'icon'
@@ -12,55 +11,57 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   fullWidth?: boolean
 }
 
-const variantStyles: Record<Variant, string> = {
-  primary:   'bg-[var(--color-accent)] hover:bg-[var(--color-accent-light)] text-white shadow-[var(--shadow-glow-blue)] hover:shadow-[0_0_28px_rgba(59,130,246,0.45)]',
-  secondary: 'bg-[var(--color-bg-secondary)] hover:bg-[var(--color-bg-tertiary)] text-[var(--color-text-primary)] border border-[var(--color-border)]',
-  ghost:     'bg-transparent hover:bg-[var(--color-bg-secondary)] text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]',
-  danger:    'bg-[var(--color-danger)] hover:bg-red-400 text-white',
-  lucas:     'bg-[var(--color-accent-lucas)] hover:bg-blue-400 text-white shadow-[var(--shadow-glow-blue)]',
-  mirian:    'bg-[var(--color-accent-mirian)] hover:bg-pink-400 text-white shadow-[var(--shadow-glow-pink)]',
-  couple:    'bg-gradient-to-r from-[var(--color-accent-lucas)] to-[var(--color-accent-mirian)] hover:opacity-90 text-white shadow-[var(--shadow-glow-purple)]',
+const VARIANT_STYLES: Record<Variant, React.CSSProperties> = {
+  primary:   { background: 'var(--color-accent-primary)', color: '#fff' },
+  secondary: { background: 'var(--color-bg-secondary)', color: 'var(--color-text-primary)', border: '1px solid var(--color-border)' },
+  ghost:     { background: 'transparent', color: 'var(--color-text-secondary)' },
+  danger:    { background: 'var(--color-danger)', color: '#fff' },
+  lucas:     { background: 'var(--color-lucas)', color: '#fff' },
+  mirian:    { background: 'var(--color-mirian)', color: '#fff' },
+  couple:    { background: 'var(--color-accent-couple)', color: '#fff' },
 }
 
-const sizeStyles: Record<Size, string> = {
-  sm:   'h-8 px-3 text-xs rounded-[var(--radius-sm)]',
-  md:   'h-10 px-5 text-sm rounded-[var(--radius-md)]',
-  lg:   'h-12 px-7 text-base rounded-[var(--radius-lg)]',
-  icon: 'h-10 w-10 rounded-[var(--radius-md)] p-0 flex items-center justify-center',
+const SIZE_STYLES: Record<Size, React.CSSProperties> = {
+  sm:   { height: 32, padding: '0 12px', fontSize: 12, borderRadius: 'var(--radius-badge)' },
+  md:   { height: 40, padding: '0 20px', fontSize: 14, borderRadius: 'var(--radius-button)' },
+  lg:   { height: 48, padding: '0 28px', fontSize: 16, borderRadius: 'var(--radius-card)' },
+  icon: { height: 40, width: 40, padding: 0, borderRadius: 'var(--radius-button)' },
 }
 
 const Button = forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ variant = 'primary', size = 'md', loading = false, fullWidth = false, children, disabled, className = '', ...props }, ref) => {
+  ({ variant = 'primary', size = 'md', loading = false, fullWidth = false, children, disabled, className = '', style, ...props }, ref) => {
     return (
-      <motion.button
+      <button
         ref={ref}
-        whileTap={{ scale: 0.96 }}
-        transition={{ type: 'spring', stiffness: 400, damping: 25 }}
         disabled={disabled || loading}
-        className={[
-          'relative inline-flex items-center justify-center gap-2 font-semibold cursor-pointer select-none',
-          'transition-all duration-[var(--transition-fast)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-bg-primary)]',
-          'disabled:opacity-50 disabled:cursor-not-allowed',
-          variantStyles[variant],
-          sizeStyles[size],
-          fullWidth ? 'w-full' : '',
-          className,
-        ].join(' ')}
-        {...(props as any)}
+        className={className}
+        style={{
+          display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+          fontWeight: 600, fontFamily: 'var(--font-sans)',
+          cursor: disabled || loading ? 'not-allowed' : 'pointer',
+          border: 'none',
+          opacity: disabled || loading ? 0.5 : 1,
+          width: fullWidth ? '100%' : undefined,
+          transition: 'background 150ms ease',
+          ...VARIANT_STYLES[variant],
+          ...SIZE_STYLES[size],
+          ...style,
+        }}
+        {...props}
       >
         {loading && (
           <svg
-            className="animate-spin h-4 w-4 shrink-0"
+            style={{ animation: 'spin 1s linear infinite', height: 16, width: 16, flexShrink: 0 }}
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
             viewBox="0 0 24 24"
           >
-            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+            <circle style={{ opacity: 0.25 }} cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+            <path style={{ opacity: 0.75 }} fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
           </svg>
         )}
         {children}
-      </motion.button>
+      </button>
     )
   }
 )

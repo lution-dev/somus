@@ -1,5 +1,3 @@
-import { motion } from 'framer-motion'
-
 type Variant = 'default' | 'lucas' | 'mirian' | 'couple' | 'success' | 'warning' | 'danger'
 
 interface ProgressBarProps {
@@ -13,32 +11,37 @@ interface ProgressBarProps {
   className?: string
 }
 
-const HEIGHTS: Record<'sm' | 'md' | 'lg', number> = { sm: 6, md: 8, lg: 10 }
+/**
+ * Returns the correct fill color based on completion percentage.
+ * ≥100%: green, 50–99%: blue, <50%: amber.
+ * If a specific variant is given (couple, mirian, etc.), it overrides auto-detection.
+ */
+function getFillClass(variant: Variant, pct: number): string {
+  if (variant === 'couple')  return 'progress-fill--couple'
+  if (variant === 'mirian')  return 'progress-fill--mirian'
+  if (variant === 'danger')  return 'progress-fill--warning' // <50% items get amber
 
-const GRADIENTS: Record<Variant, string> = {
-  default: 'linear-gradient(90deg, #5B9CF6, #93C5FD)',
-  lucas:   'linear-gradient(90deg, #5B9CF6, #93C5FD)',
-  mirian:  'linear-gradient(90deg, #EC4899, #F9A8D4)',
-  couple:  'linear-gradient(90deg, #5B9CF6, #8B5CF6, #EC4899)',
-  success: 'linear-gradient(90deg, #10B981, #34D399)',
-  warning: 'linear-gradient(90deg, #F59E0B, #FCD34D)',
-  danger:  'linear-gradient(90deg, #EF4444, #F87171)',
+  // Auto-detect by percentage
+  if (pct >= 100) return 'progress-fill--success'
+  if (pct >= 50)  return 'progress-fill--primary'
+  return 'progress-fill--warning'
 }
 
 export function ProgressBar({
   value, max = 100, variant = 'default',
   size = 'md', showLabel = false, label,
-  animated = true, className = '',
+  className = '',
 }: ProgressBarProps) {
   const pct = Math.min(100, Math.max(0, (value / max) * 100))
-  const h   = HEIGHTS[size]
+  const heights: Record<string, number> = { sm: 4, md: 6, lg: 8 }
+  const h = heights[size] ?? 4
 
   return (
     <div className={className} style={{ width: '100%' }}>
       {(showLabel || label) && (
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
           {label && (
-            <span style={{ fontSize: 12, color: 'var(--color-text-secondary)' }}>{label}</span>
+            <span style={{ fontSize: 12, color: 'var(--color-text-secondary)', fontWeight: 500 }}>{label}</span>
           )}
           {showLabel && (
             <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--color-text-primary)', marginLeft: 'auto' }}>
@@ -54,26 +57,13 @@ export function ProgressBar({
         aria-valuenow={value}
         aria-valuemin={0}
         aria-valuemax={max}
-        style={{
-          width: '100%',
-          height: h,
-          borderRadius: 99,
-          background: 'var(--color-bg-tertiary)',
-          overflow: 'hidden',
-          display: 'block',
-        }}
+        className="progress-track"
+        style={{ height: h }}
       >
         {/* Fill */}
-        <motion.div
-          initial={animated ? { width: '0%' } : { width: `${pct}%` }}
-          animate={{ width: `${pct}%` }}
-          transition={{ duration: 0.7, ease: [0.25, 0.46, 0.45, 0.94] }}
-          style={{
-            height: '100%',
-            borderRadius: 99,
-            background: GRADIENTS[variant],
-            display: 'block',
-          }}
+        <div
+          className={`progress-fill ${getFillClass(variant, pct)}`}
+          style={{ width: `${pct}%` }}
         />
       </div>
     </div>

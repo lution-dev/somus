@@ -9,46 +9,47 @@ interface BadgeProps extends HTMLAttributes<HTMLSpanElement> {
   dot?: boolean
 }
 
-const variantStyles: Record<BadgeVariant, string> = {
-  default: 'bg-[var(--color-bg-tertiary)] text-[var(--color-text-secondary)]',
-  success: 'bg-[rgba(16,185,129,0.15)] text-[var(--color-success)] border border-[rgba(16,185,129,0.3)]',
-  warning: 'bg-[rgba(245,158,11,0.15)] text-[var(--color-warning)] border border-[rgba(245,158,11,0.3)]',
-  danger:  'bg-[rgba(239,68,68,0.15)] text-[var(--color-danger)] border border-[rgba(239,68,68,0.3)]',
-  info:    'bg-[rgba(6,182,212,0.15)] text-[var(--color-info)] border border-[rgba(6,182,212,0.3)]',
-  lucas:   'bg-[rgba(59,130,246,0.15)] text-[var(--color-accent-lucas)] border border-[rgba(59,130,246,0.3)]',
-  mirian:  'bg-[rgba(236,72,153,0.15)] text-[var(--color-accent-mirian)] border border-[rgba(236,72,153,0.3)]',
-  couple:  'bg-[rgba(139,92,246,0.15)] text-[var(--color-accent-couple)] border border-[rgba(139,92,246,0.3)]',
+const VARIANT_STYLES: Record<BadgeVariant, React.CSSProperties> = {
+  default: { background: 'var(--color-bg-tertiary)', color: 'var(--color-text-secondary)' },
+  success: { background: 'rgba(16,185,129,0.15)', color: 'var(--color-success)' },
+  warning: { background: 'rgba(245,158,11,0.15)', color: 'var(--color-warning)' },
+  danger:  { background: 'rgba(239,68,68,0.15)',  color: 'var(--color-danger)' },
+  info:    { background: 'rgba(96,165,250,0.15)',  color: 'var(--color-accent-electric)' },
+  lucas:   { background: 'rgba(59,130,246,0.15)',  color: 'var(--color-lucas)' },
+  mirian:  { background: 'rgba(236,72,153,0.15)',  color: 'var(--color-mirian)' },
+  couple:  { background: 'rgba(139,92,246,0.15)',  color: 'var(--color-accent-couple)' },
 }
 
-const dotColors: Record<BadgeVariant, string> = {
-  default: 'bg-[var(--color-text-tertiary)]',
-  success: 'bg-[var(--color-success)]',
-  warning: 'bg-[var(--color-warning)]',
-  danger:  'bg-[var(--color-danger)]',
-  info:    'bg-[var(--color-info)]',
-  lucas:   'bg-[var(--color-accent-lucas)]',
-  mirian:  'bg-[var(--color-accent-mirian)]',
-  couple:  'bg-[var(--color-accent-couple)]',
+const DOT_COLORS: Record<BadgeVariant, string> = {
+  default: 'var(--color-text-tertiary)',
+  success: 'var(--color-success)',
+  warning: 'var(--color-warning)',
+  danger:  'var(--color-danger)',
+  info:    'var(--color-accent-electric)',
+  lucas:   'var(--color-lucas)',
+  mirian:  'var(--color-mirian)',
+  couple:  'var(--color-accent-couple)',
 }
 
-const sizeStyles: Record<BadgeSize, string> = {
-  sm: 'text-[10px] px-1.5 py-0.5 rounded-[4px]',
-  md: 'text-xs px-2.5 py-1 rounded-[var(--radius-sm)]',
-}
+export function Badge({ variant = 'default', size = 'md', dot = false, children, className = '', style, ...props }: BadgeProps) {
+  const sizeStyles: React.CSSProperties = size === 'sm'
+    ? { fontSize: 10, padding: '2px 6px' }
+    : { fontSize: 12, padding: '3px 8px' }
 
-export function Badge({ variant = 'default', size = 'md', dot = false, children, className = '', ...props }: BadgeProps) {
   return (
     <span
-      className={[
-        'inline-flex items-center gap-1.5 font-medium',
-        variantStyles[variant],
-        sizeStyles[size],
-        className,
-      ].join(' ')}
+      className={className}
+      style={{
+        display: 'inline-flex', alignItems: 'center', gap: 4,
+        fontWeight: 500, borderRadius: 'var(--radius-badge)',
+        ...VARIANT_STYLES[variant],
+        ...sizeStyles,
+        ...style,
+      }}
       {...props}
     >
       {dot && (
-        <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${dotColors[variant]}`} />
+        <span style={{ width: 6, height: 6, borderRadius: '50%', flexShrink: 0, background: DOT_COLORS[variant] }} />
       )}
       {children}
     </span>

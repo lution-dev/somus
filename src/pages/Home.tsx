@@ -1,5 +1,4 @@
 import { useState, useMemo } from 'react'
-import { motion } from 'framer-motion'
 import { useLocation } from 'wouter'
 import {
   useAppStore,
@@ -31,55 +30,38 @@ function BalanceCard({
   const remaining = Math.max(0, expectedIncome - totalIncome)
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: -12 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4 }}
-      className="mx-4 mt-4 rounded-[var(--radius-xl)] p-5 relative overflow-hidden"
-      style={{
-        background: 'linear-gradient(145deg, #152A40 0%, #0F1923 60%, #172038 100%)',
-        border: '1px solid rgba(91,156,246,0.15)',
-      }}
-    >
-      {/* Orb decorativo */}
-      <div
-        className="absolute -top-16 -right-16 w-48 h-48 rounded-full pointer-events-none"
-        style={{ background: 'radial-gradient(circle, rgba(91,156,246,0.12) 0%, transparent 70%)' }}
-      />
+    <div style={{
+      background: 'var(--color-bg-secondary)',
+      border: '1px solid var(--color-border)',
+      borderRadius: 'var(--radius-card)',
+      padding: 20,
+      marginTop: 16,
+    }}>
+      {/* Label */}
+      <p className="section-label" style={{ marginBottom: 4 }}>Saldo disponível</p>
 
-      <div className="relative">
-        {/* Label */}
-        <p className="text-xs font-medium text-[var(--color-text-secondary)] mb-1">Saldo disponível</p>
+      {/* Valor principal */}
+      <p style={{ fontSize: 36, fontWeight: 700, color: 'var(--color-text-primary)', lineHeight: 1, marginBottom: 12 }}>
+        {formatCurrency(total)}
+      </p>
 
-        {/* Valor principal */}
-        <p className="text-[2.25rem] font-extrabold text-white leading-none mb-3 tracking-tight">
-          {formatCurrency(total)}
-        </p>
-
-        {/* Indicadores */}
-        <div className="flex items-center gap-4 mb-3.5">
-          <div className="flex items-center gap-1.5">
-            <TrendingUp size={13} className="text-[var(--color-success)]" />
-            <span className="text-xs font-semibold text-[var(--color-success)]">{formatCurrency(totalIncome)} recebido</span>
-          </div>
-          {remaining > 0 && (
-            <div className="flex items-center gap-1.5">
-              <Calendar size={13} className="text-[var(--color-warning)]" />
-              <span className="text-xs text-[var(--color-warning)]">~{formatCurrency(remaining)} a receber</span>
-            </div>
-          )}
+      {/* Indicadores */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 14 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <TrendingUp size={13} color="var(--color-success)" />
+          <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--color-success)' }}>{formatCurrency(totalIncome)} recebido</span>
         </div>
-
-        {/* Barra de progresso da renda */}
-        <ProgressBar
-          value={incomeProgress}
-          variant="lucas"
-          size="sm"
-          showLabel
-          label="Renda do mês"
-        />
+        {remaining > 0 && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <Calendar size={13} color="var(--color-warning)" />
+            <span style={{ fontSize: 12, color: 'var(--color-warning)' }}>~{formatCurrency(remaining)} a receber</span>
+          </div>
+        )}
       </div>
-    </motion.div>
+
+      {/* Barra de progresso da renda */}
+      <ProgressBar value={incomeProgress} size="sm" showLabel label="Renda do mês" />
+    </div>
   )
 }
 
@@ -114,51 +96,52 @@ function ProximosDias() {
   if (upcoming.length === 0) return null
 
   return (
-    <div className="mx-4 mt-5">
-      <p className="text-xs font-semibold text-[var(--color-text-secondary)] mb-2.5 flex items-center gap-1.5">
+    <div style={{ marginTop: 20 }}>
+      <p className="section-label" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
         <Calendar size={13} />
-        Próximos 10 dias
+        Próximos dias
       </p>
 
-      <div
-        className="rounded-[var(--radius-lg)] overflow-hidden"
-        style={{ border: '1px solid var(--color-border)', background: 'var(--color-bg-card)' }}
-      >
+      <div style={{
+        borderRadius: 'var(--radius-card)',
+        overflow: 'hidden',
+        border: '1px solid var(--color-border)',
+        background: 'var(--color-bg-secondary)',
+      }}>
         {upcoming.map((item, i) => (
-          <motion.div
+          <div
             key={item.id}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: i * 0.04 }}
-            className="flex items-center gap-3 px-4 py-3"
-            style={{ borderBottom: i < upcoming.length - 1 ? '1px solid var(--color-border)' : 'none' }}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 12,
+              padding: '12px 16px',
+              borderBottom: i < upcoming.length - 1 ? '1px solid var(--color-border)' : 'none',
+            }}
           >
-            <div
-              className="w-8 h-8 rounded-full flex items-center justify-center shrink-0"
-              style={{
-                background: item.type === 'entrada'
-                  ? 'rgba(16,185,129,0.12)'
-                  : item.days <= 2 ? 'rgba(239,68,68,0.12)' : 'rgba(91,156,246,0.12)',
-              }}
-            >
+            <div style={{
+              width: 32, height: 32, borderRadius: '50%',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+              background: item.type === 'entrada'
+                ? 'rgba(16,185,129,0.12)'
+                : item.days <= 2 ? 'rgba(239,68,68,0.12)' : 'rgba(59,130,246,0.12)',
+            }}>
               {item.type === 'entrada'
-                ? <ArrowUpRight size={14} className="text-[var(--color-success)]" />
-                : <ArrowDownRight size={14} style={{ color: item.days <= 2 ? 'var(--color-danger)' : 'var(--color-accent)' }} />
+                ? <ArrowUpRight size={14} color="var(--color-success)" />
+                : <ArrowDownRight size={14} color={item.days <= 2 ? 'var(--color-danger)' : 'var(--color-accent-primary)'} />
               }
             </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-[var(--color-text-primary)] truncate">{item.name}</p>
-              <p className="text-xs text-[var(--color-text-secondary)]">
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <p style={{ fontSize: 14, fontWeight: 500, color: 'var(--color-text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', margin: 0 }}>{item.name}</p>
+              <p style={{ fontSize: 12, color: 'var(--color-text-secondary)', margin: 0 }}>
                 {item.days === 0 ? 'Hoje' : item.days === 1 ? 'Amanhã' : `Em ${item.days} dias`}
               </p>
             </div>
-            <span
-              className="text-sm font-bold shrink-0"
-              style={{ color: item.type === 'entrada' ? 'var(--color-success)' : 'var(--color-text-primary)' }}
-            >
+            <span style={{
+              fontSize: 14, fontWeight: 700, flexShrink: 0,
+              color: item.type === 'entrada' ? 'var(--color-success)' : 'var(--color-text-primary)',
+            }}>
               {item.type === 'entrada' ? '+' : '−'}{formatCurrency(item.amount)}
             </span>
-          </motion.div>
+          </div>
         ))}
       </div>
     </div>
@@ -173,62 +156,71 @@ function CaixinhasSection() {
   const expectedIncome = useAppStore(selectExpectedMonthlyIncome)
 
   return (
-    <div className="mx-4 mt-5">
-      <div className="flex items-center justify-between mb-3">
-        <p className="text-xs font-semibold text-[var(--color-text-secondary)]">Caixinhas</p>
+    <div style={{ marginTop: 20 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+        <p className="section-label" style={{ marginBottom: 0 }}>Caixinhas</p>
         <button
           onClick={() => navigate('/caixinhas')}
-          className="flex items-center gap-0.5 text-xs font-semibold text-[var(--color-accent)] cursor-pointer hover:text-[var(--color-accent-light)] transition-colors"
+          style={{
+            display: 'flex', alignItems: 'center', gap: 2,
+            fontSize: 12, fontWeight: 600, color: 'var(--color-accent-primary)',
+            cursor: 'pointer', background: 'none', border: 'none', fontFamily: 'var(--font-sans)',
+          }}
         >
           Ver todas <ChevronRight size={13} />
         </button>
       </div>
 
-      <div className="grid grid-cols-2 gap-2.5">
-        {caixinhas.slice(0, 6).map((cx, i) => {
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(2, 1fr)',
+        gap: 10,
+      }}>
+        <style>{`
+          @media (min-width: 1024px) {
+            .home-caixinhas-grid { grid-template-columns: repeat(3, 1fr) !important; }
+          }
+        `}</style>
+        {caixinhas.slice(0, 6).map((cx) => {
           const { Icon, color } = getCaixinhaIcon(cx.id)
           const expectedBal     = (cx.percentage / 100) * expectedIncome
           const pct             = expectedBal > 0 ? Math.min(100, (cx.balance / expectedBal) * 100) : 100
-          const isLow           = pct < 50 && expectedBal > 0
 
           return (
-            <motion.button
+            <button
               key={cx.id}
-              initial={{ opacity: 0, scale: 0.97 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: i * 0.04 + 0.1 }}
-              whileTap={{ scale: 0.98 }}
               onClick={() => navigate(`/caixinhas/${cx.id}`)}
-              className="text-left cursor-pointer card-interactive rounded-[var(--radius-lg)] p-3.5"
+              className="card card-interactive home-caixinhas-grid-item"
               style={{
-                background: 'var(--color-bg-card)',
-                border: `1px solid ${isLow ? 'rgba(239,68,68,0.2)' : 'var(--color-border)'}`,
+                textAlign: 'left', cursor: 'pointer',
+                border: 'none', fontFamily: 'var(--font-sans)',
+                background: 'var(--color-bg-secondary)',
+                borderWidth: 1, borderStyle: 'solid',
+                borderColor: 'var(--color-border)',
+                borderRadius: 'var(--radius-card)',
+                padding: 14,
               }}
             >
               {/* Ícone */}
-              <div
-                className="w-9 h-9 rounded-xl flex items-center justify-center mb-2.5"
-                style={{ background: `${color}15` }}
-              >
+              <div style={{
+                width: 36, height: 36, borderRadius: 12,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                background: `${color}15`, marginBottom: 10,
+              }}>
                 <Icon size={18} style={{ color }} />
               </div>
 
               {/* Nome */}
-              <p className="text-[11px] text-[var(--color-text-secondary)] truncate mb-0.5">{cx.name}</p>
+              <p style={{ fontSize: 11, color: 'var(--color-text-secondary)', margin: '0 0 2px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{cx.name}</p>
 
               {/* Valor */}
-              <p className="text-sm font-bold text-[var(--color-text-primary)] mb-2">
+              <p style={{ fontSize: 14, fontWeight: 700, color: 'var(--color-text-primary)', margin: '0 0 8px' }}>
                 {formatCurrency(cx.balance)}
               </p>
 
-              {/* Barra — DENTRO do card */}
-              <ProgressBar
-                value={pct}
-                variant={isLow ? 'danger' : 'lucas'}
-                size="sm"
-                animated={false}
-              />
-            </motion.button>
+              {/* Barra */}
+              <ProgressBar value={pct} size="sm" />
+            </button>
           )
         })}
       </div>
@@ -257,14 +249,14 @@ export default function Home() {
   const greeting = hour < 12 ? 'Bom dia' : hour < 18 ? 'Boa tarde' : 'Boa noite'
 
   return (
-    <div className="min-h-full pb-4">
+    <div style={{ minHeight: '100%', paddingBottom: 16, paddingTop: 32 }}>
       {/* Saudação + toggle */}
-      <div className="flex items-start justify-between px-4 pt-12 md:pt-8 pb-1 gap-3">
-        <div className="min-w-0">
-          <p className="text-xs text-[var(--color-text-secondary)] font-medium">{greeting}</p>
-          <h1 className="text-xl font-bold text-[var(--color-text-primary)] leading-tight truncate">{firstName}</h1>
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, paddingBottom: 4 }}>
+        <div style={{ minWidth: 0 }}>
+          <p style={{ fontSize: 12, color: 'var(--color-text-secondary)', fontWeight: 500, margin: 0 }}>{greeting}</p>
+          <h1 style={{ fontSize: 24, fontWeight: 600, color: 'var(--color-text-primary)', lineHeight: 1.2, margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{firstName}</h1>
         </div>
-        <ContextToggle value={ctx} onChange={setCtx} className="shrink-0" />
+        <ContextToggle value={ctx} onChange={setCtx} style={{ flexShrink: 0 }} />
       </div>
 
       {/* Balance card */}
@@ -276,21 +268,14 @@ export default function Home() {
       />
 
       {/* CTA */}
-      <div className="px-4 mt-3">
-        <motion.button
-          whileTap={{ scale: 0.98 }}
+      <div style={{ marginTop: 12 }}>
+        <button
           onClick={() => setLancarOpen(true)}
-          className="w-full h-12 rounded-[var(--radius-lg)] font-semibold text-sm text-white flex items-center justify-center gap-2 cursor-pointer transition-shadow duration-200"
-          style={{
-            background: 'var(--color-accent)',
-            boxShadow: '0 4px 16px rgba(91,156,246,0.22)',
-          }}
-          onMouseEnter={e => (e.currentTarget.style.boxShadow = '0 6px 24px rgba(91,156,246,0.35)')}
-          onMouseLeave={e => (e.currentTarget.style.boxShadow = '0 4px 16px rgba(91,156,246,0.22)')}
+          className="btn-primary"
         >
           <Plus size={18} strokeWidth={2.5} />
           Lançar entrada
-        </motion.button>
+        </button>
       </div>
 
       {/* Próximos dias */}

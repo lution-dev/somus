@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { AnimatePresence, motion } from 'framer-motion'
 import { useAppStore, selectCurrentCaixinhas, selectCurrentIncomeSources, calculateDistribution } from '../../stores/useAppStore'
 import { useShallow } from 'zustand/react/shallow'
 import { formatCurrency } from '../../lib/calculations'
@@ -65,7 +65,6 @@ export default function LancarEntradaModal({ open, onClose }: Props) {
   const diff           = Math.abs(totalAllocated - totalAmount)
   const isValid        = totalAmount > 0 && sourceId && diff < 0.05
 
-  // Ícone dízimo
   const isDizimo = (name: string) =>
     name.toLowerCase().includes('dízimo') || name.toLowerCase().includes('dizimo')
 
@@ -93,18 +92,22 @@ export default function LancarEntradaModal({ open, onClose }: Props) {
             key="success"
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="flex flex-col items-center gap-3 py-6"
+            style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, padding: '24px 0' }}
           >
-            <div className="w-16 h-16 rounded-full bg-[rgba(16,185,129,0.15)] flex items-center justify-center">
-              <Check size={32} className="text-[var(--color-success)]" strokeWidth={2.5} />
+            <div style={{
+              width: 64, height: 64, borderRadius: '50%',
+              background: 'rgba(16,185,129,0.15)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}>
+              <Check size={32} color="var(--color-success)" strokeWidth={2.5} />
             </div>
-            <p className="text-lg font-bold text-[var(--color-success)]">Entrada lançada!</p>
-            <p className="text-sm text-[var(--color-text-secondary)]">Caixinhas atualizadas ✓</p>
+            <p style={{ fontSize: 18, fontWeight: 700, color: 'var(--color-success)', margin: 0 }}>Entrada lançada!</p>
+            <p style={{ fontSize: 14, color: 'var(--color-text-secondary)', margin: 0 }}>Caixinhas atualizadas ✓</p>
           </motion.div>
         ) : (
           <motion.div key="form" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
             {/* Valor */}
-            <div className="mb-3">
+            <div style={{ marginBottom: 12 }}>
               <Input
                 label="Valor recebido"
                 prefix="R$"
@@ -113,26 +116,29 @@ export default function LancarEntradaModal({ open, onClose }: Props) {
                 placeholder="0,00"
                 value={amount}
                 onChange={e => { setAmount(e.target.value); setEditDist({}) }}
-                className="text-xl font-bold"
+                style={{ fontSize: 20, fontWeight: 700 }}
               />
             </div>
 
             {/* Fonte */}
-            <div className="mb-3">
-              <label className="text-xs font-semibold text-[var(--color-text-secondary)] uppercase tracking-wide block mb-1.5">
+            <div style={{ marginBottom: 12 }}>
+              <label className="section-label" style={{ display: 'block', marginBottom: 6 }}>
                 Fonte de renda
               </label>
-              <div className="flex flex-wrap gap-2">
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
                 {incomeSources.map(src => (
                   <button
                     key={src.id}
                     onClick={() => setSourceId(src.id)}
-                    className={[
-                      'px-3 py-1.5 rounded-[var(--radius-sm)] text-xs font-semibold border cursor-pointer transition-all duration-150',
-                      sourceId === src.id
-                        ? 'bg-[var(--color-accent)] border-[var(--color-accent)] text-white'
-                        : 'bg-[var(--color-bg-tertiary)] border-[var(--color-border)] text-[var(--color-text-secondary)] hover:border-[var(--color-accent)]',
-                    ].join(' ')}
+                    style={{
+                      padding: '6px 12px', borderRadius: 8,
+                      fontSize: 12, fontWeight: 600,
+                      cursor: 'pointer', fontFamily: 'var(--font-sans)',
+                      border: `1px solid ${sourceId === src.id ? 'var(--color-accent-primary)' : 'var(--color-border)'}`,
+                      background: sourceId === src.id ? 'var(--color-accent-primary)' : 'var(--color-bg-tertiary)',
+                      color: sourceId === src.id ? 'white' : 'var(--color-text-secondary)',
+                      transition: 'all 150ms ease',
+                    }}
                   >
                     {src.name}
                   </button>
@@ -141,7 +147,7 @@ export default function LancarEntradaModal({ open, onClose }: Props) {
             </div>
 
             {/* Data */}
-            <div className="mb-4">
+            <div style={{ marginBottom: 16 }}>
               <Input
                 label="Data"
                 type="date"
@@ -152,32 +158,43 @@ export default function LancarEntradaModal({ open, onClose }: Props) {
 
             {/* Preview distribuição */}
             {distribution.length > 0 && (
-              <div className="mb-4">
-                <div className="flex items-center justify-between mb-2">
-                  <p className="text-xs font-semibold text-[var(--color-text-secondary)] uppercase tracking-wide">
+              <div style={{ marginBottom: 16 }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+                  <p className="section-label" style={{ margin: 0 }}>
                     Distribuição pelas caixinhas
                   </p>
                   {diff >= 0.05 && (
-                    <Badge variant="warning" size="sm"><AlertTriangle size={10} className="mr-0.5" />Diferença: {formatCurrency(diff)}</Badge>
+                    <Badge variant="warning" size="sm"><AlertTriangle size={10} style={{ marginRight: 2 }} />Diferença: {formatCurrency(diff)}</Badge>
                   )}
                 </div>
-                <div className="bg-[var(--color-bg-tertiary)] rounded-[var(--radius-md)] overflow-hidden divide-y divide-[var(--color-border)]">
-                  {distribution.map((item) => {
+                <div style={{
+                  background: 'var(--color-bg-tertiary)',
+                  borderRadius: 'var(--radius-card)',
+                  overflow: 'hidden',
+                }}>
+                  {distribution.map((item, i) => {
                     const isFirstDizimo = isDizimo(item.caixinhaName)
+                    const { Icon, color } = getCaixinhaIcon(item.caixinhaId)
                     return (
                       <div
                         key={item.caixinhaId}
-                        className={`flex items-center gap-3 px-3 py-2.5 ${isFirstDizimo ? 'bg-[rgba(245,158,11,0.08)]' : ''}`}
+                        style={{
+                          display: 'flex', alignItems: 'center', gap: 12,
+                          padding: '10px 12px',
+                          background: isFirstDizimo ? 'rgba(245,158,11,0.08)' : 'transparent',
+                          borderBottom: i < distribution.length - 1 ? '1px solid var(--color-border)' : 'none',
+                        }}
                       >
-                        <span className="w-6 shrink-0 flex items-center justify-center">{(() => { const { Icon, color } = getCaixinhaIcon(item.caixinhaId); return <Icon size={14} style={{ color }} /> })()}</span>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-1.5">
-                            <p className="text-xs font-semibold text-[var(--color-text-primary)] truncate">{item.caixinhaName}</p>
+                        <span style={{ width: 24, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <Icon size={14} style={{ color }} />
+                        </span>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                            <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--color-text-primary)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.caixinhaName}</p>
                             {isFirstDizimo && <Badge variant="warning" size="sm">Primeiro ✝</Badge>}
                           </div>
-                          <p className="text-[10px] text-[var(--color-text-tertiary)]">{item.percentage}%</p>
+                          <p style={{ fontSize: 10, color: 'var(--color-text-tertiary)', margin: 0 }}>{item.percentage}%</p>
                         </div>
-                        {/* Editar valor */}
                         <input
                           type="number"
                           value={
@@ -188,7 +205,16 @@ export default function LancarEntradaModal({ open, onClose }: Props) {
                           onChange={e =>
                             setEditDist(prev => ({ ...prev, [item.caixinhaId]: e.target.value }))
                           }
-                          className="w-24 text-right text-sm font-bold bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded-[var(--radius-sm)] px-2 py-1 text-[var(--color-text-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--color-accent)]"
+                          style={{
+                            width: 96, textAlign: 'right',
+                            fontSize: 14, fontWeight: 700,
+                            background: 'var(--color-bg-secondary)',
+                            border: '1px solid var(--color-border)',
+                            borderRadius: 8, padding: '4px 8px',
+                            color: 'var(--color-text-primary)',
+                            fontFamily: 'var(--font-sans)',
+                            outline: 'none',
+                          }}
                         />
                       </div>
                     )
@@ -198,7 +224,7 @@ export default function LancarEntradaModal({ open, onClose }: Props) {
             )}
 
             {/* Nota */}
-            <div className="mb-4">
+            <div style={{ marginBottom: 16 }}>
               <Input
                 label="Observação (opcional)"
                 placeholder="Ex: bônus extra, freelance..."

@@ -1,4 +1,3 @@
-import { motion } from 'framer-motion'
 import { useLocation } from 'wouter'
 import { useAppStore, selectCurrentCaixinhas, selectExpectedMonthlyIncome } from '../stores/useAppStore'
 import { useShallow } from 'zustand/react/shallow'
@@ -14,19 +13,19 @@ export default function Caixinhas() {
   const totalBalance   = caixinhas.reduce((s, cx) => s + cx.balance, 0)
 
   return (
-    <div className="min-h-full pb-6 px-4 pt-12 md:pt-8">
+    <div style={{ minHeight: '100%', paddingBottom: 24, paddingTop: 32 }}>
 
       {/* Header */}
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-[var(--color-text-primary)]">Caixinhas</h1>
-        <p className="text-sm text-[var(--color-text-secondary)] mt-0.5">
-          Total · <span className="font-semibold text-[var(--color-text-primary)]">{formatCurrency(totalBalance)}</span>
+      <div style={{ marginBottom: 24 }}>
+        <h1 style={{ fontSize: 24, fontWeight: 600, color: 'var(--color-text-primary)', margin: 0 }}>Caixinhas</h1>
+        <p style={{ fontSize: 14, color: 'var(--color-text-secondary)', margin: '4px 0 0' }}>
+          Total · <span style={{ fontWeight: 600, color: 'var(--color-text-primary)' }}>{formatCurrency(totalBalance)}</span>
         </p>
       </div>
 
       {/* Lista */}
-      <div className="flex flex-col gap-3">
-        {caixinhas.map((cx, i) => {
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 12, maxWidth: 800, margin: '0 auto' }}>
+        {caixinhas.map((cx) => {
           const { Icon, color }  = getCaixinhaIcon(cx.id)
           const expectedBal      = (cx.percentage / 100) * expectedIncome
           const pct              = expectedBal > 0 ? Math.min(100, (cx.balance / expectedBal) * 100) : 100
@@ -34,80 +33,77 @@ export default function Caixinhas() {
           const isFull           = pct >= 100
 
           return (
-            <motion.button
+            <button
               key={cx.id}
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.04, duration: 0.25 }}
-              whileTap={{ scale: 0.99 }}
               onClick={() => navigate(`/caixinhas/${cx.id}`)}
-              className="w-full text-left cursor-pointer card-interactive"
+              className="card-interactive"
               style={{
-                background: 'var(--color-bg-card)',
+                width: '100%', textAlign: 'left', cursor: 'pointer',
+                background: 'var(--color-bg-secondary)',
                 border: `1px solid ${isLow ? 'rgba(239,68,68,0.25)' : isFull ? 'rgba(16,185,129,0.25)' : 'var(--color-border)'}`,
-                borderRadius: 16,
-                overflow: 'hidden',
+                borderRadius: 'var(--radius-card)',
+                overflow: 'hidden', fontFamily: 'var(--font-sans)',
               }}
             >
-              <div className="p-4">
+              <div style={{ padding: 16 }}>
                 {/* Linha principal */}
-                <div className="flex items-center gap-3 mb-3">
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
                   {/* Ícone */}
-                  <div
-                    className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0"
-                    style={{ background: `${color}18` }}
-                  >
+                  <div style={{
+                    width: 44, height: 44, borderRadius: 12,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+                    background: `${color}18`,
+                  }}>
                     <Icon size={20} style={{ color }} />
                   </div>
 
                   {/* Texto */}
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-[var(--color-text-primary)] truncate">{cx.name}</p>
-                    <p className="text-xs text-[var(--color-text-secondary)] mt-0.5">{cx.percentage}% da renda esperada</p>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-text-primary)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{cx.name}</p>
+                    <p style={{ fontSize: 12, color: 'var(--color-text-secondary)', margin: '2px 0 0' }}>{cx.percentage}% da renda esperada</p>
                   </div>
 
                   {/* Valor + chevron */}
-                  <div className="flex items-center gap-1.5 shrink-0">
-                    <div className="text-right">
-                      <p className="text-base font-bold text-[var(--color-text-primary)]">{formatCurrency(cx.balance)}</p>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
+                    <div style={{ textAlign: 'right' }}>
+                      <p style={{ fontSize: 16, fontWeight: 700, color: 'var(--color-text-primary)', margin: 0 }}>{formatCurrency(cx.balance)}</p>
                       {cx.targetAmount && (
-                        <p className="text-[11px] text-[var(--color-text-tertiary)]">meta {formatCurrency(cx.targetAmount)}</p>
+                        <p style={{ fontSize: 11, color: 'var(--color-text-tertiary)', margin: 0 }}>meta {formatCurrency(cx.targetAmount)}</p>
                       )}
                     </div>
-                    <ChevronRight size={16} className="text-[var(--color-text-tertiary)] opacity-50" />
+                    <ChevronRight size={16} color="var(--color-text-tertiary)" style={{ opacity: 0.5 }} />
                   </div>
                 </div>
 
-                {/* Progresso — DENTRO do card */}
+                {/* Progresso */}
                 <ProgressBar
                   value={pct}
-                  variant={isLow ? 'danger' : isFull ? 'success' : 'lucas'}
+                  variant={isFull ? 'success' : undefined}
                   size="sm"
-                  animated={false}
                 />
 
                 {/* Status */}
-                <div className="flex items-center gap-1.5 mt-2">
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 8 }}>
                   {isLow && (
-                    <div className="flex items-center gap-1 text-[var(--color-danger)]">
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 4, color: 'var(--color-danger)' }}>
                       <AlertTriangle size={11} />
-                      <span className="text-[11px] font-medium">Abaixo do esperado</span>
+                      <span style={{ fontSize: 11, fontWeight: 500 }}>Abaixo do esperado</span>
                     </div>
                   )}
                   {isFull && !isLow && (
-                    <div className="flex items-center gap-1 text-[var(--color-success)]">
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 4, color: 'var(--color-success)' }}>
                       <CheckCircle2 size={11} />
-                      <span className="text-[11px] font-medium">Meta atingida</span>
+                      <span style={{ fontSize: 11, fontWeight: 500 }}>Meta atingida</span>
                     </div>
                   )}
                   {!isLow && !isFull && (
-                    <span className="text-[11px] text-[var(--color-text-tertiary)]">
+                    <span style={{ fontSize: 11, color: 'var(--color-text-tertiary)' }}>
                       {formatCurrency(expectedBal > 0 ? expectedBal - cx.balance : 0)} para atingir a meta mensal
                     </span>
                   )}
                 </div>
               </div>
-            </motion.button>
+            </button>
           )
         })}
       </div>
