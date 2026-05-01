@@ -52,37 +52,28 @@ export default function App() {
   return (
     <FirebaseSyncProvider>
       <Switch>
-        {/* Onboarding — sempre acessível */}
+        {/* Onboarding — outside AppLayout */}
         <Route path="/onboarding" component={Onboarding} />
 
-        {/* Redirect root */}
-        <Route path="/">
-          <Redirect to={isOnboarded ? '/home' : '/onboarding'} />
-        </Route>
-
-        {/* App protegido */}
-        {isOnboarded ? (
+        {/* App pages — always mounted inside AppLayout */}
+        <Route>
           <AppLayout>
             <Switch>
-              <Route path="/home"              component={Home} />
-              <Route path="/fluxo"             component={Fluxo} />
-              <Route path="/caixinhas"         component={Caixinhas} />
-              <Route path="/caixinhas/:id"     component={CaixinhaDetalhe} />
-              <Route path="/casal"             component={Casal} />
+              <Route path="/home" component={Home} />
+              <Route path="/fluxo" component={Fluxo} />
+              <Route path="/caixinhas/:id" component={CaixinhaDetalhe} />
+              <Route path="/caixinhas" component={Caixinhas} />
               <Route path="/casal/objetivo/:id" component={ObjetivoDetalhe} />
-              {/* Fallback */}
+              <Route path="/casal" component={Casal} />
+
+              {/* Fallback — redirect to home or onboarding */}
               <Route>
-                <Redirect to="/home" />
+                <Redirect to={isOnboarded ? '/home' : '/onboarding'} />
               </Route>
             </Switch>
-            {/* PWA Install hint — aparece 1x, depois some pra sempre */}
-            <PWAInstallPrompt />
+            {isOnboarded && <PWAInstallPrompt />}
           </AppLayout>
-        ) : (
-          <Route>
-            <Redirect to="/onboarding" />
-          </Route>
-        )}
+        </Route>
       </Switch>
     </FirebaseSyncProvider>
   )
