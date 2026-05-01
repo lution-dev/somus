@@ -285,10 +285,11 @@ export const useAppStore = create<AppState & AppActions>()(
     }),
     {
       name: 'somus-state',
-      version: 5,
+      version: 6,
       migrate: (_persisted: unknown, version: number) => {
-        // v5: clean break — no more mock data. Force fresh state.
-        if (version < 5) {
+        // v6: clean break — no more mock data, force fresh state.
+        // Handles any stale caches from earlier versions.
+        if (version < 6) {
           return getInitialState() as unknown as AppState & AppActions
         }
         return _persisted as unknown as AppState & AppActions
