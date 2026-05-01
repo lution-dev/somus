@@ -12,7 +12,7 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.svg', 'apple-touch-icon.png'],
       manifest: {
-        name: 'Somus — Finanças do Casal',
+        name: 'Somus',
         short_name: 'Somus',
         description: 'App de planejamento financeiro para casais com renda variável',
         theme_color: '#0A0A0A',
