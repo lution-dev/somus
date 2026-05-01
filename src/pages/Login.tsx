@@ -56,7 +56,7 @@ const fadeUp = {
 
 /* ── Main Component ─────────────────────────────────────────── */
 export default function Login() {
-  const { signInWithGoogle, signInAnon, isLoading, error } = useAuth()
+  const { signInWithGoogle, isLoading, error } = useAuth()
   const isMobile = useIsMobile()
 
   /* ─── RIGHT PANEL (Login Form) ─── used in both layouts ─── */
@@ -154,28 +154,6 @@ export default function Login() {
         Entrar com Google
       </button>
 
-      {/* Divider */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 14, margin: '14px 0' }}>
-        <div style={{ flex: 1, height: 1, background: 'rgba(255,255,255,0.08)' }} />
-        <span style={{ fontSize: 11, color: 'var(--color-text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 500 }}>ou</span>
-        <div style={{ flex: 1, height: 1, background: 'rgba(255,255,255,0.08)' }} />
-      </div>
-
-      {/* Anon */}
-      <button
-        onClick={signInAnon} disabled={isLoading} id="btn-anon-signin"
-        style={{
-          width: '100%', padding: '13px 20px', borderRadius: 14,
-          background: 'transparent', color: 'var(--color-text-secondary)',
-          border: '1px solid rgba(255,255,255,0.10)',
-          cursor: isLoading ? 'wait' : 'pointer',
-          fontSize: 14, fontWeight: 500, fontFamily: 'var(--font-sans)',
-          transition: 'all 200ms ease', opacity: isLoading ? 0.5 : 1,
-        }}
-      >
-        Continuar sem login
-      </button>
-
       {/* Error */}
       {error && (
         <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} style={{
@@ -200,7 +178,7 @@ export default function Login() {
         minHeight: '100dvh', display: 'flex', flexDirection: 'column',
         alignItems: 'center', justifyContent: 'center',
         padding: '48px 24px 32px',
-        background: 'var(--color-bg-primary)', position: 'relative', overflow: 'hidden',
+        background: '#060D1C', position: 'relative', overflow: 'hidden',
       }}>
         {/* Ambient glow */}
         <div style={{
@@ -220,7 +198,7 @@ export default function Login() {
     <div style={{
       minHeight: '100dvh', display: 'grid',
       gridTemplateColumns: '1fr 1fr',
-      background: 'var(--color-bg-primary)',
+      background: '#060D1C',
     }}>
       {/* LEFT PANEL — Branding */}
       <div style={{
@@ -228,7 +206,7 @@ export default function Login() {
         display: 'flex', flexDirection: 'column',
         alignItems: 'center', justifyContent: 'center',
         padding: '60px 48px',
-        background: 'linear-gradient(160deg, #0A1628 0%, #0D1B2A 40%, #132742 100%)',
+        background: 'linear-gradient(160deg, #040A16 0%, #060D1C 40%, #0B1526 100%)',
         borderRight: '1px solid rgba(255,255,255,0.04)',
       }}>
         {/* Ambient glows */}
