@@ -7,7 +7,7 @@ import { getCaixinhaIcon } from '../lib/icons'
 import { DIVISAO_INFO, DIVISAO_ORDER } from '../lib/divisoes'
 import { ProgressBar, PageHeader, Dialog } from '../components/ui'
 import { useIsMobile } from '../hooks/useIsMobile'
-import { ChevronRight, AlertTriangle, CheckCircle2, Info } from 'lucide-react'
+import { ChevronRight, AlertTriangle, CheckCircle2, Info, Inbox } from 'lucide-react'
 
 export default function Caixinhas() {
   const [, navigate]   = useLocation()
@@ -64,7 +64,28 @@ export default function Caixinhas() {
 
       {/* Lista */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: isMobile ? 8 : 12, maxWidth: 800, margin: '0 auto', padding: isMobile ? '8px 16px 0' : 0 }}>
-        {caixinhas.map((cx) => {
+        {caixinhas.length === 0 ? (
+          <div style={{
+            display: 'flex', flexDirection: 'column', alignItems: 'center',
+            textAlign: 'center', padding: '48px 20px',
+            background: 'var(--color-bg-secondary)',
+            border: '1px solid var(--color-border)',
+            borderRadius: 'var(--radius-card)',
+          }}>
+            <div style={{
+              width: 56, height: 56, borderRadius: 18,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              background: 'rgba(59,130,246,0.08)', marginBottom: 16,
+            }}>
+              <Inbox size={26} color="var(--color-accent-primary)" strokeWidth={1.5} />
+            </div>
+            <p style={{ fontSize: 16, fontWeight: 600, color: 'var(--color-text-primary)', margin: '0 0 6px' }}>Nenhuma divisão criada</p>
+            <p style={{ fontSize: 13, color: 'var(--color-text-tertiary)', margin: 0, lineHeight: 1.5, maxWidth: 280 }}>
+              Ao lançar sua primeira entrada na tela Home, as divisões serão criadas automaticamente com base no Método Nati Arcuri.
+            </p>
+          </div>
+        ) : (
+          caixinhas.map((cx) => {
           const { Icon, color }  = getCaixinhaIcon(cx.id)
           const expectedBal      = (cx.percentage / 100) * expectedIncome
           const pct              = expectedBal > 0 ? Math.min(100, (cx.balance / expectedBal) * 100) : 100
@@ -144,7 +165,8 @@ export default function Caixinhas() {
               </div>
             </button>
           )
-        })}
+        })
+        )}
       </div>
 
       {/* Info Dialog */}

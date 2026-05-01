@@ -201,7 +201,22 @@ function ProximosDias({ onEntradaClick, onDespesaClick }: {
     })
   }, [])
 
-  if (upcoming.length === 0) return null
+  if (upcoming.length === 0) return (
+    <div style={{ marginTop: 20 }}>
+      <p className="section-label" style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10 }}>
+        <Calendar size={13} />
+        Próximos dias
+      </p>
+      <div style={{
+        display: 'flex', flexDirection: 'column', alignItems: 'center',
+        padding: '28px 16px', borderRadius: 'var(--radius-card)',
+        background: 'var(--color-bg-secondary)', border: '1px solid var(--color-border)',
+      }}>
+        <Calendar size={22} color="var(--color-text-tertiary)" strokeWidth={1.5} style={{ marginBottom: 8 }} />
+        <p style={{ fontSize: 13, color: 'var(--color-text-tertiary)', margin: 0, textAlign: 'center' }}>Nenhum compromisso nos próximos dias</p>
+      </div>
+    </div>
+  )
 
   return (
     <div style={{ marginTop: 20 }}>
@@ -322,6 +337,19 @@ function CaixinhasSection() {
         </button>
       </div>
 
+      {caixinhas.length === 0 ? (
+        <div style={{
+          display: 'flex', flexDirection: 'column', alignItems: 'center',
+          padding: '32px 16px', borderRadius: 'var(--radius-card)',
+          background: 'var(--color-bg-secondary)', border: '1px solid var(--color-border)',
+        }}>
+          <Wallet size={24} color="var(--color-text-tertiary)" strokeWidth={1.5} style={{ marginBottom: 10 }} />
+          <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-text-primary)', margin: '0 0 4px' }}>Nenhuma divisão criada</p>
+          <p style={{ fontSize: 12, color: 'var(--color-text-tertiary)', margin: 0, textAlign: 'center', maxWidth: 240 }}>
+            Lance sua primeira entrada para criar as divisões automaticamente.
+          </p>
+        </div>
+      ) : (
       <div className="home-caixinhas-grid" style={{
         display: 'grid',
         gridTemplateColumns: 'repeat(2, 1fr)',
@@ -387,6 +415,7 @@ function CaixinhasSection() {
           )
         })}
       </div>
+      )}
     </div>
   )
 }

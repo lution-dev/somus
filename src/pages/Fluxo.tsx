@@ -233,7 +233,7 @@ export default function Fluxo() {
           {tab === 'saidas' ? (
             <>
               {pending.length === 0 && paid.length === 0 ? (
-                <EmptyState label="Nenhuma conta cadastrada" />
+                <EmptyState label="Nenhuma conta cadastrada" desc="Adicione suas contas fixas mensais para acompanhar pagamentos." />
               ) : (
                 <>
                   {pending.length > 0 && (
@@ -254,7 +254,7 @@ export default function Fluxo() {
           ) : (
             <>
               {groupedEntradas.length === 0 ? (
-                <EmptyState label="Nenhuma entrada lançada" />
+                <EmptyState label="Nenhuma entrada lançada" desc="Lance uma entrada na tela Home para registrar seus recebimentos." />
               ) : (
                 groupedEntradas.map((g) => (
                   <React.Fragment key={g.key}>
@@ -379,11 +379,18 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
   )
 }
 
-function EmptyState({ label }: { label: string }) {
+function EmptyState({ label, desc }: { label: string; desc?: string }) {
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '48px 0', gap: 8 }}>
-      <Inbox size={28} color="var(--color-text-tertiary)" />
-      <p style={{ fontSize: 14, color: 'var(--color-text-secondary)', margin: 0 }}>{label}</p>
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '40px 20px', gap: 6 }}>
+      <div style={{
+        width: 48, height: 48, borderRadius: 16,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        background: 'rgba(59,130,246,0.08)', marginBottom: 6,
+      }}>
+        <Inbox size={22} color="var(--color-text-tertiary)" strokeWidth={1.5} />
+      </div>
+      <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-text-primary)', margin: 0 }}>{label}</p>
+      {desc && <p style={{ fontSize: 12, color: 'var(--color-text-tertiary)', margin: 0, textAlign: 'center', maxWidth: 240 }}>{desc}</p>}
     </div>
   )
 }
