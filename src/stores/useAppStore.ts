@@ -14,6 +14,8 @@ import type {
   UserContext,
   CaixinhaDistributionItem,
 } from '../types'
+import { DIVISAO_ORDER, DIVISAO_INFO } from '../lib/divisoes'
+import { CAIXINHA_ICONS } from '../lib/icons'
 
 // ─── Actions ─────────────────────────────────────────────────────────────────
 
@@ -79,7 +81,28 @@ export const useAppStore = create<AppState & AppActions>()(
       ...getInitialState(),
 
       completeOnboarding: (user) =>
-        set({ isOnboarded: true, currentUser: user }),
+        set((state) => {
+          // Create default caixinhas if none exist
+          const caixinhas = state.caixinhas.length > 0
+            ? state.caixinhas
+            : DIVISAO_ORDER.map((id, i) => {
+                const info = DIVISAO_INFO[id]
+                const icon = CAIXINHA_ICONS[id]
+                return {
+                  id,
+                  userId: user.id,
+                  name: info.name,
+                  emoji: '',
+                  percentage: info.pct,
+                  balance: 0,
+                  color: icon?.color ?? '#64748B',
+                  isDefault: true,
+                  order: i,
+                  movements: [],
+                } as Caixinha
+              })
+          return { isOnboarded: true, currentUser: user, caixinhas }
+        }),
 
       setViewContext: (ctx) => set({ viewContext: ctx }),
 
@@ -285,14 +308,42 @@ export const useAppStore = create<AppState & AppActions>()(
     }),
     {
       name: 'somus-state',
-      version: 6,
+      version: 7,
       migrate: (_persisted: unknown, version: number) => {
-        // v6: clean break — no more mock data, force fresh state.
-        // Handles any stale caches from earlier versions.
+        const state = _persisted as Record<string, unknown>
+
+        // v6: clean break — full reset from mock data
         if (version < 6) {
           return getInitialState() as unknown as AppState & AppActions
         }
-        return _persisted as unknown as AppState & AppActions
+
+        // v7: backfill caixinhas for users who completed onboarding
+        // but have none (old onboarding never created them)
+        if (version < 7) {
+          const caixinhas = (state.caixinhas as Caixinha[] | undefined) ?? []
+          if (caixinhas.length === 0 && state.isOnboarded) {
+            const currentUser = state.currentUser as User | null
+            const userId = currentUser?.id ?? 'lucas'
+            state.caixinhas = DIVISAO_ORDER.map((id, i) => {
+              const info = DIVISAO_INFO[id]
+              const icon = CAIXINHA_ICONS[id]
+              return {
+                id,
+                userId,
+                name: info.name,
+                emoji: '',
+                percentage: info.pct,
+                balance: 0,
+                color: icon?.color ?? '#64748B',
+                isDefault: true,
+                order: i,
+                movements: [],
+              } as Caixinha
+            })
+          }
+        }
+
+        return state as unknown as AppState & AppActions
       },
       partialize: (state) => ({
         isOnboarded: state.isOnboarded,
