@@ -31,19 +31,25 @@ export function FirebaseSyncProvider({ children }: FirebaseSyncProviderProps) {
     let cancelled = false
 
     const runMigration = async () => {
-      const localState = useAppStore.getState() as AppState
-      const resolvedState = await migrateToFirestore(uid, localState)
+      try {
+        const localState = useAppStore.getState() as AppState
+        const resolvedState = await migrateToFirestore(uid, localState)
 
-      if (cancelled) return
+        if (cancelled) return
 
-      // If remote state was different, update Zustand
-      if (resolvedState !== localState) {
-        isRemoteUpdate.current = true
-        useAppStore.setState(resolvedState)
-        isRemoteUpdate.current = false
+        // If remote state was different, update Zustand
+        if (resolvedState !== localState) {
+          isRemoteUpdate.current = true
+          useAppStore.setState(resolvedState)
+          isRemoteUpdate.current = false
+        }
+      } catch (err) {
+        console.warn('[Somus] Migration error (using local state):', err)
       }
 
-      setSyncReady(true)
+      if (!cancelled) {
+        setSyncReady(true)
+      }
     }
 
     runMigration()
@@ -71,8 +77,16 @@ export function FirebaseSyncProvider({ children }: FirebaseSyncProviderProps) {
   useEffect(() => {
     if (!syncReady || !uid) return
 
-    // Subscribe to remote changes (for when partner updates from another device)
+    // Skip the first snapshot — it's the same data we just wrote/read during migration.
+    // Without this, onSnapshot fires immediately and overwrites Zustand state,
+    // causing a blank screen because it resets isOnboarded, caixinhas, etc.
+    let isFirstSnapshot = true
+
     unsubRef.current = subscribeToState(uid, (remoteState) => {
+      if (isFirstSnapshot) {
+        isFirstSnapshot = false
+        return
+      }
       // Prevent echo: don't apply our own writes back
       isRemoteUpdate.current = true
       useAppStore.setState(remoteState)
