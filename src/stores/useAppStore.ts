@@ -14,16 +14,6 @@ import type {
   UserContext,
   CaixinhaDistributionItem,
 } from '../types'
-import {
-  MOCK_LUCAS,
-  MOCK_MIRIAN,
-  MOCK_INCOME_SOURCES_LUCAS,
-  MOCK_INCOME_SOURCES_MIRIAN,
-  MOCK_CAIXINHAS_LUCAS,
-  MOCK_SAIDAS_FIXAS_LUCAS,
-  MOCK_OBJETIVOS_LUCAS,
-  MOCK_ENTRADAS_LUCAS,
-} from '../lib/mockData'
 
 // ─── Actions ─────────────────────────────────────────────────────────────────
 
@@ -70,15 +60,15 @@ interface AppActions {
 
 const getInitialState = (): AppState => ({
   isOnboarded: false,
-  currentUser: MOCK_LUCAS,
-  partner: MOCK_MIRIAN,
+  currentUser: null,
+  partner: null,
   viewContext: 'lucas',
-  incomeSources: [...MOCK_INCOME_SOURCES_LUCAS, ...MOCK_INCOME_SOURCES_MIRIAN],
-  entradas: MOCK_ENTRADAS_LUCAS,
-  caixinhas: MOCK_CAIXINHAS_LUCAS,
-  saidasFixas: MOCK_SAIDAS_FIXAS_LUCAS,
+  incomeSources: [],
+  entradas: [],
+  caixinhas: [],
+  saidasFixas: [],
   saidasVariaveis: [],
-  objetivos: MOCK_OBJETIVOS_LUCAS,
+  objetivos: [],
 })
 
 // ─── Store ────────────────────────────────────────────────────────────────────
@@ -295,54 +285,13 @@ export const useAppStore = create<AppState & AppActions>()(
     }),
     {
       name: 'somus-state',
-      version: 4,
-      migrate: (persisted: unknown, version: number) => {
-        const state = persisted as Record<string, unknown>
-        if (version < 2) {
-          const caixinhas = (state.caixinhas as Caixinha[] | undefined) ?? []
-          state.caixinhas = caixinhas.map(cx =>
-            cx.id === 'cx-reserva' ? { ...cx, name: 'Liberdade Financeira' } : cx
-          )
-          const entradas = (state.entradas as Entrada[] | undefined) ?? []
-          state.entradas = entradas.map(e => ({
-            ...e,
-            distribution: e.distribution.map(d =>
-              d.caixinhaId === 'cx-reserva' ? { ...d, caixinhaName: 'Liberdade Financeira' } : d
-            ),
-          }))
+      version: 5,
+      migrate: (_persisted: unknown, version: number) => {
+        // v5: clean break — no more mock data. Force fresh state.
+        if (version < 5) {
+          return getInitialState() as unknown as AppState & AppActions
         }
-        if (version < 3) {
-          const objetivos = (state.objetivos as Objetivo[] | undefined) ?? []
-          state.objetivos = objetivos.map(obj => {
-            const base = { ...obj, movements: obj.movements ?? [] }
-            if (obj.id === 'obj-viagem') return { ...base, id: 'obj-casamento', name: 'Casamento', emoji: '💍', targetAmount: 25000, targetDate: '2027-12-01' }
-            if (obj.id === 'obj-carro') return { ...base, id: 'obj-apto', name: 'Entrada Apartamento', emoji: '🏠', targetAmount: 60000, targetDate: '2028-06-01' }
-            return base
-          })
-          const caixinhas2 = (state.caixinhas as Caixinha[] | undefined) ?? []
-          state.caixinhas = caixinhas2.map(cx => ({ ...cx, movements: cx.movements ?? [] }))
-        }
-        if (version < 4) {
-          // Force-refresh objetivos and caixinhas movements from mock data
-          const initial = getInitialState()
-          const objetivos = (state.objetivos as Objetivo[] | undefined) ?? []
-          state.objetivos = objetivos.map(obj => {
-            const mock = initial.objetivos.find(m => m.id === obj.id)
-            if (mock && (!obj.movements || obj.movements.length === 0)) {
-              return { ...obj, movements: mock.movements, currentAmount: mock.currentAmount }
-            }
-            return { ...obj, movements: obj.movements ?? [] }
-          })
-          const caixinhas3 = (state.caixinhas as Caixinha[] | undefined) ?? []
-          state.caixinhas = caixinhas3.map(cx => {
-            const mock = initial.caixinhas.find(m => m.id === cx.id)
-            if (mock && (!cx.movements || cx.movements.length === 0)) {
-              return { ...cx, movements: mock.movements, balance: mock.balance }
-            }
-            return { ...cx, movements: cx.movements ?? [] }
-          })
-        }
-        return state as unknown as AppState & AppActions
+        return _persisted as unknown as AppState & AppActions
       },
       partialize: (state) => ({
         isOnboarded: state.isOnboarded,
