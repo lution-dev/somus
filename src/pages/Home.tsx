@@ -14,6 +14,7 @@ import { getCaixinhaIcon } from '../lib/icons'
 import { ProgressBar, PageHeader, Dialog, groupByMonth, MonthHeader } from '../components/ui'
 import { useIsMobile } from '../hooks/useIsMobile'
 import { useAuth } from '../hooks/useAuth'
+import UserMenu from '../components/ui/UserMenu'
 import LancarEntradaModal from '../components/features/LancarEntradaModal'
 import {
   Plus,
@@ -398,7 +399,7 @@ export default function Home() {
   const [prefill, setPrefill] = useState<{ sourceName: string; amount: number } | undefined>()
   const isMobile = useIsMobile()
   const [, navigate] = useLocation()
-  const { displayName, photoURL, signOut } = useAuth()
+  const { displayName } = useAuth()
 
   const markSaidaFixaPaid = useAppStore(s => s.markSaidaFixaPaid)
 
@@ -442,33 +443,7 @@ export default function Home() {
           <PageHeader
             title={`${greeting}, ${firstName}`}
             bg={HERO_BG}
-            rightAction={
-              <button
-                onClick={() => { if (confirm('Deseja sair da sua conta?')) signOut() }}
-                style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
-              >
-                {photoURL ? (
-                  <img
-                    src={photoURL}
-                    alt=""
-                    referrerPolicy="no-referrer"
-                    style={{
-                      width: 32, height: 32, borderRadius: '50%',
-                      objectFit: 'cover', border: '2px solid rgba(255,255,255,0.2)',
-                    }}
-                  />
-                ) : (
-                  <div style={{
-                    width: 32, height: 32, borderRadius: '50%',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    background: 'rgba(255,255,255,0.15)', color: 'white',
-                    fontSize: 13, fontWeight: 700,
-                  }}>
-                    {(firstName ?? '?')[0]}
-                  </div>
-                )}
-              </button>
-            }
+            rightAction={<UserMenu variant="hero" />}
           />
           <div style={{
             background: HERO_BG,

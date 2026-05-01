@@ -1,10 +1,10 @@
 import type { ReactNode } from 'react'
 import { useLocation } from 'wouter'
-import { Home, ArrowLeftRight, Wallet, Heart, LogOut } from 'lucide-react'
+import { Home, ArrowLeftRight, Wallet, Heart } from 'lucide-react'
 import { BottomNav } from '../ui'
 import type { NavItem } from '../ui'
 import SomusLogo from '../ui/SomusLogo'
-import { useAuth } from '../../hooks/useAuth'
+import UserMenu from '../ui/UserMenu'
 
 export const NAV_ITEMS: NavItem[] = [
   { path: '/home',      label: 'Home',      icon: <Home size={20} strokeWidth={1.75} />,           activeIcon: <Home size={20} strokeWidth={2} /> },
@@ -16,14 +16,6 @@ export const NAV_ITEMS: NavItem[] = [
 // ─── Sidebar Desktop ──────────────────────────────────────────────────────────
 function Sidebar() {
   const [location, navigate] = useLocation()
-  const { displayName, photoURL, email, signOut } = useAuth()
-
-  const initials = (displayName ?? email ?? '?')
-    .split(' ')
-    .map(p => p[0])
-    .slice(0, 2)
-    .join('')
-    .toUpperCase()
 
   return (
     <aside style={{
@@ -66,73 +58,8 @@ function Sidebar() {
       {/* User profile footer */}
       <div style={{
         padding: '14px 14px', borderTop: '1px solid var(--color-border)',
-        display: 'flex', alignItems: 'center', gap: 10,
       }}>
-        {/* Avatar */}
-        {photoURL ? (
-          <img
-            src={photoURL}
-            alt={displayName ?? ''}
-            referrerPolicy="no-referrer"
-            style={{
-              width: 34, height: 34, borderRadius: '50%',
-              objectFit: 'cover', flexShrink: 0,
-              border: '2px solid var(--color-border)',
-            }}
-          />
-        ) : (
-          <div style={{
-            width: 34, height: 34, borderRadius: '50%', flexShrink: 0,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            background: 'var(--color-accent-primary)', color: 'white',
-            fontSize: 13, fontWeight: 700,
-          }}>
-            {initials}
-          </div>
-        )}
-
-        {/* Name + email */}
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <p style={{
-            fontSize: 12, fontWeight: 600, color: 'var(--color-text-primary)',
-            margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-          }}>
-            {displayName ?? 'Usuário'}
-          </p>
-          {email && (
-            <p style={{
-              fontSize: 10, color: 'var(--color-text-tertiary)',
-              margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-            }}>
-              {email}
-            </p>
-          )}
-        </div>
-
-        {/* Logout */}
-        <button
-          onClick={signOut}
-          title="Sair"
-          style={{
-            width: 30, height: 30, borderRadius: 8, flexShrink: 0,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            background: 'transparent', border: '1px solid var(--color-border)',
-            cursor: 'pointer', color: 'var(--color-text-tertiary)',
-            transition: 'background 150ms ease, color 150ms ease',
-          }}
-          onMouseEnter={e => {
-            e.currentTarget.style.background = 'rgba(239,68,68,0.1)'
-            e.currentTarget.style.color = 'var(--color-danger)'
-            e.currentTarget.style.borderColor = 'rgba(239,68,68,0.3)'
-          }}
-          onMouseLeave={e => {
-            e.currentTarget.style.background = 'transparent'
-            e.currentTarget.style.color = 'var(--color-text-tertiary)'
-            e.currentTarget.style.borderColor = 'var(--color-border)'
-          }}
-        >
-          <LogOut size={14} />
-        </button>
+        <UserMenu />
       </div>
     </aside>
   )

@@ -14,6 +14,7 @@ import CaixinhaDetalhe from './pages/CaixinhaDetalhe'
 import Casal         from './pages/Casal'
 import ObjetivoDetalhe from './pages/ObjetivoDetalhe'
 import Onboarding    from './pages/Onboarding'
+import Perfil        from './pages/Perfil'
 import Login         from './pages/Login'
 
 export default function App() {
@@ -65,6 +66,7 @@ export default function App() {
               <Route path="/caixinhas" component={Caixinhas} />
               <Route path="/casal/objetivo/:id" component={ObjetivoDetalhe} />
               <Route path="/casal" component={Casal} />
+              <Route path="/perfil" component={Perfil} />
 
               {/* Fallback — redirect to home or onboarding */}
               <Route>
