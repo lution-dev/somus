@@ -5,7 +5,8 @@ import { useShallow } from 'zustand/react/shallow'
 import { formatCurrency } from '../lib/calculations'
 import { ProgressBar, PageHeader } from '../components/ui'
 import { useIsMobile } from '../hooks/useIsMobile'
-import { Target, Share2, Copy, Heart, CheckCircle2, Building2 } from 'lucide-react'
+import { useAuth } from '../hooks/useAuth'
+import { Target, Share2, Copy, Heart, CheckCircle2, Building2, Send } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 
 const OBJ_ICONS: Record<string, LucideIcon> = {
@@ -17,6 +18,7 @@ function getObjIcon(id: string): LucideIcon { return OBJ_ICONS[id] || Target }
 export default function Casal() {
   const [copied, setCopied] = useState(false)
   const [, navigate] = useLocation()
+  const { photoURL } = useAuth()
   const currentUser = useAppStore(s => s.currentUser)
   const partner     = useAppStore(s => s.partner)
   const objetivos   = useAppStore(useShallow(s => s.objetivos))
@@ -69,9 +71,13 @@ export default function Casal() {
 
             {/* Legenda */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
-              {profiles.map(({ user, accent, balance }) => user ? (
+              {profiles.map(({ user, accent, balance }, i) => user ? (
                 <div key={user.id} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <div style={{ width: 8, height: 8, borderRadius: '50%', flexShrink: 0, background: accent }} />
+                  {i === 0 && photoURL ? (
+                    <img src={photoURL} alt="" referrerPolicy="no-referrer" style={{ width: 22, height: 22, borderRadius: '50%', objectFit: 'cover', flexShrink: 0, border: `2px solid ${accent}` }} />
+                  ) : (
+                    <div style={{ width: 22, height: 22, borderRadius: '50%', flexShrink: 0, background: accent, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: 10, fontWeight: 700 }}>{user.name.charAt(0)}</div>
+                  )}
                   <div>
                     <p style={{ fontSize: 12, color: 'var(--color-text-secondary)', margin: 0 }}>{user.name.split(' ')[0]}</p>
                     <p style={{ fontSize: 14, fontWeight: 700, color: 'var(--color-text-primary)', margin: 0 }}>{formatCurrency(balance)}</p>
@@ -116,9 +122,13 @@ export default function Casal() {
 
         {/* Legenda */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
-          {profiles.map(({ user, accent, balance }) => user ? (
+          {profiles.map(({ user, accent, balance }, i) => user ? (
             <div key={user.id} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <div style={{ width: 8, height: 8, borderRadius: '50%', flexShrink: 0, background: accent }} />
+              {i === 0 && photoURL ? (
+                <img src={photoURL} alt="" referrerPolicy="no-referrer" style={{ width: 22, height: 22, borderRadius: '50%', objectFit: 'cover', flexShrink: 0, border: `2px solid ${accent}` }} />
+              ) : (
+                <div style={{ width: 22, height: 22, borderRadius: '50%', flexShrink: 0, background: accent, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: 10, fontWeight: 700 }}>{user.name.charAt(0)}</div>
+              )}
               <div>
                 <p style={{ fontSize: 12, color: 'var(--color-text-secondary)', margin: 0 }}>{user.name.split(' ')[0]}</p>
                 <p style={{ fontSize: 14, fontWeight: 700, color: 'var(--color-text-primary)', margin: 0 }}>{formatCurrency(balance)}</p>
@@ -131,7 +141,7 @@ export default function Casal() {
 
       {/* Cards de perfil — grid 1fr 1fr */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 20 }}>
-        {profiles.map(({ user, accent, balance, tipo }) => user ? (
+        {profiles.map(({ user, accent, balance, tipo }, i) => user ? (
           <div
             key={user.id}
             style={{
@@ -141,14 +151,22 @@ export default function Casal() {
               padding: 16,
             }}
           >
-            <div style={{
-              width: 40, height: 40, borderRadius: '50%',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontWeight: 700, color: 'white', fontSize: 14,
-              background: accent, marginBottom: 10,
-            }}>
-              {user.name.charAt(0)}
-            </div>
+            {i === 0 && photoURL ? (
+              <img src={photoURL} alt="" referrerPolicy="no-referrer" style={{
+                width: 40, height: 40, borderRadius: '50%',
+                objectFit: 'cover', marginBottom: 10,
+                border: `2px solid ${accent}`,
+              }} />
+            ) : (
+              <div style={{
+                width: 40, height: 40, borderRadius: '50%',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontWeight: 700, color: 'white', fontSize: 14,
+                background: accent, marginBottom: 10,
+              }}>
+                {user.name.charAt(0)}
+              </div>
+            )}
             <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-text-primary)', margin: 0 }}>{user.name.split(' ')[0]}</p>
             <p style={{ fontSize: 12, color: 'var(--color-text-secondary)', margin: '2px 0 8px' }}>{tipo}</p>
             <p style={{ fontSize: 16, fontWeight: 700, color: accent, margin: 0 }}>{formatCurrency(balance)}</p>
@@ -217,28 +235,27 @@ export default function Casal() {
         borderRadius: 'var(--radius-card)',
         padding: 16,
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <div>
-            <p style={{ fontSize: 12, fontWeight: 500, color: 'var(--color-text-secondary)', margin: '0 0 4px', display: 'flex', alignItems: 'center', gap: 6 }}>
-              <Share2 size={12} />
-              Código de convite
-            </p>
-            <p style={{ fontSize: 20, fontWeight: 700, fontFamily: 'var(--font-sans)', letterSpacing: '0.12em', color: 'var(--color-accent-couple)', margin: 0 }}>
-              {currentUser?.partnerCode ?? 'SOMUS-0001'}
-            </p>
-            <p style={{ fontSize: 12, color: 'var(--color-text-tertiary)', margin: '4px 0 0' }}>Compartilhe com seu parceiro(a)</p>
-          </div>
+        <p style={{ fontSize: 12, fontWeight: 500, color: 'var(--color-text-secondary)', margin: '0 0 4px', display: 'flex', alignItems: 'center', gap: 6 }}>
+          <Share2 size={12} />
+          Código de convite
+        </p>
+        <p style={{ fontSize: 20, fontWeight: 700, fontFamily: 'var(--font-sans)', letterSpacing: '0.12em', color: 'var(--color-accent-couple)', margin: 0 }}>
+          {currentUser?.partnerCode ?? 'SOMUS-0001'}
+        </p>
+        <p style={{ fontSize: 12, color: 'var(--color-text-tertiary)', margin: '4px 0 0' }}>Compartilhe com seu parceiro(a)</p>
+
+        {/* Action buttons */}
+        <div style={{ display: 'flex', gap: 8, marginTop: 14 }}>
           <button
             style={{
-              display: 'flex', alignItems: 'center', gap: 6,
-              fontSize: 12, fontWeight: 600, padding: '8px 12px',
-              borderRadius: 'var(--radius-card)', cursor: 'pointer',
-              background: copied ? 'rgba(16,185,129,0.1)' : 'rgba(139,92,246,0.1)',
+              display: 'flex', alignItems: 'center', gap: 6, flex: 1,
+              fontSize: 12, fontWeight: 600, padding: '10px 12px',
+              borderRadius: 10, cursor: 'pointer',
+              background: copied ? 'rgba(16,185,129,0.1)' : 'rgba(139,92,246,0.08)',
               color: copied ? 'var(--color-success)' : 'var(--color-accent-couple)',
-              border: `1px solid ${copied ? 'rgba(16,185,129,0.2)' : 'rgba(139,92,246,0.2)'}`,
+              border: `1px solid ${copied ? 'rgba(16,185,129,0.2)' : 'rgba(139,92,246,0.15)'}`,
               fontFamily: 'var(--font-sans)',
               transition: 'all 200ms ease',
-              minWidth: 90,
               justifyContent: 'center',
             }}
             onClick={() => {
@@ -248,7 +265,36 @@ export default function Casal() {
             }}
           >
             {copied ? <CheckCircle2 size={13} /> : <Copy size={13} />}
-            {copied ? 'Copiado!' : 'Copiar'}
+            {copied ? 'Copiado!' : 'Copiar código'}
+          </button>
+          <button
+            style={{
+              display: 'flex', alignItems: 'center', gap: 6, flex: 1,
+              fontSize: 12, fontWeight: 600, padding: '10px 12px',
+              borderRadius: 10, cursor: 'pointer',
+              background: 'var(--color-accent-couple)',
+              color: 'white',
+              border: 'none',
+              fontFamily: 'var(--font-sans)',
+              transition: 'opacity 150ms ease',
+              justifyContent: 'center',
+            }}
+            onMouseEnter={e => e.currentTarget.style.opacity = '0.85'}
+            onMouseLeave={e => e.currentTarget.style.opacity = '1'}
+            onClick={() => {
+              const code = currentUser?.partnerCode ?? 'SOMUS-0001'
+              const msg = `💜 Entra comigo no Somus pra gente organizar nossas finanças juntos!\n\nUsa o código: ${code}\n\nhttps://somus.vercel.app`
+              if (navigator.share) {
+                navigator.share({ title: 'Somus — Finanças do Casal', text: msg }).catch(() => {})
+              } else {
+                navigator.clipboard.writeText(msg)
+                setCopied(true)
+                setTimeout(() => setCopied(false), 2000)
+              }
+            }}
+          >
+            <Send size={13} />
+            Compartilhar
           </button>
         </div>
       </div>
