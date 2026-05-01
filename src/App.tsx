@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { Route, Switch, Redirect } from 'wouter'
 import { useAppStore } from './stores/useAppStore'
 import { useAuth } from './hooks/useAuth'
@@ -5,6 +6,9 @@ import { AppLayout } from './components/layout/AppLayout'
 import { PWAInstallPrompt } from './components/shared/PWAInstallPrompt'
 import { FirebaseSyncProvider } from './hooks/useFirebaseSync'
 import SomusLogo from './components/ui/SomusLogo'
+import { DIVISAO_ORDER, DIVISAO_INFO } from './lib/divisoes'
+import { CAIXINHA_ICONS } from './lib/icons'
+import type { Caixinha } from './types'
 
 // Pages
 import Home          from './pages/Home'
@@ -19,7 +23,34 @@ import Login         from './pages/Login'
 
 export default function App() {
   const isOnboarded = useAppStore(s => s.isOnboarded)
+  const currentUser = useAppStore(s => s.currentUser)
+  const caixinhas = useAppStore(s => s.caixinhas)
   const { isAuthenticated, isLoading: authLoading } = useAuth()
+
+  // Runtime backfill: create default caixinhas if user is onboarded but has none.
+  // This handles all edge cases (stale SW cache, missed migration, new devices).
+  useEffect(() => {
+    if (isOnboarded && caixinhas.length === 0) {
+      const userId = currentUser?.id ?? 'lucas'
+      const defaultCaixinhas: Caixinha[] = DIVISAO_ORDER.map((id, i) => {
+        const info = DIVISAO_INFO[id]
+        const icon = CAIXINHA_ICONS[id]
+        return {
+          id,
+          userId,
+          name: info.name,
+          emoji: '',
+          percentage: info.pct,
+          balance: 0,
+          color: icon?.color ?? '#64748B',
+          isDefault: true,
+          order: i,
+          movements: [],
+        }
+      })
+      useAppStore.setState({ caixinhas: defaultCaixinhas })
+    }
+  }, [isOnboarded, caixinhas.length, currentUser])
 
   // Auth loading — show nothing (avoids flash)
   if (authLoading) {
