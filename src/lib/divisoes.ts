@@ -12,9 +12,9 @@ export const DIVISAO_INFO: Record<string, { name: string; pct: number; short: st
   },
   'cx-reserva': {
     name: 'Liberdade Financeira',
-    pct: 8,
+    pct: 10,
     short: 'Reserva de emergência + investimentos',
-    detail: 'Na receita original da Nati, são 10% pra aposentadoria — investimentos de longo prazo que rendem juros sobre juros (Tesouro IPCA, renda variável). Aqui no Somus, adaptamos pra incluir também a reserva de emergência. Esse dinheiro não é pra gastar: é pra construir segurança e independência financeira pro casal.',
+    detail: 'São 10% pra aposentadoria — investimentos de longo prazo que rendem juros sobre juros (Tesouro IPCA, renda variável). Aqui no Somus, adaptamos pra incluir também a reserva de emergência. Esse dinheiro não é pra gastar: é pra construir segurança e independência financeira pro casal.',
   },
   'cx-objetivos': {
     name: 'Objetivos',
@@ -34,12 +34,6 @@ export const DIVISAO_INFO: Record<string, { name: string; pct: number; short: st
     short: 'O fermento da vida financeira',
     detail: 'A Nati chama de "fermento do bolo" — não é faculdade (isso vai no Essencial). São cursos de aperfeiçoamento, mentorias, livros e tudo que aumenta o seu valor de mercado. Investir em educação multiplica todas as outras divisões porque você aprende, ganha mais, e o ciclo cresce.',
   },
-  'cx-livre': {
-    name: 'Livre',
-    pct: 2,
-    short: 'Sua recompensa por seguir a receita',
-    detail: 'Na receita original são 10%, mas como adicionamos o Dízimo, ficam 2%. É a cerejinha do bolo: pizza, cinema, jogos, roupas — sem culpa nenhuma. Como a Nati diz: "é a recompensa por ter feito todas as outras etapas da maneira corretinha". Todo orçamento precisa de espaço pro prazer.',
-  },
 }
 
 /** Ordered list of division IDs for consistent rendering */
@@ -49,5 +43,4 @@ export const DIVISAO_ORDER = [
   'cx-objetivos',
   'cx-essencial',
   'cx-educacao',
-  'cx-livre',
 ] as const

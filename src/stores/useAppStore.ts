@@ -308,7 +308,7 @@ export const useAppStore = create<AppState & AppActions>()(
     }),
     {
       name: 'somus-state',
-      version: 7,
+      version: 8,
       migrate: (_persisted: unknown, version: number) => {
         const state = _persisted as Record<string, unknown>
 
@@ -341,6 +341,21 @@ export const useAppStore = create<AppState & AppActions>()(
               } as Caixinha
             })
           }
+        }
+
+        // v8: remove cx-livre, move its balance to cx-reserva (now 10%)
+        if (version < 8) {
+          const caixinhas = (state.caixinhas as Caixinha[] | undefined) ?? []
+          const livre = caixinhas.find(cx => cx.id === 'cx-livre')
+          const livreBalance = livre?.balance ?? 0
+          state.caixinhas = caixinhas
+            .filter(cx => cx.id !== 'cx-livre')
+            .map(cx => {
+              if (cx.id === 'cx-reserva') {
+                return { ...cx, percentage: 10, balance: cx.balance + livreBalance }
+              }
+              return cx
+            })
         }
 
         return state as unknown as AppState & AppActions

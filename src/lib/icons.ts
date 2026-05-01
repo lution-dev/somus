@@ -4,7 +4,6 @@ import {
   Target,
   Home,
   BookOpen,
-  Sparkles,
   type LucideIcon,
 } from 'lucide-react'
 
@@ -18,7 +17,6 @@ export const CAIXINHA_ICONS: Record<string, { icon: LucideIcon; color: string }>
   'cx-objetivos': { icon: Target,    color: '#8B5CF6' },
   'cx-essencial': { icon: Home,      color: '#3B82F6' },
   'cx-educacao':  { icon: BookOpen,  color: '#06B6D4' },
-  'cx-livre':     { icon: Sparkles,  color: '#EC4899' },
 }
 
 /**
