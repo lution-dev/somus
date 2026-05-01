@@ -9,10 +9,13 @@ import {
 } from 'firebase/auth'
 import { auth } from '../lib/firebase'
 
+const ANON_OPTED_KEY = 'somus-anon-opted'
+
 interface AuthState {
   uid: string | null
   user: FirebaseUser | null
   isLoading: boolean
+  /** True only when user intentionally signed in (Google or explicit anon) */
   isAuthenticated: boolean
   isAnonymous: boolean
   displayName: string | null
@@ -25,8 +28,12 @@ const googleProvider = new GoogleAuthProvider()
 
 /**
  * Firebase Auth hook.
- * Supports both anonymous and Google sign-in.
- * The user's data persists across both methods (same UID if linked).
+ * Google Sign-In is the primary method.
+ * Anonymous is available as a "skip" option.
+ *
+ * Important: A stale anonymous session (from auto-signin) does NOT
+ * count as authenticated. The user must explicitly choose to log in
+ * or tap "Continuar sem login".
  */
 export function useAuth() {
   const [state, setState] = useState<AuthState>({
@@ -41,24 +48,12 @@ export function useAuth() {
     error: null,
   })
 
-  // Sign in anonymously (for first-time users who skip login)
-  const signInAnon = useCallback(async () => {
-    try {
-      await signInAnonymously(auth)
-    } catch (err) {
-      setState((prev) => ({
-        ...prev,
-        error: err instanceof Error ? err.message : 'Auth failed',
-        isLoading: false,
-      }))
-    }
-  }, [])
-
-  // Sign in with Google
+  // Sign in with Google (primary)
   const signInWithGoogle = useCallback(async () => {
     try {
       setState((prev) => ({ ...prev, isLoading: true, error: null }))
       await signInWithPopup(auth, googleProvider)
+      // onAuthStateChanged will handle the state update
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Google login failed'
       setState((prev) => ({
@@ -69,9 +64,27 @@ export function useAuth() {
     }
   }, [])
 
+  // Sign in anonymously (explicit opt-in via "Continuar sem login")
+  const signInAnon = useCallback(async () => {
+    try {
+      setState((prev) => ({ ...prev, isLoading: true, error: null }))
+      // Mark that the user explicitly opted into anonymous
+      localStorage.setItem(ANON_OPTED_KEY, 'true')
+      await signInAnonymously(auth)
+    } catch (err) {
+      localStorage.removeItem(ANON_OPTED_KEY)
+      setState((prev) => ({
+        ...prev,
+        error: err instanceof Error ? err.message : 'Auth failed',
+        isLoading: false,
+      }))
+    }
+  }, [])
+
   // Sign out
   const signOut = useCallback(async () => {
     try {
+      localStorage.removeItem(ANON_OPTED_KEY)
       await firebaseSignOut(auth)
     } catch (err) {
       console.warn('Sign out error:', err)
@@ -81,11 +94,16 @@ export function useAuth() {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
+        // For anonymous users: only treat as authenticated if they
+        // explicitly opted in (clicked "Continuar sem login")
+        const anonOpted = localStorage.getItem(ANON_OPTED_KEY) === 'true'
+        const isIntentional = !user.isAnonymous || anonOpted
+
         setState({
           uid: user.uid,
           user,
           isLoading: false,
-          isAuthenticated: true,
+          isAuthenticated: isIntentional,
           isAnonymous: user.isAnonymous,
           displayName: user.displayName,
           photoURL: user.photoURL,
