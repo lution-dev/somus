@@ -178,7 +178,7 @@ export default function Login() {
         minHeight: '100dvh', display: 'flex', flexDirection: 'column',
         alignItems: 'center', justifyContent: 'center',
         padding: '48px 24px 32px',
-        background: '#060D1C', position: 'relative', overflow: 'hidden',
+        background: 'var(--color-bg-primary)', position: 'relative', overflow: 'hidden',
       }}>
         {/* Ambient glow */}
         <div style={{
@@ -198,7 +198,7 @@ export default function Login() {
     <div style={{
       minHeight: '100dvh', display: 'grid',
       gridTemplateColumns: '1fr 1fr',
-      background: '#060D1C',
+      background: 'var(--color-bg-primary)',
     }}>
       {/* LEFT PANEL — Branding */}
       <div style={{
@@ -206,7 +206,7 @@ export default function Login() {
         display: 'flex', flexDirection: 'column',
         alignItems: 'center', justifyContent: 'center',
         padding: '60px 48px',
-        background: 'linear-gradient(160deg, #040A16 0%, #060D1C 40%, #0B1526 100%)',
+        background: 'linear-gradient(160deg, #040A16 0%, #060D1C 40%, #081220 100%)',
         borderRight: '1px solid rgba(255,255,255,0.04)',
       }}>
         {/* Ambient glows */}
