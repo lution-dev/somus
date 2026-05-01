@@ -12,8 +12,8 @@ import { useShallow } from 'zustand/react/shallow'
 import { formatCurrency, getMonthSummary, getDaysUntil, isPaidThisMonth } from '../lib/calculations'
 import { getCaixinhaIcon } from '../lib/icons'
 import { ProgressBar, PageHeader, Dialog, groupByMonth, MonthHeader } from '../components/ui'
-import SomusLogo from '../components/ui/SomusLogo'
 import { useIsMobile } from '../hooks/useIsMobile'
+import { useAuth } from '../hooks/useAuth'
 import LancarEntradaModal from '../components/features/LancarEntradaModal'
 import {
   Plus,
@@ -398,6 +398,7 @@ export default function Home() {
   const [prefill, setPrefill] = useState<{ sourceName: string; amount: number } | undefined>()
   const isMobile = useIsMobile()
   const [, navigate] = useLocation()
+  const { displayName, photoURL, signOut } = useAuth()
 
   const markSaidaFixaPaid = useAppStore(s => s.markSaidaFixaPaid)
 
@@ -405,7 +406,7 @@ export default function Home() {
   const entradas       = useAppStore(useShallow(selectCurrentEntradas))
   const saidasFixas    = useAppStore(useShallow(selectCurrentSaidasFixas))
   const expectedIncome = useAppStore(selectExpectedMonthlyIncome)
-  const firstName      = useAppStore(s => (s.currentUser?.name ?? 'Lucas').split(' ')[0])
+  const firstName      = displayName?.split(' ')[0] ?? useAppStore(s => (s.currentUser?.name ?? 'Usuário').split(' ')[0])
 
   const summary = useMemo(
     () => getMonthSummary(entradas, saidasFixas, caixinhas, expectedIncome),
@@ -440,7 +441,33 @@ export default function Home() {
           <PageHeader
             title={`${greeting}, ${firstName}`}
             bg={HERO_BG}
-            rightAction={<SomusLogo size={22} />}
+            rightAction={
+              <button
+                onClick={() => { if (confirm('Deseja sair da sua conta?')) signOut() }}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+              >
+                {photoURL ? (
+                  <img
+                    src={photoURL}
+                    alt=""
+                    referrerPolicy="no-referrer"
+                    style={{
+                      width: 32, height: 32, borderRadius: '50%',
+                      objectFit: 'cover', border: '2px solid rgba(255,255,255,0.2)',
+                    }}
+                  />
+                ) : (
+                  <div style={{
+                    width: 32, height: 32, borderRadius: '50%',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    background: 'rgba(255,255,255,0.15)', color: 'white',
+                    fontSize: 13, fontWeight: 700,
+                  }}>
+                    {(firstName ?? '?')[0]}
+                  </div>
+                )}
+              </button>
+            }
           />
           <div style={{
             background: HERO_BG,

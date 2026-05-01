@@ -4,6 +4,7 @@ import { useAuth } from './hooks/useAuth'
 import { AppLayout } from './components/layout/AppLayout'
 import { PWAInstallPrompt } from './components/shared/PWAInstallPrompt'
 import { FirebaseSyncProvider } from './hooks/useFirebaseSync'
+import SomusLogo from './components/ui/SomusLogo'
 
 // Pages
 import Home          from './pages/Home'
@@ -28,12 +29,9 @@ export default function App() {
         background: 'var(--color-bg-primary)',
       }}>
         <div style={{
-          width: 48, height: 48, borderRadius: 14,
-          background: 'linear-gradient(135deg, var(--color-accent) 0%, var(--color-accent-couple) 100%)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
           animation: 'pulse 1.5s ease-in-out infinite',
         }}>
-          <span style={{ fontSize: 22, fontWeight: 800, color: 'white' }}>S</span>
+          <SomusLogo size={48} />
         </div>
         <style>{`
           @keyframes pulse {
