@@ -3,10 +3,8 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { useAppStore, selectCurrentCaixinhas, selectCurrentIncomeSources, calculateDistribution } from '../../stores/useAppStore'
 import { useShallow } from 'zustand/react/shallow'
 import { formatCurrency } from '../../lib/calculations'
-import { getCaixinhaIcon } from '../../lib/icons'
-import { Dialog, DialogFooter, Button, Input, Badge } from '../ui'
-import type { CaixinhaDistributionItem } from '../../types'
-import { Check, AlertTriangle } from 'lucide-react'
+import { Dialog, DialogFooter, Button, Input } from '../ui'
+import { Check } from 'lucide-react'
 
 interface Props {
   open: boolean
@@ -21,7 +19,7 @@ export default function LancarEntradaModal({ open, onClose, prefill }: Props) {
   const [sourceFocused, setSourceFocused] = useState(false)
   const [date, setDate]       = useState(new Date().toISOString().slice(0, 10))
   const [note, setNote]       = useState('')
-  const [editDist, setEditDist] = useState<Record<string, string>>({})
+
   const [submitted, setSubmitted] = useState(false)
 
   const incomeSources = useAppStore(useShallow(selectCurrentIncomeSources))
@@ -49,7 +47,7 @@ export default function LancarEntradaModal({ open, onClose, prefill }: Props) {
       }
       setDate(new Date().toISOString().slice(0, 10))
       setNote('')
-      setEditDist({})
+
       setSubmitted(false)
       setSourceFocused(false)
     }
@@ -78,30 +76,16 @@ export default function LancarEntradaModal({ open, onClose, prefill }: Props) {
   }
 
   // Distribuição automática
-  const autoDistribution: CaixinhaDistributionItem[] = useMemo(() => {
+  const distribution = useMemo(() => {
     const num = parseFloat(amount.replace(',', '.'))
     if (!num || isNaN(num) || num <= 0) return []
     return calculateDistribution(num, caixinhas)
   }, [amount, caixinhas])
 
-  // Distribuição editada pelo usuário (ou auto)
-  const distribution: CaixinhaDistributionItem[] = useMemo(() =>
-    autoDistribution.map(item => ({
-      ...item,
-      amount: editDist[item.caixinhaId] !== undefined
-        ? parseFloat(editDist[item.caixinhaId].replace(',', '.')) || 0
-        : item.amount,
-    })),
-    [autoDistribution, editDist]
-  )
+  const totalAmount = parseFloat(amount.replace(',', '.')) || 0
+  const isValid     = totalAmount > 0 && (sourceId || sourceText.trim())
 
-  const totalAllocated = distribution.reduce((s, d) => s + d.amount, 0)
-  const totalAmount    = parseFloat(amount.replace(',', '.')) || 0
-  const diff           = Math.abs(totalAllocated - totalAmount)
-  const isValid        = totalAmount > 0 && (sourceId || sourceText.trim()) && diff < 0.05
 
-  const isDizimo = (name: string) =>
-    name.toLowerCase().includes('dízimo') || name.toLowerCase().includes('dizimo')
 
   function handleConfirm() {
     if (!isValid || !currentUser) return
@@ -150,7 +134,7 @@ export default function LancarEntradaModal({ open, onClose, prefill }: Props) {
                 inputMode="decimal"
                 placeholder="0,00"
                 value={amount}
-                onChange={e => { setAmount(e.target.value); setEditDist({}) }}
+                onChange={e => setAmount(e.target.value)}
                 style={{ fontSize: 20, fontWeight: 700 }}
               />
             </div>
@@ -226,73 +210,6 @@ export default function LancarEntradaModal({ open, onClose, prefill }: Props) {
               />
             </div>
 
-            {/* Preview distribuição — hide when prefilled (quick launch) */}
-            {!prefill && distribution.length > 0 && (
-              <div style={{ marginBottom: 16 }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-                  <p className="section-label" style={{ margin: 0 }}>
-                    Distribuição pelas caixinhas
-                  </p>
-                  {diff >= 0.05 && (
-                    <Badge variant="warning" size="sm"><AlertTriangle size={10} style={{ marginRight: 2 }} />Diferença: {formatCurrency(diff)}</Badge>
-                  )}
-                </div>
-                <div style={{
-                  background: 'var(--color-bg-tertiary)',
-                  borderRadius: 'var(--radius-card)',
-                  overflow: 'hidden',
-                }}>
-                  {distribution.map((item, i) => {
-                    const isFirstDizimo = isDizimo(item.caixinhaName)
-                    const { Icon, color } = getCaixinhaIcon(item.caixinhaId)
-                    return (
-                      <div
-                        key={item.caixinhaId}
-                        style={{
-                          display: 'flex', alignItems: 'center', gap: 12,
-                          padding: '10px 12px',
-                          background: isFirstDizimo ? 'rgba(245,158,11,0.08)' : 'transparent',
-                          borderBottom: i < distribution.length - 1 ? '1px solid var(--color-border)' : 'none',
-                        }}
-                      >
-                        <span style={{ width: 24, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                          <Icon size={14} style={{ color }} />
-                        </span>
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                            <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--color-text-primary)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.caixinhaName}</p>
-                            {isFirstDizimo && <Badge variant="warning" size="sm">Primeiro ✝</Badge>}
-                          </div>
-                          <p style={{ fontSize: 10, color: 'var(--color-text-tertiary)', margin: 0 }}>{item.percentage}%</p>
-                        </div>
-                        <input
-                          type="number"
-                          placeholder="0,00"
-                          value={
-                            editDist[item.caixinhaId] !== undefined
-                              ? editDist[item.caixinhaId]
-                              : item.amount.toFixed(2)
-                          }
-                          onChange={e =>
-                            setEditDist(prev => ({ ...prev, [item.caixinhaId]: e.target.value }))
-                          }
-                          style={{
-                            width: 96, textAlign: 'right',
-                            fontSize: 16, fontWeight: 700,
-                            background: 'var(--color-bg-secondary)',
-                            border: '1px solid var(--color-border)',
-                            borderRadius: 8, padding: '4px 8px',
-                            color: 'var(--color-text-primary)',
-                            fontFamily: 'var(--font-sans)',
-                            outline: 'none',
-                          }}
-                        />
-                      </div>
-                    )
-                  })}
-                </div>
-              </div>
-            )}
 
             {/* Nota */}
             <div style={{ marginBottom: 16 }}>
