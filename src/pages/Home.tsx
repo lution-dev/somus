@@ -406,7 +406,8 @@ export default function Home() {
   const entradas       = useAppStore(useShallow(selectCurrentEntradas))
   const saidasFixas    = useAppStore(useShallow(selectCurrentSaidasFixas))
   const expectedIncome = useAppStore(selectExpectedMonthlyIncome)
-  const firstName      = displayName?.split(' ')[0] ?? useAppStore(s => (s.currentUser?.name ?? 'Usuário').split(' ')[0])
+  const currentUserName = useAppStore(s => s.currentUser?.name ?? 'Usuário')
+  const firstName       = displayName?.split(' ')[0] ?? currentUserName.split(' ')[0]
 
   const summary = useMemo(
     () => getMonthSummary(entradas, saidasFixas, caixinhas, expectedIncome),

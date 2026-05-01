@@ -1,6 +1,8 @@
 import { useState, useEffect, useCallback } from 'react'
 import {
   signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
   GoogleAuthProvider,
   onAuthStateChanged,
   signOut as firebaseSignOut,
@@ -22,7 +24,15 @@ interface AuthState {
 const googleProvider = new GoogleAuthProvider()
 
 /**
+ * Detect if we should use redirect (mobile) or popup (desktop).
+ * Popup doesn't work well on mobile browsers, especially over local IP.
+ */
+const isMobileBrowser = () =>
+  /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
+
+/**
  * Firebase Auth hook — Google Sign-In only.
+ * Uses signInWithRedirect on mobile, signInWithPopup on desktop.
  */
 export function useAuth() {
   const [state, setState] = useState<AuthState>({
@@ -36,11 +46,19 @@ export function useAuth() {
     error: null,
   })
 
-  // Sign in with Google
+  // Sign in with Google — auto-detect popup vs redirect
   const signInWithGoogle = useCallback(async () => {
     try {
       setState((prev) => ({ ...prev, isLoading: true, error: null }))
-      await signInWithPopup(auth, googleProvider)
+
+      if (isMobileBrowser()) {
+        // Mobile: redirect flow (avoids popup blockers + IP issues)
+        await signInWithRedirect(auth, googleProvider)
+        // Page will redirect — onAuthStateChanged handles state on return
+      } else {
+        // Desktop: popup flow
+        await signInWithPopup(auth, googleProvider)
+      }
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Google login failed'
       setState((prev) => ({
@@ -61,6 +79,17 @@ export function useAuth() {
   }, [])
 
   useEffect(() => {
+    // Check for redirect result (mobile flow returns here after Google)
+    getRedirectResult(auth).catch((err) => {
+      console.warn('[Somus] Redirect result error:', err)
+      setState((prev) => ({
+        ...prev,
+        error: err instanceof Error ? err.message : 'Login redirect failed',
+        isLoading: false,
+      }))
+    })
+
+    // Listen for auth state changes (works for both popup and redirect)
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user && !user.isAnonymous) {
         setState({
@@ -74,7 +103,6 @@ export function useAuth() {
           error: null,
         })
       } else {
-        // Not authenticated (or stale anonymous session — ignore it)
         setState({
           uid: null,
           user: null,
