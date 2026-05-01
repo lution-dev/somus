@@ -203,18 +203,38 @@ function ProximosDias({ onEntradaClick, onDespesaClick }: {
 
   if (upcoming.length === 0) return (
     <div style={{ marginTop: 20 }}>
-      <p className="section-label" style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10 }}>
-        <Calendar size={13} />
-        Próximos dias
-      </p>
-      <div style={{
-        display: 'flex', flexDirection: 'column', alignItems: 'center',
-        padding: '28px 16px', borderRadius: 'var(--radius-card)',
-        background: 'var(--color-bg-secondary)', border: '1px solid var(--color-border)',
-      }}>
-        <Calendar size={22} color="var(--color-text-tertiary)" strokeWidth={1.5} style={{ marginBottom: 8 }} />
-        <p style={{ fontSize: 13, color: 'var(--color-text-tertiary)', margin: 0, textAlign: 'center' }}>Nenhum compromisso nos próximos dias</p>
-      </div>
+      <button
+        onClick={toggle}
+        style={{
+          display: 'flex', alignItems: 'center', gap: 6, width: '100%',
+          background: 'none', border: 'none', cursor: 'pointer', padding: 0,
+          fontFamily: 'var(--font-sans)',
+        }}
+      >
+        <Calendar size={13} color="var(--color-text-tertiary)" />
+        <span className="section-label" style={{ marginBottom: 0, flex: 1, textAlign: 'left' }}>
+          Próximos dias
+        </span>
+        <ChevronDown
+          size={14}
+          color="var(--color-text-tertiary)"
+          style={{
+            transition: 'transform 200ms ease',
+            transform: collapsed ? 'rotate(-90deg)' : 'rotate(0deg)',
+          }}
+        />
+      </button>
+      {!collapsed && (
+        <div style={{
+          display: 'flex', flexDirection: 'column', alignItems: 'center',
+          padding: '28px 16px', borderRadius: 'var(--radius-card)',
+          background: 'var(--color-bg-secondary)', border: '1px solid var(--color-border)',
+          marginTop: 8,
+        }}>
+          <Calendar size={22} color="var(--color-text-tertiary)" strokeWidth={1.5} style={{ marginBottom: 8 }} />
+          <p style={{ fontSize: 13, color: 'var(--color-text-tertiary)', margin: 0, textAlign: 'center' }}>Nenhum compromisso nos próximos dias</p>
+        </div>
+      )}
     </div>
   )
 
