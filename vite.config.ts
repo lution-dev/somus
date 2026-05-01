@@ -46,6 +46,7 @@ export default defineConfig({
   ],
   server: {
     port: 1619,
+    strictPort: true,
     host: true,
   },
   resolve: {
