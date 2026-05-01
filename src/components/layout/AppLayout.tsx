@@ -1,10 +1,10 @@
-import type { ReactNode } from 'react'
+import { useState, useRef, useEffect, type ReactNode } from 'react'
 import { useLocation } from 'wouter'
-import { Home, ArrowLeftRight, Wallet, Heart } from 'lucide-react'
+import { Home, ArrowLeftRight, Wallet, Heart, MoreVertical, User, LogOut } from 'lucide-react'
 import { BottomNav } from '../ui'
 import type { NavItem } from '../ui'
 import SomusLogo from '../ui/SomusLogo'
-import UserMenu from '../ui/UserMenu'
+import { useAuth } from '../../hooks/useAuth'
 
 export const NAV_ITEMS: NavItem[] = [
   { path: '/home',      label: 'Home',      icon: <Home size={20} strokeWidth={1.75} />,           activeIcon: <Home size={20} strokeWidth={2} /> },
@@ -16,6 +16,28 @@ export const NAV_ITEMS: NavItem[] = [
 // ─── Sidebar Desktop ──────────────────────────────────────────────────────────
 function Sidebar() {
   const [location, navigate] = useLocation()
+  const { displayName, photoURL, email, signOut } = useAuth()
+  const [menuOpen, setMenuOpen] = useState(false)
+  const menuRef = useRef<HTMLDivElement>(null)
+
+  const initials = (displayName ?? email ?? '?')
+    .split(' ')
+    .map(p => p[0])
+    .slice(0, 2)
+    .join('')
+    .toUpperCase()
+
+  // Close menu on outside click
+  useEffect(() => {
+    if (!menuOpen) return
+    const handler = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setMenuOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [menuOpen])
 
   return (
     <aside style={{
@@ -55,11 +77,141 @@ function Sidebar() {
         })}
       </nav>
 
-      {/* User profile footer */}
-      <div style={{
-        padding: '14px 14px', borderTop: '1px solid var(--color-border)',
+      {/* User footer */}
+      <div ref={menuRef} style={{
+        padding: '12px 12px', borderTop: '1px solid var(--color-border)',
+        position: 'relative',
       }}>
-        <UserMenu />
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          {/* Clickable user area → profile */}
+          <button
+            onClick={() => navigate('/perfil')}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 10, flex: 1, minWidth: 0,
+              background: 'none', border: 'none', cursor: 'pointer', padding: '4px 0',
+              textAlign: 'left', fontFamily: 'var(--font-sans)',
+              borderRadius: 8, transition: 'background 120ms ease',
+            }}
+            onMouseEnter={e => e.currentTarget.style.background = 'var(--color-bg-tertiary)'}
+            onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+          >
+            {/* Avatar */}
+            {photoURL ? (
+              <img
+                src={photoURL}
+                alt=""
+                referrerPolicy="no-referrer"
+                style={{
+                  width: 32, height: 32, borderRadius: '50%',
+                  objectFit: 'cover', flexShrink: 0,
+                  border: '2px solid var(--color-border)',
+                }}
+              />
+            ) : (
+              <div style={{
+                width: 32, height: 32, borderRadius: '50%', flexShrink: 0,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                background: 'var(--color-accent-primary)', color: 'white',
+                fontSize: 12, fontWeight: 700,
+              }}>
+                {initials}
+              </div>
+            )}
+
+            {/* Name + email */}
+            <div style={{ minWidth: 0, flex: 1 }}>
+              <p style={{
+                fontSize: 12, fontWeight: 600, color: 'var(--color-text-primary)',
+                margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+              }}>
+                {displayName ?? 'Usuário'}
+              </p>
+              {email && (
+                <p style={{
+                  fontSize: 10, color: 'var(--color-text-tertiary)',
+                  margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                }}>
+                  {email}
+                </p>
+              )}
+            </div>
+          </button>
+
+          {/* 3-dot menu trigger */}
+          <button
+            onClick={() => setMenuOpen(prev => !prev)}
+            style={{
+              width: 28, height: 28, borderRadius: 6, flexShrink: 0,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              background: menuOpen ? 'var(--color-bg-tertiary)' : 'transparent',
+              border: 'none', cursor: 'pointer',
+              color: 'var(--color-text-tertiary)',
+              transition: 'background 120ms ease',
+            }}
+            onMouseEnter={e => { if (!menuOpen) e.currentTarget.style.background = 'var(--color-bg-tertiary)' }}
+            onMouseLeave={e => { if (!menuOpen) e.currentTarget.style.background = 'transparent' }}
+          >
+            <MoreVertical size={15} />
+          </button>
+        </div>
+
+        {/* Dropdown menu */}
+        {menuOpen && (
+          <div style={{
+            position: 'absolute',
+            bottom: '100%', left: 8, right: 8,
+            marginBottom: 6,
+            borderRadius: 10,
+            background: 'var(--color-bg-secondary)',
+            border: '1px solid var(--color-border)',
+            boxShadow: '0 6px 24px rgba(0,0,0,0.35)',
+            overflow: 'hidden',
+            zIndex: 999,
+            animation: 'sidebarMenuIn 120ms ease',
+          }}>
+            <style>{`
+              @keyframes sidebarMenuIn {
+                from { opacity: 0; transform: translateY(4px); }
+                to { opacity: 1; transform: translateY(0); }
+              }
+            `}</style>
+            <button
+              onClick={() => { setMenuOpen(false); navigate('/perfil') }}
+              style={{
+                width: '100%', display: 'flex', alignItems: 'center', gap: 10,
+                padding: '10px 14px', border: 'none',
+                background: 'transparent', cursor: 'pointer',
+                fontFamily: 'var(--font-sans)',
+                fontSize: 13, fontWeight: 500,
+                color: 'var(--color-text-primary)',
+                transition: 'background 100ms ease',
+              }}
+              onMouseEnter={e => e.currentTarget.style.background = 'var(--color-bg-tertiary)'}
+              onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+            >
+              <User size={14} style={{ opacity: 0.6 }} />
+              Ver perfil
+            </button>
+            <div style={{ height: 1, background: 'var(--color-border)' }} />
+            <button
+              onClick={() => { setMenuOpen(false); signOut() }}
+              style={{
+                width: '100%', display: 'flex', alignItems: 'center', gap: 10,
+                padding: '10px 14px', border: 'none',
+                background: 'transparent', cursor: 'pointer',
+                fontFamily: 'var(--font-sans)',
+                fontSize: 13, fontWeight: 500,
+                color: 'var(--color-danger)',
+                transition: 'background 100ms ease',
+              }}
+              onMouseEnter={e => e.currentTarget.style.background = 'rgba(239,68,68,0.08)'}
+              onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+            >
+              <LogOut size={14} style={{ opacity: 0.7 }} />
+              Sair
+            </button>
+          </div>
+        )}
       </div>
     </aside>
   )
