@@ -1,8 +1,8 @@
 # CONTEXT.md — Somus
 > Estado atual do projeto. Atualizado ao final de cada sessão.
 
-**Última atualização:** 2026-04-30
-**Status geral:** ✅ Sprint MVP completo + UI/UX Audit (9+9 tasks)
+**Última atualização:** 2026-05-01
+**Status geral:** ✅ Sprint MVP + UI/UX Audit + Firebase Integration
 
 ## O Que É
 App de planejamento financeiro para casais com renda variável. Mobile-first, dark mode only. Resolve o problema de apps que exigem renda fixa no início do mês — o Somus permite lançar entradas incrementais conforme caem e distribui automaticamente por caixinhas (método Nati Arcuri adaptado).
@@ -12,7 +12,7 @@ App de planejamento financeiro para casais com renda variável. Mobile-first, da
 - **Mírian Bernardo** — renda fixa ~R$2.8-2.9k/mês
 
 ## Stack
-Vite + React 18 + TypeScript + TailwindCSS + Zustand + Wouter + Framer Motion + PWA
+Vite + React 18 + TypeScript + TailwindCSS + Zustand + Wouter + Framer Motion + PWA + **Firebase** (Firestore + Auth)
 
 ## Paleta
 - Bg: #0D1B2A (azul escuro profundo)
@@ -47,12 +47,18 @@ src/
     mockData.ts           # Mock data Lucas + Mírian
     calculations.ts       # Funções de negócio + formatação
   stores/
-    useAppStore.ts        # Zustand store (persist localStorage)
+    useAppStore.ts        # Zustand store (persist localStorage + Firestore sync)
   components/
     ui/                   # Design system (8 componentes)
     layout/AppLayout.tsx  # Shell com BottomNav
     features/
       LancarEntradaModal.tsx  # Modal core
+  hooks/
+    useAuth.ts            # Firebase Anonymous Auth
+    useFirebaseSync.tsx   # Bidirectional Zustand ↔ Firestore sync
+    useImageUpload.ts     # Client-side image compression → base64
+    useIsMobile.ts        # Responsive breakpoint hook
+    usePWAInstall.ts      # PWA install prompt
   pages/
     Onboarding.tsx
     Home.tsx
@@ -60,7 +66,8 @@ src/
     Caixinhas.tsx
     CaixinhaDetalhe.tsx
     Casal.tsx
-  App.tsx                 # Routing com guard onboarding
+    ObjetivoDetalhe.tsx   # Cover image upload para objetivos
+  App.tsx                 # Routing com guard onboarding + FirebaseSyncProvider
 ```
 
 ## Regras de Negócio Implementadas
@@ -70,12 +77,13 @@ src/
 - RN08: Dízimo sempre primeiro no preview de distribuição
 
 ## O Que Falta (Próximas fases)
-- Backend Supabase (autenticação real, sync multi-device)
+- Auth real com email/senha (substituir anonymous)
+- Modo Casal real (parceiro conectado via código de convite)
 - Página de Histórico completo
 - Notificações push (PWA)
 - Gráficos de evolução (recharts)
-- Modo Casal real (parceiro conectado)
 - Lançamento iOS/Android via PWA
+- Firebase Storage (quando migrar para Blaze plan)
 
 ## Decisões
 | Data | Decisão | Motivo |
@@ -85,6 +93,10 @@ src/
 | 2026-04-29 | Dark mode only | Identidade visual do produto |
 | 2026-04-29 | Método Nati Arcuri como base das caixinhas | Referência conhecida do casal |
 | 2026-04-29 | useShallow do Zustand v5 em todos seletores array | Evitar infinite loop com useSyncExternalStore |
+| 2026-05-01 | Firebase (Firestore + Auth) em vez de Supabase | Limite de projetos free no Supabase atingido |
+| 2026-05-01 | Base64 para imagens em vez de Firebase Storage | Storage requer Blaze plan (cartão) |
+| 2026-05-01 | Auth anônimo em vez de email/senha | UX mais simples pro MVP, migra depois |
+| 2026-05-01 | Single-document per user no Firestore | Volume pequeno, minimiza reads no free tier |
 
 ## Bloqueios
 Nenhum.

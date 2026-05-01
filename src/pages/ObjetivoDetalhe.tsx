@@ -1,11 +1,12 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useRef } from 'react'
 import { useParams } from 'wouter'
 import { useAppStore } from '../stores/useAppStore'
 import { formatCurrency } from '../lib/calculations'
 import { PageHeader, ProgressBar, SearchBar } from '../components/ui'
 import ItemActionSheet from '../components/ui/ItemActionSheet'
 import { useIsMobile } from '../hooks/useIsMobile'
-import { Target, ArrowUpRight, ArrowDownRight, Info, Plus } from 'lucide-react'
+import { useImageUpload } from '../hooks/useImageUpload'
+import { ArrowUpRight, ArrowDownRight, Info, Plus, Camera } from 'lucide-react'
 import EditMovementModal from '../components/features/EditMovementModal'
 import type { ObjetivoMovement } from '../types'
 
@@ -17,7 +18,10 @@ export default function ObjetivoDetalhe() {
   const addObjetivoMovement = useAppStore(s => s.addObjetivoMovement)
   const editObjetivoMovement = useAppStore(s => s.editObjetivoMovement)
   const deleteObjetivoMovement = useAppStore(s => s.deleteObjetivoMovement)
+  const updateObjetivoImage = useAppStore(s => s.updateObjetivoImage)
   const isMobile = useIsMobile()
+  const { upload, isProcessing } = useImageUpload()
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const [actionItem, setActionItem] = useState<ObjetivoMovement | null>(null)
   const [editMv, setEditMv] = useState<ObjetivoMovement | null>(null)
@@ -66,6 +70,23 @@ export default function ObjetivoDetalhe() {
 
   return (
     <div style={{ minHeight: '100%', paddingBottom: 24 }}>
+      {/* Hidden file input for image upload */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        style={{ display: 'none' }}
+        onChange={async (e) => {
+          const file = e.target.files?.[0]
+          if (!file || !objetivo) return
+          const result = await upload(file)
+          if (result) {
+            updateObjetivoImage(objetivo.id, result.dataUrl)
+          }
+          e.target.value = ''
+        }}
+      />
+
       {/* Header */}
       {isMobile ? (
         <>
@@ -77,15 +98,50 @@ export default function ObjetivoDetalhe() {
             marginBottom: 20,
             overflow: 'hidden',
           }}>
-            {/* Icon */}
-            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 12 }}>
-              <div style={{
-                width: 64, height: 64, borderRadius: '50%',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                background: 'rgba(139,92,246,0.15)', border: '2px solid rgba(139,92,246,0.3)',
-              }}>
-                <Target size={28} color="var(--color-accent-couple)" />
-              </div>
+            {/* Cover Image or Icon */}
+            <div
+              onClick={() => fileInputRef.current?.click()}
+              style={{
+                display: 'flex', justifyContent: 'center', marginBottom: 12,
+                cursor: 'pointer', position: 'relative',
+              }}
+            >
+              {objetivo.imageUrl ? (
+                <div style={{ position: 'relative', width: 80, height: 80 }}>
+                  <img
+                    src={objetivo.imageUrl}
+                    alt={objetivo.name}
+                    style={{
+                      width: 80, height: 80, borderRadius: '50%',
+                      objectFit: 'cover',
+                      border: '2px solid rgba(139,92,246,0.3)',
+                      opacity: isProcessing ? 0.5 : 1,
+                      transition: 'opacity 200ms ease',
+                    }}
+                  />
+                  <div style={{
+                    position: 'absolute', bottom: 0, right: 0,
+                    width: 24, height: 24, borderRadius: '50%',
+                    background: 'var(--color-accent-couple)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    border: '2px solid ' + HERO_BG,
+                  }}>
+                    <Camera size={12} color="white" />
+                  </div>
+                </div>
+              ) : (
+                <div style={{
+                  width: 64, height: 64, borderRadius: '50%',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  flexDirection: 'column', gap: 2,
+                  background: 'rgba(139,92,246,0.15)', border: '2px dashed rgba(139,92,246,0.3)',
+                  opacity: isProcessing ? 0.5 : 1,
+                  transition: 'opacity 200ms ease',
+                }}>
+                  <Camera size={20} color="var(--color-accent-couple)" />
+                  <span style={{ fontSize: 8, color: 'var(--color-text-tertiary)' }}>Foto</span>
+                </div>
+              )}
             </div>
 
             {/* Progress card */}
@@ -115,9 +171,46 @@ export default function ObjetivoDetalhe() {
           </div>
         </>
       ) : (
-        <div style={{ paddingTop: 32, marginBottom: 24 }}>
-          <h1 style={{ fontSize: 24, fontWeight: 600, color: 'var(--color-accent-couple)', margin: 0, display: 'flex', alignItems: 'center', gap: 8 }}>
-            <Target size={20} color="var(--color-accent-couple)" />
+        <div style={{ paddingTop: 32, marginBottom: 24, display: 'flex', alignItems: 'center', gap: 16 }}>
+          {/* Desktop: Cover image or upload */}
+          <div
+            onClick={() => fileInputRef.current?.click()}
+            style={{ cursor: 'pointer', flexShrink: 0, position: 'relative' }}
+          >
+            {objetivo.imageUrl ? (
+              <div style={{ position: 'relative' }}>
+                <img
+                  src={objetivo.imageUrl}
+                  alt={objetivo.name}
+                  style={{
+                    width: 56, height: 56, borderRadius: 16,
+                    objectFit: 'cover',
+                    border: '2px solid rgba(139,92,246,0.3)',
+                    opacity: isProcessing ? 0.5 : 1,
+                  }}
+                />
+                <div style={{
+                  position: 'absolute', bottom: -4, right: -4,
+                  width: 20, height: 20, borderRadius: '50%',
+                  background: 'var(--color-accent-couple)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  border: '2px solid var(--color-bg-primary)',
+                }}>
+                  <Camera size={10} color="white" />
+                </div>
+              </div>
+            ) : (
+              <div style={{
+                width: 56, height: 56, borderRadius: 16,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                background: 'rgba(139,92,246,0.12)', border: '2px dashed rgba(139,92,246,0.3)',
+                cursor: 'pointer',
+              }}>
+                <Camera size={20} color="var(--color-accent-couple)" />
+              </div>
+            )}
+          </div>
+          <h1 style={{ fontSize: 24, fontWeight: 600, color: 'var(--color-accent-couple)', margin: 0 }}>
             {objetivo.name}
           </h1>
         </div>

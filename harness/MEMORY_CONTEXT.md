@@ -1,5 +1,5 @@
 ## MEMÓRIA GLOBAL LIDTEK
-> Task: Configurar PWA instalável com hint de instalação que aparece uma vez e depois some
+> Task: Integrar Firebase (Firestore + Storage + Auth) no Somus - substituir localStorage por cloud sync, upload de imagens para objetivos
 > Tokens injetados: ~197 de 900 máx
 
 ### Regras Globais

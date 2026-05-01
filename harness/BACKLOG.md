@@ -225,3 +225,91 @@
 - [x] Montar no App.tsx dentro do layout protegido
 **Status:** ✅ Concluído
 
+---
+
+## Sprint S02 — Firebase Integration (7 tasks)
+
+> Origem: Necessidade de backend cloud, upload de imagens, sync multi-device.
+> Modo: SPRINT. Firebase (Firestore + Auth anônimo). Imagens via base64 (Storage requer Blaze plan).
+
+---
+
+#### T-S02-01: Firebase SDK + Configuração
+**Tipo:** Infra
+**Critérios:**
+- [x] Firebase SDK instalado
+- [x] Projeto `somus-3df33` criado no Firebase Console (Spark plan)
+- [x] `src/lib/firebase.ts` com initializeApp, getAuth, getFirestore
+- [x] `.env` com variáveis VITE_FIREBASE_*
+- [x] `.env.example` template seguro
+- [x] `.gitignore` com .env protegido
+**Status:** ✅ Concluído
+
+---
+
+#### T-S02-02: Firestore Service
+**Tipo:** Data
+**Critérios:**
+- [x] `src/lib/firestoreService.ts` com saveState, loadState, subscribeToState
+- [x] Single-document per user approach (users/{uid})
+- [x] serverTimestamp para lastModified
+**Status:** ✅ Concluído
+
+---
+
+#### T-S02-03: Firebase Sync Provider
+**Tipo:** Infra
+**Critérios:**
+- [x] `src/hooks/useFirebaseSync.tsx` — Provider que orquestra sync
+- [x] Dual-write: Zustand (localStorage) + Firestore
+- [x] Debounced writes (2s) para minimizar Firestore usage
+- [x] Não bloqueia UI — app carrega do localStorage, sync em background
+- [x] Real-time listener para sync multi-device
+**Status:** ✅ Concluído
+
+---
+
+#### T-S02-04: Anonymous Auth
+**Tipo:** Auth
+**Critérios:**
+- [x] `src/hooks/useAuth.ts` com signInAnonymously
+- [x] Auto sign-in no primeiro acesso
+- [x] Sessão persistida pelo Firebase (sobrevive reload)
+- [x] Auth Anônimo habilitado no Firebase Console
+**Status:** ✅ Concluído
+
+---
+
+#### T-S02-05: Image Upload (base64)
+**Tipo:** Feature
+**Critérios:**
+- [x] `src/hooks/useImageUpload.ts` com compressão client-side
+- [x] Resize max 800px, JPEG 75% quality
+- [x] Fallback para 50% quality se > 500KB
+- [x] Sem Firebase Storage (requer Blaze) — armazena base64 no Firestore
+**Status:** ✅ Concluído
+
+---
+
+#### T-S02-06: UI Upload nos Objetivos
+**Tipo:** Visual/Feature
+**Critérios:**
+- [x] Cover image clicável no ObjetivoDetalhe (mobile + desktop)
+- [x] Ícone Camera com dashed border quando sem foto
+- [x] Preview circular com badge Camera quando tem foto
+- [x] Loading state (opacity) durante processamento
+- [x] `updateObjetivoImage` action no Zustand store
+**Status:** ✅ Concluído
+
+---
+
+#### T-S02-07: Migration Service
+**Tipo:** Data
+**Critérios:**
+- [x] `src/lib/migrationService.ts` com migrateToFirestore
+- [x] One-time migration: localStorage → Firestore na primeira abertura
+- [x] debouncedSaveToFirestore para writes subsequentes
+- [x] Flag de migração em localStorage para não repetir
+**Status:** ✅ Concluído
+
+---

@@ -60,6 +60,7 @@ interface AppActions {
   addObjetivoMovement: (objetivoId: string, mv: Omit<ObjetivoMovement, 'id'>) => void
   editObjetivoMovement: (objetivoId: string, movementId: string, updates: Partial<ObjetivoMovement>) => void
   deleteObjetivoMovement: (objetivoId: string, movementId: string) => void
+  updateObjetivoImage: (objetivoId: string, imageUrl: string) => void
 
   // Reset
   resetAll: () => void
@@ -280,6 +281,13 @@ export const useAppStore = create<AppState & AppActions>()(
               currentAmount: o.currentAmount - (o.movements.find(m => m.id === movementId)?.amount ?? 0),
               movements: o.movements.filter(m => m.id !== movementId),
             }
+          ),
+        })),
+
+      updateObjetivoImage: (id, imageUrl) =>
+        set((state) => ({
+          objetivos: state.objetivos.map(o =>
+            o.id !== id ? o : { ...o, imageUrl }
           ),
         })),
 
