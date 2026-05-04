@@ -271,12 +271,13 @@ export function AppLayout({ children }: AppLayoutProps) {
           flexDirection: 'column',
           background: 'var(--color-bg-primary)',
           overflow: 'hidden',
+          paddingTop: 'env(safe-area-inset-top, 0px)',
         }}
       >
         <main style={{
           flex: 1,
           minHeight: 0,
-          overflowY: 'scroll',
+          overflowY: 'auto',
           WebkitOverflowScrolling: 'touch',
           overscrollBehavior: 'contain',
           paddingBottom: 'calc(88px + env(safe-area-inset-bottom, 0px))',
