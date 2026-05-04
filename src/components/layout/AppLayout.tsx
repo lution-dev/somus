@@ -4,6 +4,7 @@ import { Home, ArrowLeftRight, Wallet, Heart, MoreVertical, User, LogOut } from 
 import { BottomNav } from '../ui'
 import type { NavItem } from '../ui'
 import SomusLogo from '../ui/SomusLogo'
+import PullToRefresh from '../ui/PullToRefresh'
 import { useAuth } from '../../hooks/useAuth'
 
 export const NAV_ITEMS: NavItem[] = [
@@ -221,6 +222,8 @@ function Sidebar() {
 interface AppLayoutProps { children: ReactNode }
 
 export function AppLayout({ children }: AppLayoutProps) {
+  const mainRef = useRef<HTMLElement>(null)
+
   return (
     <>
       {/* CSS responsivo injetado */}
@@ -273,15 +276,20 @@ export function AppLayout({ children }: AppLayoutProps) {
           overflow: 'hidden',
         }}
       >
-        <main style={{
-          flex: 1,
-          minHeight: 0,
-          overflowY: 'auto',
-          WebkitOverflowScrolling: 'touch',
-          overscrollBehavior: 'contain',
-          paddingBottom: 'calc(88px + env(safe-area-inset-bottom, 0px))',
-        }}>
-          {children}
+        <main
+          ref={mainRef}
+          style={{
+            flex: 1,
+            minHeight: 0,
+            overflowY: 'auto',
+            WebkitOverflowScrolling: 'touch',
+            overscrollBehavior: 'contain',
+            paddingBottom: 'calc(88px + env(safe-area-inset-bottom, 0px))',
+          }}
+        >
+          <PullToRefresh scrollRef={mainRef}>
+            {children}
+          </PullToRefresh>
         </main>
         <BottomNav items={NAV_ITEMS} />
       </div>
