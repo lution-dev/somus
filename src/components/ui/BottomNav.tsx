@@ -19,8 +19,10 @@ export function BottomNav({ items }: BottomNavProps) {
       aria-label="Navegação principal"
       style={{
         flexShrink: 0,
-        margin: '0 16px',
-        marginBottom: 'calc(12px + env(safe-area-inset-bottom, 0px))',
+        margin: '0 16px 12px',
+        /* padding-bottom absorbs the safe area so the nav background
+           extends behind the home indicator on notched iPhones */
+        paddingBottom: 'env(safe-area-inset-bottom, 0px)',
         zIndex: 40,
         background: 'rgba(23,23,23,0.92)',
         backdropFilter: 'blur(20px)',
