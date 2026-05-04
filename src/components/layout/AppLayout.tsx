@@ -263,18 +263,22 @@ export function AppLayout({ children }: AppLayoutProps) {
       <div
         className="somus-mobile"
         style={{
-          height: '100dvh',
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
           flexDirection: 'column',
           background: 'var(--color-bg-primary)',
           overflow: 'hidden',
-          position: 'fixed',
-          inset: 0,
         }}
       >
         <main style={{
           flex: 1,
-          overflowY: 'auto',
+          minHeight: 0,
+          overflowY: 'scroll',
           WebkitOverflowScrolling: 'touch',
+          overscrollBehavior: 'contain',
           paddingBottom: 'calc(88px + env(safe-area-inset-bottom, 0px))',
         }}>
           {children}
