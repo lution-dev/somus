@@ -18,40 +18,44 @@ export async function migrateToFirestore(
     const alreadySynced = localStorage.getItem(MIGRATION_KEY) === uid
 
     if (!remoteState) {
-      // No Firestore doc yet — push local state and mark as synced
+      if (alreadySynced && localState.isOnboarded) {
+        // Doc was deleted (intentional reset) — wipe local state and restart onboarding
+        localStorage.removeItem(MIGRATION_KEY)
+        return getResetState()
+      }
+      // No doc yet, first time — push local state to Firestore
       await saveStateToFirestore(uid, localState)
       localStorage.setItem(MIGRATION_KEY, uid)
       return localState
     }
 
     if (!alreadySynced) {
-      // First time syncing this device with this uid
-      // Remote exists → it has authoritative data from another device/session
       localStorage.setItem(MIGRATION_KEY, uid)
       return remoteState
     }
 
-    // Already synced before — Firestore is source of truth
-    // Always load from Firestore on app open so cross-device changes appear
-    const remoteHasData = stateHasData(remoteState)
-    const localHasData  = stateHasData(localState)
-
-    if (remoteHasData) {
-      // Remote has data → trust it (covers new device, PWA install, browser context)
-      return remoteState
-    }
-
-    if (localHasData) {
-      // Remote is empty but local has data → re-push local (remote was wiped)
-      await saveStateToFirestore(uid, localState)
-      return localState
-    }
-
-    // Both empty — keep local (preserves isOnboarded, currentUser etc.)
-    return localState
+    // Firestore is source of truth — load it on every open
+    return stateHasData(remoteState) ? remoteState
+      : stateHasData(localState)    ? (await saveStateToFirestore(uid, localState), localState)
+      : localState
   } catch {
-    // Offline or Firestore error — use local state silently
     return localState
+  }
+}
+
+/** Minimal reset state — triggers onboarding flow */
+function getResetState(): AppState {
+  return {
+    isOnboarded: false,
+    currentUser: null,
+    partner: null,
+    viewContext: 'personal',
+    incomeSources: [],
+    entradas: [],
+    caixinhas: [],
+    saidasFixas: [],
+    saidasVariaveis: [],
+    objetivos: [],
   }
 }
 
