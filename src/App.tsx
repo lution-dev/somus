@@ -22,19 +22,22 @@ import Perfil        from './pages/Perfil'
 import Login         from './pages/Login'
 
 export default function App() {
-  const isOnboarded = useAppStore(s => s.isOnboarded)
-  const currentUser = useAppStore(s => s.currentUser)
-  const caixinhas = useAppStore(s => s.caixinhas)
+  // Stable selectors
+  const isOnboarded   = useAppStore(s => s.isOnboarded)
+  const currentUser   = useAppStore(s => s.currentUser)
+  // Derive stable primitives to use as effect deps (avoid full array in deps)
+  const caixinhasLen  = useAppStore(s => s.caixinhas.length)
+  const hasLivre      = useAppStore(s => s.caixinhas.some(cx => cx.id === 'cx-livre'))
   const { isAuthenticated, isLoading: authLoading } = useAuth()
 
-  // Runtime data hygiene: runs on every mount regardless of data source.
-  // Handles stale Firestore data that bypasses Zustand migrations.
+  // Runtime data hygiene: runs only when structural issues exist.
+  // Uses stable primitive deps to avoid triggering on every state change.
   useEffect(() => {
     if (!isOnboarded) return
     const userId = currentUser?.id ?? ''
 
     // 1. Backfill: create default caixinhas if user has none
-    if (caixinhas.length === 0) {
+    if (caixinhasLen === 0) {
       const defaultCaixinhas: Caixinha[] = DIVISAO_ORDER.map((id, i) => {
         const info = DIVISAO_INFO[id]
         const icon = CAIXINHA_ICONS[id]
@@ -56,10 +59,10 @@ export default function App() {
     }
 
     // 2. Cleanup: remove cx-livre if it still exists (Firestore may have old data)
-    const hasLivre = caixinhas.some(cx => cx.id === 'cx-livre')
     if (hasLivre) {
-      const livreBalance = caixinhas.find(cx => cx.id === 'cx-livre')?.balance ?? 0
-      const cleaned = caixinhas
+      const all = useAppStore.getState().caixinhas
+      const livreBalance = all.find(cx => cx.id === 'cx-livre')?.balance ?? 0
+      const cleaned = all
         .filter(cx => cx.id !== 'cx-livre')
         .map(cx => cx.id === 'cx-reserva'
           ? { ...cx, percentage: 10, balance: cx.balance + livreBalance }
@@ -67,7 +70,7 @@ export default function App() {
         )
       useAppStore.setState({ caixinhas: cleaned })
     }
-  }, [isOnboarded, caixinhas, currentUser])
+  }, [isOnboarded, caixinhasLen, hasLivre, currentUser])
 
   // Auth loading — show nothing (avoids flash)
   if (authLoading) {
