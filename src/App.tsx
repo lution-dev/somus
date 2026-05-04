@@ -32,11 +32,16 @@ export default function App() {
   const { isAuthenticated, isLoading: authLoading } = useAuth()
   const [, navigate] = useLocation()
 
-  // Force reload when a new Service Worker version is available
-  // This ensures the PWA always runs the latest code after deployment
+  // Force reload when a new Service Worker version is available.
+  // onNeedRefresh fires when a new SW is waiting (prompt strategy).
+  // onRegisteredSW runs after SW registers — we call update() to force
+  // an immediate check for new versions on every app open.
   useRegisterSW({
+    onRegisteredSW(_swUrl, registration) {
+      // Force check for SW update every time app opens
+      registration?.update()
+    },
     onNeedRefresh() {
-      // New SW waiting — force immediate reload
       window.location.reload()
     },
   })

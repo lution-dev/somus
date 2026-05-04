@@ -18,12 +18,14 @@ export async function migrateToFirestore(
     const alreadySynced = localStorage.getItem(MIGRATION_KEY) === uid
 
     if (!remoteState) {
-      if (alreadySynced && localState.isOnboarded) {
-        // Doc was deleted (intentional reset) — wipe local state and restart onboarding
+      if (localState.isOnboarded) {
+        // No Firestore doc but local says onboarded → doc was deleted (reset request).
+        // This covers BOTH cases: alreadySynced=true (new logic) and alreadySynced=false
+        // (old code stored 'lucas' as key, not the real Firebase UID).
         localStorage.removeItem(MIGRATION_KEY)
         return getResetState()
       }
-      // No doc yet, first time — push local state to Firestore
+      // Genuinely first-time user — push initial local state to Firestore
       await saveStateToFirestore(uid, localState)
       localStorage.setItem(MIGRATION_KEY, uid)
       return localState
