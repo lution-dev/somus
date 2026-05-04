@@ -512,6 +512,21 @@ export default function Onboarding() {
         targetDate: g.deadline || undefined,
       }))
     completeOnboarding(user, { incomeSources, saidasFixas, objetivos })
+
+    // Save to Firestore IMMEDIATELY — do not rely on the 3s debounce.
+    // If the page reloads before debounce fires, the migration would find
+    // Firestore empty and trigger a false reset (double onboarding bug).
+    if (uid) {
+      const finalState = useAppStore.getState()
+      import('../lib/firestoreService').then(({ saveStateToFirestore }) => {
+        saveStateToFirestore(uid, finalState as import('../types').AppState)
+          .then(() => {
+            localStorage.setItem('somus-firebase-migrated', uid)
+          })
+          .catch(() => {}) // Firestore write will be retried by debounced save
+      })
+    }
+
     navigate('/home')
   }
 

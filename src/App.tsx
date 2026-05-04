@@ -24,29 +24,23 @@ import Perfil        from './pages/Perfil'
 import Login         from './pages/Login'
 
 export default function App() {
-  // Stable selectors
   const isOnboarded   = useAppStore(s => s.isOnboarded)
   const currentUser   = useAppStore(s => s.currentUser)
   const caixinhasLen  = useAppStore(s => s.caixinhas.length)
   const hasLivre      = useAppStore(s => s.caixinhas.some(cx => cx.id === 'cx-livre'))
   const { isAuthenticated, isLoading: authLoading } = useAuth()
-  const [, navigate] = useLocation()
+  const [location, navigate] = useLocation()
 
-  // Force reload when a new Service Worker version is available.
-  // onNeedRefresh fires when a new SW is waiting (prompt strategy).
-  // onRegisteredSW runs after SW registers — we call update() to force
-  // an immediate check for new versions on every app open.
+  // Silent SW update — DO NOT reload the page.
+  // skipWaiting + clientsClaim in workbox config handles activation automatically.
+  // Reloading here caused a race condition that wiped onboarding state.
   useRegisterSW({
     onRegisteredSW(_swUrl, registration) {
-      // Force check for SW update every time app opens
       registration?.update()
-    },
-    onNeedRefresh() {
-      window.location.reload()
     },
   })
 
-  // Runtime data hygiene
+  // Runtime data hygiene (caixinhas backfill + cx-livre cleanup)
   useEffect(() => {
     if (!isOnboarded) return
     const userId = currentUser?.id ?? ''
@@ -79,12 +73,18 @@ export default function App() {
     }
   }, [isOnboarded, caixinhasLen, hasLivre, currentUser])
 
-  // Redirect to onboarding from any route when not onboarded
+  // BIDIRECTIONAL routing guard:
+  // - Not onboarded + not on /onboarding → send to onboarding
+  // - Onboarded + on /onboarding → send to home (covers cross-device sync)
   useEffect(() => {
-    if (!isOnboarded && isAuthenticated && !authLoading) {
+    if (authLoading || !isAuthenticated) return
+
+    if (!isOnboarded && location !== '/onboarding') {
       navigate('/onboarding')
+    } else if (isOnboarded && location === '/onboarding') {
+      navigate('/home')
     }
-  }, [isOnboarded, isAuthenticated, authLoading, navigate])
+  }, [isOnboarded, isAuthenticated, authLoading, location, navigate])
 
   if (authLoading) {
     return (
