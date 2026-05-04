@@ -50,7 +50,7 @@ export default function CaixinhaDetalhe() {
   const deleteSaidaFixa = useAppStore(s => s.deleteSaidaFixa)
   const expectedIncome = useAppStore(s =>
     s.incomeSources
-      .filter(src => src.userId === (s.currentUser?.id ?? 'lucas'))
+      .filter(src => src.userId === (s.currentUser?.id ?? ''))
       .reduce((sum, src) => sum + (src.expectedAmount ?? 0), 0)
   )
 

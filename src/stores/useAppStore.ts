@@ -64,7 +64,7 @@ const getInitialState = (): AppState => ({
   isOnboarded: false,
   currentUser: null,
   partner: null,
-  viewContext: 'lucas',
+  viewContext: 'personal',
   incomeSources: [],
   entradas: [],
   caixinhas: [],
@@ -308,7 +308,7 @@ export const useAppStore = create<AppState & AppActions>()(
     }),
     {
       name: 'somus-state',
-      version: 8,
+      version: 9,
       migrate: (_persisted: unknown, version: number) => {
         const state = _persisted as Record<string, unknown>
 
@@ -323,7 +323,7 @@ export const useAppStore = create<AppState & AppActions>()(
           const caixinhas = (state.caixinhas as Caixinha[] | undefined) ?? []
           if (caixinhas.length === 0 && state.isOnboarded) {
             const currentUser = state.currentUser as User | null
-            const userId = currentUser?.id ?? 'lucas'
+            const userId = currentUser?.id ?? 'user'
             state.caixinhas = DIVISAO_ORDER.map((id, i) => {
               const info = DIVISAO_INFO[id]
               const icon = CAIXINHA_ICONS[id]
@@ -358,6 +358,20 @@ export const useAppStore = create<AppState & AppActions>()(
             })
         }
 
+        // v9: generalize viewContext from 'lucas'/'mirian' to 'personal'/'couple'
+        // and remove hardcoded 'context' field from User
+        if (version < 9) {
+          const vc = state.viewContext as string
+          if (vc !== 'couple') {
+            state.viewContext = 'personal'
+          }
+          // Remove legacy 'context' field from user objects
+          const user = state.currentUser as Record<string, unknown> | null
+          if (user) delete user.context
+          const partner = state.partner as Record<string, unknown> | null
+          if (partner) delete partner.context
+        }
+
         return state as unknown as AppState & AppActions
       },
       partialize: (state) => ({
@@ -379,16 +393,24 @@ export const useAppStore = create<AppState & AppActions>()(
 // ─── Selectors ────────────────────────────────────────────────────────────────
 
 export const selectCurrentCaixinhas = (state: AppState) =>
-  state.caixinhas.filter(cx => cx.userId === (state.viewContext === 'couple' ? 'lucas' : (state.currentUser?.id ?? 'lucas')))
+  state.viewContext === 'couple'
+    ? state.caixinhas
+    : state.caixinhas.filter(cx => cx.userId === (state.currentUser?.id ?? ''))
 
 export const selectCurrentIncomeSources = (state: AppState) =>
-  state.incomeSources.filter(src => src.userId === (state.viewContext === 'couple' ? 'lucas' : (state.currentUser?.id ?? 'lucas')))
+  state.viewContext === 'couple'
+    ? state.incomeSources
+    : state.incomeSources.filter(src => src.userId === (state.currentUser?.id ?? ''))
 
 export const selectCurrentEntradas = (state: AppState) =>
-  state.entradas.filter(e => e.userId === (state.currentUser?.id ?? 'lucas'))
+  state.viewContext === 'couple'
+    ? state.entradas
+    : state.entradas.filter(e => e.userId === (state.currentUser?.id ?? ''))
 
 export const selectCurrentSaidasFixas = (state: AppState) =>
-  state.saidasFixas.filter(sf => sf.userId === (state.currentUser?.id ?? 'lucas'))
+  state.viewContext === 'couple'
+    ? state.saidasFixas
+    : state.saidasFixas.filter(sf => sf.userId === (state.currentUser?.id ?? ''))
 
 export const selectExpectedMonthlyIncome = (state: AppState): number =>
   selectCurrentIncomeSources(state)

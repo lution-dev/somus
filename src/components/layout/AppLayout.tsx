@@ -262,9 +262,21 @@ export function AppLayout({ children }: AppLayoutProps) {
       {/* Mobile: sem sidebar, com bottom nav */}
       <div
         className="somus-mobile"
-        style={{ minHeight: '100dvh', flexDirection: 'column', background: 'var(--color-bg-primary)' }}
+        style={{
+          height: '100dvh',
+          flexDirection: 'column',
+          background: 'var(--color-bg-primary)',
+          overflow: 'hidden',
+          position: 'fixed',
+          inset: 0,
+        }}
       >
-        <main style={{ flex: 1, overflowY: 'auto', paddingBottom: 'calc(88px + env(safe-area-inset-bottom, 0px))' }}>
+        <main style={{
+          flex: 1,
+          overflowY: 'auto',
+          WebkitOverflowScrolling: 'touch',
+          paddingBottom: 'calc(88px + env(safe-area-inset-bottom, 0px))',
+        }}>
           {children}
         </main>
         <BottomNav items={NAV_ITEMS} />

@@ -1,6 +1,6 @@
 // ─── Entidades base ─────────────────────────────────────────────────────────
 
-export type UserContext = 'lucas' | 'mirian' | 'couple'
+export type UserContext = 'personal' | 'couple'
 export type IncomeType = 'fixed' | 'variable'
 export type PaymentMethod = 'debit' | 'credit' | 'pix' | 'cash' | 'auto_debit'
 
@@ -9,7 +9,6 @@ export interface User {
   name: string
   email: string
   avatar?: string
-  context: 'lucas' | 'mirian'
   partnerCode?: string
 }
 

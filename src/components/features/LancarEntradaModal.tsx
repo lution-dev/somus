@@ -28,7 +28,7 @@ export default function LancarEntradaModal({ open, onClose, prefill }: Props) {
   const addEntrada    = useAppStore(s => s.addEntrada)
 
   const firstSource = useAppStore(s =>
-    s.incomeSources.find(src => src.userId === (s.currentUser?.id ?? 'lucas'))
+    s.incomeSources.find(src => src.userId === (s.currentUser?.id ?? ''))
   )
 
   // Reset ao abrir

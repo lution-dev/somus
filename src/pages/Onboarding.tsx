@@ -2,6 +2,7 @@ import { useState, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useLocation } from 'wouter'
 import { useAppStore } from '../stores/useAppStore'
+import { useAuth } from '../hooks/useAuth'
 import { Button, Input } from '../components/ui'
 import SomusLogo from '../components/ui/SomusLogo'
 import type { User } from '../types'
@@ -461,6 +462,9 @@ export default function Onboarding() {
   const completeOnboarding = useAppStore(s => s.completeOnboarding)
   const dirRef = useRef<1 | -1>(1)
 
+  // Get Firebase Auth data
+  const { uid, displayName, email, photoURL } = useAuth()
+
   const totalSteps = 6
 
   function goNext() { dirRef.current = 1; setStep(s => s + 1) }
@@ -468,11 +472,11 @@ export default function Onboarding() {
 
   function handleFinish() {
     const user: User = {
-      id: 'lucas',
-      name: name || 'Lucas',
-      email: 'lucas@lidtek.com.br',
-      context: 'lucas',
-      partnerCode: 'SOMUS-0001',
+      id: uid ?? `user-${Date.now()}`,
+      name: name || displayName || 'Usuário',
+      email: email ?? '',
+      avatar: photoURL ?? undefined,
+      partnerCode: `SOMUS-${Date.now().toString(36).toUpperCase()}`,
     }
     completeOnboarding(user)
     navigate('/home')

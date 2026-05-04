@@ -168,7 +168,7 @@ function ProximosDias({ onEntradaClick, onDespesaClick }: {
 }) {
   const saidasFixas = useAppStore(useShallow(selectCurrentSaidasFixas))
   const incomeSources = useAppStore(useShallow(s =>
-    s.incomeSources.filter(src => src.userId === (s.currentUser?.id ?? 'lucas'))
+    s.incomeSources.filter(src => src.userId === (s.currentUser?.id ?? ''))
   ))
 
   const upcoming = useMemo(() => {

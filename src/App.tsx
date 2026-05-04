@@ -31,7 +31,7 @@ export default function App() {
   // This handles all edge cases (stale SW cache, missed migration, new devices).
   useEffect(() => {
     if (isOnboarded && caixinhas.length === 0) {
-      const userId = currentUser?.id ?? 'lucas'
+      const userId = currentUser?.id ?? ''
       const defaultCaixinhas: Caixinha[] = DIVISAO_ORDER.map((id, i) => {
         const info = DIVISAO_INFO[id]
         const icon = CAIXINHA_ICONS[id]

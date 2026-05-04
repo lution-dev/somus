@@ -27,7 +27,7 @@ export default function Casal() {
 
   // ── Calculate real balances ──────────────────────────────────────────────────
   const currentUserBalance = caixinhas
-    .filter(cx => cx.userId === (currentUser?.id ?? 'lucas'))
+    .filter(cx => cx.userId === (currentUser?.id ?? ''))
     .reduce((s, cx) => s + cx.balance, 0)
 
   const partnerBalance = partner
