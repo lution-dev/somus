@@ -18,9 +18,9 @@ export function BottomNav({ items }: BottomNavProps) {
     <nav
       aria-label="Navegação principal"
       style={{
-        position: 'fixed',
-        bottom: 'calc(12px + env(safe-area-inset-bottom, 0px))',
-        left: 16, right: 16,
+        flexShrink: 0,
+        margin: '0 16px',
+        marginBottom: 'calc(12px + env(safe-area-inset-bottom, 0px))',
         zIndex: 40,
         background: 'rgba(23,23,23,0.92)',
         backdropFilter: 'blur(20px)',
@@ -55,7 +55,6 @@ export function BottomNav({ items }: BottomNavProps) {
               }}>
                 {item.label}
               </span>
-
             </button>
           )
         })}

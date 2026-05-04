@@ -285,7 +285,6 @@ export function AppLayout({ children }: AppLayoutProps) {
             overflowY: 'auto',
             WebkitOverflowScrolling: 'touch',
             overscrollBehavior: 'contain',
-            paddingBottom: 'calc(100px + env(safe-area-inset-bottom, 0px))',
           }}
         >
           <PullToRefresh scrollRef={mainRef}>
