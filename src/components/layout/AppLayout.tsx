@@ -267,6 +267,7 @@ export function AppLayout({ children }: AppLayoutProps) {
         className="somus-mobile"
         style={{
           flex: 1,
+          display: 'flex',
           flexDirection: 'column',
           background: 'var(--color-bg-primary)',
           overflow: 'hidden',
