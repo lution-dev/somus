@@ -31,10 +31,10 @@ export function PageHeader({ title, back, backTo, rightAction, bg, height }: Pag
 
   return (
     <>
-      {/* Fixed header */}
+      {/* Sticky header */}
       <header
         style={{
-          position: 'fixed',
+          position: 'sticky',
           top: 0,
           left: 0,
           right: 0,
@@ -93,9 +93,6 @@ export function PageHeader({ title, back, backTo, rightAction, bg, height }: Pag
         {/* Bottom border */}
         {!bg && <div style={{ height: 1, background: 'var(--color-border)', opacity: 0.5 }} />}
       </header>
-
-      {/* Spacer to push content below the fixed header */}
-      <div style={{ height: h, flexShrink: 0, background: bg || 'transparent' }} />
     </>
   )
 }

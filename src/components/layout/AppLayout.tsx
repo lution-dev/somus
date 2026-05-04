@@ -271,7 +271,6 @@ export function AppLayout({ children }: AppLayoutProps) {
           flexDirection: 'column',
           background: 'var(--color-bg-primary)',
           overflow: 'hidden',
-          paddingTop: 'env(safe-area-inset-top, 0px)',
         }}
       >
         <main style={{
