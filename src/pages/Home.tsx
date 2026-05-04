@@ -493,7 +493,7 @@ export default function Home() {
       {isMobile ? (
         <>
           <PageHeader
-            title={`${greeting}, ${firstName}`}
+            title={`${greeting}, ${firstName} (v7)`}
             bg={HERO_BG}
             rightAction={<UserMenu variant="hero" />}
           />
