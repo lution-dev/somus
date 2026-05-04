@@ -1,11 +1,11 @@
-# HARNESS.md — Somus
+﻿# HARNESS.md — Somus
 > Leia este arquivo INTEIRO antes de qualquer ação. Ele é sua única instrução obrigatória.
 
 ## STEP 0 — OBRIGATÓRIO: Memória Global Lidtek
 
 **ANTES de qualquer outra ação**, rode o hook de entrada para carregar contexto da memória global:
 ```powershell
-node "c:\Users\Lucas\OneDrive\Documentos\Projetos\lidtek-memoria\hooks\entrada-write.js" "[descreva a task aqui]" "Somus" "c:\Users\Lucas\OneDrive\Documentos\Projetos\Somus\harness"
+node "c:\Users\Lucas\OneDrive\Documentos\Projetos\lidtek-memoria\hooks\entrada.js" "[descreva a task aqui]" "Somus"
 ```
 Depois leia o `harness/MEMORY_CONTEXT.md` gerado. Ele contém regras globais e aprendizados de outros projetos relevantes para a task atual.
 

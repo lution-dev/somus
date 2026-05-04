@@ -1,4 +1,4 @@
-# AGENTS.md — Lidtek Engineering OS v2
+﻿# AGENTS.md — Lidtek Engineering OS v2
 
 ## ⛔ MANDATORY — READ BEFORE ANY ACTION
 
@@ -13,7 +13,7 @@ Read file: harness/HARNESS.md (ENTIRE file, do not skip)
 
 ### Step 2: Run the memory hook (Step 0 in HARNESS.md)
 ```powershell
-node "c:\Users\Lucas\OneDrive\Documentos\Projetos\lidtek-memoria\hooks\entrada-write.js" "[describe the task]" "Somus" "c:\Users\Lucas\OneDrive\Documentos\Projetos\Somus\harness"
+node "c:\Users\Lucas\OneDrive\Documentos\Projetos\lidtek-memoria\hooks\entrada.js" "[describe the task]" "Somus"
 ```
 Then read the generated `harness/MEMORY_CONTEXT.md`.
 
