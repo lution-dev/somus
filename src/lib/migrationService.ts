@@ -42,8 +42,12 @@ export async function migrateToFirestore(
 }
 
 /**
- * Normal sync: compare local/remote timestamps and resolve.
- * For the Somus use case (1-2 users), we use a simple "last writer wins" strategy.
+ * Normal sync: resolve local vs remote state.
+ * 
+ * Strategy:
+ * - If local has real data (entradas or caixinhas with balance) → keep local, push to remote
+ * - If local is empty/default but remote has data → use remote
+ * - If both have data → prefer remote (Firestore is source of truth)
  */
 async function syncWithFirestore(
   uid: string,
@@ -58,9 +62,28 @@ async function syncWithFirestore(
       return localState
     }
 
-    // For now, always prefer local state on app startup
-    // (because the user just opened the app with their local data)
-    // The debounced sync will keep Firestore updated going forward
+    const localHasData = localState.entradas.length > 0 ||
+      localState.caixinhas.some(cx => cx.balance > 0)
+    const remoteHasData = remoteState.entradas.length > 0 ||
+      remoteState.caixinhas.some(cx => cx.balance > 0)
+
+    if (remoteHasData && !localHasData) {
+      // Local is empty, remote has data → use remote (new device / fresh install)
+      return remoteState
+    }
+
+    if (localHasData && !remoteHasData) {
+      // Local has data, remote is empty → push local
+      await saveStateToFirestore(uid, localState)
+      return localState
+    }
+
+    // Both have data → prefer remote (Firestore is source of truth for multi-device)
+    if (remoteHasData) {
+      return remoteState
+    }
+
+    // Both empty — keep local (preserves onboarding state etc.)
     return localState
   } catch {
     // Offline or error — just use local state
