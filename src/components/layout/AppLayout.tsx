@@ -271,6 +271,7 @@ export function AppLayout({ children }: AppLayoutProps) {
           left: 0,
           right: 0,
           bottom: 0,
+          display: 'flex',
           flexDirection: 'column',
           background: 'var(--color-bg-primary)',
           overflow: 'hidden',
@@ -284,7 +285,7 @@ export function AppLayout({ children }: AppLayoutProps) {
             overflowY: 'auto',
             WebkitOverflowScrolling: 'touch',
             overscrollBehavior: 'contain',
-            paddingBottom: 'calc(88px + env(safe-area-inset-bottom, 0px))',
+            paddingBottom: 'calc(100px + env(safe-area-inset-bottom, 0px))',
           }}
         >
           <PullToRefresh scrollRef={mainRef}>
