@@ -144,13 +144,11 @@ const iconBtn = (color: string): React.CSSProperties => ({
 
 // ─── Passo 3: Fontes de renda ─────────────────────────────────────────────────
 
-function Step3({ onNext }: { onNext: () => void }) {
-  const [sources, setSources] = useState([
-    { id: '1', name: 'Lidtek — Salário', amount: '5000' },
-    { id: '2', name: 'Lidtek — Lucro',   amount: '2000' },
-    { id: '3', name: 'Glide',            amount: '1500' },
-    { id: '4', name: 'Mentorias',        amount: '700'  },
-  ])
+type SourceItem = { id: string; name: string; amount: string }
+type ContaItem  = { id: string; name: string; amount: string; dia: string }
+type GoalItem   = { id: string; name: string; target: string; deadline: string }
+
+function Step3({ sources, setSources, onNext }: { sources: SourceItem[]; setSources: React.Dispatch<React.SetStateAction<SourceItem[]>>; onNext: () => void }) {
   const [editId, setEditId] = useState<string | null>(null)
   const [editName, setEditName] = useState('')
   const [editAmount, setEditAmount] = useState('')
@@ -216,7 +214,7 @@ function Step3({ onNext }: { onNext: () => void }) {
           <Plus size={14} /> Adicionar fonte
         </button>
       </div>
-      <Button variant="lucas" fullWidth onClick={onNext} disabled={sources.length === 0} type="button">Ficou bom!</Button>
+      <Button variant="primary" fullWidth onClick={onNext} type="button">Continuar</Button>
     </div>
   )
 }
@@ -289,12 +287,7 @@ function Step4({ onNext }: { onNext: () => void }) {
 
 // ─── Passo 5: Saídas fixas ────────────────────────────────────────────────────
 
-function Step5({ onNext }: { onNext: () => void }) {
-  const [contas, setContas] = useState([
-    { id: '1', name: 'Aluguel', amount: '601', dia: '10' },
-    { id: '2', name: 'Claro',   amount: '175', dia: '15' },
-    { id: '3', name: 'Enel',    amount: '200', dia: '20' },
-  ])
+function Step5({ contas, setContas, onNext }: { contas: ContaItem[]; setContas: React.Dispatch<React.SetStateAction<ContaItem[]>>; onNext: () => void }) {
   const [editId, setEditId] = useState<string | null>(null)
   const [editName, setEditName] = useState('')
   const [editAmount, setEditAmount] = useState('')
@@ -371,10 +364,7 @@ function Step5({ onNext }: { onNext: () => void }) {
 
 // ─── Passo 6: Primeiro objetivo ───────────────────────────────────────────────
 
-function Step6({ onFinish }: { onFinish: () => void }) {
-  const [goals, setGoals] = useState([
-    { id: '1', name: 'Viagem Europa', target: '15000', deadline: '2027-06' },
-  ])
+function Step6({ goals, setGoals, onFinish }: { goals: GoalItem[]; setGoals: React.Dispatch<React.SetStateAction<GoalItem[]>>; onFinish: () => void }) {
   const [editId, setEditId] = useState<string | null>(null)
   const [editName, setEditName] = useState('')
   const [editTarget, setEditTarget] = useState('')
@@ -446,7 +436,7 @@ function Step6({ onFinish }: { onFinish: () => void }) {
           <Plus size={14} /> Adicionar objetivo
         </button>
       </div>
-      <Button variant="couple" fullWidth onClick={onFinish} disabled={goals.length === 0} type="button">
+      <Button variant="couple" fullWidth onClick={onFinish} type="button">
         Vamos começar!
       </Button>
     </div>
@@ -458,37 +448,70 @@ function Step6({ onFinish }: { onFinish: () => void }) {
 export default function Onboarding() {
   const [step, setStep] = useState(0)
   const [name, setName] = useState('')
-  const [, navigate]    = useLocation()
+  // Lifted state — survives step navigation
+  const [sources, setSources] = useState<SourceItem[]>([])
+  const [contas,  setContas]  = useState<ContaItem[]>([])
+  const [goals,   setGoals]   = useState<GoalItem[]>([])
+
+  const [, navigate]       = useLocation()
   const completeOnboarding = useAppStore(s => s.completeOnboarding)
   const dirRef = useRef<1 | -1>(1)
-
-  // Get Firebase Auth data
   const { uid, displayName, email, photoURL } = useAuth()
 
   const totalSteps = 6
-
   function goNext() { dirRef.current = 1; setStep(s => s + 1) }
   function goBack() { dirRef.current = -1; setStep(s => s - 1) }
 
   function handleFinish() {
+    const userId = uid ?? `user-${Date.now()}`
     const user: User = {
-      id: uid ?? `user-${Date.now()}`,
+      id: userId,
       name: name || displayName || 'Usuário',
       email: email ?? '',
       avatar: photoURL ?? undefined,
       partnerCode: `SOMUS-${Date.now().toString(36).toUpperCase()}`,
     }
-    completeOnboarding(user)
+    const incomeSources = sources
+      .filter(s => s.name.trim())
+      .map(s => ({
+        userId,
+        name: s.name.trim(),
+        type: 'fixed' as const,
+        expectedAmount: parseFloat(s.amount) || 0,
+      }))
+    const saidasFixas = contas
+      .filter(c => c.name.trim())
+      .map(c => ({
+        userId,
+        name: c.name.trim(),
+        amount: parseFloat(c.amount) || 0,
+        dueDay: parseInt(c.dia) || 1,
+        paymentMethod: 'auto_debit' as const,
+        caixinhaId: 'cx-essencial',
+        autoDebit: false,
+        paidDates: [],
+        category: 'Conta fixa',
+      }))
+    const objetivos = goals
+      .filter(g => g.name.trim())
+      .map(g => ({
+        userId,
+        name: g.name.trim(),
+        emoji: '🎯',
+        targetAmount: parseFloat(g.target) || 0,
+        targetDate: g.deadline || undefined,
+      }))
+    completeOnboarding(user, { incomeSources, saidasFixas, objetivos })
     navigate('/home')
   }
 
   const steps = [
     <Step1 key={0} name={name} setName={setName} onNext={goNext} />,
     <Step2 key={1} onNext={goNext} onSkip={goNext} />,
-    <Step3 key={2} onNext={goNext} />,
+    <Step3 key={2} sources={sources} setSources={setSources} onNext={goNext} />,
     <Step4 key={3} onNext={goNext} />,
-    <Step5 key={4} onNext={goNext} />,
-    <Step6 key={5} onFinish={handleFinish} />,
+    <Step5 key={4} contas={contas} setContas={setContas} onNext={goNext} />,
+    <Step6 key={5} goals={goals} setGoals={setGoals} onFinish={handleFinish} />,
   ]
 
   return (

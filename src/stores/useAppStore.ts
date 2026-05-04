@@ -21,7 +21,11 @@ import { CAIXINHA_ICONS } from '../lib/icons'
 
 interface AppActions {
   // Setup
-  completeOnboarding: (user: User) => void
+  completeOnboarding: (user: User, initial: {
+    incomeSources: Omit<IncomeSource, 'id'>[]
+    saidasFixas: Omit<SaidaFixa, 'id'>[]
+    objetivos: Omit<Objetivo, 'id' | 'movements' | 'currentAmount'>[]
+  }) => void
   setViewContext: (ctx: UserContext) => void
 
   // Entradas
@@ -80,28 +84,31 @@ export const useAppStore = create<AppState & AppActions>()(
     (set) => ({
       ...getInitialState(),
 
-      completeOnboarding: (user) =>
+      completeOnboarding: (user, initial) =>
         set((state) => {
-          // Create default caixinhas if none exist
           const caixinhas = state.caixinhas.length > 0
             ? state.caixinhas
             : DIVISAO_ORDER.map((id, i) => {
                 const info = DIVISAO_INFO[id]
                 const icon = CAIXINHA_ICONS[id]
                 return {
-                  id,
-                  userId: user.id,
-                  name: info.name,
-                  emoji: '',
-                  percentage: info.pct,
-                  balance: 0,
+                  id, userId: user.id, name: info.name, emoji: '',
+                  percentage: info.pct, balance: 0,
                   color: icon?.color ?? '#64748B',
-                  isDefault: true,
-                  order: i,
-                  movements: [],
+                  isDefault: true, order: i, movements: [],
                 } as Caixinha
               })
-          return { isOnboarded: true, currentUser: user, caixinhas }
+          const incomeSources = initial.incomeSources.map((src, i) => ({
+            ...src, id: `src-${Date.now()}-${i}`,
+          }))
+          const saidasFixas = initial.saidasFixas.map((sf, i) => ({
+            ...sf, id: `sf-${Date.now()}-${i}`,
+          }))
+          const objetivos = initial.objetivos.map((obj, i) => ({
+            ...obj, id: `obj-${Date.now()}-${i}`,
+            currentAmount: 0, movements: [],
+          }))
+          return { isOnboarded: true, currentUser: user, caixinhas, incomeSources, saidasFixas, objetivos }
         }),
 
       setViewContext: (ctx) => set({ viewContext: ctx }),
