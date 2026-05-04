@@ -449,9 +449,19 @@ export default function Onboarding() {
   const [step, setStep] = useState(0)
   const [name, setName] = useState('')
   // Lifted state — survives step navigation
-  const [sources, setSources] = useState<SourceItem[]>([])
-  const [contas,  setContas]  = useState<ContaItem[]>([])
-  const [goals,   setGoals]   = useState<GoalItem[]>([])
+  const [sources, setSources] = useState<SourceItem[]>([
+    { id: '1', name: 'Salário CLT', amount: '3000' },
+    { id: '2', name: 'Freelance',   amount: '1000' },
+  ])
+  const [contas,  setContas]  = useState<ContaItem[]>([
+    { id: '1', name: 'Aluguel / Financiamento', amount: '800', dia: '10' },
+    { id: '2', name: 'Internet / Telefone',      amount: '120', dia: '15' },
+    { id: '3', name: 'Energia elétrica',         amount: '150', dia: '20' },
+  ])
+  const [goals,   setGoals]   = useState<GoalItem[]>([
+    { id: '1', name: 'Fundo de emergência', target: '10000', deadline: '' },
+    { id: '2', name: 'Viagem dos sonhos',   target: '5000',  deadline: '' },
+  ])
 
   const [, navigate]       = useLocation()
   const completeOnboarding = useAppStore(s => s.completeOnboarding)
