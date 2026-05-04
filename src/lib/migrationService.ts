@@ -19,10 +19,10 @@ export async function migrateToFirestore(
 
     if (!remoteState) {
       if (localState.isOnboarded) {
-        // No Firestore doc but local says onboarded → doc was deleted (reset request).
-        // This covers BOTH cases: alreadySynced=true (new logic) and alreadySynced=false
-        // (old code stored 'lucas' as key, not the real Firebase UID).
+        // No Firestore doc but local says onboarded → doc was deleted (reset).
+        // Nuke ALL local state so Zustand persist doesn't rehydrate old data.
         localStorage.removeItem(MIGRATION_KEY)
+        localStorage.removeItem('somus-state')  // Zustand persist storage key
         return getResetState()
       }
       // Genuinely first-time user — push initial local state to Firestore
@@ -88,6 +88,10 @@ export function debouncedSaveToFirestore(
   state: AppState,
   delayMs = 3000
 ): void {
+  // NEVER save to Firestore if user hasn't completed onboarding.
+  // This prevents re-creating a deleted Firestore doc with empty/reset state.
+  if (!state.isOnboarded) return
+
   if (saveTimeout) clearTimeout(saveTimeout)
 
   saveTimeout = setTimeout(async () => {
