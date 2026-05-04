@@ -240,16 +240,16 @@ export function AppLayout({ children }: AppLayoutProps) {
       <div
         className="somus-desktop"
         style={{
-          minHeight: '100dvh',
+          flex: 1,
           background: 'var(--color-bg-primary)',
           flexDirection: 'row',
           alignItems: 'stretch',
+          overflow: 'hidden',
         }}
       >
         <Sidebar />
         <div style={{
           flex: 1,
-          minHeight: '100dvh',
           overflowY: 'auto',
           display: 'flex',
           flexDirection: 'column',
@@ -266,12 +266,7 @@ export function AppLayout({ children }: AppLayoutProps) {
       <div
         className="somus-mobile"
         style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          display: 'flex',
+          flex: 1,
           flexDirection: 'column',
           background: 'var(--color-bg-primary)',
           overflow: 'hidden',
