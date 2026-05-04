@@ -336,7 +336,6 @@ function ProximosDias({ onEntradaClick, onDespesaClick }: {
 function CaixinhasSection() {
   const [, navigate]   = useLocation()
   const caixinhas      = useAppStore(useShallow(selectCurrentCaixinhas))
-  const expectedIncome = useAppStore(selectExpectedMonthlyIncome)
 
   return (
     <div style={{ marginTop: 20 }}>
@@ -382,8 +381,10 @@ function CaixinhasSection() {
         `}</style>
         {caixinhas.slice(0, 6).map((cx) => {
           const { Icon, color } = getCaixinhaIcon(cx.id)
-          const expectedBal     = (cx.percentage / 100) * expectedIncome
-          const pct             = expectedBal > 0 ? Math.min(100, (cx.balance / expectedBal) * 100) : 100
+          // % = how much of what entered this caixinha has been spent
+          const totalIn  = cx.movements.filter(m => m.type === 'income').reduce((s, m) => s + m.amount, 0)
+          const totalOut = cx.movements.filter(m => m.type === 'expense').reduce((s, m) => s + m.amount, 0)
+          const pct      = totalIn > 0 ? Math.min(100, (totalOut / totalIn) * 100) : 0
 
           return (
             <button
@@ -418,15 +419,17 @@ function CaixinhasSection() {
                 }}>{cx.percentage}%</span>
               </div>
 
-              {/* Valor + % preenchido */}
+              {/* Valor + % gasto */}
               <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, marginBottom: 8 }}>
                 <p style={{ fontSize: 14, fontWeight: 700, color: 'var(--color-text-primary)', margin: 0 }}>
                   {formatCurrency(cx.balance)}
                 </p>
-                <span style={{
-                  fontSize: 10, fontWeight: 600,
-                  color: pct >= 100 ? 'var(--color-success)' : 'var(--color-text-tertiary)',
-                }}>{Math.round(pct)}%</span>
+                {totalIn > 0 && (
+                  <span style={{
+                    fontSize: 10, fontWeight: 600,
+                    color: pct >= 80 ? 'var(--color-danger)' : pct >= 50 ? 'var(--color-warning)' : 'var(--color-text-tertiary)',
+                  }}>{Math.round(pct)}% usado</span>
+                )}
               </div>
 
               {/* Barra */}

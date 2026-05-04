@@ -27,11 +27,14 @@ export default function App() {
   const caixinhas = useAppStore(s => s.caixinhas)
   const { isAuthenticated, isLoading: authLoading } = useAuth()
 
-  // Runtime backfill: create default caixinhas if user is onboarded but has none.
-  // This handles all edge cases (stale SW cache, missed migration, new devices).
+  // Runtime data hygiene: runs on every mount regardless of data source.
+  // Handles stale Firestore data that bypasses Zustand migrations.
   useEffect(() => {
-    if (isOnboarded && caixinhas.length === 0) {
-      const userId = currentUser?.id ?? ''
+    if (!isOnboarded) return
+    const userId = currentUser?.id ?? ''
+
+    // 1. Backfill: create default caixinhas if user has none
+    if (caixinhas.length === 0) {
       const defaultCaixinhas: Caixinha[] = DIVISAO_ORDER.map((id, i) => {
         const info = DIVISAO_INFO[id]
         const icon = CAIXINHA_ICONS[id]
@@ -49,8 +52,22 @@ export default function App() {
         }
       })
       useAppStore.setState({ caixinhas: defaultCaixinhas })
+      return
     }
-  }, [isOnboarded, caixinhas.length, currentUser])
+
+    // 2. Cleanup: remove cx-livre if it still exists (Firestore may have old data)
+    const hasLivre = caixinhas.some(cx => cx.id === 'cx-livre')
+    if (hasLivre) {
+      const livreBalance = caixinhas.find(cx => cx.id === 'cx-livre')?.balance ?? 0
+      const cleaned = caixinhas
+        .filter(cx => cx.id !== 'cx-livre')
+        .map(cx => cx.id === 'cx-reserva'
+          ? { ...cx, percentage: 10, balance: cx.balance + livreBalance }
+          : cx
+        )
+      useAppStore.setState({ caixinhas: cleaned })
+    }
+  }, [isOnboarded, caixinhas, currentUser])
 
   // Auth loading — show nothing (avoids flash)
   if (authLoading) {
