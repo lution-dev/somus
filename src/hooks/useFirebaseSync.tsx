@@ -48,6 +48,14 @@ export function FirebaseSyncProvider({ children }: FirebaseSyncProviderProps) {
           isRemoteUpdate.current = false
         } else {
           log('Resolved state === local state (no update needed)')
+          // Even if states are "same reference", ensure Firestore has the data.
+          // This handles the case where Zustand has data but Firestore doesn't.
+          if (localState.isOnboarded) {
+            log('Ensuring Firestore has current state...')
+            const { saveStateToFirestore } = await import('../lib/firestoreService')
+            await saveStateToFirestore(uid, localState)
+            log('Ensured Firestore is up to date')
+          }
         }
       } catch (err) {
         console.warn('[Somus] Migration error (using local state):', err)
