@@ -328,6 +328,17 @@
 
 ---
 
+#### T-AD-13: Sync cross-device — writes do mobile não persistem no Firestore
+**Tipo:** Bug
+**Critérios:**
+- [ ] Verificar que dados adicionados no mobile (piresblucas@gmail.com) persistem no Firestore
+- [ ] Verificar que o desktop recebe as mudanças via real-time listener
+- [ ] Adicionar logging de debug para diagnosticar o fluxo de sync
+- [ ] Garantir que o debouncedSaveToFirestore não está sendo bloqueado
+**Status:** 🔧 Em progresso
+
+---
+
 #### T-AD-11: BottomNav — safe area nativa (fill-to-bottom)
 **Tipo:** Visual/UX
 **Critérios:**

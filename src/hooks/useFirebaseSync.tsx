@@ -1,9 +1,11 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { useAuth } from './useAuth'
 import { useAppStore } from '../stores/useAppStore'
-import { migrateToFirestore, debouncedSaveToFirestore } from '../lib/migrationService'
+import { migrateToFirestore, debouncedSaveToFirestore, flushPendingSave } from '../lib/migrationService'
 import { subscribeToState } from '../lib/firestoreService'
 import type { AppState } from '../types'
+
+const log = (...args: unknown[]) => console.log('[Somus:Sync]', ...args)
 
 interface FirebaseSyncProviderProps {
   children: ReactNode
@@ -32,6 +34,7 @@ export function FirebaseSyncProvider({ children }: FirebaseSyncProviderProps) {
 
     const runMigration = async () => {
       try {
+        log('Running migration for uid:', uid)
         const localState = useAppStore.getState() as AppState
         const resolvedState = await migrateToFirestore(uid, localState)
 
@@ -39,15 +42,19 @@ export function FirebaseSyncProvider({ children }: FirebaseSyncProviderProps) {
 
         // If remote state was different, update Zustand
         if (resolvedState !== localState) {
+          log('Remote state differs from local → updating Zustand')
           isRemoteUpdate.current = true
           useAppStore.setState(resolvedState)
           isRemoteUpdate.current = false
+        } else {
+          log('Resolved state === local state (no update needed)')
         }
       } catch (err) {
         console.warn('[Somus] Migration error (using local state):', err)
       }
 
       if (!cancelled) {
+        log('Sync ready!')
         setSyncReady(true)
       }
     }
@@ -63,10 +70,16 @@ export function FirebaseSyncProvider({ children }: FirebaseSyncProviderProps) {
   useEffect(() => {
     if (!syncReady || !uid) return
 
+    log('Subscribing to Zustand store changes → Firestore')
+
     const unsubscribeStore = useAppStore.subscribe((state) => {
       // Don't write back changes that came FROM Firestore
-      if (isRemoteUpdate.current) return
+      if (isRemoteUpdate.current) {
+        log('Skipping write (isRemoteUpdate)')
+        return
+      }
 
+      log('Local change detected → scheduling debounced save')
       debouncedSaveToFirestore(uid, state as AppState)
     })
 
@@ -94,10 +107,14 @@ export function FirebaseSyncProvider({ children }: FirebaseSyncProviderProps) {
       if (migrationState) {
         const same = JSON.stringify(remoteState) === JSON.stringify(migrationState)
         migrationState = null // only compare once
-        if (same) return
+        if (same) {
+          log('Listener: first snapshot matches migration state → skip')
+          return
+        }
       }
 
       // Apply remote state
+      log('Listener: remote change detected → updating Zustand', 'entradas:', remoteState.entradas?.length ?? 0)
       isRemoteUpdate.current = true
       useAppStore.setState(remoteState)
       isRemoteUpdate.current = false
@@ -107,6 +124,30 @@ export function FirebaseSyncProvider({ children }: FirebaseSyncProviderProps) {
       unsubRef.current?.()
     }
   }, [syncReady, uid])
+
+  // ── Step 4: Flush pending writes when page is hidden (mobile) ──────────────
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') {
+        log('Page hidden → flushing pending save')
+        flushPendingSave()
+      }
+    }
+
+    // Also flush on beforeunload (desktop tab close)
+    const handleBeforeUnload = () => {
+      log('beforeunload → flushing pending save')
+      flushPendingSave()
+    }
+
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    window.addEventListener('beforeunload', handleBeforeUnload)
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+      window.removeEventListener('beforeunload', handleBeforeUnload)
+    }
+  }, [])
 
   // Render children immediately — localStorage already has the data
   return <>{children}</>
