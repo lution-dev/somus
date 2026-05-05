@@ -63,6 +63,8 @@ html {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   -webkit-text-size-adjust: 100%;
+  background: var(--color-bg-primary);
+  height: 100%;
 }
 
 /* iOS Safari: prevent auto-zoom on input focus (requires >= 16px) */
@@ -76,11 +78,14 @@ body {
   line-height: 1.5;
   font-size: 14px;
   overscroll-behavior: none;
+  height: 100%;
+  margin: 0;
 }
 
 #root {
   display: flex;
   flex-direction: column;
+  height: 100%;
 }
 
 /* ─── Scrollbar ─── */
