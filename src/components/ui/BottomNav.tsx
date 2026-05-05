@@ -15,12 +15,6 @@ export function BottomNav({ items }: BottomNavProps) {
   const [location, navigate] = useLocation()
 
   return (
-    /*
-      position:fixed funciona corretamente agora porque removemos
-      body { position: fixed } do CSS — que era o causador do bug no iOS PWA.
-      O scroll lock do body já é garantido pelo .somus-mobile (overflow: hidden).
-      Padrão idêntico ao GQB Consultoria que funciona corretamente.
-    */
     <nav
       aria-label="Navegação principal"
       style={{
@@ -28,23 +22,17 @@ export function BottomNav({ items }: BottomNavProps) {
         bottom: 0,
         left: 0, right: 0,
         zIndex: 40,
-        /* Scrim acima do pill — sem padding embaixo (pill cobre até o fundo) */
-        padding: '12px 16px 0',
-        background: 'linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.5) 100%)',
+        padding: '8px 16px',
+        paddingBottom: 'env(safe-area-inset-bottom, 8px)',
         pointerEvents: 'none',
       }}
     >
-      {/* Pill que se estende pela safe area como tab bar nativa iOS */}
       <div style={{
-        background: 'rgba(23,23,23,0.97)',
+        background: 'rgba(23,23,23,0.96)',
         backdropFilter: 'blur(20px)',
         WebkitBackdropFilter: 'blur(20px)',
         border: '1px solid rgba(255,255,255,0.08)',
-        borderBottom: 'none',
-        /* Topo arredondado, base quadrada para encostar no fundo da tela */
-        borderRadius: '20px 20px 0 0',
-        /* Padding bottom = safe area → ícones ficam acima do home indicator */
-        paddingBottom: 'env(safe-area-inset-bottom, 8px)',
+        borderRadius: 22,
         pointerEvents: 'auto',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-around', padding: '0 4px', height: 56 }}>
