@@ -16,15 +16,17 @@ export function BottomNav({ items }: BottomNavProps) {
 
   return (
     /*
-      SEM position:fixed — nav fica no flex flow do .somus-mobile.
-      Isso corrige o bug do iOS PWA standalone onde position:fixed aninhado
-      dentro de outro position:fixed se posiciona incorretamente.
-      O efeito visual de "pill flutuante" é mantido pelo padding + border-radius.
+      position:absolute (não fixed) dentro do .somus-mobile que é position:fixed.
+      - absolute dentro de fixed = posicionado relativo ao fixed parent = OK no iOS PWA
+      - fixed dentro de fixed = bug no iOS PWA standalone (posição errada)
+      O conteúdo da main tem um spacer que permite scroll sob este overlay.
     */
     <nav
       aria-label="Navegação principal"
       style={{
-        flexShrink: 0,
+        position: 'absolute',
+        bottom: 0,
+        left: 0, right: 0,
         zIndex: 40,
         padding: '8px 16px',
         paddingBottom: 'calc(8px + env(safe-area-inset-bottom, 0px))',

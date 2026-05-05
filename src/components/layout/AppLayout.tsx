@@ -291,8 +291,14 @@ export function AppLayout({ children }: AppLayoutProps) {
           <PullToRefresh scrollRef={mainRef}>
             {children}
           </PullToRefresh>
+          {/* Spacer: permite scroll do conteudo abaixo do nav overlay */}
+          <div style={{
+            height: 'calc(72px + env(safe-area-inset-bottom, 0px))',
+            flexShrink: 0,
+            pointerEvents: 'none',
+          }} aria-hidden="true" />
         </main>
-        {/* Nav no flex flow — evita bug de position:fixed aninhado no iOS PWA standalone */}
+        {/* Nav como position:absolute dentro do fixed parent — funciona no iOS PWA */}
         <BottomNav items={NAV_ITEMS} />
       </div>
     </>
