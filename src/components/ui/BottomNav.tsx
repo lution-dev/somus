@@ -22,8 +22,7 @@ export function BottomNav({ items }: BottomNavProps) {
         bottom: 0,
         left: 0, right: 0,
         zIndex: 40,
-        padding: '8px 16px',
-        paddingBottom: 'env(safe-area-inset-bottom, 8px)',
+        padding: '8px 16px 8px',
         pointerEvents: 'none',
       }}
     >
