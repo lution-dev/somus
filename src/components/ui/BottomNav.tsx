@@ -23,9 +23,15 @@ export function BottomNav({ items }: BottomNavProps) {
         left: 0,
         right: 0,
         zIndex: 40,
-        background: 'var(--color-bg-secondary)',
-        borderTop: '1px solid var(--color-border)',
-        paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) / 2)',
+        /* Floating pill: margin lifts it above the home indicator */
+        margin: '0 16px calc(env(safe-area-inset-bottom, 0px) / 2 + 4px)',
+        borderRadius: 22,
+        border: '1px solid rgba(255,255,255,0.08)',
+        /* Glassmorphism */
+        background: 'rgba(23,23,23,0.88)',
+        backdropFilter: 'blur(20px)',
+        WebkitBackdropFilter: 'blur(20px)',
+        boxShadow: '0 4px 24px rgba(0,0,0,0.4)',
       }}
     >
       {/* Nav buttons */}
