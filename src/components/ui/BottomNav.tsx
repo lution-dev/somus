@@ -16,15 +16,15 @@ export function BottomNav({ items }: BottomNavProps) {
 
   return (
     /*
-      position:absolute (não fixed) dentro do .somus-mobile que é position:fixed.
-      - absolute dentro de fixed = posicionado relativo ao fixed parent = OK no iOS PWA
-      - fixed dentro de fixed = bug no iOS PWA standalone (posição errada)
-      O conteúdo da main tem um spacer que permite scroll sob este overlay.
+      position:fixed funciona corretamente agora porque removemos
+      body { position: fixed } do CSS — que era o causador do bug no iOS PWA.
+      O scroll lock do body já é garantido pelo .somus-mobile (overflow: hidden).
+      Padrão idêntico ao GQB Consultoria que funciona corretamente.
     */
     <nav
       aria-label="Navegação principal"
       style={{
-        position: 'absolute',
+        position: 'fixed',
         bottom: 0,
         left: 0, right: 0,
         zIndex: 40,
@@ -34,7 +34,6 @@ export function BottomNav({ items }: BottomNavProps) {
         pointerEvents: 'none',
       }}
     >
-      {/* Pill flutuante */}
       <div style={{
         background: 'rgba(23,23,23,0.96)',
         backdropFilter: 'blur(20px)',
@@ -60,7 +59,7 @@ export function BottomNav({ items }: BottomNavProps) {
                   transition: 'color 150ms ease',
                 }}
               >
-                <span style={{ display: 'flex', position: 'relative' }}>
+                <span style={{ display: 'flex' }}>
                   {(isActive && item.activeIcon) ? item.activeIcon : item.icon}
                 </span>
                 <span style={{
