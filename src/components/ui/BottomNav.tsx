@@ -25,6 +25,7 @@ export function BottomNav({ items }: BottomNavProps) {
         zIndex: 40,
         background: 'var(--color-bg-secondary)',
         borderTop: '1px solid var(--color-border)',
+        paddingBottom: 'env(safe-area-inset-bottom, 0px)',
       }}
     >
       {/* Nav buttons */}
@@ -58,8 +59,6 @@ export function BottomNav({ items }: BottomNavProps) {
           )
         })}
       </div>
-      {/* Safe area spacer — same pattern as Symera: solid background fills the home indicator area */}
-      <div style={{ height: 'env(safe-area-inset-bottom, 0px)', background: 'var(--color-bg-secondary)' }} />
     </nav>
   )
 }
