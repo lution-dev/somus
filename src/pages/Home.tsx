@@ -27,7 +27,6 @@ import {
   Wallet,
   History,
   BarChart3,
-  CheckCircle2,
 } from 'lucide-react'
 
 // ─── Pill button style ──────────────────────────────────────────────────────
@@ -163,10 +162,9 @@ function HistoricoDialog({ open, onClose }: { open: boolean; onClose: () => void
 
 // ─── Próximos Dias ─────────────────────────────────────────────────────────
 
-function ProximosDias({ onEntradaClick, onDespesaClick, desktop }: {
+function ProximosDias({ onEntradaClick, onDespesaClick }: {
   onEntradaClick: (name: string, amount: number) => void
   onDespesaClick: (id: string) => void
-  desktop?: boolean
 }) {
   const saidasFixas = useAppStore(useShallow(selectCurrentSaidasFixas))
   const incomeSources = useAppStore(useShallow(s =>
@@ -203,103 +201,6 @@ function ProximosDias({ onEntradaClick, onDespesaClick, desktop }: {
     })
   }, [])
 
-  // ── Desktop: self-contained card matching BalanceCard ──
-  if (desktop) {
-    return (
-      <div style={{
-        background: 'var(--color-bg-secondary)',
-        border: '1px solid var(--color-border)',
-        borderRadius: 'var(--radius-card)',
-        padding: 20,
-        display: 'flex', flexDirection: 'column',
-        height: '100%',
-      }}>
-        {/* Header */}
-        <p className="section-label" style={{ marginBottom: 16, display: 'flex', alignItems: 'center', gap: 6 }}>
-          <Calendar size={13} />
-          Próximos dias
-        </p>
-
-        {upcoming.length === 0 ? (
-          /* Empty: compact, centered, uses flex-1 to fill space */
-          <div style={{
-            flex: 1, display: 'flex', flexDirection: 'column',
-            alignItems: 'center', justifyContent: 'center', gap: 8,
-          }}>
-            <div style={{
-              width: 40, height: 40, borderRadius: '50%',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              background: 'rgba(16,185,129,0.1)',
-            }}>
-              <CheckCircle2 size={20} color="var(--color-success)" />
-            </div>
-            <p style={{ fontSize: 13, color: 'var(--color-text-tertiary)', margin: 0, textAlign: 'center' }}>
-              Tudo em dia!
-            </p>
-            <p style={{ fontSize: 11, color: 'var(--color-text-tertiary)', margin: 0, textAlign: 'center', opacity: 0.6 }}>
-              Nenhum compromisso nos próximos 10 dias
-            </p>
-          </div>
-        ) : (
-          /* List items */
-          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 0 }}>
-            {upcoming.map((item, i) => (
-              <div
-                key={item.id}
-                onClick={() => item.type === 'entrada'
-                  ? onEntradaClick(item.name, item.amount)
-                  : onDespesaClick(item.id)
-                }
-                style={{
-                  display: 'flex', alignItems: 'center', gap: 12,
-                  padding: '10px 0',
-                  borderBottom: i < upcoming.length - 1 ? '1px solid var(--color-border)' : 'none',
-                  cursor: 'pointer',
-                }}
-              >
-                <div style={{
-                  width: 32, height: 32, borderRadius: '50%',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-                  background: item.type === 'entrada'
-                    ? 'rgba(16,185,129,0.12)'
-                    : item.days <= 2 ? 'rgba(239,68,68,0.12)' : 'rgba(59,130,246,0.12)',
-                }}>
-                  {item.type === 'entrada'
-                    ? <ArrowUpRight size={14} color="var(--color-success)" />
-                    : <ArrowDownRight size={14} color={item.days <= 2 ? 'var(--color-danger)' : 'var(--color-accent-primary)'} />
-                  }
-                </div>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <p style={{ fontSize: 14, fontWeight: 500, color: 'var(--color-text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', margin: 0 }}>{item.name}</p>
-                  <p style={{ fontSize: 12, color: 'var(--color-text-secondary)', margin: 0 }}>
-                    {item.days === 0 ? 'Hoje' : item.days === 1 ? 'Amanhã' : `Em ${item.days} dias`}
-                  </p>
-                </div>
-                <span style={{
-                  fontSize: 14, fontWeight: 700, flexShrink: 0,
-                  color: item.type === 'entrada' ? 'var(--color-success)' : 'var(--color-text-primary)',
-                }}>
-                  {item.type === 'entrada' ? '+' : '−'}{formatCurrency(item.amount)}
-                </span>
-              </div>
-            ))}
-
-            {/* Footer summary */}
-            <div style={{
-              marginTop: 'auto', paddingTop: 12,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-            }}>
-              <span style={{ fontSize: 11, color: 'var(--color-text-tertiary)' }}>
-                {upcoming.length} compromisso{upcoming.length !== 1 ? 's' : ''} nos próximos 10 dias
-              </span>
-            </div>
-          </div>
-        )}
-      </div>
-    )
-  }
-
-  // ── Mobile: collapsible section (unchanged) ──
   if (upcoming.length === 0) return (
     <div style={{ marginTop: 20 }}>
       <button
@@ -712,11 +613,12 @@ export default function Home() {
             />
 
             {/* Right: Próximos Dias */}
-            <ProximosDias
-              onEntradaClick={handleEntradaClick}
-              onDespesaClick={handleDespesaClick}
-              desktop
-            />
+            <div>
+              <ProximosDias
+                onEntradaClick={handleEntradaClick}
+                onDespesaClick={handleDespesaClick}
+              />
+            </div>
           </div>
         </>
       )}
