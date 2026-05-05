@@ -81,26 +81,44 @@ export async function loadStateFromFirestore(
 /**
  * Subscribe to real-time changes from Firestore.
  * Returns an unsubscribe function.
+ *
+ * Uses snapshot metadata to distinguish between:
+ * - Our own writes echoing back (hasPendingWrites transitions)
+ * - Genuine remote changes from another device
  */
 export function subscribeToState(
   uid: string,
   callback: (state: AppState) => void
 ): Unsubscribe {
-  return onSnapshot(getUserDocRef(uid), (snap) => {
-    if (!snap.exists()) return
+  return onSnapshot(
+    getUserDocRef(uid),
+    { includeMetadataChanges: false },
+    (snap) => {
+      if (!snap.exists()) return
 
-    const data = snap.data() as PersistableState
-    callback({
-      isOnboarded: data.isOnboarded ?? false,
-      currentUser: data.currentUser ?? null,
-      partner: data.partner ?? null,
-      viewContext: data.viewContext ?? 'personal',
-      incomeSources: data.incomeSources ?? [],
-      entradas: data.entradas ?? [],
-      caixinhas: data.caixinhas ?? [],
-      saidasFixas: data.saidasFixas ?? [],
-      saidasVariaveis: data.saidasVariaveis ?? [],
-      objetivos: data.objetivos ?? [],
-    })
-  })
+      // Skip snapshots from our own pending writes.
+      // When WE write to Firestore, onSnapshot fires twice:
+      //   1. Immediately with hasPendingWrites=true (local cache)
+      //   2. After server confirmation with hasPendingWrites=false
+      // We only care about server-confirmed writes from OTHER devices.
+      if (snap.metadata.hasPendingWrites) return
+
+      const data = snap.data() as PersistableState
+      callback({
+        isOnboarded: data.isOnboarded ?? false,
+        currentUser: data.currentUser ?? null,
+        partner: data.partner ?? null,
+        viewContext: data.viewContext ?? 'personal',
+        incomeSources: data.incomeSources ?? [],
+        entradas: data.entradas ?? [],
+        caixinhas: data.caixinhas ?? [],
+        saidasFixas: data.saidasFixas ?? [],
+        saidasVariaveis: data.saidasVariaveis ?? [],
+        objetivos: data.objetivos ?? [],
+      })
+    },
+    (error) => {
+      console.warn('[Somus] Firestore listener error:', error)
+    }
+  )
 }

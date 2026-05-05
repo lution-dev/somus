@@ -98,31 +98,30 @@ export function FirebaseSyncProvider({ children }: FirebaseSyncProviderProps) {
   useEffect(() => {
     if (!syncReady || !uid) return
 
-    // Listen for remote changes. The first snapshot fires immediately with
-    // the current Firestore state — this is INTENTIONAL. It ensures that
-    // data written from another device (e.g., mobile) is applied on this
-    // device (e.g., PC) even if no new writes happen after we connect.
-    //
-    // Echo prevention: our own writes go through debouncedSaveToFirestore,
-    // which is gated by isRemoteUpdate.current — so when we write to
-    // Firestore and onSnapshot fires back, we compare state to avoid
-    // unnecessary updates.
-    let migrationState: AppState | null = useAppStore.getState() as AppState
+    log('Starting real-time Firestore listener...')
+
+    // Track the last applied JSON to avoid redundant setState calls.
+    // This is cheaper than letting React diff the entire tree.
+    let lastAppliedJson = JSON.stringify(
+      (({ isOnboarded, currentUser, partner, viewContext, incomeSources, entradas, caixinhas, saidasFixas, saidasVariaveis, objetivos }) =>
+        ({ isOnboarded, currentUser, partner, viewContext, incomeSources, entradas, caixinhas, saidasFixas, saidasVariaveis, objetivos })
+      )(useAppStore.getState() as AppState)
+    )
 
     unsubRef.current = subscribeToState(uid, (remoteState) => {
-      // Skip if the snapshot is identical to what migration just loaded
-      // (prevents a redundant setState on the same tick)
-      if (migrationState) {
-        const same = JSON.stringify(remoteState) === JSON.stringify(migrationState)
-        migrationState = null // only compare once
-        if (same) {
-          log('Listener: first snapshot matches migration state → skip')
-          return
-        }
+      const remoteJson = JSON.stringify(remoteState)
+
+      // Skip if snapshot is identical to what we already have
+      if (remoteJson === lastAppliedJson) {
+        log('Listener: snapshot identical to current state → skip')
+        return
       }
 
-      // Apply remote state
-      log('Listener: remote change detected → updating Zustand', 'entradas:', remoteState.entradas?.length ?? 0)
+      // Apply remote state — this IS a genuine change from another device
+      log('Listener: REAL-TIME UPDATE from remote device!',
+        'entradas:', remoteState.entradas?.length ?? 0,
+        'caixinhas:', remoteState.caixinhas?.length ?? 0)
+      lastAppliedJson = remoteJson
       isRemoteUpdate.current = true
       useAppStore.setState(remoteState)
       isRemoteUpdate.current = false
