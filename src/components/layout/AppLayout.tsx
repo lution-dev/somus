@@ -266,8 +266,11 @@ export function AppLayout({ children }: AppLayoutProps) {
       <div
         className="somus-mobile"
         style={{
-          flex: 1,
-          display: 'flex',
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
           flexDirection: 'column',
           background: 'var(--color-bg-primary)',
           overflow: 'hidden',
@@ -278,10 +281,10 @@ export function AppLayout({ children }: AppLayoutProps) {
           style={{
             flex: 1,
             minHeight: 0,
-            overflowY: 'auto',
+            overflowY: 'scroll',
             WebkitOverflowScrolling: 'touch',
             overscrollBehavior: 'contain',
-            paddingBottom: 120,
+            paddingBottom: 'calc(88px + env(safe-area-inset-bottom, 0px))',
           }}
         >
           <PullToRefresh scrollRef={mainRef}>

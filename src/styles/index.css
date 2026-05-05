@@ -63,9 +63,6 @@ html {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   -webkit-text-size-adjust: 100%;
-  height: 100%;
-  height: 100dvh;
-  overflow: hidden;
 }
 
 /* iOS Safari: prevent auto-zoom on input focus (requires >= 16px) */
@@ -78,19 +75,37 @@ body {
   color: var(--color-text-primary);
   line-height: 1.5;
   font-size: 14px;
-  height: 100%;
-  height: 100dvh;
-  margin: 0;
-  overflow: hidden;
-  overscroll-behavior: none;
 }
 
 #root {
   display: flex;
   flex-direction: column;
-  height: 100%;
-  height: 100dvh;
-  overflow: hidden;
+}
+
+/* ─── Mobile PWA: lock body scroll so only <main> scrolls ─── */
+@media (max-width: 767px) {
+  html {
+    height: 100%;
+    overflow: hidden;
+  }
+  body {
+    height: 100%;
+    overflow: hidden;
+    overscroll-behavior: none;
+    position: fixed;
+    width: 100%;
+    touch-action: pan-x;
+  }
+  #root {
+    height: 100%;
+    overflow: hidden;
+  }
+}
+
+/* ─── Desktop: normal scroll behavior ─── */
+@media (min-width: 768px) {
+  body { min-height: 100dvh; overflow-x: hidden; }
+  #root { min-height: 100dvh; }
 }
 
 /* ─── Scrollbar ─── */
