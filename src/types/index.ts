@@ -2,7 +2,8 @@
 
 export type UserContext = 'personal' | 'couple'
 export type IncomeType = 'fixed' | 'variable'
-export type PaymentMethod = 'debit' | 'credit' | 'pix' | 'cash' | 'auto_debit'
+export type PaymentMethod = 'debit' | 'credit' | 'pix' | 'cash' | 'auto_debit' | 'boleto'
+export type BillingCycle = 'month' | 'year'
 
 export interface User {
   id: string
@@ -74,7 +75,7 @@ export interface SaidaFixa {
   id: string
   userId: string
   name: string
-  amount: number
+  amount: number        // always stored as monthly equivalent
   dueDay: number
   paymentMethod: PaymentMethod
   caixinhaId: string
@@ -82,6 +83,8 @@ export interface SaidaFixa {
   paidDates: string[]
   category: string
   color?: string
+  isVariable?: boolean   // valor não contabiliza no total
+  billingCycle?: BillingCycle  // 'month' | 'year' — UI only, amount already normalized to monthly
 }
 
 // ─── Saídas Variáveis ───────────────────────────────────────────────────────

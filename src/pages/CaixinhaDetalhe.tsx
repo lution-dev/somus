@@ -328,6 +328,42 @@ export default function CaixinhaDetalhe() {
             </div>
           </div>
 
+          {/* Add custo fixo button */}
+          <button
+            id="btn-add-custo-fixo"
+            onClick={() => setAddSfOpen(true)}
+            style={{
+              width: '100%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 8,
+              padding: '12px 0',
+              marginBottom: 16,
+              borderRadius: 'var(--radius-card)',
+              background: hexToRgba(color, 0.12),
+              border: `1.5px dashed ${hexToRgba(color, 0.45)}`,
+              color: color,
+              fontSize: 14,
+              fontWeight: 600,
+              fontFamily: 'var(--font-sans)',
+              cursor: 'pointer',
+              transition: 'background 150ms ease, border-color 150ms ease',
+            }}
+            onMouseEnter={e => {
+              (e.currentTarget as HTMLButtonElement).style.background = hexToRgba(color, 0.2)
+              ;(e.currentTarget as HTMLButtonElement).style.borderColor = hexToRgba(color, 0.7)
+            }}
+            onMouseLeave={e => {
+              (e.currentTarget as HTMLButtonElement).style.background = hexToRgba(color, 0.12)
+              ;(e.currentTarget as HTMLButtonElement).style.borderColor = hexToRgba(color, 0.45)
+            }}
+            aria-label="Adicionar custo fixo"
+          >
+            <Plus size={17} strokeWidth={2.5} />
+            Adicionar Custo Fixo
+          </button>
+
           {/* Filter chips */}
           <div style={{ marginBottom: 12 }}>
             <p className="section-label" style={{ marginBottom: 8 }}>Filtrar por</p>
@@ -567,7 +603,7 @@ export default function CaixinhaDetalhe() {
       )}
 
       {/* Desktop: Button */}
-      {!isMobile && (
+      {!isMobile && !(isEssencial && activeTab === 'custos') && (
         <div style={{ marginTop: 16 }}>
           <button
             onClick={() => setDespesaOpen(true)}

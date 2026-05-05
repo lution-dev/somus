@@ -3,6 +3,7 @@ import { useAppStore } from '../../stores/useAppStore'
 import { Dialog, DialogFooter, Button, Input } from '../ui'
 import { formatCurrency } from '../../lib/calculations'
 import { getCaixinhaIcon } from '../../lib/icons'
+import type { PaymentMethod, BillingCycle } from '../../types'
 
 interface Props {
   open: boolean
@@ -11,105 +12,236 @@ interface Props {
   caixinhaName: string
 }
 
+const PAYMENT_OPTIONS: { key: PaymentMethod; label: string }[] = [
+  { key: 'pix', label: 'Pix' },
+  { key: 'boleto', label: 'Boleto' },
+  { key: 'credit', label: 'Cartão Crédito' },
+  { key: 'auto_debit', label: 'Débito Automático' },
+]
+
 export default function AddSaidaFixaModal({ open, onClose, caixinhaId, caixinhaName }: Props) {
   const [name, setName] = useState('')
   const [amount, setAmount] = useState('')
   const [dueDay, setDueDay] = useState('')
+  const [billingCycle, setBillingCycle] = useState<BillingCycle>('month')
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('pix')
+  const [isVariable, setIsVariable] = useState(false)
 
   const currentUser = useAppStore(s => s.currentUser)
   const addSaidaFixa = useAppStore(s => s.addSaidaFixa)
-  const { Icon, color } = getCaixinhaIcon(caixinhaId)
+  const { color } = getCaixinhaIcon(caixinhaId)
 
   useEffect(() => {
     if (open) {
       setName('')
       setAmount('')
       setDueDay('')
+      setBillingCycle('month')
+      setPaymentMethod('pix')
+      setIsVariable(false)
     }
   }, [open])
 
   const numAmount = parseFloat(amount.replace(',', '.')) || 0
   const numDay = parseInt(dueDay) || 0
-  const isValid = numAmount > 0 && name.trim() && numDay >= 1 && numDay <= 31
+
+  // Normalize to monthly — if billed yearly, divide by 12
+  const monthlyAmount = billingCycle === 'year' ? numAmount / 12 : numAmount
+
+  const isValid =
+    name.trim() !== '' &&
+    numDay >= 1 && numDay <= 31 &&
+    (isVariable || numAmount > 0)
 
   function handleConfirm() {
     if (!isValid || !currentUser) return
     addSaidaFixa({
       userId: currentUser.id,
       name: name.trim(),
-      amount: numAmount,
+      amount: isVariable ? 0 : monthlyAmount,
       dueDay: numDay,
-      paymentMethod: 'pix',
+      paymentMethod,
       caixinhaId,
-      autoDebit: false,
+      autoDebit: paymentMethod === 'auto_debit',
       paidDates: [],
       category: caixinhaName,
       color,
+      isVariable,
+      billingCycle,
     })
     onClose()
   }
 
+  // ── Shared chip style helpers ────────────────────────────────────────────────
+  function chipStyle(active: boolean) {
+    return {
+      padding: '7px 16px',
+      borderRadius: 20,
+      fontSize: 13,
+      fontWeight: 600 as const,
+      fontFamily: 'var(--font-sans)',
+      cursor: 'pointer' as const,
+      border: `1.5px solid ${active ? color : 'var(--color-border)'}`,
+      background: active ? `${color}18` : 'transparent',
+      color: active ? color : 'var(--color-text-secondary)',
+      transition: 'all 150ms ease',
+    }
+  }
+
   return (
-    <Dialog open={open} onClose={onClose} title="Novo Custo Fixo" size="md">
-      {/* Caixinha badge */}
+    <Dialog open={open} onClose={onClose} title="Adicionar Custo Fixo" size="md">
+
+      {/* ── Toggle: Valor Variável ── */}
       <div style={{
-        display: 'flex', alignItems: 'center', gap: 10,
-        background: `${color}15`,
-        border: `1px solid ${color}30`,
-        borderRadius: 12, padding: '10px 14px',
-        marginBottom: 16,
+        display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12,
+        background: 'rgba(255,255,255,0.04)',
+        border: '1px solid var(--color-border)',
+        borderRadius: 'var(--radius-card)',
+        padding: '12px 14px',
+        marginBottom: 20,
       }}>
-        <Icon size={18} style={{ color }} />
-        <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-text-primary)' }}>{caixinhaName}</span>
+        <div>
+          <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-text-primary)', margin: 0 }}>
+            Valor Variável?
+          </p>
+          <p style={{ fontSize: 12, color: 'var(--color-text-secondary)', margin: '2px 0 0' }}>
+            {isVariable ? 'O valor não contabilizará no total' : 'Valor fixo mensal confirmado'}
+          </p>
+        </div>
+        {/* Toggle switch */}
+        <button
+          id="toggle-valor-variavel"
+          onClick={() => setIsVariable(v => !v)}
+          aria-label="Alternar valor variável"
+          style={{
+            width: 44, height: 26, borderRadius: 13, flexShrink: 0,
+            background: isVariable ? color : 'rgba(255,255,255,0.15)',
+            border: 'none', cursor: 'pointer', padding: 3,
+            display: 'flex', alignItems: 'center',
+            justifyContent: isVariable ? 'flex-end' : 'flex-start',
+            transition: 'background 200ms ease',
+          }}
+        >
+          <span style={{
+            width: 20, height: 20, borderRadius: '50%',
+            background: 'white',
+            boxShadow: '0 1px 4px rgba(0,0,0,0.3)',
+            display: 'block',
+          }} />
+        </button>
       </div>
 
-      {/* Nome */}
-      <div style={{ marginBottom: 12 }}>
+      {/* ── Nome do custo ── */}
+      <div style={{ marginBottom: 4 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+          <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-text-primary)', margin: 0 }}>Custo Fixo</p>
+          <p style={{ fontSize: 12, color: 'var(--color-text-tertiary)', margin: 0 }}>Necessário</p>
+        </div>
         <Input
-          label="Nome da conta"
-          placeholder="Ex: Netflix, Seguro, Luz..."
+          placeholder="Nome do Custo"
           value={name}
           onChange={e => setName(e.target.value)}
         />
       </div>
 
-      {/* Valor */}
-      <div style={{ marginBottom: 12 }}>
-        <Input
-          label="Valor mensal"
-          prefix="R$"
-          type="number"
-          inputMode="decimal"
-          placeholder="0,00"
-          value={amount}
-          onChange={e => setAmount(e.target.value)}
-          style={{ fontSize: 20, fontWeight: 700 }}
-        />
+      {/* ── Cobrado por ── */}
+      <div style={{ marginBottom: 4, marginTop: 16 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+          <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-text-primary)', margin: 0 }}>Cobrado por</p>
+          <p style={{ fontSize: 12, color: 'var(--color-text-tertiary)', margin: 0 }}>Necessário</p>
+        </div>
+        <div style={{ display: 'flex', gap: 8 }}>
+          {(['month', 'year'] as BillingCycle[]).map(cycle => (
+            <button
+              key={cycle}
+              onClick={() => setBillingCycle(cycle)}
+              style={chipStyle(billingCycle === cycle)}
+            >
+              {cycle === 'month' ? 'Mês' : 'Ano'}
+            </button>
+          ))}
+        </div>
       </div>
 
-      {/* Dia de vencimento */}
-      <div style={{ marginBottom: 16 }}>
+      {/* ── Dia da Recorrência ── */}
+      <div style={{ marginBottom: 4, marginTop: 16 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+          <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-text-primary)', margin: 0 }}>Dia da Recorrência</p>
+          <p style={{ fontSize: 12, color: 'var(--color-text-tertiary)', margin: 0 }}>Necessário</p>
+        </div>
         <Input
-          label="Dia de vencimento"
           type="number"
           inputMode="numeric"
-          placeholder="1-31"
+          placeholder={`Todo dia ${numDay > 0 ? numDay : '5'}`}
           value={dueDay}
           onChange={e => setDueDay(e.target.value)}
         />
       </div>
 
+      {/* ── Valor (hidden if variable) ── */}
+      {!isVariable && (
+        <div style={{ marginBottom: 4, marginTop: 16 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+            <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-text-primary)', margin: 0 }}>Valor</p>
+            <p style={{ fontSize: 12, color: 'var(--color-text-tertiary)', margin: 0 }}>Necessário</p>
+          </div>
+          <Input
+            prefix="R$"
+            type="number"
+            inputMode="decimal"
+            placeholder="0,00"
+            value={amount}
+            onChange={e => setAmount(e.target.value)}
+            style={{ fontSize: 18, fontWeight: 700 }}
+          />
+          {billingCycle === 'year' && numAmount > 0 && (
+            <p style={{ fontSize: 12, color: 'var(--color-text-secondary)', marginTop: 6 }}>
+              ≈ {formatCurrency(numAmount / 12)}/mês
+            </p>
+          )}
+        </div>
+      )}
+
+      {/* ── Forma de Pagamento ── */}
+      <div style={{ marginTop: 16, marginBottom: 20 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+          <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-text-primary)', margin: 0 }}>Forma de Pagamento</p>
+          <p style={{ fontSize: 12, color: 'var(--color-text-tertiary)', margin: 0 }}>Necessário</p>
+        </div>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+          {PAYMENT_OPTIONS.map(opt => (
+            <button
+              key={opt.key}
+              onClick={() => setPaymentMethod(opt.key)}
+              style={chipStyle(paymentMethod === opt.key)}
+            >
+              {opt.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
       <DialogFooter>
+        <Button
+          variant="ghost"
+          size="md"
+          fullWidth
+          onClick={onClose}
+        >
+          Cancelar
+        </Button>
         <Button
           variant="primary"
           size="md"
           fullWidth
           disabled={!isValid}
           onClick={handleConfirm}
+          style={isValid ? { background: color } : undefined}
         >
-          Adicionar — {numAmount > 0 ? formatCurrency(numAmount) : 'R$ 0,00'}
+          {!isVariable && numAmount > 0
+            ? `Enviar — ${formatCurrency(monthlyAmount)}/mês`
+            : 'Enviar'}
         </Button>
-        <Button variant="ghost" size="md" fullWidth onClick={onClose}>Cancelar</Button>
       </DialogFooter>
     </Dialog>
   )

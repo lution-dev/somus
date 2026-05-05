@@ -352,3 +352,18 @@
 **Status:** ✅ Concluído
 
 ---
+
+#### T-AD-14: Essencial — botão "Adicionar Custo Fixo" abaixo dos big numbers
+**Tipo:** UX / Feature
+**Arquivo:** `src/pages/CaixinhaDetalhe.tsx`
+**Critérios:**
+- [x] Botão inline abaixo dos cards "Total por Mês / Total por Ano" na aba Custos Fixos
+- [x] Visível apenas quando `activeTab === 'custos'` e `isEssencial`
+- [x] Abre `AddSaidaFixaModal` (`setAddSfOpen(true)`)
+- [x] Visual: full-width, dashed border com cor da caixinha, ícone `Plus`
+- [x] Desktop e mobile (o FAB mobile permanece como estava)
+- [x] Modal atualizado: toggle Valor Variável, Cobrado por Mês/Ano, Dia da Recorrência, Valor, Forma de Pagamento (Pix, Boleto, Cartão Crédito, Débito Automático)
+- [x] Novo tipo `boleto` adicionado ao `PaymentMethod`; `isVariable` e `billingCycle` adicionados ao `SaidaFixa`
+**Status:** ✅ Concluído
+
+---
