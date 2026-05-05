@@ -348,3 +348,13 @@ body {
     grid-template-columns: repeat(3, 1fr);
   }
 }
+
+/* ─── Responsive layout toggle ─── */
+/* Desktop: show sidebar layout, hide mobile nav layout */
+.somus-desktop { display: flex !important; }
+.somus-mobile  { display: none  !important; }
+
+@media (max-width: 767px) {
+  .somus-desktop { display: none  !important; }
+  .somus-mobile  { display: flex  !important; }
+}

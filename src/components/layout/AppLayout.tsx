@@ -226,15 +226,6 @@ export function AppLayout({ children }: AppLayoutProps) {
 
   return (
     <>
-      {/* CSS responsivo injetado */}
-      <style>{`
-        .somus-desktop { display: flex; }
-        .somus-mobile  { display: none; }
-        @media (max-width: 767px) {
-          .somus-desktop { display: none; }
-          .somus-mobile  { display: flex; }
-        }
-      `}</style>
 
       {/* Desktop: sidebar + conteúdo */}
       <div
@@ -273,7 +264,6 @@ export function AppLayout({ children }: AppLayoutProps) {
           left: 0,
           right: 0,
           bottom: 0,
-          display: 'flex',
           flexDirection: 'column',
           background: 'var(--color-bg-primary)',
           overflow: 'hidden',
