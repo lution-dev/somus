@@ -162,9 +162,10 @@ function HistoricoDialog({ open, onClose }: { open: boolean; onClose: () => void
 
 // ─── Próximos Dias ─────────────────────────────────────────────────────────
 
-function ProximosDias({ onEntradaClick, onDespesaClick }: {
+function ProximosDias({ onEntradaClick, onDespesaClick, isDesktop }: {
   onEntradaClick: (name: string, amount: number) => void
   onDespesaClick: (id: string) => void
+  isDesktop?: boolean
 }) {
   const saidasFixas = useAppStore(useShallow(selectCurrentSaidasFixas))
   const incomeSources = useAppStore(useShallow(s =>
@@ -200,6 +201,103 @@ function ProximosDias({ onEntradaClick, onDespesaClick }: {
       return next
     })
   }, [])
+
+  // ── Shared list item renderer ──
+  const renderItem = (item: typeof upcoming[0], i: number) => (
+    <div
+      key={item.id}
+      onClick={() => item.type === 'entrada'
+        ? onEntradaClick(item.name, item.amount)
+        : onDespesaClick(item.id)
+      }
+      style={{
+        display: 'flex', alignItems: 'center', gap: 12,
+        padding: '12px 16px',
+        borderBottom: i < upcoming.length - 1 ? '1px solid var(--color-border)' : 'none',
+        background: item.days === 0 ? 'rgba(239,68,68,0.06)' : 'transparent',
+        cursor: 'pointer',
+      }}
+    >
+      <div style={{
+        width: 32, height: 32, borderRadius: '50%',
+        display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+        background: item.type === 'entrada'
+          ? 'rgba(16,185,129,0.12)'
+          : item.days <= 2 ? 'rgba(239,68,68,0.12)' : 'rgba(59,130,246,0.12)',
+      }}>
+        {item.type === 'entrada'
+          ? <ArrowUpRight size={14} color="var(--color-success)" />
+          : <ArrowDownRight size={14} color={item.days <= 2 ? 'var(--color-danger)' : 'var(--color-accent-primary)'} />
+        }
+      </div>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <p style={{ fontSize: 14, fontWeight: 500, color: 'var(--color-text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', margin: 0 }}>{item.name}</p>
+        <p style={{ fontSize: 12, color: 'var(--color-text-secondary)', margin: 0 }}>
+          {item.days === 0 ? 'Hoje' : item.days === 1 ? 'Amanhã' : `Em ${item.days} dias`}
+        </p>
+      </div>
+      <span style={{
+        fontSize: 14, fontWeight: 700, flexShrink: 0,
+        color: item.type === 'entrada' ? 'var(--color-success)' : 'var(--color-text-primary)',
+      }}>
+        {item.type === 'entrada' ? '+' : '−'}{formatCurrency(item.amount)}
+      </span>
+    </div>
+  )
+
+  // ══════════════════════════════════════════════
+  //  DESKTOP: card-style that matches BalanceCard
+  // ══════════════════════════════════════════════
+  if (isDesktop) {
+    return (
+      <div style={{
+        background: 'var(--color-bg-secondary)',
+        border: '1px solid var(--color-border)',
+        borderRadius: 'var(--radius-card)',
+        padding: 20,
+        height: '100%',
+        display: 'flex',
+        flexDirection: 'column',
+      }}>
+        {/* Header — matches BalanceCard's section-label style */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 16 }}>
+          <Calendar size={13} color="var(--color-text-tertiary)" />
+          <p className="section-label" style={{ marginBottom: 0, flex: 1 }}>Próximos dias</p>
+          {upcoming.length > 0 && (
+            <span style={{
+              fontSize: 10, fontWeight: 700, color: 'var(--color-accent-primary)',
+              background: 'rgba(59,130,246,0.12)', padding: '2px 8px', borderRadius: 10,
+            }}>{upcoming.length}</span>
+          )}
+        </div>
+
+        {upcoming.length === 0 ? (
+          /* Empty state — centered, fills remaining space */
+          <div style={{
+            flex: 1, display: 'flex', flexDirection: 'column',
+            alignItems: 'center', justifyContent: 'center', gap: 8,
+          }}>
+            <Calendar size={28} color="var(--color-text-tertiary)" strokeWidth={1.25} />
+            <p style={{ fontSize: 13, color: 'var(--color-text-tertiary)', margin: 0, textAlign: 'center' }}>
+              Nenhum compromisso nos próximos dias
+            </p>
+          </div>
+        ) : (
+          /* Items list — fills remaining space */
+          <div style={{
+            flex: 1, borderRadius: 12, overflow: 'hidden',
+            border: '1px solid var(--color-border)',
+          }}>
+            {upcoming.map(renderItem)}
+          </div>
+        )}
+      </div>
+    )
+  }
+
+  // ══════════════════════════════════════════════
+  //  MOBILE: collapsible section (unchanged)
+  // ══════════════════════════════════════════════
 
   if (upcoming.length === 0) return (
     <div style={{ marginTop: 20 }}>
@@ -282,47 +380,7 @@ function ProximosDias({ onEntradaClick, onDespesaClick }: {
               border: '1px solid var(--color-border)',
               background: 'var(--color-bg-secondary)',
             }}>
-              {upcoming.map((item, i) => (
-                <div
-                  key={item.id}
-                  onClick={() => item.type === 'entrada'
-                    ? onEntradaClick(item.name, item.amount)
-                    : onDespesaClick(item.id)
-                  }
-                  style={{
-                    display: 'flex', alignItems: 'center', gap: 12,
-                    padding: '12px 16px',
-                    borderBottom: i < upcoming.length - 1 ? '1px solid var(--color-border)' : 'none',
-                    background: item.days === 0 ? 'rgba(239,68,68,0.06)' : 'transparent',
-                    cursor: 'pointer',
-                  }}
-                >
-                  <div style={{
-                    width: 32, height: 32, borderRadius: '50%',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-                    background: item.type === 'entrada'
-                      ? 'rgba(16,185,129,0.12)'
-                      : item.days <= 2 ? 'rgba(239,68,68,0.12)' : 'rgba(59,130,246,0.12)',
-                  }}>
-                    {item.type === 'entrada'
-                      ? <ArrowUpRight size={14} color="var(--color-success)" />
-                      : <ArrowDownRight size={14} color={item.days <= 2 ? 'var(--color-danger)' : 'var(--color-accent-primary)'} />
-                    }
-                  </div>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <p style={{ fontSize: 14, fontWeight: 500, color: 'var(--color-text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', margin: 0 }}>{item.name}</p>
-                    <p style={{ fontSize: 12, color: 'var(--color-text-secondary)', margin: 0 }}>
-                      {item.days === 0 ? 'Hoje' : item.days === 1 ? 'Amanhã' : `Em ${item.days} dias`}
-                    </p>
-                  </div>
-                  <span style={{
-                    fontSize: 14, fontWeight: 700, flexShrink: 0,
-                    color: item.type === 'entrada' ? 'var(--color-success)' : 'var(--color-text-primary)',
-                  }}>
-                    {item.type === 'entrada' ? '+' : '−'}{formatCurrency(item.amount)}
-                  </span>
-                </div>
-              ))}
+              {upcoming.map(renderItem)}
             </div>
           </motion.div>
         )}
@@ -613,12 +671,11 @@ export default function Home() {
             />
 
             {/* Right: Próximos Dias */}
-            <div>
-              <ProximosDias
-                onEntradaClick={handleEntradaClick}
-                onDespesaClick={handleDespesaClick}
-              />
-            </div>
+            <ProximosDias
+              onEntradaClick={handleEntradaClick}
+              onDespesaClick={handleDespesaClick}
+              isDesktop
+            />
           </div>
         </>
       )}
