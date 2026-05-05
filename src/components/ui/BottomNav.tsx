@@ -22,15 +22,19 @@ export function BottomNav({ items }: BottomNavProps) {
         bottom: 0,
         left: 0, right: 0,
         zIndex: 40,
-        background: 'rgba(23,23,23,0.96)',
-        backdropFilter: 'blur(20px)',
-        WebkitBackdropFilter: 'blur(20px)',
-        borderTop: '1px solid rgba(255,255,255,0.08)',
-        paddingBottom: 'env(safe-area-inset-bottom, 0px)',
+        padding: '8px 16px',
+        paddingBottom: 'env(safe-area-inset-bottom, 8px)',
         pointerEvents: 'none',
       }}
     >
-      <div style={{ pointerEvents: 'auto' }}>
+      <div style={{
+        background: 'rgba(23,23,23,0.96)',
+        backdropFilter: 'blur(20px)',
+        WebkitBackdropFilter: 'blur(20px)',
+        border: '1px solid rgba(255,255,255,0.08)',
+        borderRadius: 22,
+        pointerEvents: 'auto',
+      }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-around', padding: '0 4px', height: 56 }}>
           {items.map((item) => {
             const isActive = location === item.path || location.startsWith(item.path + '/')
