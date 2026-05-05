@@ -94,7 +94,7 @@ body {
     overscroll-behavior: none;
     position: fixed;
     width: 100%;
-    touch-action: pan-x;
+    touch-action: none;
   }
   #root {
     height: 100%;

@@ -284,6 +284,7 @@ export function AppLayout({ children }: AppLayoutProps) {
             overflowY: 'scroll',
             WebkitOverflowScrolling: 'touch',
             overscrollBehavior: 'contain',
+            touchAction: 'pan-y',
           }}
         >
           <PullToRefresh scrollRef={mainRef}>
