@@ -367,3 +367,7 @@
 **Status:** ✅ Concluído
 
 ---
+
+#### T-AD-15: Essencial Custos - Marcar como pago no action sheet
+**Status:** Em andamento
+

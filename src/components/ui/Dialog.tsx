@@ -44,7 +44,7 @@ export function Dialog({
     <AnimatePresence>
       {open && (
         <div style={{
-          position: 'fixed', inset: 0, zIndex: 50,
+          position: 'fixed', inset: 0, zIndex: 100,
           display: 'flex',
           alignItems: isMobile ? 'flex-end' : 'center',
           justifyContent: 'center',
@@ -120,7 +120,7 @@ export function Dialog({
             )}
 
             {/* Content */}
-            <div style={{ padding: isMobile ? '8px 20px 20px' : '8px 24px 24px' }}>
+            <div style={{ padding: isMobile ? '8px 20px calc(20px + env(safe-area-inset-bottom, 0px))' : '8px 24px 24px' }}>
               {children}
             </div>
           </motion.div>
