@@ -271,6 +271,7 @@ export function AppLayout({ children }: AppLayoutProps) {
           left: 0,
           right: 0,
           bottom: 0,
+          display: 'flex',
           flexDirection: 'column',
           background: 'var(--color-bg-primary)',
           overflow: 'hidden',
@@ -290,18 +291,8 @@ export function AppLayout({ children }: AppLayoutProps) {
           <PullToRefresh scrollRef={mainRef}>
             {children}
           </PullToRefresh>
-          {/*
-            Spacer real no lugar de paddingBottom:
-            iOS Safari não inclui padding-bottom na área scrollável de
-            elementos com overflow:scroll — isso cortava o conteúdo.
-            Um div filho É scrollável.
-          */}
-          <div style={{
-            height: 'calc(72px + env(safe-area-inset-bottom, 0px))',
-            flexShrink: 0,
-            pointerEvents: 'none',
-          }} aria-hidden="true" />
         </main>
+        {/* Nav no flex flow — evita bug de position:fixed aninhado no iOS PWA standalone */}
         <BottomNav items={NAV_ITEMS} />
       </div>
     </>

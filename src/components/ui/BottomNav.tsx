@@ -16,16 +16,15 @@ export function BottomNav({ items }: BottomNavProps) {
 
   return (
     /*
-      Wrapper vai até bottom:0 e preenche toda a área inferior com a cor
-      de fundo da página (#0A0A0A). Isso elimina o gap escuro abaixo do
-      pill sem mudar o visual flutuante do nav.
+      SEM position:fixed — nav fica no flex flow do .somus-mobile.
+      Isso corrige o bug do iOS PWA standalone onde position:fixed aninhado
+      dentro de outro position:fixed se posiciona incorretamente.
+      O efeito visual de "pill flutuante" é mantido pelo padding + border-radius.
     */
     <nav
       aria-label="Navegação principal"
       style={{
-        position: 'fixed',
-        bottom: 0,
-        left: 0, right: 0,
+        flexShrink: 0,
         zIndex: 40,
         padding: '8px 16px',
         paddingBottom: 'calc(8px + env(safe-area-inset-bottom, 0px))',
