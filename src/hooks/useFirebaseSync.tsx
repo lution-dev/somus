@@ -77,17 +77,27 @@ export function FirebaseSyncProvider({ children }: FirebaseSyncProviderProps) {
   useEffect(() => {
     if (!syncReady || !uid) return
 
-    // Skip the first snapshot — it's the same data we just wrote/read during migration.
-    // Without this, onSnapshot fires immediately and overwrites Zustand state,
-    // causing a blank screen because it resets isOnboarded, caixinhas, etc.
-    let isFirstSnapshot = true
+    // Listen for remote changes. The first snapshot fires immediately with
+    // the current Firestore state — this is INTENTIONAL. It ensures that
+    // data written from another device (e.g., mobile) is applied on this
+    // device (e.g., PC) even if no new writes happen after we connect.
+    //
+    // Echo prevention: our own writes go through debouncedSaveToFirestore,
+    // which is gated by isRemoteUpdate.current — so when we write to
+    // Firestore and onSnapshot fires back, we compare state to avoid
+    // unnecessary updates.
+    let migrationState: AppState | null = useAppStore.getState() as AppState
 
     unsubRef.current = subscribeToState(uid, (remoteState) => {
-      if (isFirstSnapshot) {
-        isFirstSnapshot = false
-        return
+      // Skip if the snapshot is identical to what migration just loaded
+      // (prevents a redundant setState on the same tick)
+      if (migrationState) {
+        const same = JSON.stringify(remoteState) === JSON.stringify(migrationState)
+        migrationState = null // only compare once
+        if (same) return
       }
-      // Prevent echo: don't apply our own writes back
+
+      // Apply remote state
       isRemoteUpdate.current = true
       useAppStore.setState(remoteState)
       isRemoteUpdate.current = false

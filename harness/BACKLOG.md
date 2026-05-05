@@ -321,10 +321,10 @@
 #### T-AD-12: Sync cross-device — dados do celular não aparecem no PC
 **Tipo:** Bug
 **Critérios:**
-- [ ] `migrateToFirestore` sempre carrega estado do Firestore (source of truth), independente do localStorage local
-- [ ] `isFirstSnapshot` removido do listener — o primeiro snapshot deve ser aplicado para receber mudanças de outros dispositivos
-- [ ] Proteção de echo mantida via `isRemoteUpdate` ref
-**Status:** 🔄 Em progresso
+- [x] `migrateToFirestore` sempre carrega estado do Firestore (source of truth), independente do localStorage local
+- [x] `isFirstSnapshot` removido do listener — o primeiro snapshot deve ser aplicado para receber mudanças de outros dispositivos
+- [x] Proteção de echo mantida via `isRemoteUpdate` ref
+**Status:** ✅ Concluído
 
 ---
 

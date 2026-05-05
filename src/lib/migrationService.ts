@@ -36,10 +36,9 @@ export async function migrateToFirestore(
       return remoteState
     }
 
-    // Firestore is source of truth — load it on every open
-    return stateHasData(remoteState) ? remoteState
-      : stateHasData(localState)    ? (await saveStateToFirestore(uid, localState), localState)
-      : localState
+    // Already synced → Firestore is ALWAYS source of truth.
+    // Never push local data back — that overwrites changes from other devices.
+    return remoteState
   } catch {
     return localState
   }
@@ -61,20 +60,8 @@ function getResetState(): AppState {
   }
 }
 
-/**
- * Returns true if the state has any meaningful user data.
- * Checks incomeSources too — a user with only a salary configured
- * but no transactions yet is still considered to have data.
- */
-function stateHasData(state: AppState): boolean {
-  return (
-    state.entradas.length > 0 ||
-    state.incomeSources.length > 0 ||
-    state.saidasFixas.length > 0 ||
-    state.objetivos.length > 0 ||
-    state.caixinhas.some(cx => cx.balance > 0)
-  )
-}
+
+
 
 /**
  * Debounced save to Firestore.
