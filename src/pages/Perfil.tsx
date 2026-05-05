@@ -134,7 +134,7 @@ export default function Perfil() {
           fontSize: 11, color: 'var(--color-text-tertiary)',
           textAlign: 'center', marginTop: 24,
         }}>
-          Somus MVP · v0.2
+          Somus MVP · v0.3-sync
         </p>
       </div>
     </div>

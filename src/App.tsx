@@ -31,12 +31,15 @@ export default function App() {
   const { isAuthenticated, isLoading: authLoading } = useAuth()
   const [location, navigate] = useLocation()
 
-  // Silent SW update — DO NOT reload the page.
-  // skipWaiting + clientsClaim in workbox config handles activation automatically.
-  // Reloading here caused a race condition that wiped onboarding state.
+  // SW update strategy: check for new version every 60s.
+  // registerType 'autoUpdate' handles skipWaiting + reload automatically.
+  // The interval ensures mobile PWA checks for updates even if backgrounded.
   useRegisterSW({
     onRegisteredSW(_swUrl, registration) {
-      registration?.update()
+      if (registration) {
+        registration.update()
+        setInterval(() => registration.update(), 60_000)
+      }
     },
   })
 
