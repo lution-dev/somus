@@ -28,18 +28,23 @@ export function BottomNav({ items }: BottomNavProps) {
         bottom: 0,
         left: 0, right: 0,
         zIndex: 40,
-        padding: '8px 16px',
-        paddingBottom: 'calc(8px + env(safe-area-inset-bottom, 0px))',
-        background: 'linear-gradient(to bottom, transparent 0%, transparent 15%, rgba(10,10,10,0.6) 55%, rgba(10,10,10,1) 85%)',
+        /* Scrim acima do pill — sem padding embaixo (pill cobre até o fundo) */
+        padding: '12px 16px 0',
+        background: 'linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.5) 100%)',
         pointerEvents: 'none',
       }}
     >
+      {/* Pill que se estende pela safe area como tab bar nativa iOS */}
       <div style={{
-        background: 'rgba(23,23,23,0.96)',
+        background: 'rgba(23,23,23,0.97)',
         backdropFilter: 'blur(20px)',
         WebkitBackdropFilter: 'blur(20px)',
         border: '1px solid rgba(255,255,255,0.08)',
-        borderRadius: 22,
+        borderBottom: 'none',
+        /* Topo arredondado, base quadrada para encostar no fundo da tela */
+        borderRadius: '20px 20px 0 0',
+        /* Padding bottom = safe area → ícones ficam acima do home indicator */
+        paddingBottom: 'env(safe-area-inset-bottom, 8px)',
         pointerEvents: 'auto',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-around', padding: '0 4px', height: 56 }}>

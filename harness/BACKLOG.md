@@ -313,3 +313,18 @@
 **Status:** ✅ Concluído
 
 ---
+
+## Ad-hoc — UI/UX Fixes (pós-MVP)
+
+---
+
+#### T-AD-11: BottomNav — safe area nativa (fill-to-bottom)
+**Tipo:** Visual/UX
+**Critérios:**
+- [ ] Pill estende background até o fundo da tela (cobre safe area region)
+- [ ] Border-radius só no topo (22px 22px 0 0) — bottom square, sem gap visual
+- [ ] Scrim gradient acima do pill para separação do conteúdo
+- [ ] Spacer no AppLayout ajustado para nova altura do nav
+**Status:** 🔄 Em andamento
+
+---
