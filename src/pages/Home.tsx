@@ -368,77 +368,147 @@ function CaixinhasSection() {
             Lance sua primeira entrada para criar as divisões automaticamente.
           </p>
         </div>
-      ) : (
-      <div className="home-caixinhas-grid" style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(2, 1fr)',
-        gap: 12,
-      }}>
-        <style>{`
-          @media (min-width: 1024px) {
-            .home-caixinhas-grid { grid-template-columns: repeat(3, 1fr) !important; }
-          }
-        `}</style>
-        {caixinhas.slice(0, 6).map((cx) => {
-          const { Icon, color } = getCaixinhaIcon(cx.id)
-          // % = how much of what entered this caixinha has been spent
+      ) : (() => {
+        // Option A: Essencial (55%) as featured card, rest in 2x2 grid
+        const essencial = caixinhas.find(cx => cx.id === 'cx-essencial')
+        const others = caixinhas.filter(cx => cx.id !== 'cx-essencial')
+
+        // Helper to calc % used
+        const calcPct = (cx: typeof caixinhas[0]) => {
           const totalIn  = cx.movements.filter(m => m.type === 'income').reduce((s, m) => s + m.amount, 0)
           const totalOut = cx.movements.filter(m => m.type === 'expense').reduce((s, m) => s + m.amount, 0)
-          const pct      = totalIn > 0 ? Math.min(100, (totalOut / totalIn) * 100) : 0
+          return totalIn > 0 ? Math.min(100, (totalOut / totalIn) * 100) : 0
+        }
 
-          return (
-            <button
-              key={cx.id}
-              onClick={() => navigate(`/caixinhas/${cx.id}`)}
-              className="card card-interactive home-caixinhas-grid-item"
-              style={{
-                textAlign: 'left', cursor: 'pointer',
-                border: 'none', fontFamily: 'var(--font-sans)',
-                background: 'var(--color-bg-secondary)',
-                borderWidth: 1, borderStyle: 'solid',
-                borderColor: 'var(--color-border)',
-                borderRadius: 'var(--radius-card)',
-                padding: 14,
-              }}
-            >
-              {/* Ícone */}
-              <div style={{
-                width: 36, height: 36, borderRadius: 12,
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                background: `${color}15`, marginBottom: 10,
-              }}>
-                <Icon size={18} style={{ color }} />
-              </div>
+        return (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            {/* ── Featured: Essencial (55%) ── */}
+            {essencial && (() => {
+              const { Icon, color } = getCaixinhaIcon(essencial.id)
+              const pct = calcPct(essencial)
+              const totalIn = essencial.movements.filter(m => m.type === 'income').reduce((s, m) => s + m.amount, 0)
+              return (
+                <button
+                  onClick={() => navigate(`/caixinhas/${essencial.id}`)}
+                  className="card card-interactive"
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: 14,
+                    textAlign: 'left', cursor: 'pointer', width: '100%',
+                    border: 'none', fontFamily: 'var(--font-sans)',
+                    background: 'var(--color-bg-secondary)',
+                    borderWidth: 1, borderStyle: 'solid',
+                    borderColor: 'var(--color-border)',
+                    borderRadius: 'var(--radius-card)',
+                    padding: 16,
+                  }}
+                >
+                  {/* Icon */}
+                  <div style={{
+                    width: 44, height: 44, borderRadius: 14, flexShrink: 0,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    background: `${color}15`,
+                  }}>
+                    <Icon size={22} style={{ color }} />
+                  </div>
 
-              {/* Nome + % alocação */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
-                <p style={{ fontSize: 11, color: 'var(--color-text-secondary)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1, minWidth: 0 }}>{cx.name}</p>
-                <span style={{
-                  fontSize: 10, fontWeight: 700, color, flexShrink: 0,
-                  background: `${color}15`, padding: '1px 5px', borderRadius: 6,
-                }}>{cx.percentage}%</span>
-              </div>
+                  {/* Info */}
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
+                      <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text-primary)', margin: 0 }}>{essencial.name}</p>
+                      <span style={{
+                        fontSize: 10, fontWeight: 700, color, flexShrink: 0,
+                        background: `${color}15`, padding: '1px 5px', borderRadius: 6,
+                      }}>{essencial.percentage}%</span>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, marginBottom: 6 }}>
+                      <p style={{ fontSize: 18, fontWeight: 700, color: 'var(--color-text-primary)', margin: 0 }}>
+                        {formatCurrency(essencial.balance)}
+                      </p>
+                      {totalIn > 0 && (
+                        <span style={{
+                          fontSize: 10, fontWeight: 600,
+                          color: pct >= 80 ? 'var(--color-danger)' : pct >= 50 ? 'var(--color-warning)' : 'var(--color-text-tertiary)',
+                        }}>{Math.round(pct)}% usado</span>
+                      )}
+                    </div>
+                    <ProgressBar value={pct} size="sm" />
+                  </div>
+                </button>
+              )
+            })()}
 
-              {/* Valor + % gasto */}
-              <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, marginBottom: 8 }}>
-                <p style={{ fontSize: 14, fontWeight: 700, color: 'var(--color-text-primary)', margin: 0 }}>
-                  {formatCurrency(cx.balance)}
-                </p>
-                {totalIn > 0 && (
-                  <span style={{
-                    fontSize: 10, fontWeight: 600,
-                    color: pct >= 80 ? 'var(--color-danger)' : pct >= 50 ? 'var(--color-warning)' : 'var(--color-text-tertiary)',
-                  }}>{Math.round(pct)}% usado</span>
-                )}
-              </div>
+            {/* ── Grid 2x2 (4 cards restantes) ── */}
+            <div className="home-caixinhas-grid" style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(2, 1fr)',
+              gap: 12,
+            }}>
+              <style>{`
+                @media (min-width: 1024px) {
+                  .home-caixinhas-grid { grid-template-columns: repeat(4, 1fr) !important; }
+                }
+              `}</style>
+              {others.slice(0, 4).map((cx) => {
+                const { Icon, color } = getCaixinhaIcon(cx.id)
+                const pct = calcPct(cx)
+                const totalIn = cx.movements.filter(m => m.type === 'income').reduce((s, m) => s + m.amount, 0)
 
-              {/* Barra */}
-              <ProgressBar value={pct} size="sm" />
-            </button>
-          )
-        })}
-      </div>
-      )}
+                return (
+                  <button
+                    key={cx.id}
+                    onClick={() => navigate(`/caixinhas/${cx.id}`)}
+                    className="card card-interactive home-caixinhas-grid-item"
+                    style={{
+                      textAlign: 'left', cursor: 'pointer',
+                      border: 'none', fontFamily: 'var(--font-sans)',
+                      background: 'var(--color-bg-secondary)',
+                      borderWidth: 1, borderStyle: 'solid',
+                      borderColor: 'var(--color-border)',
+                      borderRadius: 'var(--radius-card)',
+                      padding: 14,
+                    }}
+                  >
+                    {/* Ícone */}
+                    <div style={{
+                      width: 36, height: 36, borderRadius: 12,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      background: `${color}15`, marginBottom: 10,
+                    }}>
+                      <Icon size={18} style={{ color }} />
+                    </div>
+
+                    {/* Nome + % alocação */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
+                      <p style={{ fontSize: 11, color: 'var(--color-text-secondary)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1, minWidth: 0 }}>{cx.name}</p>
+                      <span style={{
+                        fontSize: 10, fontWeight: 700, color, flexShrink: 0,
+                        background: `${color}15`, padding: '1px 5px', borderRadius: 6,
+                      }}>{cx.percentage}%</span>
+                    </div>
+
+                    {/* Valor + % gasto */}
+                    <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, marginBottom: 8 }}>
+                      <p style={{ fontSize: 14, fontWeight: 700, color: 'var(--color-text-primary)', margin: 0 }}>
+                        {formatCurrency(cx.balance)}
+                      </p>
+                      {totalIn > 0 && (
+                        <span style={{
+                          fontSize: 10, fontWeight: 600,
+                          color: pct >= 80 ? 'var(--color-danger)' : pct >= 50 ? 'var(--color-warning)' : 'var(--color-text-tertiary)',
+                        }}>{Math.round(pct)}% usado</span>
+                      )}
+                    </div>
+
+                    {/* Barra */}
+                    <ProgressBar value={pct} size="sm" />
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+        )
+      })()
+      }
     </div>
   )
 }
