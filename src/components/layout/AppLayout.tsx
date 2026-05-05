@@ -297,7 +297,7 @@ export function AppLayout({ children }: AppLayoutProps) {
             Um div filho É scrollável.
           */}
           <div style={{
-            height: 'calc(88px + env(safe-area-inset-bottom, 0px))',
+            height: 'calc(56px + env(safe-area-inset-bottom, 0px))',
             flexShrink: 0,
             pointerEvents: 'none',
             userSelect: 'none',
