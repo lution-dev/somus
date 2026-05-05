@@ -75,40 +75,12 @@ body {
   color: var(--color-text-primary);
   line-height: 1.5;
   font-size: 14px;
+  overscroll-behavior: none;
 }
 
 #root {
   display: flex;
   flex-direction: column;
-}
-
-/* ─── Mobile PWA: lock body scroll so only <main> scrolls ─── */
-@media (max-width: 767px) {
-  html {
-    height: 100%;
-    overflow: hidden;
-  }
-  body {
-    height: 100%;
-    overflow: hidden;
-    overscroll-behavior: none;
-    touch-action: none;
-  }
-  #root {
-    height: 100%;
-    overflow: hidden;
-  }
-}
-
-/* ─── Desktop: normal scroll behavior ─── */
-@media (min-width: 768px) {
-  html, body { height: 100dvh; overflow-x: hidden; }
-  #root {
-    height: 100dvh;
-    display: flex;
-    flex-direction: row;
-    overflow: hidden;
-  }
 }
 
 /* ─── Scrollbar ─── */

@@ -226,23 +226,29 @@ export function AppLayout({ children }: AppLayoutProps) {
 
   return (
     <>
+      {/* CSS responsivo injetado */}
+      <style>{`
+        .somus-desktop { display: flex; }
+        .somus-mobile  { display: none; }
+        @media (max-width: 767px) {
+          .somus-desktop { display: none !important; }
+          .somus-mobile  { display: flex !important; }
+        }
+      `}</style>
 
       {/* Desktop: sidebar + conteúdo */}
       <div
         className="somus-desktop"
         style={{
-          flex: 1,
-          height: '100%',
+          height: '100dvh',
           background: 'var(--color-bg-primary)',
           flexDirection: 'row',
-          alignItems: 'stretch',
           overflow: 'hidden',
         }}
       >
         <Sidebar />
-        <div style={{
+        <main style={{
           flex: 1,
-          height: '100%',
           overflowY: 'auto',
           display: 'flex',
           flexDirection: 'column',
@@ -252,18 +258,14 @@ export function AppLayout({ children }: AppLayoutProps) {
           <div style={{ width: '100%', maxWidth: 960, padding: '0 40px', flex: 1 }}>
             {children}
           </div>
-        </div>
+        </main>
       </div>
 
-      {/* Mobile: sem sidebar, com bottom nav */}
+      {/* Mobile: h-screen flex-col overflow-hidden — same pattern as Symera Layout */}
       <div
         className="somus-mobile"
         style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
+          height: '100dvh',
           flexDirection: 'column',
           background: 'var(--color-bg-primary)',
           overflow: 'hidden',
@@ -273,25 +275,15 @@ export function AppLayout({ children }: AppLayoutProps) {
           ref={mainRef}
           style={{
             flex: 1,
-            minHeight: 0,
-            overflowY: 'scroll',
+            overflowY: 'auto',
             WebkitOverflowScrolling: 'touch',
-            overscrollBehavior: 'contain',
-            touchAction: 'pan-y',
-            background: 'var(--color-bg-primary)',
+            paddingBottom: 80,
           }}
         >
           <PullToRefresh scrollRef={mainRef}>
             {children}
           </PullToRefresh>
-          {/* Spacer: permite scroll do conteudo abaixo do nav overlay */}
-          <div style={{
-            height: 72,
-            flexShrink: 0,
-            pointerEvents: 'none',
-          }} aria-hidden="true" />
         </main>
-        {/* Nav como position:absolute dentro do fixed parent — funciona no iOS PWA */}
         <BottomNav items={NAV_ITEMS} />
       </div>
     </>
