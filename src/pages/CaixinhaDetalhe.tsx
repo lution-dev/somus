@@ -328,8 +328,8 @@ export default function CaixinhaDetalhe() {
             </div>
           </div>
 
-          {/* Add custo fixo button */}
-          <button
+          {/* Add custo fixo button — desktop only (mobile uses FAB) */}
+          {!isMobile && <button
             id="btn-add-custo-fixo"
             onClick={() => setAddSfOpen(true)}
             style={{
@@ -362,7 +362,7 @@ export default function CaixinhaDetalhe() {
           >
             <Plus size={17} strokeWidth={2.5} />
             Adicionar Custo Fixo
-          </button>
+          </button>}
 
           {/* Filter chips */}
           <div style={{ marginBottom: 12 }}>
