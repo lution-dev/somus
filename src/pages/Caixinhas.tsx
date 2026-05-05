@@ -95,7 +95,7 @@ export default function Caixinhas() {
           return (
             <button
               key={cx.id}
-              onClick={() => navigate(`/caixinhas/${cx.id}`)}
+              onClick={() => navigate(`/divisoes/${cx.id}`)}
               className="card-interactive"
               style={{
                 width: '100%', textAlign: 'left', cursor: 'pointer',

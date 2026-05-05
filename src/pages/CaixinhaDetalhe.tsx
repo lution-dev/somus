@@ -145,9 +145,11 @@ export default function CaixinhaDetalhe() {
       .sort((a, b) => b.total - a.total)
   }, [filteredCustos])
 
-  // All movements (filtered)
+  // All movements (filtered) — only expenses; income distributions appear in Fluxo
   const allMovements = useMemo(() => {
-    const sorted = [...(caixinha.movements ?? [])].sort((a, b) => b.date.localeCompare(a.date))
+    const sorted = [...(caixinha.movements ?? [])]
+      .filter(mv => mv.type !== 'income')           // ← saídas apenas
+      .sort((a, b) => b.date.localeCompare(a.date))
     if (!mvSearchQuery.trim()) return sorted
     const q = mvSearchQuery.toLowerCase()
     return sorted.filter(mv => mv.description.toLowerCase().includes(q))
@@ -237,7 +239,7 @@ export default function CaixinhaDetalhe() {
       ) : (
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20, paddingTop: 32 }}>
           <button
-            onClick={() => navigate('/caixinhas')}
+            onClick={() => navigate('/divisoes')}
             style={{
               cursor: 'pointer', color: 'var(--color-text-secondary)',
               padding: 6, marginLeft: -6, borderRadius: 8,

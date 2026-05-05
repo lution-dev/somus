@@ -371,3 +371,7 @@
 #### T-AD-15: Essencial Custos - Marcar como pago no action sheet
 **Status:** Em andamento
 
+
+#### T-AD-16: CaixinhaDetalhe — filtrar lancamentos para mostrar apenas saidas
+**Status:** Em andamento
+

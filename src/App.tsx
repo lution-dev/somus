@@ -120,8 +120,8 @@ export default function App() {
             <Switch>
               <Route path="/home" component={Home} />
               <Route path="/fluxo" component={Fluxo} />
-              <Route path="/caixinhas/:id" component={CaixinhaDetalhe} />
-              <Route path="/caixinhas" component={Caixinhas} />
+              <Route path="/divisoes/:id" component={CaixinhaDetalhe} />
+              <Route path="/divisoes" component={Caixinhas} />
               <Route path="/casal/objetivo/:id" component={ObjetivoDetalhe} />
               <Route path="/casal" component={Casal} />
               <Route path="/perfil" component={Perfil} />

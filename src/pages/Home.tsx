@@ -403,7 +403,7 @@ function CaixinhasSection() {
           Divisões
         </p>
         <button
-          onClick={() => navigate('/caixinhas')}
+          onClick={() => navigate('/divisoes')}
           style={{
             display: 'flex', alignItems: 'center', gap: 2,
             fontSize: 12, fontWeight: 600, color: 'var(--color-accent-primary)',
@@ -447,7 +447,7 @@ function CaixinhasSection() {
               const totalIn = essencial.movements.filter(m => m.type === 'income').reduce((s, m) => s + m.amount, 0)
               return (
                 <button
-                  onClick={() => navigate(`/caixinhas/${essencial.id}`)}
+                  onClick={() => navigate(`/divisoes/${essencial.id}`)}
                   className="card card-interactive"
                   style={{
                     display: 'flex', alignItems: 'center', gap: 14,
@@ -514,7 +514,7 @@ function CaixinhasSection() {
                 return (
                   <button
                     key={cx.id}
-                    onClick={() => navigate(`/caixinhas/${cx.id}`)}
+                    onClick={() => navigate(`/divisoes/${cx.id}`)}
                     className="card card-interactive home-caixinhas-grid-item"
                     style={{
                       textAlign: 'left', cursor: 'pointer',
