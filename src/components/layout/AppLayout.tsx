@@ -285,7 +285,7 @@ export function AppLayout({ children }: AppLayoutProps) {
           </PullToRefresh>
           {/* Spacer: permite scroll do conteudo abaixo do nav overlay */}
           <div style={{
-            height: 'calc(72px + env(safe-area-inset-bottom, 0px))',
+            height: 'calc(60px + env(safe-area-inset-bottom, 0px))',
             flexShrink: 0,
             pointerEvents: 'none',
           }} aria-hidden="true" />

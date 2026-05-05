@@ -488,7 +488,7 @@ export default function Home() {
   }
 
   return (
-    <div style={{ minHeight: '100%', paddingBottom: 16 }}>
+    <div style={{ minHeight: '100%' }}>
       {/* ── Hero Header Section ── */}
       {isMobile ? (
         <>
