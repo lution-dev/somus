@@ -102,8 +102,13 @@ body {
 
 /* ─── Desktop: normal scroll behavior ─── */
 @media (min-width: 768px) {
-  body { min-height: 100dvh; overflow-x: hidden; }
-  #root { min-height: 100dvh; }
+  html, body { height: 100dvh; overflow-x: hidden; }
+  #root {
+    height: 100dvh;
+    display: flex;
+    flex-direction: row;
+    overflow: hidden;
+  }
 }
 
 /* ─── Scrollbar ─── */

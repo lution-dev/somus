@@ -241,6 +241,7 @@ export function AppLayout({ children }: AppLayoutProps) {
         className="somus-desktop"
         style={{
           flex: 1,
+          height: '100%',
           background: 'var(--color-bg-primary)',
           flexDirection: 'row',
           alignItems: 'stretch',
@@ -250,6 +251,7 @@ export function AppLayout({ children }: AppLayoutProps) {
         <Sidebar />
         <div style={{
           flex: 1,
+          height: '100%',
           overflowY: 'auto',
           display: 'flex',
           flexDirection: 'column',
