@@ -90,7 +90,7 @@ export default function ObjetivoDetalhe() {
       {/* Header */}
       {isMobile ? (
         <>
-          <PageHeader title={objetivo.name} back backTo="/casal" bg={HERO_BG} />
+          <PageHeader title={objetivo.name} back bg={HERO_BG} />
           <div style={{
             background: HERO_BG,
             borderRadius: '0 0 24px 24px',

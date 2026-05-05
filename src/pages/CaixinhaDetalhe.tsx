@@ -7,7 +7,7 @@ import { getCaixinhaIcon } from '../lib/icons'
 import { ProgressBar, PageHeader, SearchBar, groupByMonth, MonthHeader } from '../components/ui'
 import ItemActionSheet from '../components/ui/ItemActionSheet'
 import { useIsMobile } from '../hooks/useIsMobile'
-import { ArrowUpRight, ArrowDownRight, Info, ChevronLeft, Plus } from 'lucide-react'
+import { ArrowUpRight, ArrowDownRight, Info, ChevronLeft, Plus, CheckCircle2, XCircle, Pencil, Trash2 } from 'lucide-react'
 import LancarDespesaModal from '../components/features/LancarDespesaModal'
 import EditMovementModal from '../components/features/EditMovementModal'
 import EditSaidaFixaModal from '../components/features/EditSaidaFixaModal'
@@ -48,6 +48,8 @@ export default function CaixinhaDetalhe() {
   const deleteCaixinhaMovement = useAppStore(s => s.deleteCaixinhaMovement)
   const editSaidaFixa = useAppStore(s => s.editSaidaFixa)
   const deleteSaidaFixa = useAppStore(s => s.deleteSaidaFixa)
+  const markSaidaFixaPaid = useAppStore(s => s.markSaidaFixaPaid)
+  const markSaidaFixaUnpaid = useAppStore(s => s.markSaidaFixaUnpaid)
   const expectedIncome = useAppStore(s =>
     s.incomeSources
       .filter(src => src.userId === (s.currentUser?.id ?? ''))
@@ -170,7 +172,7 @@ export default function CaixinhaDetalhe() {
       {/* Header */}
       {isMobile ? (
         <>
-          <PageHeader title={caixinha.name} back backTo="/caixinhas" bg={HERO_BG} />
+          <PageHeader title={caixinha.name} back bg={HERO_BG} />
           <div style={{
             background: HERO_BG,
             borderRadius: '0 0 24px 24px',
@@ -636,16 +638,25 @@ export default function CaixinhaDetalhe() {
         onClose={() => setActionItem(null)}
         title={actionItem?.type === 'custo' ? (actionItem.item as SaidaFixa).name : (actionItem?.item as CaixinhaMovement)?.description ?? ''}
         subtitle={actionItem ? formatCurrency(Math.abs(actionItem.item.amount)) : ''}
-        onEdit={() => {
-          if (!actionItem) return
-          if (actionItem.type === 'custo') setEditSf(actionItem.item as SaidaFixa)
-          else setEditMv(actionItem.item as CaixinhaMovement)
-        }}
-        onDelete={() => {
-          if (!actionItem) return
-          if (actionItem.type === 'custo') deleteSaidaFixa(actionItem.item.id)
-          else deleteCaixinhaMovement(caixinha.id, actionItem.item.id)
-        }}
+        actions={actionItem ? (
+          actionItem.type === 'custo'
+            ? (() => {
+                const sf = actionItem.item as SaidaFixa
+                const paid = isPaidThisMonth(sf.paidDates)
+                const today = new Date().toISOString().slice(0, 10)
+                return [
+                  paid
+                    ? { label: 'Desmarcar pagamento', icon: XCircle, color: 'var(--color-warning)', onClick: () => markSaidaFixaUnpaid(sf.id, today) }
+                    : { label: 'Marcar como pago', icon: CheckCircle2, color: 'var(--color-success)', onClick: () => markSaidaFixaPaid(sf.id, today) },
+                  { label: 'Editar', icon: Pencil, color: 'var(--color-accent-primary)', onClick: () => setEditSf(sf) },
+                  { label: 'Excluir', icon: Trash2, color: 'var(--color-danger)', onClick: () => deleteSaidaFixa(sf.id) },
+                ]
+              })()
+            : [
+                { label: 'Editar', icon: Pencil, color: 'var(--color-accent-primary)', onClick: () => setEditMv(actionItem.item as CaixinhaMovement) },
+                { label: 'Excluir', icon: Trash2, color: 'var(--color-danger)', onClick: () => deleteCaixinhaMovement(caixinha.id, actionItem.item.id) },
+              ]
+        ) : undefined}
       />
 
       {/* Edit movement modal */}
