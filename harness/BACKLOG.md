@@ -328,14 +328,17 @@
 
 ---
 
-#### T-AD-13: Sync cross-device — writes do mobile não persistem no Firestore
-**Tipo:** Bug
+#### T-AD-13: Sync cross-device — rewrite completo da sincronização
+**Tipo:** Bug (crítico)
 **Critérios:**
-- [ ] Verificar que dados adicionados no mobile (piresblucas@gmail.com) persistem no Firestore
-- [ ] Verificar que o desktop recebe as mudanças via real-time listener
-- [ ] Adicionar logging de debug para diagnosticar o fluxo de sync
-- [ ] Garantir que o debouncedSaveToFirestore não está sendo bloqueado
-**Status:** 🔧 Em progresso
+- [x] Smart merge local vs remote — estado com mais dados vence (previne destruição por Firestore vazio)
+- [x] Flush imediato no `visibilitychange` + `beforeunload` — dados não se perdem no mobile
+- [x] Debounce reduzido de 3s → 1.5s para persistência mais rápida
+- [x] Real-time `onSnapshot` com dedup por JSON — updates aparecem no desktop sem refresh
+- [x] Echo prevention via `hasPendingWrites` + JSON comparison — evita re-renders de eco
+- [x] Write garantido na migração — ao abrir o app, força save no Firestore se local está onboarded
+- [x] Debug logging `[Somus:Sync]` em todo o fluxo
+**Status:** ✅ Concluído
 
 ---
 
