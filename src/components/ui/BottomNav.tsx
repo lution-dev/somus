@@ -29,7 +29,7 @@ export function BottomNav({ items }: BottomNavProps) {
         zIndex: 40,
         padding: '8px 16px',
         paddingBottom: 'calc(8px + env(safe-area-inset-bottom, 0px))',
-        background: 'var(--color-bg-primary)',
+        background: 'transparent',
         pointerEvents: 'none',
       }}
     >
