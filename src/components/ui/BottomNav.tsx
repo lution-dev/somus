@@ -25,7 +25,7 @@ export function BottomNav({ items }: BottomNavProps) {
         zIndex: 40,
         background: 'var(--color-bg-secondary)',
         borderTop: '1px solid var(--color-border)',
-        paddingBottom: 'env(safe-area-inset-bottom, 0px)',
+        paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) / 2)',
       }}
     >
       {/* Nav buttons */}
