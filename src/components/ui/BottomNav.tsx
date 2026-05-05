@@ -30,7 +30,7 @@ export function BottomNav({ items }: BottomNavProps) {
         zIndex: 40,
         padding: '8px 16px',
         paddingBottom: 'calc(8px + env(safe-area-inset-bottom, 0px))',
-        background: 'transparent',
+        background: 'linear-gradient(to bottom, transparent 0%, rgba(10,10,10,0.7) 25%, rgba(10,10,10,1) 70%)',
         pointerEvents: 'none',
       }}
     >
