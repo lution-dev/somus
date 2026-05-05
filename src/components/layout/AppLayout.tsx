@@ -284,12 +284,23 @@ export function AppLayout({ children }: AppLayoutProps) {
             overflowY: 'scroll',
             WebkitOverflowScrolling: 'touch',
             overscrollBehavior: 'contain',
-            paddingBottom: 'calc(88px + env(safe-area-inset-bottom, 0px))',
           }}
         >
           <PullToRefresh scrollRef={mainRef}>
             {children}
           </PullToRefresh>
+          {/*
+            Spacer real no lugar de paddingBottom:
+            iOS Safari não inclui padding-bottom na área scrollável de
+            elementos com overflow:scroll — isso cortava o conteúdo.
+            Um div filho É scrollável.
+          */}
+          <div style={{
+            height: 'calc(88px + env(safe-area-inset-bottom, 0px))',
+            flexShrink: 0,
+            pointerEvents: 'none',
+            userSelect: 'none',
+          }} aria-hidden="true" />
         </main>
         <BottomNav items={NAV_ITEMS} />
       </div>
