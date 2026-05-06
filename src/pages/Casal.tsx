@@ -23,7 +23,7 @@ export default function Casal() {
   const { photoURL, displayName } = useAuth()
   const currentUser = useAppStore(s => s.currentUser)
   const partner     = useAppStore(s => s.partner)
-  const objetivos   = useAppStore(useShallow(s => s.objetivos))
+  const objetivos   = useAppStore(useShallow(s => s.objetivos.filter(o => o.isCouple)))
   const caixinhas   = useAppStore(useShallow(s => s.caixinhas))
   const entradas    = useAppStore(useShallow(s => s.entradas))
 
@@ -326,60 +326,19 @@ export default function Casal() {
             })}
           </div>
         ) : (
-          <>
-            <EmptyCard
-              icon={Sparkles}
-              title="Nenhum objetivo ainda"
-              desc="Crie objetivos como casamento, viagem ou apartamento para acompanhar o progresso juntos."
-            />
-            <button
-              id="btn-add-objetivo-empty"
-              onClick={() => setAddObjetivoOpen(true)}
-              style={{
-                marginTop: 12, width: '100%', display: 'flex', alignItems: 'center',
-                justifyContent: 'center', gap: 8,
-                padding: '12px 20px', borderRadius: 'var(--radius-card)',
-                background: 'rgba(139,92,246,0.08)',
-                border: '1.5px dashed rgba(139,92,246,0.3)',
-                color: 'var(--color-accent-couple)',
-                fontSize: 14, fontWeight: 600,
-                fontFamily: 'var(--font-sans)', cursor: 'pointer',
-                transition: 'all 150ms ease',
-              }}
-            >
-              <Plus size={16} strokeWidth={2.5} />
-              Criar primeiro objetivo
-            </button>
-          </>
+          <EmptyCard
+            icon={Sparkles}
+            title="Nenhum objetivo do casal"
+            desc="Crie um objetivo na aba Divisões → Objetivos e marque como 'Objetivo do Casal'."
+          />
         )}
       </div>
 
-      {/* Mobile FAB */}
-      {isMobile && (
-        <div style={{
-          position: 'fixed',
-          bottom: 'calc(88px + env(safe-area-inset-bottom, 0px))',
-          right: 20, zIndex: 35,
-        }}>
-          <button
-            id="btn-add-objetivo-fab"
-            onClick={() => setAddObjetivoOpen(true)}
-            style={{
-              width: 52, height: 52, borderRadius: 16,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              background: 'var(--color-accent-couple)',
-              border: 'none', cursor: 'pointer',
-              boxShadow: '0 4px 20px rgba(139,92,246,0.35)',
-              color: 'white',
-            }}
-            aria-label="Adicionar objetivo"
-          >
-            <Plus size={22} strokeWidth={2.5} />
-          </button>
-        </div>
-      )}
-
-      <AddObjetivoModal open={addObjetivoOpen} onClose={() => setAddObjetivoOpen(false)} />
+      <AddObjetivoModal
+        open={addObjetivoOpen}
+        onClose={() => setAddObjetivoOpen(false)}
+        defaultIsCouple
+      />
 
       {/* Código de convite */}
       <div style={{

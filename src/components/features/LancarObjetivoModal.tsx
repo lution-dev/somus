@@ -3,6 +3,7 @@ import { Dialog, DialogFooter, Button, Input } from '../ui'
 import { formatCurrency } from '../../lib/calculations'
 import { ArrowUpRight, ArrowDownRight } from 'lucide-react'
 import type { ObjetivoMovement } from '../../types'
+import { useCurrencyInput } from '../../hooks/useCurrencyInput'
 
 type MovType = 'deposit' | 'withdraw'
 
@@ -28,20 +29,21 @@ export default function LancarObjetivoModal({
   initialDate = '',
 }: Props) {
   const [type, setType] = useState<MovType>('deposit')
-  const [amount, setAmount] = useState('')
+  const amountInput = useCurrencyInput()
   const [description, setDescription] = useState('')
   const [date, setDate] = useState('')
 
   useEffect(() => {
     if (open) {
       setType(initialType)
-      setAmount(initialAmount > 0 ? String(initialAmount) : '')
+      if (initialAmount > 0) amountInput.setValue(initialAmount)
+      else amountInput.reset()
       setDescription(initialDescription)
       setDate(initialDate || new Date().toISOString().slice(0, 10))
     }
   }, [open, initialType, initialAmount, initialDescription, initialDate])
 
-  const numAmount = parseFloat(amount.replace(',', '.')) || 0
+  const numAmount = amountInput.numericValue
   const isValid = numAmount > 0 && description.trim() !== ''
 
   const isDeposit = type === 'deposit'
@@ -113,11 +115,10 @@ export default function LancarObjetivoModal({
         </div>
         <Input
           prefix="R$"
-          type="number"
-          inputMode="decimal"
+          inputMode="numeric"
           placeholder="0,00"
-          value={amount}
-          onChange={e => setAmount(e.target.value)}
+          value={amountInput.displayValue}
+          onChange={amountInput.handleChange}
           style={{ fontSize: 22, fontWeight: 700, color: typeColor }}
         />
         {numAmount > 0 && (

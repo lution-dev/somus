@@ -3,6 +3,7 @@ import { Dialog, DialogFooter, Button, Input } from '../ui'
 import { formatCurrency } from '../../lib/calculations'
 import { getCaixinhaIcon } from '../../lib/icons'
 import type { SaidaFixa, PaymentMethod, BillingCycle } from '../../types'
+import { useCurrencyInput } from '../../hooks/useCurrencyInput'
 
 interface Props {
   open: boolean
@@ -20,7 +21,7 @@ const PAYMENT_OPTIONS: { key: PaymentMethod; label: string }[] = [
 
 export default function EditSaidaFixaModal({ open, onClose, onSave, saidaFixa }: Props) {
   const [name, setName] = useState('')
-  const [amount, setAmount] = useState('')
+  const amountInput = useCurrencyInput()
   const [dueDay, setDueDay] = useState('')
   const [billingCycle, setBillingCycle] = useState<BillingCycle>('month')
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('pix')
@@ -31,9 +32,7 @@ export default function EditSaidaFixaModal({ open, onClose, onSave, saidaFixa }:
   useEffect(() => {
     if (open && saidaFixa) {
       setName(saidaFixa.name)
-      // If billingCycle was 'year', the stored amount is already the normalized monthly value.
-      // We surface it as-is since we don't keep the original yearly amount.
-      setAmount(saidaFixa.amount > 0 ? String(saidaFixa.amount) : '')
+      amountInput.setValue(saidaFixa.amount > 0 ? saidaFixa.amount : 0)
       setDueDay(String(saidaFixa.dueDay))
       setBillingCycle(saidaFixa.billingCycle ?? 'month')
       setPaymentMethod((saidaFixa.paymentMethod as PaymentMethod) ?? 'pix')
@@ -41,7 +40,7 @@ export default function EditSaidaFixaModal({ open, onClose, onSave, saidaFixa }:
     }
   }, [open, saidaFixa])
 
-  const numAmount = parseFloat(amount.replace(',', '.')) || 0
+  const numAmount = amountInput.numericValue
   const numDay = parseInt(dueDay) || 0
   const monthlyAmount = billingCycle === 'year' ? numAmount / 12 : numAmount
 
@@ -174,11 +173,10 @@ export default function EditSaidaFixaModal({ open, onClose, onSave, saidaFixa }:
           </div>
           <Input
             prefix="R$"
-            type="number"
-            inputMode="decimal"
+            inputMode="numeric"
             placeholder="0,00"
-            value={amount}
-            onChange={e => setAmount(e.target.value)}
+            value={amountInput.displayValue}
+            onChange={amountInput.handleChange}
             style={{ fontSize: 18, fontWeight: 700 }}
           />
           {billingCycle === 'year' && numAmount > 0 && (

@@ -52,6 +52,8 @@ interface AppActions {
 
   // Objetivos
   addObjetivo: (obj: Omit<Objetivo, 'id'>) => void
+  editObjetivo: (id: string, updates: Partial<Objetivo>) => void
+  deleteObjetivo: (id: string) => void
   updateObjetivoAmount: (id: string, amount: number) => void
   addObjetivoMovement: (objetivoId: string, mv: Omit<ObjetivoMovement, 'id'>) => void
   editObjetivoMovement: (objetivoId: string, movementId: string, updates: Partial<ObjetivoMovement>) => void
@@ -212,6 +214,18 @@ export const useAppStore = create<AppState & AppActions>()(
       addObjetivo: (obj) =>
         set((state) => ({
           objetivos: [...state.objetivos, { ...obj, id: `obj-${Date.now()}` }],
+        })),
+
+      editObjetivo: (id, updates) =>
+        set((state) => ({
+          objetivos: state.objetivos.map(o =>
+            o.id !== id ? o : { ...o, ...updates }
+          ),
+        })),
+
+      deleteObjetivo: (id) =>
+        set((state) => ({
+          objetivos: state.objetivos.filter(o => o.id !== id),
         })),
 
       updateObjetivoAmount: (id, amount) =>

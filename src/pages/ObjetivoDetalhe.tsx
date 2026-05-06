@@ -95,125 +95,157 @@ export default function ObjetivoDetalhe() {
           <div style={{
             background: HERO_BG,
             borderRadius: '0 0 24px 24px',
-            padding: '0 16px 24px',
             marginBottom: 20,
             overflow: 'hidden',
           }}>
-            {/* Cover Image or Icon */}
+            {/* Banner hero — click para trocar */}
             <div
               onClick={() => fileInputRef.current?.click()}
-              style={{
-                display: 'flex', justifyContent: 'center', marginBottom: 12,
-                cursor: 'pointer', position: 'relative',
-              }}
+              style={{ position: 'relative', cursor: 'pointer' }}
             >
               {objetivo.imageUrl ? (
-                <div style={{ position: 'relative', width: 80, height: 80 }}>
+                // Imagem em banner wide
+                <div style={{ position: 'relative', height: 200 }}>
                   <img
                     src={objetivo.imageUrl}
                     alt={objetivo.name}
                     style={{
-                      width: 80, height: 80, borderRadius: '50%',
+                      width: '100%', height: '100%',
                       objectFit: 'cover',
-                      border: '2px solid rgba(139,92,246,0.3)',
                       opacity: isProcessing ? 0.5 : 1,
                       transition: 'opacity 200ms ease',
                     }}
                   />
+                  {/* Gradiente bottom */}
                   <div style={{
-                    position: 'absolute', bottom: 0, right: 0,
-                    width: 24, height: 24, borderRadius: '50%',
-                    background: 'var(--color-accent-couple)',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    border: '2px solid ' + HERO_BG,
+                    position: 'absolute', inset: 0,
+                    background: 'linear-gradient(to top, rgba(0,20,66,0.85) 0%, transparent 60%)',
+                  }} />
+                  {/* Botão editar foto */}
+                  <div style={{
+                    position: 'absolute', bottom: 12, right: 12,
+                    background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(8px)',
+                    borderRadius: 20, padding: '5px 10px',
+                    display: 'flex', alignItems: 'center', gap: 5,
+                    border: '1px solid rgba(255,255,255,0.15)',
                   }}>
-                    <Camera size={12} color="white" />
+                    <Camera size={13} color="white" />
+                    <span style={{ fontSize: 11, fontWeight: 600, color: 'white' }}>Alterar</span>
                   </div>
                 </div>
               ) : (
+                // Sem imagem: área de upload integrada ao hero
                 <div style={{
-                  width: 64, height: 64, borderRadius: '50%',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  flexDirection: 'column', gap: 2,
-                  background: 'rgba(139,92,246,0.15)', border: '2px dashed rgba(139,92,246,0.3)',
+                  height: 120,
+                  display: 'flex', flexDirection: 'column',
+                  alignItems: 'center', justifyContent: 'center', gap: 6,
+                  background: 'rgba(139,92,246,0.08)',
+                  borderBottom: '1px dashed rgba(139,92,246,0.25)',
                   opacity: isProcessing ? 0.5 : 1,
                   transition: 'opacity 200ms ease',
                 }}>
-                  <Camera size={20} color="var(--color-accent-couple)" />
-                  <span style={{ fontSize: 8, color: 'var(--color-text-tertiary)' }}>Foto</span>
+                  <div style={{
+                    width: 40, height: 40, borderRadius: 12,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    background: 'rgba(139,92,246,0.15)',
+                    border: '1px solid rgba(139,92,246,0.25)',
+                  }}>
+                    <Camera size={18} color="var(--color-accent-couple)" />
+                  </div>
+                  <span style={{ fontSize: 12, color: 'var(--color-text-tertiary)', fontWeight: 500 }}>Adicionar foto de capa</span>
                 </div>
               )}
             </div>
 
             {/* Progress card */}
-            <div style={{
-              background: 'rgba(255,255,255,0.06)',
-              border: '1px solid rgba(139,92,246,0.2)',
-              borderRadius: 'var(--radius-card)',
-              padding: 20,
-            }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 4 }}>
-                <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-text-primary)', margin: 0 }}>Guardado</p>
-                <p style={{ fontSize: 14, fontWeight: 700, color: 'var(--color-accent-couple)', margin: 0 }}>{Math.round(pct)}%</p>
-              </div>
-              <ProgressBar value={pct} variant="couple" size="md" />
-
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 16 }}>
-                <div>
-                  <p style={{ fontSize: 12, color: 'var(--color-text-secondary)', margin: 0 }}>Guardando por</p>
-                  <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-text-primary)', margin: 0 }}>{monthsSaving} {monthsSaving === 1 ? 'mês' : 'meses'}</p>
+            <div style={{ padding: '16px 16px 24px' }}>
+              <div style={{
+                background: 'rgba(255,255,255,0.06)',
+                border: '1px solid rgba(139,92,246,0.2)',
+                borderRadius: 'var(--radius-card)',
+                padding: 20,
+              }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 4 }}>
+                  <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-text-primary)', margin: 0 }}>Guardado</p>
+                  <p style={{ fontSize: 14, fontWeight: 700, color: 'var(--color-accent-couple)', margin: 0 }}>{Math.round(pct)}%</p>
                 </div>
-                <div style={{ textAlign: 'right' }}>
-                  <p style={{ fontSize: 12, color: 'var(--color-text-secondary)', margin: 0 }}>Para atingir</p>
-                  <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-text-primary)', margin: 0 }}>{monthsToGoal} {monthsToGoal === 1 ? 'mês' : 'meses'}</p>
+                <ProgressBar value={pct} variant="couple" size="md" />
+
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 16 }}>
+                  <div>
+                    <p style={{ fontSize: 12, color: 'var(--color-text-secondary)', margin: 0 }}>Guardando por</p>
+                    <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-text-primary)', margin: 0 }}>{monthsSaving} {monthsSaving === 1 ? 'mês' : 'meses'}</p>
+                  </div>
+                  <div style={{ textAlign: 'right' }}>
+                    <p style={{ fontSize: 12, color: 'var(--color-text-secondary)', margin: 0 }}>Para atingir</p>
+                    <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-text-primary)', margin: 0 }}>{monthsToGoal} {monthsToGoal === 1 ? 'mês' : 'meses'}</p>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         </>
       ) : (
-        <div style={{ paddingTop: 32, marginBottom: 24, display: 'flex', alignItems: 'center', gap: 16 }}>
-          {/* Desktop: Cover image or upload */}
+        <div style={{ paddingTop: 32, marginBottom: 24 }}>
+          {/* Desktop: Banner wide ou upload */}
           <div
             onClick={() => fileInputRef.current?.click()}
-            style={{ cursor: 'pointer', flexShrink: 0, position: 'relative' }}
+            style={{ cursor: 'pointer', position: 'relative', marginBottom: 20, borderRadius: 16, overflow: 'hidden' }}
           >
             {objetivo.imageUrl ? (
-              <div style={{ position: 'relative' }}>
+              <div style={{ position: 'relative', height: 180 }}>
                 <img
                   src={objetivo.imageUrl}
                   alt={objetivo.name}
                   style={{
-                    width: 56, height: 56, borderRadius: 16,
+                    width: '100%', height: '100%',
                     objectFit: 'cover',
-                    border: '2px solid rgba(139,92,246,0.3)',
                     opacity: isProcessing ? 0.5 : 1,
+                    borderRadius: 16,
                   }}
                 />
                 <div style={{
-                  position: 'absolute', bottom: -4, right: -4,
-                  width: 20, height: 20, borderRadius: '50%',
-                  background: 'var(--color-accent-couple)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  border: '2px solid var(--color-bg-primary)',
+                  position: 'absolute', inset: 0, borderRadius: 16,
+                  background: 'linear-gradient(to top, rgba(0,0,0,0.6) 0%, transparent 60%)',
+                }} />
+                <div style={{
+                  position: 'absolute', bottom: 16, left: 20, right: 20,
+                  display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end',
                 }}>
-                  <Camera size={10} color="white" />
+                  <h1 style={{ fontSize: 22, fontWeight: 700, color: 'white', margin: 0, textShadow: '0 1px 4px rgba(0,0,0,0.5)' }}>
+                    {objetivo.name}
+                  </h1>
+                  <div style={{
+                    background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(8px)',
+                    borderRadius: 20, padding: '4px 10px',
+                    display: 'flex', alignItems: 'center', gap: 5,
+                    border: '1px solid rgba(255,255,255,0.15)',
+                  }}>
+                    <Camera size={12} color="white" />
+                    <span style={{ fontSize: 11, fontWeight: 600, color: 'white' }}>Alterar</span>
+                  </div>
                 </div>
               </div>
             ) : (
-              <div style={{
-                width: 56, height: 56, borderRadius: 16,
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                background: 'rgba(139,92,246,0.12)', border: '2px dashed rgba(139,92,246,0.3)',
-                cursor: 'pointer',
-              }}>
-                <Camera size={20} color="var(--color-accent-couple)" />
+              <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+                <div style={{
+                  width: 56, height: 56, borderRadius: 16, flexShrink: 0,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  background: 'rgba(139,92,246,0.12)', border: '2px dashed rgba(139,92,246,0.3)',
+                }}>
+                  <Camera size={20} color="var(--color-accent-couple)" />
+                </div>
+                <h1 style={{ fontSize: 24, fontWeight: 600, color: 'var(--color-accent-couple)', margin: 0 }}>
+                  {objetivo.name}
+                </h1>
               </div>
             )}
           </div>
-          <h1 style={{ fontSize: 24, fontWeight: 600, color: 'var(--color-accent-couple)', margin: 0 }}>
-            {objetivo.name}
-          </h1>
+          {objetivo.imageUrl && (
+            <h1 style={{ fontSize: 22, fontWeight: 700, color: 'var(--color-text-primary)', margin: '0 0 0 0', display: 'none' }}>
+              {objetivo.name}
+            </h1>
+          )}
         </div>
       )}
 

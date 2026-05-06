@@ -117,9 +117,11 @@ export interface Objetivo {
   targetAmount: number
   currentAmount: number
   targetDate?: string
+  monthsToAchieve?: number   // meses para atingir o objetivo (calculado ou informado)
   imageUrl?: string
   caixinhaId?: string
   createdAt?: string
+  isCouple?: boolean          // true = aparece na aba Casal
   movements: ObjetivoMovement[]
 }
 

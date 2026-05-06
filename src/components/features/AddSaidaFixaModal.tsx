@@ -4,6 +4,7 @@ import { Dialog, DialogFooter, Button, Input } from '../ui'
 import { formatCurrency } from '../../lib/calculations'
 import { getCaixinhaIcon } from '../../lib/icons'
 import type { PaymentMethod, BillingCycle } from '../../types'
+import { useCurrencyInput } from '../../hooks/useCurrencyInput'
 
 interface Props {
   open: boolean
@@ -21,7 +22,7 @@ const PAYMENT_OPTIONS: { key: PaymentMethod; label: string }[] = [
 
 export default function AddSaidaFixaModal({ open, onClose, caixinhaId, caixinhaName }: Props) {
   const [name, setName] = useState('')
-  const [amount, setAmount] = useState('')
+  const amountInput = useCurrencyInput()
   const [dueDay, setDueDay] = useState('')
   const [billingCycle, setBillingCycle] = useState<BillingCycle>('month')
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('pix')
@@ -34,7 +35,7 @@ export default function AddSaidaFixaModal({ open, onClose, caixinhaId, caixinhaN
   useEffect(() => {
     if (open) {
       setName('')
-      setAmount('')
+      amountInput.reset()
       setDueDay('')
       setBillingCycle('month')
       setPaymentMethod('pix')
@@ -42,7 +43,7 @@ export default function AddSaidaFixaModal({ open, onClose, caixinhaId, caixinhaN
     }
   }, [open])
 
-  const numAmount = parseFloat(amount.replace(',', '.')) || 0
+  const numAmount = amountInput.numericValue
   const numDay = parseInt(dueDay) || 0
 
   // Normalize to monthly — if billed yearly, divide by 12
@@ -187,11 +188,10 @@ export default function AddSaidaFixaModal({ open, onClose, caixinhaId, caixinhaN
           </div>
           <Input
             prefix="R$"
-            type="number"
-            inputMode="decimal"
+            inputMode="numeric"
             placeholder="0,00"
-            value={amount}
-            onChange={e => setAmount(e.target.value)}
+            value={amountInput.displayValue}
+            onChange={amountInput.handleChange}
             style={{ fontSize: 18, fontWeight: 700 }}
           />
           {billingCycle === 'year' && numAmount > 0 && (

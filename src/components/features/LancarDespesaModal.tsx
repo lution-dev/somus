@@ -6,6 +6,7 @@ import { getCaixinhaIcon } from '../../lib/icons'
 import { Dialog, DialogFooter, Button, Input } from '../ui'
 import { Check, ChevronDown } from 'lucide-react'
 import type { PaymentMethod } from '../../types'
+import { useCurrencyInput } from '../../hooks/useCurrencyInput'
 
 interface Props {
   open: boolean
@@ -25,7 +26,7 @@ const PAYMENT_METHODS: { value: PaymentMethod; label: string }[] = [
 
 export default function LancarDespesaModal({ open, onClose, caixinhaId, caixinhaName }: Props) {
   const [description, setDescription] = useState('')
-  const [amount, setAmount] = useState('')
+  const amountInput = useCurrencyInput()
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod | ''>('')
   const [pmOpen, setPmOpen] = useState(false)
   const [date, setDate] = useState(new Date().toISOString().slice(0, 10))
@@ -40,7 +41,7 @@ export default function LancarDespesaModal({ open, onClose, caixinhaId, caixinha
   useEffect(() => {
     if (open) {
       setDescription(caixinhaName)
-      setAmount('')
+      amountInput.reset()
       setPaymentMethod('')
       setDate(new Date().toISOString().slice(0, 10))
       setSubcategory('')
@@ -49,7 +50,7 @@ export default function LancarDespesaModal({ open, onClose, caixinhaId, caixinha
     }
   }, [open, caixinhaName])
 
-  const numAmount = parseFloat(amount.replace(',', '.')) || 0
+  const numAmount = amountInput.numericValue
   const isValid = numAmount > 0 && description.trim() && paymentMethod
 
   function handleConfirm() {
@@ -122,11 +123,10 @@ export default function LancarDespesaModal({ open, onClose, caixinhaId, caixinha
               <Input
                 label="Valor"
                 prefix="R$"
-                type="number"
-                inputMode="decimal"
+                inputMode="numeric"
                 placeholder="0,00"
-                value={amount}
-                onChange={e => setAmount(e.target.value)}
+                value={amountInput.displayValue}
+                onChange={amountInput.handleChange}
                 style={{ fontSize: 20, fontWeight: 700 }}
               />
               <p style={{ fontSize: 11, color: 'var(--color-text-tertiary)', margin: '4px 0 0', textAlign: 'right' }}>Necessário</p>

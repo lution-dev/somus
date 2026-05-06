@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Dialog, DialogFooter, Button, Input } from '../ui'
 import { formatCurrency } from '../../lib/calculations'
+import { useCurrencyInput } from '../../hooks/useCurrencyInput'
 
 interface Props {
   open: boolean
@@ -18,18 +19,18 @@ export default function EditMovementModal({
   title = 'Editar Lançamento',
 }: Props) {
   const [description, setDescription] = useState('')
-  const [amount, setAmount] = useState('')
+  const amountInput = useCurrencyInput()
   const [date, setDate] = useState('')
 
   useEffect(() => {
     if (open) {
       setDescription(initialDescription)
-      setAmount(String(Math.abs(initialAmount)))
+      amountInput.setValue(Math.abs(initialAmount))
       setDate(initialDate)
     }
   }, [open, initialDescription, initialAmount, initialDate])
 
-  const numAmount = parseFloat(amount.replace(',', '.')) || 0
+  const numAmount = amountInput.numericValue
   const isValid = numAmount > 0 && description.trim()
   const isExpense = initialAmount < 0
 
@@ -60,11 +61,10 @@ export default function EditMovementModal({
         <Input
           label="Valor"
           prefix="R$"
-          type="number"
-          inputMode="decimal"
+          inputMode="numeric"
           placeholder="0,00"
-          value={amount}
-          onChange={e => setAmount(e.target.value)}
+          value={amountInput.displayValue}
+          onChange={amountInput.handleChange}
           style={{ fontSize: 20, fontWeight: 700 }}
         />
       </div>

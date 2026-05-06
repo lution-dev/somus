@@ -5,6 +5,7 @@ import { useShallow } from 'zustand/react/shallow'
 import { formatCurrency } from '../../lib/calculations'
 import { Dialog, DialogFooter, Button, Input } from '../ui'
 import { Check } from 'lucide-react'
+import { useCurrencyInput } from '../../hooks/useCurrencyInput'
 
 interface Props {
   open: boolean
@@ -13,13 +14,12 @@ interface Props {
 }
 
 export default function LancarEntradaModal({ open, onClose, prefill }: Props) {
-  const [amount, setAmount]   = useState('')
+  const amountInput = useCurrencyInput()
   const [sourceId, setSourceId] = useState('')
   const [sourceText, setSourceText] = useState('')
   const [sourceFocused, setSourceFocused] = useState(false)
   const [date, setDate]       = useState(new Date().toISOString().slice(0, 10))
   const [note, setNote]       = useState('')
-
   const [submitted, setSubmitted] = useState(false)
 
   const incomeSources = useAppStore(useShallow(selectCurrentIncomeSources))
@@ -35,19 +35,17 @@ export default function LancarEntradaModal({ open, onClose, prefill }: Props) {
   useEffect(() => {
     if (open) {
       if (prefill) {
-        setAmount(String(prefill.amount))
+        amountInput.setValue(prefill.amount)
         setSourceText(prefill.sourceName)
-        // Try to match existing source
         const match = incomeSources.find(s => s.name.toLowerCase() === prefill.sourceName.toLowerCase())
         setSourceId(match?.id ?? '')
       } else {
-        setAmount('')
+        amountInput.reset()
         setSourceId(firstSource?.id ?? '')
         setSourceText(firstSource?.name ?? '')
       }
       setDate(new Date().toISOString().slice(0, 10))
       setNote('')
-
       setSubmitted(false)
       setSourceFocused(false)
     }
@@ -77,12 +75,11 @@ export default function LancarEntradaModal({ open, onClose, prefill }: Props) {
 
   // Distribuição automática
   const distribution = useMemo(() => {
-    const num = parseFloat(amount.replace(',', '.'))
-    if (!num || isNaN(num) || num <= 0) return []
-    return calculateDistribution(num, caixinhas)
-  }, [amount, caixinhas])
+    if (!amountInput.numericValue || amountInput.numericValue <= 0) return []
+    return calculateDistribution(amountInput.numericValue, caixinhas)
+  }, [amountInput.numericValue, caixinhas])
 
-  const totalAmount = parseFloat(amount.replace(',', '.')) || 0
+  const totalAmount = amountInput.numericValue
   const isValid     = totalAmount > 0 && (sourceId || sourceText.trim())
 
 
@@ -130,11 +127,10 @@ export default function LancarEntradaModal({ open, onClose, prefill }: Props) {
               <Input
                 label="Valor recebido"
                 prefix="R$"
-                type="number"
-                inputMode="decimal"
+                inputMode="numeric"
                 placeholder="0,00"
-                value={amount}
-                onChange={e => setAmount(e.target.value)}
+                value={amountInput.displayValue}
+                onChange={amountInput.handleChange}
                 style={{ fontSize: 20, fontWeight: 700 }}
               />
             </div>
