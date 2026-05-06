@@ -302,13 +302,13 @@ export default function Fluxo() {
             <button
               onClick={() => setLancarOpen(true)}
               className="btn-primary"
-              style={{ height: 40, padding: '0 16px', fontSize: 13 }}
+              style={{ height: 36, padding: '0 14px', fontSize: 13, width: 'auto', flex: 'none' }}
             >
-              <Plus size={16} strokeWidth={2.5} />
+              <Plus size={15} strokeWidth={2.5} />
               Lançar entrada
             </button>
           </div>
-          <p style={{ fontSize: 14, color: 'var(--color-text-secondary)', textTransform: 'capitalize', margin: 0 }}>{currentMonth}</p>
+          <p style={{ fontSize: 13, color: 'var(--color-text-secondary)', textTransform: 'capitalize', margin: 0 }}>{currentMonth}</p>
         </div>
       )}
 
@@ -424,33 +424,33 @@ export default function Fluxo() {
         <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 0.8fr', gap: 24, alignItems: 'start' }}>
           {/* Column 1: Saídas */}
           <div>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <h3 style={{ fontSize: 18, fontWeight: 700, color: 'var(--color-text-primary)', margin: 0 }}>Saídas Fixas</h3>
-                <span style={{ fontSize: 12, fontWeight: 700, padding: '2px 8px', borderRadius: 6, background: 'rgba(255,255,255,0.05)', color: 'var(--color-text-tertiary)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <h3 style={{ fontSize: 16, fontWeight: 700, color: 'var(--color-text-primary)', margin: 0 }}>Saídas Fixas</h3>
+                <span style={{ fontSize: 11, fontWeight: 700, padding: '2px 7px', borderRadius: 6, background: 'rgba(255,255,255,0.05)', color: 'var(--color-text-tertiary)' }}>
                   {saidasFixas.length}
                 </span>
               </div>
-              <div style={{ width: 250 }}>
+              <div style={{ width: 200 }}>
                 <SearchBar value={fluxoSearch} onChange={setFluxoSearch} />
               </div>
             </div>
             
-            <div style={{ borderRadius: 20, overflow: 'hidden', background: 'var(--color-bg-secondary)', border: '1px solid var(--color-border)' }}>
+            <div style={{ borderRadius: 16, overflow: 'hidden', background: 'var(--color-bg-secondary)', border: '1px solid rgba(255,255,255,0.08)' }}>
               {renderSaidasList()}
             </div>
           </div>
 
           {/* Column 2: Entradas */}
           <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16, height: 40 }}>
-              <h3 style={{ fontSize: 18, fontWeight: 700, color: 'var(--color-text-primary)', margin: 0 }}>Entradas</h3>
-              <span style={{ fontSize: 12, fontWeight: 700, padding: '2px 8px', borderRadius: 6, background: 'rgba(255,255,255,0.05)', color: 'var(--color-text-tertiary)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12, height: 36 }}>
+              <h3 style={{ fontSize: 16, fontWeight: 700, color: 'var(--color-text-primary)', margin: 0 }}>Entradas</h3>
+              <span style={{ fontSize: 11, fontWeight: 700, padding: '2px 7px', borderRadius: 6, background: 'rgba(255,255,255,0.05)', color: 'var(--color-text-tertiary)' }}>
                 {entradas.length}
               </span>
             </div>
 
-            <div style={{ borderRadius: 20, overflow: 'hidden', background: 'var(--color-bg-secondary)', border: '1px solid var(--color-border)' }}>
+            <div style={{ borderRadius: 16, overflow: 'hidden', background: 'var(--color-bg-secondary)', border: '1px solid rgba(255,255,255,0.08)' }}>
               {renderEntradasList()}
             </div>
           </div>
