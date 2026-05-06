@@ -301,8 +301,16 @@ export default function Fluxo() {
             <h1 style={{ fontSize: 24, fontWeight: 700, color: 'var(--color-text-primary)', margin: 0 }}>Fluxo</h1>
             <button
               onClick={() => setLancarOpen(true)}
-              className="btn-primary"
-              style={{ height: 36, padding: '0 14px', fontSize: 13, width: 'auto', flex: 'none' }}
+              style={{
+                height: 36, padding: '0 14px', fontSize: 13, fontWeight: 600,
+                background: 'var(--color-accent-primary)', color: 'white',
+                border: 'none', borderRadius: 10, cursor: 'pointer',
+                display: 'flex', alignItems: 'center', gap: 6,
+                fontFamily: 'var(--font-sans)',
+                transition: 'background 150ms ease',
+              }}
+              onMouseEnter={e => (e.currentTarget.style.background = '#2563EB')}
+              onMouseLeave={e => (e.currentTarget.style.background = 'var(--color-accent-primary)')}
             >
               <Plus size={15} strokeWidth={2.5} />
               Lançar entrada
