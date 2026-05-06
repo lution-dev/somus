@@ -380,3 +380,26 @@
 #### T-AD-18: Lista custos — exibir 'Variavel' ao inves de R$ 0,00
 **Status:** Em andamento
 
+
+
+#### T-AD-19: Casal — Modal AddObjetivoModal com foto, emoji, meta e data
+**Tipo:** Feature
+**Arquivo:** src/components/features/AddObjetivoModal.tsx + src/pages/Casal.tsx
+**Criterios:**
+- [ ] Modal completo: nome, emoji (picker), meta R$, data alvo, foto
+- [ ] Botao + visivel na lista de objetivos (mobile FAB + desktop inline)
+- [ ] Usa padrao Dialog/Button/Input do design system
+- [ ] Foto via useImageUpload (base64, compressao)
+**Status:** Em andamento
+
+---
+
+#### T-AD-20: ObjetivoDetalhe — Lancamento de pagamento com tipo deposito/retirada
+**Tipo:** Feature/UX
+**Arquivo:** src/components/features/LancarObjetivoModal.tsx + src/pages/ObjetivoDetalhe.tsx
+**Criterios:**
+- [ ] Modal dedicado com tipo (deposito/retirada) via chips
+- [ ] Campos: valor, descricao, data
+- [ ] Botao Lancar Pagamento proeminente no topo do detalhe
+- [ ] Mobile FAB + desktop button ambos abrem o modal
+**Status:** Em andamento

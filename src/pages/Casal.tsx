@@ -6,8 +6,9 @@ import { formatCurrency } from '../lib/calculations'
 import { ProgressBar, PageHeader } from '../components/ui'
 import { useIsMobile } from '../hooks/useIsMobile'
 import { useAuth } from '../hooks/useAuth'
-import { Target, Share2, Copy, Heart, CheckCircle2, Building2, Send, Users, Sparkles } from 'lucide-react'
+import { Target, Share2, Copy, Heart, CheckCircle2, Building2, Send, Users, Sparkles, Plus } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
+import AddObjetivoModal from '../components/features/AddObjetivoModal'
 
 const OBJ_ICONS: Record<string, LucideIcon> = {
   'obj-casamento': Heart,
@@ -17,6 +18,7 @@ function getObjIcon(id: string): LucideIcon { return OBJ_ICONS[id] || Target }
 
 export default function Casal() {
   const [copied, setCopied] = useState(false)
+  const [addObjetivoOpen, setAddObjetivoOpen] = useState(false)
   const [, navigate] = useLocation()
   const { photoURL, displayName } = useAuth()
   const currentUser = useAppStore(s => s.currentUser)
@@ -234,10 +236,29 @@ export default function Casal() {
 
       {/* Objetivos */}
       <div style={{ marginBottom: 20 }}>
-        <p className="section-label" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          <Target size={13} />
-          Objetivos do casal
-        </p>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+          <p className="section-label" style={{ display: 'flex', alignItems: 'center', gap: 6, margin: 0 }}>
+            <Target size={13} />
+            Objetivos do casal
+          </p>
+          <button
+            id="btn-add-objetivo-inline"
+            onClick={() => setAddObjetivoOpen(true)}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 6,
+              fontSize: 12, fontWeight: 600, padding: '7px 14px',
+              borderRadius: 10, cursor: 'pointer',
+              background: 'rgba(139,92,246,0.1)',
+              color: 'var(--color-accent-couple)',
+              border: '1.5px solid rgba(139,92,246,0.25)',
+              fontFamily: 'var(--font-sans)',
+              transition: 'all 150ms ease',
+            }}
+          >
+            <Plus size={13} strokeWidth={2.5} />
+            Novo
+          </button>
+        </div>
 
         {objetivos.length > 0 ? (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -260,14 +281,34 @@ export default function Casal() {
                 >
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                      <div style={{
-                        width: 36, height: 36, borderRadius: 12,
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        background: 'rgba(139,92,246,0.12)',
-                      }}>
-                        <ObjIcon size={17} color="var(--color-accent-couple)" />
+                      {obj.imageUrl ? (
+                        <img
+                          src={obj.imageUrl}
+                          alt={obj.name}
+                          style={{
+                            width: 36, height: 36, borderRadius: 10,
+                            objectFit: 'cover',
+                            border: '1px solid rgba(139,92,246,0.2)',
+                          }}
+                        />
+                      ) : (
+                        <div style={{
+                          width: 36, height: 36, borderRadius: 12,
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          background: 'rgba(139,92,246,0.12)',
+                          fontSize: 18,
+                        }}>
+                          {obj.emoji || <ObjIcon size={17} color="var(--color-accent-couple)" />}
+                        </div>
+                      )}
+                      <div>
+                        <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-text-primary)', margin: 0 }}>{obj.name}</p>
+                        {obj.targetDate && (
+                          <p style={{ fontSize: 11, color: 'var(--color-text-tertiary)', margin: 0 }}>
+                            até {new Date(obj.targetDate + 'T12:00:00').toLocaleDateString('pt-BR', { month: 'short', year: '2-digit' })}
+                          </p>
+                        )}
                       </div>
-                      <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-text-primary)', margin: 0 }}>{obj.name}</p>
                     </div>
                     <p style={{ fontSize: 14, fontWeight: 700, color: 'var(--color-accent-couple)', margin: 0 }}>
                       {Math.round(pct)}%
@@ -285,13 +326,60 @@ export default function Casal() {
             })}
           </div>
         ) : (
-          <EmptyCard
-            icon={Sparkles}
-            title="Nenhum objetivo ainda"
-            desc="Crie objetivos como casamento, viagem ou apartamento para acompanhar o progresso juntos."
-          />
+          <>
+            <EmptyCard
+              icon={Sparkles}
+              title="Nenhum objetivo ainda"
+              desc="Crie objetivos como casamento, viagem ou apartamento para acompanhar o progresso juntos."
+            />
+            <button
+              id="btn-add-objetivo-empty"
+              onClick={() => setAddObjetivoOpen(true)}
+              style={{
+                marginTop: 12, width: '100%', display: 'flex', alignItems: 'center',
+                justifyContent: 'center', gap: 8,
+                padding: '12px 20px', borderRadius: 'var(--radius-card)',
+                background: 'rgba(139,92,246,0.08)',
+                border: '1.5px dashed rgba(139,92,246,0.3)',
+                color: 'var(--color-accent-couple)',
+                fontSize: 14, fontWeight: 600,
+                fontFamily: 'var(--font-sans)', cursor: 'pointer',
+                transition: 'all 150ms ease',
+              }}
+            >
+              <Plus size={16} strokeWidth={2.5} />
+              Criar primeiro objetivo
+            </button>
+          </>
         )}
       </div>
+
+      {/* Mobile FAB */}
+      {isMobile && (
+        <div style={{
+          position: 'fixed',
+          bottom: 'calc(88px + env(safe-area-inset-bottom, 0px))',
+          right: 20, zIndex: 35,
+        }}>
+          <button
+            id="btn-add-objetivo-fab"
+            onClick={() => setAddObjetivoOpen(true)}
+            style={{
+              width: 52, height: 52, borderRadius: 16,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              background: 'var(--color-accent-couple)',
+              border: 'none', cursor: 'pointer',
+              boxShadow: '0 4px 20px rgba(139,92,246,0.35)',
+              color: 'white',
+            }}
+            aria-label="Adicionar objetivo"
+          >
+            <Plus size={22} strokeWidth={2.5} />
+          </button>
+        </div>
+      )}
+
+      <AddObjetivoModal open={addObjetivoOpen} onClose={() => setAddObjetivoOpen(false)} />
 
       {/* Código de convite */}
       <div style={{

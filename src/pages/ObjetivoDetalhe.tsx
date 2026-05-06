@@ -8,6 +8,7 @@ import { useIsMobile } from '../hooks/useIsMobile'
 import { useImageUpload } from '../hooks/useImageUpload'
 import { ArrowUpRight, ArrowDownRight, Info, Plus, Camera } from 'lucide-react'
 import EditMovementModal from '../components/features/EditMovementModal'
+import LancarObjetivoModal from '../components/features/LancarObjetivoModal'
 import type { ObjetivoMovement } from '../types'
 
 const HERO_BG = '#001442'
@@ -223,7 +224,7 @@ export default function ObjetivoDetalhe() {
         background: 'var(--color-bg-secondary)',
         border: '1px solid rgba(139,92,246,0.2)',
         borderRadius: 'var(--radius-card)',
-        padding: 20, marginBottom: 20,
+        padding: 20, marginBottom: 12,
       }}>
         <p style={{ fontSize: 12, fontWeight: 500, color: 'var(--color-text-secondary)', margin: '0 0 4px' }}>Total Guardado</p>
         <p style={{ fontSize: 28, fontWeight: 700, color: 'var(--color-accent-couple)', margin: '0 0 4px', lineHeight: 1 }}>
@@ -233,6 +234,27 @@ export default function ObjetivoDetalhe() {
           Faltam {formatCurrency(remaining)} · Meta {formatCurrency(objetivo.targetAmount)}
         </p>
       </div>
+
+      {/* Botão Lançar Pagamento — destaque */}
+      <button
+        id="btn-lancar-pagamento"
+        onClick={() => setAddOpen(true)}
+        style={{
+          width: '100%', display: 'flex', alignItems: 'center',
+          justifyContent: 'center', gap: 8,
+          padding: '12px 20px', borderRadius: 'var(--radius-card)',
+          background: 'rgba(139,92,246,0.1)',
+          border: '1.5px solid rgba(139,92,246,0.25)',
+          color: 'var(--color-accent-couple)',
+          fontSize: 14, fontWeight: 600,
+          fontFamily: 'var(--font-sans)', cursor: 'pointer',
+          transition: 'all 150ms ease',
+          marginBottom: 20,
+        }}
+      >
+        <Plus size={16} strokeWidth={2.5} />
+        Lançar Pagamento
+      </button>
 
       {/* Lançamentos */}
       <p className="section-label" style={{ marginBottom: 12 }}>Lançamentos</p>
@@ -322,22 +344,15 @@ export default function ObjetivoDetalhe() {
               boxShadow: '0 4px 20px rgba(139,92,246,0.35)',
               color: 'white',
             }}
-            aria-label="Adicionar depósito"
+            aria-label="Lançar pagamento"
           >
             <Plus size={22} strokeWidth={2.5} />
           </button>
         </div>
       )}
 
-      {/* Desktop: Button */}
-      {!isMobile && (
-        <div style={{ marginTop: 16 }}>
-          <button onClick={() => setAddOpen(true)} className="btn-primary" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <Plus size={18} strokeWidth={2.5} />
-            Adicionar depósito
-          </button>
-        </div>
-      )}
+      {/* Desktop: Button — removido pois o botão inline já existe acima */}
+
 
       {/* Action sheet */}
       <ItemActionSheet
@@ -363,21 +378,13 @@ export default function ObjetivoDetalhe() {
         }}
       />
 
-      {/* Add deposit modal */}
-      <EditMovementModal
+      {/* Add movement modal */}
+      <LancarObjetivoModal
         open={addOpen}
         onClose={() => setAddOpen(false)}
-        title="Novo Depósito"
-        initialDescription=""
-        initialAmount={0}
-        initialDate={new Date().toISOString().slice(0, 10)}
-        onSave={(data) => {
-          addObjetivoMovement(objetivo.id, {
-            date: data.date,
-            amount: Math.abs(data.amount),
-            description: data.description,
-            type: 'deposit',
-          })
+        title="Lançar Pagamento"
+        onSave={(mv) => {
+          addObjetivoMovement(objetivo.id, mv)
         }}
       />
     </div>
