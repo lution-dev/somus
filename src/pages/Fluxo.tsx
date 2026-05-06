@@ -180,6 +180,7 @@ export default function Fluxo() {
 
   const totalPending = pending.reduce((s, sf) => s + sf.amount, 0)
   const totalPaid    = paid.reduce((s, sf) => s + sf.amount, 0)
+  const paidPct      = Math.round((paid.length / (saidasFixas.length || 1)) * 100)
 
   const currentMonth = new Date().toLocaleString('pt-BR', { month: 'long', year: 'numeric' })
 
@@ -295,80 +296,59 @@ export default function Fluxo() {
           }
         />
       ) : (
-        <div style={{ paddingTop: 32, marginBottom: 24, display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
-          <div>
-            <h1 style={{ fontSize: 32, fontWeight: 700, color: 'var(--color-text-primary)', margin: 0, letterSpacing: '-0.02em' }}>Fluxo</h1>
-            <p style={{ fontSize: 16, color: 'var(--color-text-secondary)', textTransform: 'capitalize', margin: '4px 0 0' }}>{currentMonth}</p>
+        <div style={{ paddingTop: 32, marginBottom: 24 }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
+            <h1 style={{ fontSize: 24, fontWeight: 700, color: 'var(--color-text-primary)', margin: 0 }}>Fluxo</h1>
+            <button
+              onClick={() => setLancarOpen(true)}
+              className="btn-primary"
+              style={{ height: 40, padding: '0 16px', fontSize: 13 }}
+            >
+              <Plus size={16} strokeWidth={2.5} />
+              Lançar entrada
+            </button>
           </div>
-          <button
-            onClick={() => setLancarOpen(true)}
-            className="btn-primary"
-            style={{ height: 44, padding: '0 20px' }}
-          >
-            <Plus size={20} strokeWidth={2.5} />
-            Lançar entrada
-          </button>
+          <p style={{ fontSize: 14, color: 'var(--color-text-secondary)', textTransform: 'capitalize', margin: 0 }}>{currentMonth}</p>
         </div>
       )}
 
       <div style={{ padding: isMobile ? '12px 16px 0' : 0 }}>
 
-      {/* Modern Summary Section */}
+      {/* Summary Card — glassmorphism per DESIGN.md */}
       <div style={{ 
-        background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.08) 0%, rgba(30, 41, 59, 0.4) 100%)',
-        borderRadius: 24,
+        background: 'var(--color-bg-secondary)',
+        borderRadius: 16,
         padding: 20,
-        border: '1px solid rgba(255, 255, 255, 0.06)',
-        marginBottom: 24,
-        position: 'relative',
-        overflow: 'hidden'
+        border: '1px solid rgba(255, 255, 255, 0.08)',
+        marginBottom: 20,
       }}>
-        {/* Background glow */}
-        <div style={{ 
-          position: 'absolute', top: -50, right: -50, width: 150, height: 150, 
-          background: 'var(--color-accent-primary)', opacity: 0.1, filter: 'blur(60px)', pointerEvents: 'none' 
-        }} />
-
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
-          <div>
-            <p style={{ fontSize: 12, fontWeight: 700, color: 'var(--color-text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', margin: '0 0 4px' }}>
-              Balanço do Mês
-            </p>
-            <h2 style={{ fontSize: 24, fontWeight: 700, color: 'var(--color-text-primary)', margin: 0 }}>
-              {formatCurrency(totalPaid + totalPending)}
-            </h2>
-          </div>
-          <div style={{ textAlign: 'right' }}>
-            <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--color-success)', margin: 0 }}>
-              {Math.round((totalPaid / (totalPaid + totalPending || 1)) * 100)}% Pago
-            </p>
-          </div>
+        {/* Progress header */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
+          <p className="section-label" style={{ margin: 0 }}>Progresso do mês</p>
+          <span style={{ fontSize: 13, fontWeight: 700, color: paidPct > 0 ? 'var(--color-success)' : 'var(--color-text-tertiary)' }}>
+            {paid.length}/{saidasFixas.length} pagas
+          </span>
         </div>
 
-        {/* Custom Progress Bar */}
-        <div style={{ height: 10, background: 'rgba(255, 255, 255, 0.08)', borderRadius: 5, overflow: 'hidden', marginBottom: 20, display: 'flex' }}>
+        {/* Progress Bar — 8px per DESIGN.md */}
+        <div style={{ height: 8, background: 'rgba(255,255,255,0.1)', borderRadius: 9999, overflow: 'hidden', marginBottom: 16 }}>
           <motion.div 
             initial={{ width: 0 }}
-            animate={{ width: `${(totalPaid / (totalPaid + totalPending || 1)) * 100}%` }}
-            transition={{ duration: 1, ease: 'easeOut' }}
-            style={{ height: '100%', background: 'var(--color-success)', borderRadius: 5 }} 
+            animate={{ width: `${paidPct}%` }}
+            transition={{ duration: 0.6, ease: 'easeOut' }}
+            style={{ height: '100%', background: 'var(--color-success)', borderRadius: 9999 }} 
           />
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
-              <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--color-danger)' }} />
-              <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--color-text-secondary)' }}>A pagar</span>
-            </div>
-            <p style={{ fontSize: 16, fontWeight: 700, color: 'var(--color-text-primary)', margin: 0 }}>{formatCurrency(totalPending)}</p>
+        {/* Totals */}
+        <div style={{ display: 'flex', gap: 16 }}>
+          <div style={{ flex: 1, padding: '12px 14px', borderRadius: 12, background: 'rgba(239,68,68,0.06)', border: '1px solid rgba(239,68,68,0.15)' }}>
+            <p style={{ fontSize: 11, fontWeight: 600, color: 'var(--color-danger)', margin: '0 0 4px', textTransform: 'uppercase', letterSpacing: '0.04em' }}>A pagar</p>
+            <p style={{ fontSize: 18, fontWeight: 700, color: 'var(--color-text-primary)', margin: 0 }}>{formatCurrency(totalPending)}</p>
           </div>
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
-              <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--color-success)' }} />
-              <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--color-text-secondary)' }}>Pago</span>
-            </div>
-            <p style={{ fontSize: 16, fontWeight: 700, color: 'var(--color-text-primary)', margin: 0 }}>{formatCurrency(totalPaid)}</p>
+          <div style={{ flex: 1, padding: '12px 14px', borderRadius: 12, background: 'rgba(16,185,129,0.06)', border: '1px solid rgba(16,185,129,0.15)' }}>
+            <p style={{ fontSize: 11, fontWeight: 600, color: 'var(--color-success)', margin: '0 0 4px', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Pago</p>
+            <p style={{ fontSize: 18, fontWeight: 700, color: 'var(--color-text-primary)', margin: 0 }}>{formatCurrency(totalPaid)}</p>
           </div>
         </div>
       </div>
@@ -477,18 +457,7 @@ export default function Fluxo() {
         </div>
       )}
 
-      {/* Desktop CTA */}
-      {!isMobile && (
-        <div style={{ marginTop: 16 }}>
-          <button
-            onClick={() => setLancarOpen(true)}
-            className="btn-primary"
-          >
-            <Plus size={18} strokeWidth={2.5} />
-            Lançar entrada
-          </button>
-        </div>
-      )}
+      {/* Desktop CTA removed — already in header */}
 
       </div>
 
