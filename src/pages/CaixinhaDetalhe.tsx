@@ -366,7 +366,8 @@ export default function CaixinhaDetalhe() {
               {myObjetivos.map(obj => {
                 const pct = obj.targetAmount > 0 ? Math.min(100, (obj.currentAmount / obj.targetAmount) * 100) : 0
                 const remaining = Math.max(0, obj.targetAmount - obj.currentAmount)
-                const accentColor = ob                return (
+                const accentColor = obj.isCouple ? '#8B5CF6' : color
+                return (
                   <div key={obj.id} style={{ position: 'relative' }}>
                     <button
                       onClick={() => navigate(`/casal/objetivo/${obj.id}`)}
@@ -426,16 +427,13 @@ export default function CaixinhaDetalhe() {
                         </div>
                       </div>
                     </button>
-                    {/* Botão ⋯ */}
                     <button
                       onClick={e => { e.stopPropagation(); setObjetivoActionTarget(obj) }}
-                      style={{ position: 'absolute', top: 10, left: 10, width: 28, height: 28, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.45)', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.12)', cursor: 'pointer', color: 'white', fontSize: 16, fontWeight: 700, lineHeight: 1 }}
+                      style={{ position: 'absolute', top: 10, right: 10, width: 28, height: 28, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.45)', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.12)', cursor: 'pointer', color: 'white', fontSize: 16, fontWeight: 700, lineHeight: 1 }}
                       aria-label="Opções do objetivo"
                     >⋯</button>
                   </div>
                 )
-              })}
-             )
               })}
             </div>
           )}

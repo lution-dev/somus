@@ -3,9 +3,9 @@ import { useParams } from 'wouter'
 import { useAppStore } from '../stores/useAppStore'
 import { formatCurrency } from '../lib/calculations'
 import { PageHeader, ProgressBar, SearchBar } from '../components/ui'
+import ImageCropPicker from '../components/ui/ImageCropPicker'
 import ItemActionSheet from '../components/ui/ItemActionSheet'
 import { useIsMobile } from '../hooks/useIsMobile'
-import { useImageUpload } from '../hooks/useImageUpload'
 import { ArrowUpRight, ArrowDownRight, Info, Plus, Camera } from 'lucide-react'
 import EditMovementModal from '../components/features/EditMovementModal'
 import LancarObjetivoModal from '../components/features/LancarObjetivoModal'
@@ -21,13 +21,13 @@ export default function ObjetivoDetalhe() {
   const deleteObjetivoMovement = useAppStore(s => s.deleteObjetivoMovement)
   const updateObjetivoImage = useAppStore(s => s.updateObjetivoImage)
   const isMobile = useIsMobile()
-  const { upload, isProcessing } = useImageUpload()
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const [actionItem, setActionItem] = useState<ObjetivoMovement | null>(null)
   const [editMv, setEditMv] = useState<ObjetivoMovement | null>(null)
   const [addOpen, setAddOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
+  const [cropSrc, setCropSrc] = useState<string | null>(null)
 
   if (!objetivo) {
     return (
@@ -71,19 +71,34 @@ export default function ObjetivoDetalhe() {
 
   return (
     <div style={{ minHeight: '100%', paddingBottom: 24 }}>
+      {/* Image crop picker overlay */}
+      {cropSrc && (
+        <ImageCropPicker
+          imageSrc={cropSrc}
+          aspect={2.5}
+          outputWidth={900}
+          outputHeight={360}
+          onConfirm={(dataUrl) => {
+            updateObjetivoImage(objetivo.id, dataUrl)
+            setCropSrc(null)
+          }}
+          onCancel={() => setCropSrc(null)}
+        />
+      )}
       {/* Hidden file input for image upload */}
       <input
         ref={fileInputRef}
         type="file"
         accept="image/*"
         style={{ display: 'none' }}
-        onChange={async (e) => {
+        onChange={(e) => {
           const file = e.target.files?.[0]
-          if (!file || !objetivo) return
-          const result = await upload(file)
-          if (result) {
-            updateObjetivoImage(objetivo.id, result.dataUrl)
+          if (!file) return
+          const reader = new FileReader()
+          reader.onload = (ev) => {
+            if (ev.target?.result) setCropSrc(ev.target.result as string)
           }
+          reader.readAsDataURL(file)
           e.target.value = ''
         }}
       />
@@ -112,7 +127,7 @@ export default function ObjetivoDetalhe() {
                     style={{
                       width: '100%', height: '100%',
                       objectFit: 'cover',
-                      opacity: isProcessing ? 0.5 : 1,
+                      opacity: 1,
                       transition: 'opacity 200ms ease',
                     }}
                   />
@@ -141,7 +156,7 @@ export default function ObjetivoDetalhe() {
                   alignItems: 'center', justifyContent: 'center', gap: 6,
                   background: 'rgba(139,92,246,0.08)',
                   borderBottom: '1px dashed rgba(139,92,246,0.25)',
-                  opacity: isProcessing ? 0.5 : 1,
+                  opacity: 1,
                   transition: 'opacity 200ms ease',
                 }}>
                   <div style={{
@@ -200,7 +215,7 @@ export default function ObjetivoDetalhe() {
                   style={{
                     width: '100%', height: '100%',
                     objectFit: 'cover',
-                    opacity: isProcessing ? 0.5 : 1,
+                    opacity: 1,
                     borderRadius: 16,
                   }}
                 />
