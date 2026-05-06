@@ -288,6 +288,7 @@ export default function Casal() {
                           style={{
                             width: 36, height: 36, borderRadius: 10,
                             objectFit: 'cover',
+                            objectPosition: `center ${(obj as any).imagePosition ?? 50}%`,
                             border: '1px solid rgba(139,92,246,0.2)',
                           }}
                         />

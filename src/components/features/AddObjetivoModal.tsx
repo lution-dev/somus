@@ -1,10 +1,10 @@
-import { useState, useEffect, useRef } from 'react'
+﻿import { useState, useEffect, useRef } from 'react'
 import { useAppStore } from '../../stores/useAppStore'
 import { Dialog, DialogFooter, Button, Input } from '../ui'
 import { formatCurrency } from '../../lib/calculations'
-import { useImageUpload } from '../../hooks/useImageUpload'
-import { ImageUp } from 'lucide-react'
+import { RefreshCw, Camera } from 'lucide-react'
 import { useCurrencyInput } from '../../hooks/useCurrencyInput'
+import ImageCropPicker from '../ui/ImageCropPicker'
 
 interface Props {
   open: boolean
@@ -26,17 +26,16 @@ export default function AddObjetivoModal({ open, onClose, defaultIsCouple = fals
   const amountInput                 = useCurrencyInput()
   const [months, setMonths]         = useState('')
   const [imageUrl, setImageUrl]     = useState<string | undefined>(undefined)
+  const [cropSrc, setCropSrc]       = useState<string | null>(null)
 
   const currentUser  = useAppStore(s => s.currentUser)
   const addObjetivo  = useAppStore(s => s.addObjetivo)
-  const { upload, isProcessing } = useImageUpload()
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   // Reset form whenever modal opens
   useEffect(() => {
     if (open) {
       if (editTarget) {
-        // Edit mode: pre-fill fields
         setIsCouple(editTarget.isCouple ?? false)
         setName(editTarget.name)
         amountInput.setValue(editTarget.targetAmount)
@@ -65,40 +64,40 @@ export default function AddObjetivoModal({ open, onClose, defaultIsCouple = fals
       })()
     : undefined
 
-  async function handleImageSelect(e: React.ChangeEvent<HTMLInputElement>) {
+  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (!file) return
-    const result = await upload(file)
-    if (result) setImageUrl(result.dataUrl)
+    const reader = new FileReader()
+    reader.onload = (ev) => {
+      if (ev.target?.result) setCropSrc(ev.target.result as string)
+    }
+    reader.readAsDataURL(file)
     e.target.value = ''
   }
 
   function handleConfirm() {
     if (!isValid) return
+    const baseData = {
+      name: name.trim(),
+      targetAmount: numTarget,
+      monthsToAchieve: numMonths,
+      targetDate,
+      imageUrl,
+      isCouple,
+    }
+
     if (isEditMode && onSave) {
-      onSave({
-        name: name.trim(),
-        targetAmount: numTarget,
-        monthsToAchieve: numMonths,
-        targetDate,
-        imageUrl,
-        isCouple,
-      })
+      onSave(baseData as any)
     } else {
       if (!currentUser) return
       addObjetivo({
+        ...baseData,
         userId: currentUser.id,
-        name: name.trim(),
         emoji: '🎯',
-        targetAmount: numTarget,
         currentAmount: 0,
-        targetDate,
-        monthsToAchieve: numMonths,
-        imageUrl,
-        isCouple,
         movements: [],
         createdAt: new Date().toISOString().slice(0, 10),
-      })
+      } as any)
     }
     onClose()
   }
@@ -115,8 +114,21 @@ export default function AddObjetivoModal({ open, onClose, defaultIsCouple = fals
         type="file"
         accept="image/*"
         style={{ display: 'none' }}
-        onChange={handleImageSelect}
+        onChange={handleFileChange}
       />
+
+      {/* Image crop picker overlay */}
+      {cropSrc && (
+        <ImageCropPicker
+          imageSrc={cropSrc}
+          aspect={2.5}
+          onConfirm={(dataUrl) => {
+            setImageUrl(dataUrl)
+            setCropSrc(null)
+          }}
+          onCancel={() => setCropSrc(null)}
+        />
+      )}
 
       {/* ── Toggle: Objetivo do Casal ── */}
       <div style={{
@@ -135,7 +147,6 @@ export default function AddObjetivoModal({ open, onClose, defaultIsCouple = fals
             Ao marcar essa opção, será adicionado{'\n'}como Objetivo para os 2.
           </p>
         </div>
-        {/* Toggle switch */}
         <button
           id="toggle-objetivo-casal"
           onClick={() => setIsCouple(v => !v)}
@@ -223,58 +234,67 @@ export default function AddObjetivoModal({ open, onClose, defaultIsCouple = fals
         )}
       </div>
 
-      {/* ── Capa ── */}
+      {/* ── Capa (Integrated Image Picker) ── */}
       <div style={{ marginBottom: 20 }}>
         <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-text-primary)', margin: '0 0 8px' }}>Capa</p>
         <div
-          onClick={() => fileInputRef.current?.click()}
+          onClick={() => !imageUrl && fileInputRef.current?.click()}
           style={{
             width: '100%', minHeight: 100, borderRadius: 'var(--radius-card)',
-            display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8,
             background: imageUrl ? 'transparent' : 'rgba(255,255,255,0.04)',
             border: `1px solid var(--color-border)`,
-            cursor: 'pointer', position: 'relative', overflow: 'hidden',
-            opacity: isProcessing ? 0.5 : 1,
-            transition: 'opacity 200ms ease',
+            cursor: imageUrl ? 'default' : 'pointer', position: 'relative', overflow: 'hidden',
+            transition: 'all 200ms ease',
           }}
         >
           {imageUrl ? (
-            <img
-              src={imageUrl}
-              alt="capa"
-              style={{ width: '100%', height: 120, objectFit: 'cover', display: 'block' }}
-            />
+            <div style={{ position: 'relative', height: 140 }}>
+              <img
+                src={imageUrl}
+                alt="capa"
+                style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+              />
+              <div style={{
+                position: 'absolute', inset: 0,
+                background: 'linear-gradient(to bottom, rgba(0,0,0,0.4) 0%, transparent 60%)',
+                pointerEvents: 'none',
+              }} />
+              <div style={{ position: 'absolute', top: 10, right: 10, display: 'flex', gap: 8 }}>
+                <button
+                  type="button"
+                  onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click() }}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: 5, padding: '6px 12px', borderRadius: 10,
+                    background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(10px)',
+                    border: '1px solid rgba(255,255,255,0.2)', color: 'white', fontSize: 12, fontWeight: 600,
+                    cursor: 'pointer',
+                  }}
+                >
+                  <RefreshCw size={13} /> Trocar
+                </button>
+              </div>
+            </div>
           ) : (
-            <>
+            <div style={{
+              display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '30px 0', gap: 8,
+            }}>
               <div style={{
                 width: 44, height: 44, borderRadius: 12,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                background: 'rgba(255,255,255,0.06)',
+                background: 'rgba(139,92,246,0.1)', border: '1px solid rgba(139,92,246,0.2)',
               }}>
-                <ImageUp size={22} color="var(--color-text-tertiary)" />
+                <Camera size={20} color="var(--color-accent-couple)" />
               </div>
-              <p style={{ fontSize: 12, color: 'var(--color-text-tertiary)', margin: 0 }}>
-                {isProcessing ? 'Processando...' : 'Toque para adicionar imagem'}
-              </p>
-            </>
+              <p style={{ fontSize: 12, color: 'var(--color-text-tertiary)', fontWeight: 500, margin: 0 }}>Toque para adicionar foto</p>
+            </div>
           )}
         </div>
       </div>
 
       <DialogFooter>
+        <Button variant="ghost" size="md" fullWidth onClick={onClose}>Cancelar</Button>
         <Button
-          variant="ghost"
-          size="md"
-          fullWidth
-          onClick={onClose}
-        >
-          Cancelar
-        </Button>
-        <Button
-          variant="primary"
-          size="md"
-          fullWidth
-          disabled={!isValid}
+          variant="primary" size="md" fullWidth disabled={!isValid}
           onClick={handleConfirm}
           style={isValid ? { background: accentColor } : undefined}
         >

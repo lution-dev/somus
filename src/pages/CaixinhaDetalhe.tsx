@@ -382,7 +382,7 @@ export default function CaixinhaDetalhe() {
                     >
                       {obj.imageUrl ? (
                         <div style={{ position: 'relative', height: 110, overflow: 'hidden' }}>
-                          <img src={obj.imageUrl} alt={obj.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                          <img src={obj.imageUrl} alt={obj.name} style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: `center ${(obj as any).imagePosition ?? 50}%` }} />
                           <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.1) 60%)' }} />
                           {obj.isCouple && (
                             <div style={{ position: 'absolute', top: 10, right: 10, background: 'rgba(139,92,246,0.85)', backdropFilter: 'blur(8px)', borderRadius: 20, padding: '3px 8px', display: 'flex', alignItems: 'center', gap: 4 }}>
