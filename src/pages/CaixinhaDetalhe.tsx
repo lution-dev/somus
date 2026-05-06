@@ -452,7 +452,9 @@ export default function CaixinhaDetalhe() {
                             overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                           }}>{sf.name}</p>
                           <p style={{ fontSize: 12, color: 'var(--color-text-secondary)', margin: 0 }}>
-                            {formatCurrency(sf.amount)} · {getDueDayLabel(sf.dueDay)}
+                            {sf.isVariable
+                              ? <span style={{ color: 'var(--color-warning)', fontWeight: 600 }}>Variável</span>
+                              : formatCurrency(sf.amount)}{' · '}{getDueDayLabel(sf.dueDay)}
                           </p>
                         </div>
                       </div>
@@ -505,7 +507,9 @@ export default function CaixinhaDetalhe() {
                             overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                           }}>{sf.name}</p>
                           <p style={{ fontSize: 12, color: 'var(--color-text-secondary)', margin: 0 }}>
-                            {formatCurrency(sf.amount)} · {getDueDayLabel(sf.dueDay)}
+                            {sf.isVariable
+                              ? <span style={{ color: 'var(--color-warning)', fontWeight: 600 }}>Variável</span>
+                              : formatCurrency(sf.amount)}{' · '}{getDueDayLabel(sf.dueDay)}
                           </p>
                         </div>
                       </div>

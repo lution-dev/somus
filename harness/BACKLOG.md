@@ -375,3 +375,8 @@
 #### T-AD-16: CaixinhaDetalhe — filtrar lancamentos para mostrar apenas saidas
 **Status:** Em andamento
 
+
+#### T-AD-17: EditSaidaFixaModal — expandir para mesmos campos do Add
+#### T-AD-18: Lista custos — exibir 'Variavel' ao inves de R$ 0,00
+**Status:** Em andamento
+

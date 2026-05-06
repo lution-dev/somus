@@ -8,7 +8,7 @@ import EditSaidaFixaModal from '../components/features/EditSaidaFixaModal'
 import ItemActionSheet from '../components/ui/ItemActionSheet'
 import { PageHeader, SearchBar, groupByMonth, MonthHeader } from '../components/ui'
 import { useIsMobile } from '../hooks/useIsMobile'
-import { Check, RefreshCw, Plus, Inbox, ArrowUpRight, CheckCircle2, Pencil, Trash2, XCircle } from 'lucide-react'
+import { Check, RefreshCw, Plus, Inbox, ArrowUpRight, CheckCircle2, Pencil, Trash2, XCircle, TrendingUp, AlertCircle } from 'lucide-react'
 import type { SaidaFixa } from '../types'
 
 // ─── Item de Saída ────────────────────────────────────────────────────────────
@@ -23,10 +23,16 @@ function SaidaItem({ sf, isLast, onPress }: {
   const paid       = isPaidThisMonth(sf.paidDates)
   const today      = new Date().toISOString().slice(0, 10)
   const daysUntil  = getDaysUntil(sf.dueDay)
-  const isUrgent   = !paid && daysUntil <= 3
+  const isUrgent   = !paid && daysUntil <= 3 && daysUntil >= 0
+  const isOverdue  = !paid && daysUntil < 0
 
   return (
-    <div
+    <motion.div
+      layout
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, scale: 0.95 }}
+      whileHover={{ background: 'rgba(255, 255, 255, 0.03)' }}
       onClick={() => onPress(sf)}
       style={{
         display: 'flex', alignItems: 'center', gap: 12,
@@ -34,69 +40,100 @@ function SaidaItem({ sf, isLast, onPress }: {
         borderBottom: isLast ? 'none' : '1px solid var(--color-border)',
         opacity: paid ? 0.55 : 1,
         cursor: 'pointer',
+        transition: 'opacity 300ms ease',
       }}
     >
-      {/* Dot */}
-      <div style={{ width: 8, height: 8, borderRadius: '50%', flexShrink: 0, background: sf.color || 'var(--color-accent-primary)' }} />
+      {/* Icon/Dot */}
+      <div style={{ 
+        width: 32, height: 32, borderRadius: 10, flexShrink: 0, 
+        background: paid ? 'rgba(255,255,255,0.05)' : `${sf.color || 'var(--color-accent-primary)'}15`,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        border: `1px solid ${paid ? 'transparent' : `${sf.color || 'var(--color-accent-primary)'}30`}`
+      }}>
+        <div style={{ 
+          width: 8, height: 8, borderRadius: '50%', 
+          background: sf.color || 'var(--color-accent-primary)',
+          boxShadow: paid ? 'none' : `0 0 10px ${sf.color || 'var(--color-accent-primary)'}`
+        }} />
+      </div>
 
       {/* Info */}
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
           <span style={{
-            fontSize: 14, fontWeight: 500, color: 'var(--color-text-primary)',
+            fontSize: 14, fontWeight: 600, color: 'var(--color-text-primary)',
             overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
             textDecoration: paid ? 'line-through' : 'none',
           }}>
             {sf.name}
           </span>
-          {sf.autoDebit && <RefreshCw size={11} color="var(--color-text-tertiary)" style={{ flexShrink: 0 }} />}
+          {sf.autoDebit && (
+            <div title="Débito Automático" style={{ display: 'flex', alignItems: 'center', background: 'rgba(59,130,246,0.1)', padding: '2px 4px', borderRadius: 4 }}>
+              <RefreshCw size={10} color="var(--color-accent-primary)" />
+            </div>
+          )}
         </div>
-        <span style={{
-          fontSize: 12,
-          color: isUrgent ? 'var(--color-danger)' : 'var(--color-text-secondary)',
-        }}>
-          {paid ? 'Pago · ' + getDueDayLabel(sf.dueDay) : getDueDayLabel(sf.dueDay)}
-        </span>
+        
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <span style={{
+            fontSize: 12,
+            color: 'var(--color-text-secondary)',
+          }}>
+            {paid ? 'Pago' : getDueDayLabel(sf.dueDay)}
+          </span>
+          
+          {!paid && (isUrgent || isOverdue) && (
+            <span style={{
+              fontSize: 10,
+              fontWeight: 700,
+              textTransform: 'uppercase',
+              letterSpacing: '0.05em',
+              padding: '1px 6px',
+              borderRadius: 4,
+              background: isOverdue ? 'rgba(239,68,68,0.15)' : 'rgba(245,158,11,0.15)',
+              color: isOverdue ? 'var(--color-danger)' : 'var(--color-warning)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 3
+            }}>
+              <AlertCircle size={10} />
+              {isOverdue ? 'Atrasado' : daysUntil === 0 ? 'Hoje' : `Em ${daysUntil}d`}
+            </span>
+          )}
+        </div>
       </div>
 
       {/* Valor */}
-      <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-text-primary)', flexShrink: 0, marginRight: 8 }}>
-        {formatCurrency(sf.amount)}
-      </span>
+      <div style={{ textAlign: 'right', marginRight: 4 }}>
+        <p style={{ fontSize: 15, fontWeight: 700, color: 'var(--color-text-primary)', margin: 0 }}>
+          {formatCurrency(sf.amount)}
+        </p>
+      </div>
 
-      {/* Check / auto badge */}
-      {sf.autoDebit ? (
-        <span style={{
-          fontSize: 11, fontWeight: 500, padding: '3px 8px',
-          borderRadius: 'var(--radius-badge)', flexShrink: 0,
-          background: paid ? 'rgba(16,185,129,0.12)' : 'rgba(59,130,246,0.15)',
-          color: paid ? 'var(--color-success)' : 'var(--color-accent-electric)',
-        }}>
-          {paid ? 'Debitado' : 'Auto'}
-        </span>
-      ) : (
+      {/* Action Button */}
+      {!sf.autoDebit && (
         <button
           onClick={(e) => { e.stopPropagation(); paid ? markUnpaid(sf.id, today) : markPaid(sf.id, today) }}
           style={{
-            width: 44, height: 44,
+            width: 32, height: 32,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             cursor: 'pointer', flexShrink: 0,
-            background: 'transparent', border: 'none',
+            background: paid ? 'var(--color-success)' : 'transparent',
+            border: `2px solid ${paid ? 'var(--color-success)' : 'var(--color-border)'}`,
+            borderRadius: 10,
             padding: 0,
+            transition: 'all 200ms cubic-bezier(0.4, 0, 0.2, 1)',
           }}
         >
-          <span style={{
-            width: 28, height: 28, borderRadius: '50%',
-            border: `2px solid ${paid ? 'var(--color-success)' : 'var(--color-border)'}`,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            background: paid ? 'var(--color-success)' : 'transparent',
-            transition: 'all 150ms ease',
-          }}>
-            <Check size={13} strokeWidth={2.5} color={paid ? 'white' : 'var(--color-text-tertiary)'} />
-          </span>
+          <Check size={16} strokeWidth={3} color={paid ? 'white' : 'var(--color-text-tertiary)'} />
         </button>
       )}
-    </div>
+      {sf.autoDebit && paid && (
+        <div style={{ width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <CheckCircle2 size={18} color="var(--color-success)" />
+        </div>
+      )}
+    </motion.div>
   )
 }
 
@@ -146,153 +183,299 @@ export default function Fluxo() {
 
   const currentMonth = new Date().toLocaleString('pt-BR', { month: 'long', year: 'numeric' })
 
+  // Helper to render Saídas List
+  const renderSaidasList = () => (
+    <>
+      {pending.length === 0 && paid.length === 0 ? (
+        <EmptyState 
+          icon={<Inbox size={24} />}
+          label="Nenhuma conta cadastrada" 
+          desc="Adicione suas contas fixas mensais para acompanhar pagamentos." 
+        />
+      ) : (
+        <>
+          {pending.length > 0 && (
+            <>
+              <SectionLabel count={pending.length}>Pendentes</SectionLabel>
+              {pending.map((sf, i) => (
+                <SaidaItem 
+                  key={sf.id} 
+                  sf={sf} 
+                  isLast={i === pending.length - 1 && paid.length === 0} 
+                  onPress={setActionSf} 
+                />
+              ))}
+            </>
+          )}
+          {paid.length > 0 && (
+            <>
+              <SectionLabel count={paid.length}>Pagos</SectionLabel>
+              {paid.map((sf, i) => (
+                <SaidaItem 
+                  key={sf.id} 
+                  sf={sf} 
+                  isLast={i === paid.length - 1} 
+                  onPress={setActionSf} 
+                />
+              ))}
+            </>
+          )}
+        </>
+      )}
+    </>
+  )
+
+  // Helper to render Entradas List
+  const renderEntradasList = () => (
+    <>
+      {groupedEntradas.length === 0 ? (
+        <EmptyState 
+          icon={<TrendingUp size={24} />}
+          label="Nenhuma entrada lançada" 
+          desc="Lance uma entrada na tela Home para registrar seus recebimentos." 
+        />
+      ) : (
+        groupedEntradas.map((g) => (
+          <React.Fragment key={g.key}>
+            <MonthHeader label={g.label} total={g.total} type="income" />
+            {g.items.map((e, i) => (
+              <motion.div
+                key={e.id}
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 12,
+                  padding: '14px 16px',
+                  borderBottom: i < g.items.length - 1 ? '1px solid var(--color-border)' : 'none',
+                }}
+              >
+                <div style={{
+                  width: 32, height: 32, borderRadius: 10,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+                  background: 'rgba(16,185,129,0.1)',
+                }}>
+                  <ArrowUpRight size={16} color="var(--color-success)" />
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', margin: '0 0 2px' }}>{e.sourceName}</p>
+                  <p style={{ fontSize: 12, color: 'var(--color-text-secondary)', margin: 0 }}>
+                    {new Date(e.date + 'T12:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })}
+                  </p>
+                </div>
+                <span style={{ fontSize: 15, fontWeight: 700, color: 'var(--color-success)', flexShrink: 0 }}>
+                  +{formatCurrency(e.amount)}
+                </span>
+              </motion.div>
+            ))}
+          </React.Fragment>
+        ))
+      )}
+    </>
+  )
+
   return (
     <div style={{ minHeight: '100%', paddingBottom: 24 }}>
       {/* Header */}
       {isMobile ? (
-        <PageHeader title="Fluxo" bg="#001442" />
+        <PageHeader 
+          title="Fluxo" 
+          bg="#001442" 
+          rightAction={
+            <div style={{ 
+              background: 'rgba(255,255,255,0.08)', 
+              padding: '4px 10px', 
+              borderRadius: 8,
+              fontSize: 12,
+              fontWeight: 600,
+              color: 'var(--color-text-secondary)',
+              textTransform: 'capitalize'
+            }}>
+              {new Date().toLocaleString('pt-BR', { month: 'short' })}
+            </div>
+          }
+        />
       ) : (
-        <div style={{ paddingTop: 32, marginBottom: 20 }}>
-          <h1 style={{ fontSize: 24, fontWeight: 600, color: 'var(--color-text-primary)', margin: 0 }}>Fluxo</h1>
-          <p style={{ fontSize: 14, color: 'var(--color-text-secondary)', textTransform: 'capitalize', margin: '4px 0 0' }}>{currentMonth}</p>
+        <div style={{ paddingTop: 32, marginBottom: 24, display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
+          <div>
+            <h1 style={{ fontSize: 32, fontWeight: 700, color: 'var(--color-text-primary)', margin: 0, letterSpacing: '-0.02em' }}>Fluxo</h1>
+            <p style={{ fontSize: 16, color: 'var(--color-text-secondary)', textTransform: 'capitalize', margin: '4px 0 0' }}>{currentMonth}</p>
+          </div>
+          <button
+            onClick={() => setLancarOpen(true)}
+            className="btn-primary"
+            style={{ height: 44, padding: '0 20px' }}
+          >
+            <Plus size={20} strokeWidth={2.5} />
+            Lançar entrada
+          </button>
         </div>
       )}
 
-      <div style={{ padding: isMobile ? '8px 16px 0' : 0 }}>
+      <div style={{ padding: isMobile ? '12px 16px 0' : 0 }}>
 
-      {/* Resumo cards */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 20 }}>
-        {/* A pagar */}
-        <div style={{
-          borderRadius: 'var(--radius-card)', padding: 16,
-          background: 'rgba(239,68,68,0.06)',
-          border: '1px solid rgba(239,68,68,0.25)',
-        }}>
-          <p className="section-label" style={{ color: 'var(--color-danger)', marginBottom: 6 }}>A pagar</p>
-          <p style={{ fontSize: 20, fontWeight: 700, color: 'var(--color-text-primary)', margin: 0 }}>{formatCurrency(totalPending)}</p>
-          <p style={{ fontSize: 12, color: 'var(--color-text-secondary)', margin: '2px 0 0' }}>{pending.length} conta{pending.length !== 1 ? 's' : ''}</p>
-        </div>
-
-        {/* Pago */}
-        <div style={{
-          borderRadius: 'var(--radius-card)', padding: 16,
-          background: 'rgba(16,185,129,0.06)',
-          border: '1px solid rgba(16,185,129,0.25)',
-        }}>
-          <p className="section-label" style={{ color: 'var(--color-success)', marginBottom: 6 }}>Pago</p>
-          <p style={{ fontSize: 20, fontWeight: 700, color: 'var(--color-text-primary)', margin: 0 }}>{formatCurrency(totalPaid)}</p>
-          <p style={{ fontSize: 12, color: 'var(--color-text-secondary)', margin: '2px 0 0' }}>{paid.length} conta{paid.length !== 1 ? 's' : ''}</p>
-        </div>
-      </div>
-
-      {/* Tabs */}
-      <div style={{
-        display: 'flex', gap: 4, padding: 4,
-        borderRadius: 10,
-        background: 'var(--color-bg-secondary)',
-        border: '1px solid var(--color-border)',
-        marginBottom: 16,
+      {/* Modern Summary Section */}
+      <div style={{ 
+        background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.08) 0%, rgba(30, 41, 59, 0.4) 100%)',
+        borderRadius: 24,
+        padding: 20,
+        border: '1px solid rgba(255, 255, 255, 0.06)',
+        marginBottom: 24,
+        position: 'relative',
+        overflow: 'hidden'
       }}>
-        {(['saidas', 'entradas'] as const).map(t => (
-          <button
-            key={t}
-            onClick={() => setTab(t)}
-            style={{
-              flex: 1, padding: '8px 0',
-              fontSize: 14, fontWeight: 600,
-              borderRadius: 8,
-              cursor: 'pointer', border: 'none',
-              fontFamily: 'var(--font-sans)',
-              background: tab === t ? 'var(--color-accent-primary)' : 'transparent',
-              color: tab === t ? 'white' : 'var(--color-text-secondary)',
-              transition: 'background 150ms ease, color 150ms ease',
-            }}
-          >
-            {t === 'saidas' ? 'Saídas fixas' : 'Entradas'}
-          </button>
-        ))}
+        {/* Background glow */}
+        <div style={{ 
+          position: 'absolute', top: -50, right: -50, width: 150, height: 150, 
+          background: 'var(--color-accent-primary)', opacity: 0.1, filter: 'blur(60px)', pointerEvents: 'none' 
+        }} />
+
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
+          <div>
+            <p style={{ fontSize: 12, fontWeight: 700, color: 'var(--color-text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', margin: '0 0 4px' }}>
+              Balanço do Mês
+            </p>
+            <h2 style={{ fontSize: 24, fontWeight: 700, color: 'var(--color-text-primary)', margin: 0 }}>
+              {formatCurrency(totalPaid + totalPending)}
+            </h2>
+          </div>
+          <div style={{ textAlign: 'right' }}>
+            <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--color-success)', margin: 0 }}>
+              {Math.round((totalPaid / (totalPaid + totalPending || 1)) * 100)}% Pago
+            </p>
+          </div>
+        </div>
+
+        {/* Custom Progress Bar */}
+        <div style={{ height: 10, background: 'rgba(255, 255, 255, 0.08)', borderRadius: 5, overflow: 'hidden', marginBottom: 20, display: 'flex' }}>
+          <motion.div 
+            initial={{ width: 0 }}
+            animate={{ width: `${(totalPaid / (totalPaid + totalPending || 1)) * 100}%` }}
+            transition={{ duration: 1, ease: 'easeOut' }}
+            style={{ height: '100%', background: 'var(--color-success)', borderRadius: 5 }} 
+          />
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
+              <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--color-danger)' }} />
+              <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--color-text-secondary)' }}>A pagar</span>
+            </div>
+            <p style={{ fontSize: 16, fontWeight: 700, color: 'var(--color-text-primary)', margin: 0 }}>{formatCurrency(totalPending)}</p>
+          </div>
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
+              <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--color-success)' }} />
+              <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--color-text-secondary)' }}>Pago</span>
+            </div>
+            <p style={{ fontSize: 16, fontWeight: 700, color: 'var(--color-text-primary)', margin: 0 }}>{formatCurrency(totalPaid)}</p>
+          </div>
+        </div>
       </div>
 
-      <SearchBar value={fluxoSearch} onChange={setFluxoSearch} />
+      {isMobile ? (
+        <>
+          {/* Tabs with Badges */}
+          <div style={{
+            display: 'flex', gap: 8,
+            marginBottom: 16,
+          }}>
+            {(['saidas', 'entradas'] as const).map(t => {
+              const count = t === 'saidas' ? saidasFixas.length : entradas.length
+              const isActive = tab === t
+              return (
+                <button
+                  key={t}
+                  onClick={() => setTab(t)}
+                  style={{
+                    flex: 1, padding: '10px 0',
+                    fontSize: 14, fontWeight: 700,
+                    borderRadius: 12,
+                    cursor: 'pointer',
+                    fontFamily: 'var(--font-sans)',
+                    background: isActive ? 'var(--color-accent-primary)' : 'var(--color-bg-secondary)',
+                    color: isActive ? 'white' : 'var(--color-text-secondary)',
+                    border: `1px solid ${isActive ? 'var(--color-accent-primary)' : 'var(--color-border)'}`,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: 8,
+                    transition: 'all 200ms ease',
+                  }}
+                >
+                  {t === 'saidas' ? 'Saídas' : 'Entradas'}
+                  <span style={{
+                    fontSize: 10,
+                    background: isActive ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.05)',
+                    padding: '2px 6px',
+                    borderRadius: 6,
+                    color: isActive ? 'white' : 'var(--color-text-tertiary)',
+                  }}>
+                    {count}
+                  </span>
+                </button>
+              )
+            })}
+          </div>
 
-      {/* Conteúdo da tab */}
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={tab}
-          initial={{ opacity: 0, y: 4 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -4 }}
-          transition={{ duration: 0.15 }}
-          style={{
-            borderRadius: 'var(--radius-card)',
-            overflow: 'hidden',
-            background: 'var(--color-bg-secondary)',
-            border: '1px solid var(--color-border)',
-          }}
-        >
-          {tab === 'saidas' ? (
-            <>
-              {pending.length === 0 && paid.length === 0 ? (
-                <EmptyState label="Nenhuma conta cadastrada" desc="Adicione suas contas fixas mensais para acompanhar pagamentos." />
-              ) : (
-                <>
-                  {pending.length > 0 && (
-                    <>
-                      <SectionLabel>Pendentes</SectionLabel>
-                      {pending.map((sf, i) => <SaidaItem key={sf.id} sf={sf} isLast={i === pending.length - 1 && paid.length === 0} onPress={setActionSf} />)}
-                    </>
-                  )}
-                  {paid.length > 0 && (
-                    <>
-                      <SectionLabel>Pagos</SectionLabel>
-                      {paid.map((sf, i) => <SaidaItem key={sf.id} sf={sf} isLast={i === paid.length - 1} onPress={setActionSf} />)}
-                    </>
-                  )}
-                </>
-              )}
-            </>
-          ) : (
-            <>
-              {groupedEntradas.length === 0 ? (
-                <EmptyState label="Nenhuma entrada lançada" desc="Lance uma entrada na tela Home para registrar seus recebimentos." />
-              ) : (
-                groupedEntradas.map((g) => (
-                  <React.Fragment key={g.key}>
-                    <MonthHeader label={g.label} total={g.total} type="income" />
-                    {g.items.map((e, i) => (
-                      <div
-                        key={e.id}
-                        style={{
-                          display: 'flex', alignItems: 'center', gap: 12,
-                          padding: '14px 16px',
-                          borderBottom: i < g.items.length - 1 ? '1px solid var(--color-border)' : 'none',
-                        }}
-                      >
-                        <div style={{
-                          width: 32, height: 32, borderRadius: '50%',
-                          display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-                          background: 'rgba(59,130,246,0.12)',
-                        }}>
-                          <ArrowUpRight size={15} color="var(--color-accent-primary)" />
-                        </div>
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <p style={{ fontSize: 14, fontWeight: 500, color: 'var(--color-text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', margin: 0 }}>{e.sourceName}</p>
-                          <p style={{ fontSize: 12, color: 'var(--color-text-secondary)', margin: 0 }}>
-                            {new Date(e.date + 'T12:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })}
-                          </p>
-                        </div>
-                        <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--color-success)', flexShrink: 0 }}>
-                          +{formatCurrency(e.amount)}
-                        </span>
-                      </div>
-                    ))}
-                  </React.Fragment>
-                ))
-              )}
-            </>
-          )}
-        </motion.div>
-      </AnimatePresence>
+          <SearchBar value={fluxoSearch} onChange={setFluxoSearch} />
+
+          {/* Conteúdo da tab Mobile */}
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={tab}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.2 }}
+              style={{
+                borderRadius: 20,
+                overflow: 'hidden',
+                background: 'var(--color-bg-secondary)',
+                border: '1px solid var(--color-border)',
+              }}
+            >
+              {tab === 'saidas' ? renderSaidasList() : renderEntradasList()}
+            </motion.div>
+          </AnimatePresence>
+        </>
+      ) : (
+        /* Desktop 2-Column Layout */
+        <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 0.8fr', gap: 24, alignItems: 'start' }}>
+          {/* Column 1: Saídas */}
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <h3 style={{ fontSize: 18, fontWeight: 700, color: 'var(--color-text-primary)', margin: 0 }}>Saídas Fixas</h3>
+                <span style={{ fontSize: 12, fontWeight: 700, padding: '2px 8px', borderRadius: 6, background: 'rgba(255,255,255,0.05)', color: 'var(--color-text-tertiary)' }}>
+                  {saidasFixas.length}
+                </span>
+              </div>
+              <div style={{ width: 250 }}>
+                <SearchBar value={fluxoSearch} onChange={setFluxoSearch} />
+              </div>
+            </div>
+            
+            <div style={{ borderRadius: 20, overflow: 'hidden', background: 'var(--color-bg-secondary)', border: '1px solid var(--color-border)' }}>
+              {renderSaidasList()}
+            </div>
+          </div>
+
+          {/* Column 2: Entradas */}
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16, height: 40 }}>
+              <h3 style={{ fontSize: 18, fontWeight: 700, color: 'var(--color-text-primary)', margin: 0 }}>Entradas</h3>
+              <span style={{ fontSize: 12, fontWeight: 700, padding: '2px 8px', borderRadius: 6, background: 'rgba(255,255,255,0.05)', color: 'var(--color-text-tertiary)' }}>
+                {entradas.length}
+              </span>
+            </div>
+
+            <div style={{ borderRadius: 20, overflow: 'hidden', background: 'var(--color-bg-secondary)', border: '1px solid var(--color-border)' }}>
+              {renderEntradasList()}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Desktop CTA */}
       {!isMobile && (
@@ -368,29 +551,55 @@ export default function Fluxo() {
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-function SectionLabel({ children }: { children: React.ReactNode }) {
+function SectionLabel({ children, count }: { children: React.ReactNode; count?: number }) {
   return (
-    <p
-      className="section-label"
-      style={{ padding: '10px 16px', margin: 0, borderBottom: '1px solid var(--color-border)' }}
+    <div
+      style={{ 
+        padding: '12px 16px', 
+        margin: 0, 
+        borderBottom: '1px solid var(--color-border)',
+        display: 'flex',
+        alignItems: 'center',
+        gap: 8,
+        background: 'rgba(255,255,255,0.02)'
+      }}
     >
-      {children}
-    </p>
+      <p className="section-label" style={{ margin: 0 }}>
+        {children}
+      </p>
+      {count !== undefined && (
+        <span style={{
+          fontSize: 10,
+          fontWeight: 700,
+          background: 'rgba(255,255,255,0.05)',
+          color: 'var(--color-text-tertiary)',
+          padding: '2px 6px',
+          borderRadius: 6,
+        }}>
+          {count}
+        </span>
+      )}
+    </div>
   )
 }
 
-function EmptyState({ label, desc }: { label: string; desc?: string }) {
+function EmptyState({ icon, label, desc }: { icon?: React.ReactNode; label: string; desc?: string }) {
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '40px 20px', gap: 6 }}>
-      <div style={{
-        width: 48, height: 48, borderRadius: 16,
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        background: 'rgba(59,130,246,0.08)', marginBottom: 6,
-      }}>
-        <Inbox size={22} color="var(--color-text-tertiary)" strokeWidth={1.5} />
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '60px 20px', gap: 12 }}>
+      {icon && (
+        <div style={{
+          width: 56, height: 56, borderRadius: 18,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          background: 'rgba(59,130,246,0.08)', marginBottom: 4,
+          color: 'var(--color-text-tertiary)'
+        }}>
+          {icon}
+        </div>
+      )}
+      <div style={{ textAlign: 'center' }}>
+        <p style={{ fontSize: 16, fontWeight: 700, color: 'var(--color-text-primary)', margin: '0 0 4px' }}>{label}</p>
+        {desc && <p style={{ fontSize: 13, color: 'var(--color-text-tertiary)', margin: 0, lineHeight: 1.5, maxWidth: 260 }}>{desc}</p>}
       </div>
-      <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-text-primary)', margin: 0 }}>{label}</p>
-      {desc && <p style={{ fontSize: 12, color: 'var(--color-text-tertiary)', margin: 0, textAlign: 'center', maxWidth: 240 }}>{desc}</p>}
     </div>
   )
 }

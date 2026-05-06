@@ -34,10 +34,11 @@ npm install && npm run dev
 - **T-S01-03** ✅ Mock Data Layer (tipos, Zustand + localStorage, cálculos)
 - **T-S01-04** ✅ App Shell + Routing (4 tabs, safe area, Framer Motion transitions)
 - **T-S01-05** ✅ Onboarding Wizard (6 telas animadas)
-- **T-S01-06** ✅ Caixinhas (lista + detalhe com histórico, alertas, RN05)
+- **T-S01-06** ✅ Divisões (refatoração de /caixinhas para /divisoes, histórico, alertas, RN05)
 - **T-S01-07** ✅ Saídas Fixas (checklist, débito auto, alertas de vencimento)
 - **T-S01-08** ✅ Lançar Entrada CORE (distribuição automática, editável, RN01/02/08)
-- **T-S01-09** ✅ Dashboard Home (balance card, timeline 7 dias, grid caixinhas, toggle)
+- **T-S01-09** ✅ Dashboard Home (balance card, timeline 7 dias, grid divisoes, toggle)
+- **T-S01-10** ✅ Redesign Fluxo 10/10 (progress bar, desktop 2-column, tab badges, urgency)
 
 ## Arquitetura de Arquivos
 ```
