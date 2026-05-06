@@ -296,15 +296,33 @@ export default function Fluxo() {
           }
         />
       ) : (
-        <div style={{ paddingTop: 32, marginBottom: 20 }}>
-          <h1 style={{ fontSize: 24, fontWeight: 700, color: 'var(--color-text-primary)', margin: 0 }}>Fluxo</h1>
-          <p style={{ fontSize: 13, color: 'var(--color-text-secondary)', textTransform: 'capitalize', margin: '4px 0 0' }}>{currentMonth}</p>
+        <div style={{ paddingTop: 32, marginBottom: 24 }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
+            <h1 style={{ fontSize: 24, fontWeight: 700, color: 'var(--color-text-primary)', margin: 0 }}>Fluxo</h1>
+            <button
+              onClick={() => setLancarOpen(true)}
+              style={{
+                height: 36, padding: '0 14px', fontSize: 13, fontWeight: 600,
+                background: 'var(--color-accent-primary)', color: 'white',
+                border: 'none', borderRadius: 10, cursor: 'pointer',
+                display: 'flex', alignItems: 'center', gap: 6,
+                fontFamily: 'var(--font-sans)',
+                transition: 'background 150ms ease',
+              }}
+              onMouseEnter={e => (e.currentTarget.style.background = '#2563EB')}
+              onMouseLeave={e => (e.currentTarget.style.background = 'var(--color-accent-primary)')}
+            >
+              <Plus size={15} strokeWidth={2.5} />
+              Lançar entrada
+            </button>
+          </div>
+          <p style={{ fontSize: 13, color: 'var(--color-text-secondary)', textTransform: 'capitalize', margin: 0 }}>{currentMonth}</p>
         </div>
       )}
 
       <div style={{ padding: isMobile ? '12px 16px 0' : 0 }}>
 
-      {/* Summary Card */}
+      {/* Summary Card — glassmorphism per DESIGN.md */}
       <div style={{ 
         background: 'var(--color-bg-secondary)',
         borderRadius: 16,
@@ -331,7 +349,7 @@ export default function Fluxo() {
         </div>
 
         {/* Totals */}
-        <div style={{ display: 'flex', gap: 12 }}>
+        <div style={{ display: 'flex', gap: 16 }}>
           <div style={{ flex: 1, padding: '12px 14px', borderRadius: 12, background: 'rgba(239,68,68,0.06)', border: '1px solid rgba(239,68,68,0.15)' }}>
             <p style={{ fontSize: 11, fontWeight: 600, color: 'var(--color-danger)', margin: '0 0 4px', textTransform: 'uppercase', letterSpacing: '0.04em' }}>A pagar</p>
             <p style={{ fontSize: 18, fontWeight: 700, color: 'var(--color-text-primary)', margin: 0 }}>{formatCurrency(totalPending)}</p>
@@ -345,8 +363,11 @@ export default function Fluxo() {
 
       {isMobile ? (
         <>
-          {/* Mobile Tabs */}
-          <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
+          {/* Tabs with Badges */}
+          <div style={{
+            display: 'flex', gap: 8,
+            marginBottom: 16,
+          }}>
             {(['saidas', 'entradas'] as const).map(t => {
               const count = t === 'saidas' ? saidasFixas.length : entradas.length
               const isActive = tab === t
@@ -363,7 +384,10 @@ export default function Fluxo() {
                     background: isActive ? 'var(--color-accent-primary)' : 'var(--color-bg-secondary)',
                     color: isActive ? 'white' : 'var(--color-text-secondary)',
                     border: `1px solid ${isActive ? 'var(--color-accent-primary)' : 'var(--color-border)'}`,
-                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: 8,
                     transition: 'all 200ms ease',
                   }}
                 >
@@ -371,7 +395,8 @@ export default function Fluxo() {
                   <span style={{
                     fontSize: 10,
                     background: isActive ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.05)',
-                    padding: '2px 6px', borderRadius: 6,
+                    padding: '2px 6px',
+                    borderRadius: 6,
                     color: isActive ? 'white' : 'var(--color-text-tertiary)',
                   }}>
                     {count}
@@ -383,7 +408,7 @@ export default function Fluxo() {
 
           <SearchBar value={fluxoSearch} onChange={setFluxoSearch} />
 
-          {/* Mobile Content */}
+          {/* Conteúdo da tab Mobile */}
           <AnimatePresence mode="wait">
             <motion.div
               key={tab}
@@ -392,10 +417,10 @@ export default function Fluxo() {
               exit={{ opacity: 0, y: -10 }}
               transition={{ duration: 0.2 }}
               style={{
-                borderRadius: 16,
+                borderRadius: 20,
                 overflow: 'hidden',
                 background: 'var(--color-bg-secondary)',
-                border: '1px solid rgba(255,255,255,0.08)',
+                border: '1px solid var(--color-border)',
               }}
             >
               {tab === 'saidas' ? renderSaidasList() : renderEntradasList()}
@@ -403,60 +428,41 @@ export default function Fluxo() {
           </AnimatePresence>
         </>
       ) : (
-        <>
-          {/* Desktop: toolbar row */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-            <div style={{ width: 240 }}>
-              <SearchBar value={fluxoSearch} onChange={setFluxoSearch} />
-            </div>
-            <button
-              onClick={() => setLancarOpen(true)}
-              aria-label="Lançar entrada"
-              style={{
-                height: 36, padding: '0 14px', fontSize: 13, fontWeight: 600,
-                background: 'var(--color-accent-primary)', color: 'white',
-                border: 'none', borderRadius: 10, cursor: 'pointer',
-                display: 'flex', alignItems: 'center', gap: 6,
-                fontFamily: 'var(--font-sans)',
-                transition: 'background 150ms ease',
-              }}
-              onMouseEnter={e => (e.currentTarget.style.background = '#2563EB')}
-              onMouseLeave={e => (e.currentTarget.style.background = 'var(--color-accent-primary)')}
-            >
-              <Plus size={15} strokeWidth={2.5} />
-              Lançar entrada
-            </button>
-          </div>
-
-          {/* Desktop: 2-column */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 0.8fr', gap: 20, alignItems: 'start' }}>
-            {/* Col 1: Saídas */}
-            <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
-                <h3 style={{ fontSize: 15, fontWeight: 700, color: 'var(--color-text-primary)', margin: 0 }}>Saídas Fixas</h3>
+        /* Desktop 2-Column Layout */
+        <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 0.8fr', gap: 24, alignItems: 'start' }}>
+          {/* Column 1: Saídas */}
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <h3 style={{ fontSize: 16, fontWeight: 700, color: 'var(--color-text-primary)', margin: 0 }}>Saídas Fixas</h3>
                 <span style={{ fontSize: 11, fontWeight: 700, padding: '2px 7px', borderRadius: 6, background: 'rgba(255,255,255,0.05)', color: 'var(--color-text-tertiary)' }}>
                   {saidasFixas.length}
                 </span>
               </div>
-              <div style={{ borderRadius: 16, overflow: 'hidden', background: 'var(--color-bg-secondary)', border: '1px solid rgba(255,255,255,0.08)' }}>
-                {renderSaidasList()}
+              <div style={{ width: 200 }}>
+                <SearchBar value={fluxoSearch} onChange={setFluxoSearch} />
               </div>
             </div>
-
-            {/* Col 2: Entradas */}
-            <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
-                <h3 style={{ fontSize: 15, fontWeight: 700, color: 'var(--color-text-primary)', margin: 0 }}>Entradas</h3>
-                <span style={{ fontSize: 11, fontWeight: 700, padding: '2px 7px', borderRadius: 6, background: 'rgba(255,255,255,0.05)', color: 'var(--color-text-tertiary)' }}>
-                  {entradas.length}
-                </span>
-              </div>
-              <div style={{ borderRadius: 16, overflow: 'hidden', background: 'var(--color-bg-secondary)', border: '1px solid rgba(255,255,255,0.08)' }}>
-                {renderEntradasList()}
-              </div>
+            
+            <div style={{ borderRadius: 16, overflow: 'hidden', background: 'var(--color-bg-secondary)', border: '1px solid rgba(255,255,255,0.08)' }}>
+              {renderSaidasList()}
             </div>
           </div>
-        </>
+
+          {/* Column 2: Entradas */}
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12, height: 36 }}>
+              <h3 style={{ fontSize: 16, fontWeight: 700, color: 'var(--color-text-primary)', margin: 0 }}>Entradas</h3>
+              <span style={{ fontSize: 11, fontWeight: 700, padding: '2px 7px', borderRadius: 6, background: 'rgba(255,255,255,0.05)', color: 'var(--color-text-tertiary)' }}>
+                {entradas.length}
+              </span>
+            </div>
+
+            <div style={{ borderRadius: 16, overflow: 'hidden', background: 'var(--color-bg-secondary)', border: '1px solid rgba(255,255,255,0.08)' }}>
+              {renderEntradasList()}
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Desktop CTA removed — already in header */}
@@ -467,7 +473,7 @@ export default function Fluxo() {
       {isMobile && (
         <div style={{
           position: 'fixed',
-          bottom: 'calc(88px + env(safe-area-inset-bottom, 0px))',
+          bottom: 'calc(96px + env(safe-area-inset-bottom, 0px))',
           right: 20,
           display: 'flex', flexDirection: 'column', gap: 12,
           zIndex: 35,
@@ -475,11 +481,10 @@ export default function Fluxo() {
           <button
             onClick={() => setLancarOpen(true)}
             style={{
-              width: 52, height: 52, borderRadius: 16,
+              width: 48, height: 48, borderRadius: 14,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               background: 'var(--color-success)',
               border: 'none', cursor: 'pointer',
-              boxShadow: '0 4px 20px rgba(16,185,129,0.35)',
               color: 'white',
             }}
             aria-label="Lançar entrada"
