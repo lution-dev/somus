@@ -1,4 +1,4 @@
-﻿import { useState, useMemo } from 'react'
+import { useState, useMemo } from 'react'
 import { useAppStore, selectCurrentDivisoes } from '../stores/useAppStore'
 import { useShallow } from 'zustand/react/shallow'
 import { formatCurrency } from '../lib/calculations'
@@ -143,7 +143,7 @@ export default function Relatorios() {
   // ── Render ──────────────────────────────────────────────────────────────────
 
   return (
-    <div style={{ minHeight: '100%', paddingBottom: 24 }}>
+    <div style={{ paddingBottom: isMobile ? 120 : 40 }}>
 
       {/* ── Header ─────────────────────────────────────────────────────────── */}
       {isMobile ? (
@@ -188,7 +188,7 @@ export default function Relatorios() {
         </div>
 
       ) : (
-        <div style={{ padding: isMobile ? '0 16px' : 0, maxWidth: 1200, margin: '0 auto' }}>
+        <div style={{ padding: isMobile ? '0 16px' : 0, maxWidth: 1200, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: isMobile ? 12 : 20 }}>
 
           {/* ── KPI Strip ───────────────────────────────────────────────────── */}
           <div style={{
@@ -234,11 +234,13 @@ export default function Relatorios() {
 
           {/* -- Score de Aderencia ao Metodo */}
           {hasData && (
-            <AdherenceScoreCard score={adherenceScore} />
+            <div style={{ marginBottom: isMobile ? 12 : 20 }}>
+              <AdherenceScoreCard score={adherenceScore} />
+            </div>
           )}
 
           {/* -- Historico Mensal */}
-          <div style={{ ...CARD, marginBottom: isMobile ? 12 : 20 }}>
+          <div style={{ ...CARD }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
               <p className='section-label' style={{ margin: 0 }}>Historico Mensal</p>
               <span style={{ fontSize: 11, color: 'var(--color-text-tertiary)' }}>Ultimos 6 meses</span>
