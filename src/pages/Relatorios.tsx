@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+﻿import { useState, useMemo } from 'react'
 import { useAppStore, selectCurrentDivisoes } from '../stores/useAppStore'
 import { useShallow } from 'zustand/react/shallow'
 import { formatCurrency } from '../lib/calculations'
@@ -458,68 +458,67 @@ function KpiCard({ label, value, delta, positiveIsGood, accentColor, Icon, progr
 function NativeDailyChart({ data }: { data: Array<{ day: string, in: number, out: number }> }) {
   const maxVal = Math.max(...data.map(d => Math.max(d.in, d.out)), 1)
   const [activeDay, setActiveDay] = useState<string | null>(null)
+  const active = activeDay ? (data.find(d => d.day === activeDay) ?? null) : null
 
   return (
-    <div style={{ width: '100%', overflowX: 'auto', paddingBottom: 16 }}>
-      <div style={{ display: 'flex', alignItems: 'flex-end', gap: 8, minWidth: 'min-content', height: 180, padding: '0 10px', position: 'relative' }}>
-        {/* Helper Line */}
-        <div style={{ position: 'absolute', bottom: 24, left: 0, right: 0, height: 1, background: 'var(--color-border)' }} />
-        
-        {data.map((d, i) => {
-          const inPct = (d.in / maxVal) * 100
-          const outPct = (d.out / maxVal) * 100
-          const hasData = d.in > 0 || d.out > 0
-          const isActive = activeDay === d.day
-
-          return (
-            <div 
-              key={i} 
-              onMouseEnter={() => setActiveDay(d.day)}
-              onMouseLeave={() => setActiveDay(null)}
-              onClick={() => setActiveDay(isActive ? null : d.day)}
-              style={{ 
-                display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, 
-                width: 32, flexShrink: 0, cursor: 'pointer', position: 'relative'
-              }}
-            >
-              {/* Tooltip Overlay */}
-              {isActive && hasData && (
-                <div style={{
-                  position: 'absolute', bottom: '100%', left: '50%', transform: 'translateX(-50%)',
-                  background: 'var(--color-bg-tertiary)', border: '1px solid var(--color-border)',
-                  padding: '8px 12px', borderRadius: 8, boxShadow: '0 4px 12px rgba(0,0,0,0.5)',
-                  zIndex: 10, width: 140, marginBottom: 8, pointerEvents: 'none'
-                }}>
-                  <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--color-text-primary)', margin: '0 0 6px' }}>Dia {d.day}</p>
-                  {d.in > 0 && (
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 2 }}>
-                      <span style={{ fontSize: 11, color: 'var(--color-text-secondary)' }}>Entrou:</span>
-                      <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--color-success)' }}>{formatCurrency(d.in)}</span>
-                    </div>
-                  )}
-                  {d.out > 0 && (
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                      <span style={{ fontSize: 11, color: 'var(--color-text-secondary)' }}>Saiu:</span>
-                      <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--color-danger)' }}>{formatCurrency(d.out)}</span>
-                    </div>
-                  )}
+    <div style={{ width: '100%' }}>
+      {/* Info bar — acima do scroll, nunca clippada */}
+      <div style={{
+        height: 36, display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        padding: '0 4px', marginBottom: 8,
+        opacity: active ? 1 : 0, transition: 'opacity 150ms ease', pointerEvents: 'none',
+      }}>
+        {active && (
+          <>
+            <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--color-text-secondary)' }}>Dia {active.day}</span>
+            <div style={{ display: 'flex', gap: 16 }}>
+              {active.in > 0 && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                  <div style={{ width: 7, height: 7, borderRadius: 2, background: 'var(--color-success)' }} />
+                  <span style={{ fontSize: 11, color: 'var(--color-text-secondary)' }}>Entrou:</span>
+                  <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--color-success)' }}>{formatCurrency(active.in)}</span>
                 </div>
               )}
-
-              {/* Bars container */}
-              <div style={{ display: 'flex', alignItems: 'flex-end', gap: 2, height: 140, width: '100%', justifyContent: 'center' }}>
-                <div style={{ width: 8, height: `${inPct}%`, background: 'var(--color-success)', borderRadius: '2px 2px 0 0', opacity: (!activeDay || isActive || !hasData) ? 1 : 0.4, transition: 'all 200ms ease' }} />
-                <div style={{ width: 8, height: `${outPct}%`, background: 'var(--color-danger)', borderRadius: '2px 2px 0 0', opacity: (!activeDay || isActive || !hasData) ? 1 : 0.4, transition: 'all 200ms ease' }} />
-              </div>
-              {/* Day Label */}
-              <span style={{ fontSize: 11, color: (isActive && hasData) ? 'var(--color-text-primary)' : 'var(--color-text-tertiary)', fontWeight: isActive ? 600 : 500, transition: 'color 200ms ease' }}>
-                {d.day}
-              </span>
+              {active.out > 0 && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                  <div style={{ width: 7, height: 7, borderRadius: 2, background: 'var(--color-danger)' }} />
+                  <span style={{ fontSize: 11, color: 'var(--color-text-secondary)' }}>Saiu:</span>
+                  <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--color-danger)' }}>{formatCurrency(active.out)}</span>
+                </div>
+              )}
             </div>
-          )
-        })}
+          </>
+        )}
+      </div>
+
+      {/* Scroll horizontal */}
+      <div style={{ width: '100%', overflowX: 'auto', paddingBottom: 8 }}>
+        <div style={{ display: 'flex', alignItems: 'flex-end', gap: 6, minWidth: 'min-content', height: 130, padding: '0 4px', position: 'relative' }}>
+          <div style={{ position: 'absolute', bottom: 20, left: 0, right: 0, height: 1, background: 'var(--color-border)' }} />
+          {data.map((d, i) => {
+            const inH = Math.round((d.in / maxVal) * 100)
+            const outH = Math.round((d.out / maxVal) * 100)
+            const hasData = d.in > 0 || d.out > 0
+            const isActive = activeDay === d.day
+            return (
+              <div key={i}
+                onMouseEnter={() => hasData && setActiveDay(d.day)}
+                onMouseLeave={() => setActiveDay(null)}
+                onClick={() => setActiveDay(isActive ? null : d.day)}
+                style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, width: 28, flexShrink: 0, cursor: hasData ? 'pointer' : 'default' }}
+              >
+                <div style={{ display: 'flex', alignItems: 'flex-end', gap: 2, height: 100 }}>
+                  <div style={{ width: 7, height: inH, background: 'var(--color-success)', borderRadius: '2px 2px 0 0', opacity: !activeDay || isActive ? 1 : 0.2, transition: 'opacity 150ms ease' }} />
+                  <div style={{ width: 7, height: outH, background: 'var(--color-danger)', borderRadius: '2px 2px 0 0', opacity: !activeDay || isActive ? 1 : 0.2, transition: 'opacity 150ms ease' }} />
+                </div>
+                <span style={{ fontSize: 10, color: isActive ? 'var(--color-accent-primary)' : 'var(--color-text-tertiary)', fontWeight: isActive ? 700 : 400, transition: 'color 150ms ease' }}>
+                  {d.day}
+                </span>
+              </div>
+            )
+          })}
+        </div>
       </div>
     </div>
   )
 }
-
