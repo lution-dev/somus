@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+﻿import { useState, useMemo } from 'react'
 import { useAppStore, selectCurrentDivisoes } from '../stores/useAppStore'
 import { useShallow } from 'zustand/react/shallow'
 import { formatCurrency } from '../lib/calculations'
@@ -195,7 +195,6 @@ export default function Relatorios() {
             display: 'grid',
             gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(4, 1fr)',
             gap: isMobile ? 10 : 14,
-            marginBottom: isMobile ? 16 : 20,
           }}>
             <KpiCard
               label="Total entrou"
@@ -234,9 +233,7 @@ export default function Relatorios() {
 
           {/* -- Score de Aderencia ao Metodo */}
           {hasData && (
-            <div style={{ marginBottom: isMobile ? 12 : 20 }}>
-              <AdherenceScoreCard score={adherenceScore} />
-            </div>
+            <AdherenceScoreCard score={adherenceScore} />
           )}
 
           {/* -- Historico Mensal */}
