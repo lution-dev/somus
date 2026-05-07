@@ -5,17 +5,17 @@ import type {
   User,
   IncomeSource,
   Entrada,
-  Caixinha,
-  CaixinhaMovement,
+  Divisao,
+  DivisaoMovement,
   SaidaFixa,
   SaidaVariavel,
   Objetivo,
   ObjetivoMovement,
   UserContext,
-  CaixinhaDistributionItem,
+  DivisaoDistributionItem,
 } from '../types'
 import { DIVISAO_ORDER, DIVISAO_INFO } from '../lib/divisoes'
-import { CAIXINHA_ICONS } from '../lib/icons'
+import { DIVISAO_ICONS } from '../lib/icons'
 
 // ─── Actions ─────────────────────────────────────────────────────────────────
 
@@ -31,11 +31,11 @@ interface AppActions {
   // Entradas
   addEntrada: (entrada: Omit<Entrada, 'id'>) => void
 
-  // Caixinhas
-  updateCaixinhaBalance: (caixinhaId: string, amount: number, description: string) => void
-  setCaixinhas: (caixinhas: Caixinha[]) => void
-  editCaixinhaMovement: (caixinhaId: string, movementId: string, updates: Partial<CaixinhaMovement>) => void
-  deleteCaixinhaMovement: (caixinhaId: string, movementId: string) => void
+  // Divisoes
+  updateDivisaoBalance: (divisaoId: string, amount: number, description: string) => void
+  setDivisoes: (divisoes: Divisao[]) => void
+  editDivisaoMovement: (divisaoId: string, movementId: string, updates: Partial<DivisaoMovement>) => void
+  deleteDivisaoMovement: (divisaoId: string, movementId: string) => void
 
   // Saídas Fixas
   markSaidaFixaPaid: (id: string, date: string) => void
@@ -73,7 +73,7 @@ const getInitialState = (): AppState => ({
   viewContext: 'personal',
   incomeSources: [],
   entradas: [],
-  caixinhas: [],
+  divisoes: [],
   saidasFixas: [],
   saidasVariaveis: [],
   objetivos: [],
@@ -88,17 +88,17 @@ export const useAppStore = create<AppState & AppActions>()(
 
       completeOnboarding: (user, initial) =>
         set((state) => {
-          const caixinhas = state.caixinhas.length > 0
-            ? state.caixinhas
+          const divisoes = state.divisoes.length > 0
+            ? state.divisoes
             : DIVISAO_ORDER.map((id, i) => {
                 const info = DIVISAO_INFO[id]
-                const icon = CAIXINHA_ICONS[id]
+                const icon = DIVISAO_ICONS[id]
                 return {
                   id, userId: user.id, name: info.name, emoji: '',
                   percentage: info.pct, balance: 0,
                   color: icon?.color ?? '#64748B',
                   isDefault: true, order: i, movements: [],
-                } as Caixinha
+                } as Divisao
               })
           const incomeSources = initial.incomeSources.map((src, i) => ({
             ...src, id: `src-${Date.now()}-${i}`,
@@ -110,7 +110,7 @@ export const useAppStore = create<AppState & AppActions>()(
             ...obj, id: `obj-${Date.now()}-${i}`,
             currentAmount: 0, movements: [],
           }))
-          return { isOnboarded: true, currentUser: user, caixinhas, incomeSources, saidasFixas, objetivos }
+          return { isOnboarded: true, currentUser: user, divisoes, incomeSources, saidasFixas, objetivos }
         }),
 
       setViewContext: (ctx) => set({ viewContext: ctx }),
@@ -119,10 +119,10 @@ export const useAppStore = create<AppState & AppActions>()(
         const id = `e-${Date.now()}`
         const newEntrada: Entrada = { ...entrada, id }
 
-        // Atualiza saldos das caixinhas
+        // Atualiza saldos das divisoes
         set((state) => {
-          const updatedCaixinhas = state.caixinhas.map((cx) => {
-            const dist = entrada.distribution.find(d => d.caixinhaId === cx.id)
+          const updatedDivisoes = state.divisoes.map((cx) => {
+            const dist = entrada.distribution.find(d => d.divisaoId === cx.id)
             if (!dist) return cx
             return {
               ...cx,
@@ -141,15 +141,15 @@ export const useAppStore = create<AppState & AppActions>()(
           })
           return {
             entradas: [...state.entradas, newEntrada],
-            caixinhas: updatedCaixinhas,
+            divisoes: updatedDivisoes,
           }
         })
       },
 
-      updateCaixinhaBalance: (caixinhaId, amount, description) =>
+      updateDivisaoBalance: (divisaoId, amount, description) =>
         set((state) => ({
-          caixinhas: state.caixinhas.map((cx) =>
-            cx.id !== caixinhaId ? cx : {
+          divisoes: state.divisoes.map((cx) =>
+            cx.id !== divisaoId ? cx : {
               ...cx,
               balance: cx.balance + amount,
               movements: [
@@ -166,7 +166,7 @@ export const useAppStore = create<AppState & AppActions>()(
           ),
         })),
 
-      setCaixinhas: (caixinhas) => set({ caixinhas }),
+      setDivisoes: (divisoes) => set({ divisoes }),
 
       markSaidaFixaPaid: (id, date) =>
         set((state) => {
@@ -185,7 +185,7 @@ export const useAppStore = create<AppState & AppActions>()(
               {
                 id: svId,
                 userId: sf.userId,
-                caixinhaId: sf.caixinhaId,
+                divisaoId: sf.divisaoId,
                 amount: sf.amount,
                 description: sf.name,
                 category: sf.category,
@@ -193,8 +193,8 @@ export const useAppStore = create<AppState & AppActions>()(
                 date,
               } as SaidaVariavel,
             ],
-            caixinhas: state.caixinhas.map(cx =>
-              cx.id !== sf.caixinhaId ? cx : {
+            divisoes: state.divisoes.map(cx =>
+              cx.id !== sf.divisaoId ? cx : {
                 ...cx,
                 balance: cx.balance - sf.amount,
                 movements: [
@@ -230,8 +230,8 @@ export const useAppStore = create<AppState & AppActions>()(
               }
             ),
             saidasVariaveis: state.saidasVariaveis.filter(sv => sv.id !== svId),
-            caixinhas: state.caixinhas.map(cx =>
-              cx.id !== sf.caixinhaId ? cx : {
+            divisoes: state.divisoes.map(cx =>
+              cx.id !== sf.divisaoId ? cx : {
                 ...cx,
                 balance: cx.balance + sf.amount,
                 movements: (cx.movements ?? []).filter(mv => mv.id !== mvId),
@@ -245,8 +245,8 @@ export const useAppStore = create<AppState & AppActions>()(
           const newSaida = { ...saida, id: `sv-${Date.now()}` }
           return {
             saidasVariaveis: [...state.saidasVariaveis, newSaida],
-            caixinhas: state.caixinhas.map((cx) =>
-              cx.id !== saida.caixinhaId ? cx : {
+            divisoes: state.divisoes.map((cx) =>
+              cx.id !== saida.divisaoId ? cx : {
                 ...cx,
                 balance: cx.balance - saida.amount,
                 movements: [
@@ -293,11 +293,11 @@ export const useAppStore = create<AppState & AppActions>()(
           ),
         })),
 
-      // ── Caixinha Movement CRUD ──
-      editCaixinhaMovement: (caixinhaId, movementId, updates) =>
+      // ── Divisao Movement CRUD ──
+      editDivisaoMovement: (divisaoId, movementId, updates) =>
         set((state) => ({
-          caixinhas: state.caixinhas.map(cx =>
-            cx.id !== caixinhaId ? cx : {
+          divisoes: state.divisoes.map(cx =>
+            cx.id !== divisaoId ? cx : {
               ...cx,
               balance: cx.balance
                 - (cx.movements.find(m => m.id === movementId)?.amount ?? 0)
@@ -309,10 +309,10 @@ export const useAppStore = create<AppState & AppActions>()(
           ),
         })),
 
-      deleteCaixinhaMovement: (caixinhaId, movementId) =>
+      deleteDivisaoMovement: (divisaoId, movementId) =>
         set((state) => ({
-          caixinhas: state.caixinhas.map(cx =>
-            cx.id !== caixinhaId ? cx : {
+          divisoes: state.divisoes.map(cx =>
+            cx.id !== divisaoId ? cx : {
               ...cx,
               balance: cx.balance - (cx.movements.find(m => m.id === movementId)?.amount ?? 0),
               movements: cx.movements.filter(m => m.id !== movementId),
@@ -396,16 +396,16 @@ export const useAppStore = create<AppState & AppActions>()(
           return getInitialState() as unknown as AppState & AppActions
         }
 
-        // v7: backfill caixinhas for users who completed onboarding
+        // v7: backfill divisoes for users who completed onboarding
         // but have none (old onboarding never created them)
         if (version < 7) {
-          const caixinhas = (state.caixinhas as Caixinha[] | undefined) ?? []
-          if (caixinhas.length === 0 && state.isOnboarded) {
+          const divisoes = (state.divisoes as Divisao[] | undefined) ?? []
+          if (divisoes.length === 0 && state.isOnboarded) {
             const currentUser = state.currentUser as User | null
             const userId = currentUser?.id ?? 'user'
-            state.caixinhas = DIVISAO_ORDER.map((id, i) => {
+            state.divisoes = DIVISAO_ORDER.map((id, i) => {
               const info = DIVISAO_INFO[id]
-              const icon = CAIXINHA_ICONS[id]
+              const icon = DIVISAO_ICONS[id]
               return {
                 id,
                 userId,
@@ -417,17 +417,17 @@ export const useAppStore = create<AppState & AppActions>()(
                 isDefault: true,
                 order: i,
                 movements: [],
-              } as Caixinha
+              } as Divisao
             })
           }
         }
 
         // v8: remove cx-livre, move its balance to cx-reserva (now 10%)
         if (version < 8) {
-          const caixinhas = (state.caixinhas as Caixinha[] | undefined) ?? []
-          const livre = caixinhas.find(cx => cx.id === 'cx-livre')
+          const divisoes = (state.divisoes as Divisao[] | undefined) ?? []
+          const livre = divisoes.find(cx => cx.id === 'cx-livre')
           const livreBalance = livre?.balance ?? 0
-          state.caixinhas = caixinhas
+          state.divisoes = divisoes
             .filter(cx => cx.id !== 'cx-livre')
             .map(cx => {
               if (cx.id === 'cx-reserva') {
@@ -460,7 +460,7 @@ export const useAppStore = create<AppState & AppActions>()(
         viewContext: state.viewContext,
         incomeSources: state.incomeSources,
         entradas: state.entradas,
-        caixinhas: state.caixinhas,
+        divisoes: state.divisoes,
         saidasFixas: state.saidasFixas,
         saidasVariaveis: state.saidasVariaveis,
         objetivos: state.objetivos,
@@ -471,10 +471,10 @@ export const useAppStore = create<AppState & AppActions>()(
 
 // ─── Selectors ────────────────────────────────────────────────────────────────
 
-export const selectCurrentCaixinhas = (state: AppState) =>
+export const selectCurrentDivisoes = (state: AppState) =>
   state.viewContext === 'couple'
-    ? state.caixinhas
-    : state.caixinhas.filter(cx => cx.userId === (state.currentUser?.id ?? ''))
+    ? state.divisoes
+    : state.divisoes.filter(cx => cx.userId === (state.currentUser?.id ?? ''))
 
 export const selectCurrentIncomeSources = (state: AppState) =>
   state.viewContext === 'couple'
@@ -497,4 +497,4 @@ export const selectExpectedMonthlyIncome = (state: AppState): number =>
 
 // Re-export distribution calculator for convenience
 export { calculateDistribution } from '../lib/calculations'
-export type { CaixinhaDistributionItem }
+export type { DivisaoDistributionItem }

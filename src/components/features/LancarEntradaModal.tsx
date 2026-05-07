@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { useAppStore, selectCurrentCaixinhas, selectCurrentIncomeSources, calculateDistribution } from '../../stores/useAppStore'
+import { useAppStore, selectCurrentDivisoes, selectCurrentIncomeSources, calculateDistribution } from '../../stores/useAppStore'
 import { useShallow } from 'zustand/react/shallow'
 import { formatCurrency } from '../../lib/calculations'
 import { Dialog, DialogFooter, Button, Input } from '../ui'
@@ -23,7 +23,7 @@ export default function LancarEntradaModal({ open, onClose, prefill }: Props) {
   const [submitted, setSubmitted] = useState(false)
 
   const incomeSources = useAppStore(useShallow(selectCurrentIncomeSources))
-  const caixinhas     = useAppStore(useShallow(selectCurrentCaixinhas))
+  const divisoes     = useAppStore(useShallow(selectCurrentDivisoes))
   const currentUser   = useAppStore(s => s.currentUser)
   const addEntrada    = useAppStore(s => s.addEntrada)
 
@@ -76,8 +76,8 @@ export default function LancarEntradaModal({ open, onClose, prefill }: Props) {
   // Distribuição automática
   const distribution = useMemo(() => {
     if (!amountInput.numericValue || amountInput.numericValue <= 0) return []
-    return calculateDistribution(amountInput.numericValue, caixinhas)
-  }, [amountInput.numericValue, caixinhas])
+    return calculateDistribution(amountInput.numericValue, divisoes)
+  }, [amountInput.numericValue, divisoes])
 
   const totalAmount = amountInput.numericValue
   const isValid     = totalAmount > 0 && (sourceId || sourceText.trim())
@@ -118,7 +118,7 @@ export default function LancarEntradaModal({ open, onClose, prefill }: Props) {
               <Check size={32} color="var(--color-success)" strokeWidth={2.5} />
             </div>
             <p style={{ fontSize: 18, fontWeight: 700, color: 'var(--color-success)', margin: 0 }}>Entrada lançada!</p>
-            <p style={{ fontSize: 14, color: 'var(--color-text-secondary)', margin: 0 }}>Caixinhas atualizadas</p>
+            <p style={{ fontSize: 14, color: 'var(--color-text-secondary)', margin: 0 }}>Divisoes atualizadas</p>
           </motion.div>
         ) : (
           <motion.div key="form" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>

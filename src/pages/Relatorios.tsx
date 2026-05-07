@@ -1,8 +1,8 @@
-import { useState } from 'react'
-import { useAppStore, selectCurrentCaixinhas } from '../stores/useAppStore'
+import { useState, useMemo } from 'react'
+import { useAppStore, selectCurrentDivisoes } from '../stores/useAppStore'
 import { useShallow } from 'zustand/react/shallow'
 import { formatCurrency } from '../lib/calculations'
-import { getCaixinhaIcon } from '../lib/icons'
+import { getDivisaoIcon } from '../lib/icons'
 import { ProgressBar, PageHeader } from '../components/ui'
 import { useIsMobile } from '../hooks/useIsMobile'
 import {
@@ -33,10 +33,10 @@ function monthLabel(ym: string): string {
 
 // ── Per-month aggregation ─────────────────────────────────────────────────────
 
-type Caixinhas = ReturnType<typeof selectCurrentCaixinhas>
+type Divisoes = ReturnType<typeof selectCurrentDivisoes>
 
-function aggregateMonth(caixinhas: Caixinhas, month: string) {
-  return caixinhas.map(cx => {
+function aggregateMonth(divisoes: Divisoes, month: string) {
+  return divisoes.map(cx => {
     const mvs    = cx.movements.filter(mv => mv.date.startsWith(month))
     const totalIn  = mvs.filter(mv => mv.type === 'income').reduce((s, mv) => s + mv.amount, 0)
     const totalOut = mvs.filter(mv => mv.type === 'expense').reduce((s, mv) => s + mv.amount, 0)
@@ -56,13 +56,28 @@ const CARD: React.CSSProperties = {
 // ─────────────────────────────────────────────────────────────────────────────
 
 export default function Relatorios() {
-  const caixinhas    = useAppStore(useShallow(selectCurrentCaixinhas))
+  const allDivisoes = useAppStore(useShallow(s => s.divisoes))
+  const currentUser  = useAppStore(s => s.currentUser)
+  const partner      = useAppStore(s => s.partner)
   const isMobile     = useIsMobile()
   const TODAY        = currentYM()
-  const [month, setMonth] = useState(TODAY)
+  const [month, setMonth]       = useState(TODAY)
+  const [reportCtx, setReportCtx] = useState<'me' | 'partner' | 'couple'>('couple')
 
-  const data     = aggregateMonth(caixinhas, month)
-  const dataPrev = aggregateMonth(caixinhas, shiftMonth(month, -1))
+  const ctxOptions: Array<{ key: 'me' | 'partner' | 'couple'; label: string }> = [
+    { key: 'me', label: 'Meu' },
+    ...(partner ? [{ key: 'partner' as const, label: partner.name.split(' ')[0] }] : []),
+    { key: 'couple', label: 'Casal' },
+  ]
+
+  const divisoes = useMemo(() => {
+    if (reportCtx === 'me')      return allDivisoes.filter(cx => cx.userId === currentUser?.id)
+    if (reportCtx === 'partner') return allDivisoes.filter(cx => cx.userId === partner?.id)
+    return allDivisoes
+  }, [allDivisoes, reportCtx, currentUser, partner])
+
+  const data     = aggregateMonth(divisoes, month)
+  const dataPrev = aggregateMonth(divisoes, shiftMonth(month, -1))
 
   const globalIn   = data.reduce((s, d) => s + d.totalIn, 0)
   const globalOut  = data.reduce((s, d) => s + d.totalOut, 0)
@@ -93,7 +108,7 @@ export default function Relatorios() {
           </div>
         </>
       ) : (
-        <div style={{ paddingTop: 32, marginBottom: 24, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div style={{ paddingTop: 32, marginBottom: 8, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div>
             <h1 style={{ fontSize: 24, fontWeight: 600, color: 'var(--color-text-primary)', margin: 0 }}>Relatórios</h1>
             <p style={{ fontSize: 13, color: 'var(--color-text-secondary)', margin: '4px 0 0' }}>{monthLabel(month)}</p>
@@ -101,6 +116,43 @@ export default function Relatorios() {
           <MonthNav month={month} today={TODAY} onChange={setMonth} />
         </div>
       )}
+
+      {/* ── Context segmented control ──────────────────────────────────────── */}
+      <div style={{ display: 'flex', justifyContent: 'center', padding: isMobile ? '4px 16px 12px' : '0 0 20px' }}>
+        <div style={{
+          display: 'inline-flex',
+          background: 'var(--color-bg-secondary)',
+          border: '1px solid var(--color-border)',
+          borderRadius: 999,
+          padding: 3,
+          gap: 2,
+        }}>
+          {ctxOptions.map(({ key, label }) => {
+            const isActive = reportCtx === key
+            return (
+              <button
+                key={key}
+                onClick={() => setReportCtx(key)}
+                style={{
+                  padding: '6px 16px',
+                  borderRadius: 999,
+                  border: 'none',
+                  cursor: 'pointer',
+                  fontSize: 12,
+                  fontWeight: isActive ? 600 : 500,
+                  fontFamily: 'var(--font-sans)',
+                  background: isActive ? 'var(--color-accent-primary)' : 'transparent',
+                  color: isActive ? 'white' : 'var(--color-text-secondary)',
+                  transition: 'background 150ms ease, color 150ms ease',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                {label}
+              </button>
+            )
+          })}
+        </div>
+      </div>
 
       {/* ── Empty state ────────────────────────────────────────────────────── */}
       {!hasData ? (
@@ -200,7 +252,7 @@ export default function Relatorios() {
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
                 {bySpending.map(({ cx, totalOut }) => {
-                  const { Icon, color } = getCaixinhaIcon(cx.id)
+                  const { Icon, color } = getDivisaoIcon(cx.id)
                   const barPct = maxOut > 0 ? (totalOut / maxOut) * 100 : 0
                   return (
                     <div key={cx.id}>
@@ -241,7 +293,7 @@ export default function Relatorios() {
                     return Math.abs(deltaB) - Math.abs(deltaA)
                   })
                   .map(({ cx, totalOut }) => {
-                    const { Icon, color } = getCaixinhaIcon(cx.id)
+                    const { Icon, color } = getDivisaoIcon(cx.id)
                     const realPct     = globalOut > 0 ? (totalOut / globalOut) * 100 : 0
                     const expectedPct = cx.percentage
                     const delta       = realPct - expectedPct

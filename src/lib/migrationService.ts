@@ -13,7 +13,7 @@ const log = (...args: unknown[]) => console.log('[Somus:Sync]', ...args)
 function stateWeight(state: AppState): number {
   return (
     (state.entradas?.length ?? 0) +
-    (state.caixinhas?.reduce((sum, cx) => sum + cx.movements.length, 0) ?? 0) +
+    (state.divisoes?.reduce((sum, cx) => sum + cx.movements.length, 0) ?? 0) +
     (state.saidasFixas?.length ?? 0) +
     (state.saidasVariaveis?.length ?? 0) +
     (state.objetivos?.length ?? 0) +
@@ -41,7 +41,7 @@ export async function migrateToFirestore(
     log('Migration start for uid:', uid)
     log('Local state — onboarded:', localState.isOnboarded,
       'entradas:', localState.entradas?.length ?? 0,
-      'caixinhas:', localState.caixinhas?.length ?? 0,
+      'divisoes:', localState.divisoes?.length ?? 0,
       'weight:', localWeight)
 
     const remoteState = await loadStateFromFirestore(uid)
@@ -70,7 +70,7 @@ export async function migrateToFirestore(
     const remoteWeight = stateWeight(remoteState)
     log('Remote state — onboarded:', remoteState.isOnboarded,
       'entradas:', remoteState.entradas?.length ?? 0,
-      'caixinhas:', remoteState.caixinhas?.length ?? 0,
+      'divisoes:', remoteState.divisoes?.length ?? 0,
       'weight:', remoteWeight)
 
     localStorage.setItem(MIGRATION_KEY, uid)
@@ -101,7 +101,7 @@ function getResetState(): AppState {
     viewContext: 'personal',
     incomeSources: [],
     entradas: [],
-    caixinhas: [],
+    divisoes: [],
     saidasFixas: [],
     saidasVariaveis: [],
     objetivos: [],

@@ -2,15 +2,15 @@ import { useState, useEffect } from 'react'
 import { useAppStore } from '../../stores/useAppStore'
 import { Dialog, DialogFooter, Button, Input } from '../ui'
 import { formatCurrency } from '../../lib/calculations'
-import { getCaixinhaIcon } from '../../lib/icons'
+import { getDivisaoIcon } from '../../lib/icons'
 import type { PaymentMethod, BillingCycle } from '../../types'
 import { useCurrencyInput } from '../../hooks/useCurrencyInput'
 
 interface Props {
   open: boolean
   onClose: () => void
-  caixinhaId: string
-  caixinhaName: string
+  divisaoId: string
+  divisaoName: string
 }
 
 const PAYMENT_OPTIONS: { key: PaymentMethod; label: string }[] = [
@@ -20,7 +20,7 @@ const PAYMENT_OPTIONS: { key: PaymentMethod; label: string }[] = [
   { key: 'auto_debit', label: 'Débito Automático' },
 ]
 
-export default function AddSaidaFixaModal({ open, onClose, caixinhaId, caixinhaName }: Props) {
+export default function AddSaidaFixaModal({ open, onClose, divisaoId, divisaoName }: Props) {
   const [name, setName] = useState('')
   const amountInput = useCurrencyInput()
   const [dueDay, setDueDay] = useState('')
@@ -30,7 +30,7 @@ export default function AddSaidaFixaModal({ open, onClose, caixinhaId, caixinhaN
 
   const currentUser = useAppStore(s => s.currentUser)
   const addSaidaFixa = useAppStore(s => s.addSaidaFixa)
-  const { color } = getCaixinhaIcon(caixinhaId)
+  const { color } = getDivisaoIcon(divisaoId)
 
   useEffect(() => {
     if (open) {
@@ -62,10 +62,10 @@ export default function AddSaidaFixaModal({ open, onClose, caixinhaId, caixinhaN
       amount: isVariable ? 0 : monthlyAmount,
       dueDay: numDay,
       paymentMethod,
-      caixinhaId,
+      divisaoId,
       autoDebit: paymentMethod === 'auto_debit',
       paidDates: [],
-      category: caixinhaName,
+      category: divisaoName,
       color,
       isVariable,
       billingCycle,

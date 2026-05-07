@@ -9,14 +9,14 @@ import { PWAInstallPrompt } from './components/shared/PWAInstallPrompt'
 import { FirebaseSyncProvider } from './hooks/useFirebaseSync'
 import SomusLogo from './components/ui/SomusLogo'
 import { DIVISAO_ORDER, DIVISAO_INFO } from './lib/divisoes'
-import { CAIXINHA_ICONS } from './lib/icons'
-import type { Caixinha } from './types'
+import { DIVISAO_ICONS } from './lib/icons'
+import type { Divisao } from './types'
 
 // Pages
 import Home          from './pages/Home'
 import Fluxo         from './pages/Fluxo'
-import Caixinhas     from './pages/Caixinhas'
-import CaixinhaDetalhe from './pages/CaixinhaDetalhe'
+import Relatorios     from './pages/Relatorios'
+import DivisaoDetalhe from './pages/DivisaoDetalhe'
 import Casal         from './pages/Casal'
 import ObjetivoDetalhe from './pages/ObjetivoDetalhe'
 import Onboarding    from './pages/Onboarding'
@@ -26,8 +26,8 @@ import Login         from './pages/Login'
 export default function App() {
   const isOnboarded   = useAppStore(s => s.isOnboarded)
   const currentUser   = useAppStore(s => s.currentUser)
-  const caixinhasLen  = useAppStore(s => s.caixinhas.length)
-  const hasLivre      = useAppStore(s => s.caixinhas.some(cx => cx.id === 'cx-livre'))
+  const divisoesLen  = useAppStore(s => s.divisoes.length)
+  const hasLivre      = useAppStore(s => s.divisoes.some(cx => cx.id === 'cx-livre'))
   const { isAuthenticated, isLoading: authLoading } = useAuth()
   const [location, navigate] = useLocation()
 
@@ -43,15 +43,15 @@ export default function App() {
     },
   })
 
-  // Runtime data hygiene (caixinhas backfill + cx-livre cleanup)
+  // Runtime data hygiene (divisoes backfill + cx-livre cleanup)
   useEffect(() => {
     if (!isOnboarded) return
     const userId = currentUser?.id ?? ''
 
-    if (caixinhasLen === 0) {
-      const defaultCaixinhas: Caixinha[] = DIVISAO_ORDER.map((id, i) => {
+    if (divisoesLen === 0) {
+      const defaultDivisoes: Divisao[] = DIVISAO_ORDER.map((id, i) => {
         const info = DIVISAO_INFO[id]
-        const icon = CAIXINHA_ICONS[id]
+        const icon = DIVISAO_ICONS[id]
         return {
           id, userId, name: info.name, emoji: '',
           percentage: info.pct, balance: 0,
@@ -59,12 +59,12 @@ export default function App() {
           isDefault: true, order: i, movements: [],
         }
       })
-      useAppStore.setState({ caixinhas: defaultCaixinhas })
+      useAppStore.setState({ divisoes: defaultDivisoes })
       return
     }
 
     if (hasLivre) {
-      const all = useAppStore.getState().caixinhas
+      const all = useAppStore.getState().divisoes
       const livreBalance = all.find(cx => cx.id === 'cx-livre')?.balance ?? 0
       const cleaned = all
         .filter(cx => cx.id !== 'cx-livre')
@@ -72,9 +72,9 @@ export default function App() {
           ? { ...cx, percentage: 10, balance: cx.balance + livreBalance }
           : cx
         )
-      useAppStore.setState({ caixinhas: cleaned })
+      useAppStore.setState({ divisoes: cleaned })
     }
-  }, [isOnboarded, caixinhasLen, hasLivre, currentUser])
+  }, [isOnboarded, divisoesLen, hasLivre, currentUser])
 
   // BIDIRECTIONAL routing guard:
   // - Not onboarded + not on /onboarding → send to onboarding
@@ -120,8 +120,8 @@ export default function App() {
             <Switch>
               <Route path="/home" component={Home} />
               <Route path="/fluxo" component={Fluxo} />
-              <Route path="/divisoes/:id" component={CaixinhaDetalhe} />
-              <Route path="/divisoes" component={Caixinhas} />
+              <Route path="/divisoes/:id" component={DivisaoDetalhe} />
+              <Route path="/divisoes" component={Relatorios} />
               <Route path="/casal/objetivo/:id" component={ObjetivoDetalhe} />
               <Route path="/casal" component={Casal} />
               <Route path="/perfil" component={Perfil} />

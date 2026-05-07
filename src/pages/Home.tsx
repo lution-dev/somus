@@ -3,14 +3,14 @@ import { useLocation } from 'wouter'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   useAppStore,
-  selectCurrentCaixinhas,
+  selectCurrentDivisoes,
   selectCurrentSaidasFixas,
   selectCurrentEntradas,
   selectExpectedMonthlyIncome,
 } from '../stores/useAppStore'
 import { useShallow } from 'zustand/react/shallow'
 import { formatCurrency, getMonthSummary, getDaysUntil, isPaidThisMonth } from '../lib/calculations'
-import { getCaixinhaIcon } from '../lib/icons'
+import { getDivisaoIcon } from '../lib/icons'
 import { ProgressBar, PageHeader, Dialog, groupByMonth, MonthHeader } from '../components/ui'
 import { useIsMobile } from '../hooks/useIsMobile'
 import { useAuth } from '../hooks/useAuth'
@@ -26,7 +26,6 @@ import {
   ChevronDown,
   Wallet,
   History,
-  BarChart3,
 } from 'lucide-react'
 
 // ─── Pill button style ──────────────────────────────────────────────────────
@@ -46,10 +45,10 @@ const pillBtn = (accent: string, bg: string): React.CSSProperties => ({
 
 function BalanceCard({
   total, totalIncome, expectedIncome, incomeProgress,
-  onLancar, onHistorico, onFluxo,
+  onLancar, onHistorico,
 }: {
   total: number; totalIncome: number; expectedIncome: number; incomeProgress: number
-  onLancar: () => void; onHistorico: () => void; onFluxo: () => void
+  onLancar: () => void; onHistorico: () => void
 }) {
   const remaining = Math.max(0, expectedIncome - totalIncome)
 
@@ -92,9 +91,6 @@ function BalanceCard({
         </button>
         <button onClick={onHistorico} style={pillBtn('var(--color-text-secondary)', 'var(--color-bg-tertiary)')}>
           <History size={14} /> Histórico
-        </button>
-        <button onClick={onFluxo} style={pillBtn('var(--color-text-secondary)', 'var(--color-bg-tertiary)')}>
-          <BarChart3 size={14} /> Fluxo
         </button>
       </div>
     </div>
@@ -389,11 +385,11 @@ function ProximosDias({ onEntradaClick, onDespesaClick, isDesktop }: {
   )
 }
 
-// ─── Caixinhas Grid (Home) ────────────────────────────────────────────────
+// ─── Divisoes Grid (Home) ────────────────────────────────────────────────
 
-function CaixinhasSection() {
+function DivisoesSection() {
   const [, navigate]   = useLocation()
-  const caixinhas      = useAppStore(useShallow(selectCurrentCaixinhas))
+  const divisoes      = useAppStore(useShallow(selectCurrentDivisoes))
 
   return (
     <div style={{ marginTop: 20 }}>
@@ -414,7 +410,7 @@ function CaixinhasSection() {
         </button>
       </div>
 
-      {caixinhas.length === 0 ? (
+      {divisoes.length === 0 ? (
         <div style={{
           display: 'flex', flexDirection: 'column', alignItems: 'center',
           padding: '32px 16px', borderRadius: 'var(--radius-card)',
@@ -428,11 +424,11 @@ function CaixinhasSection() {
         </div>
       ) : (() => {
         // Option A: Essencial (55%) as featured card, rest in 2x2 grid
-        const essencial = caixinhas.find(cx => cx.id === 'cx-essencial')
-        const others = caixinhas.filter(cx => cx.id !== 'cx-essencial')
+        const essencial = divisoes.find(cx => cx.id === 'cx-essencial')
+        const others = divisoes.filter(cx => cx.id !== 'cx-essencial')
 
         // Helper to calc % used
-        const calcPct = (cx: typeof caixinhas[0]) => {
+        const calcPct = (cx: typeof divisoes[0]) => {
           const totalIn  = cx.movements.filter(m => m.type === 'income').reduce((s, m) => s + m.amount, 0)
           const totalOut = cx.movements.filter(m => m.type === 'expense').reduce((s, m) => s + m.amount, 0)
           return totalIn > 0 ? Math.min(100, (totalOut / totalIn) * 100) : 0
@@ -442,7 +438,7 @@ function CaixinhasSection() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             {/* ── Featured: Essencial (55%) ── */}
             {essencial && (() => {
-              const { Icon, color } = getCaixinhaIcon(essencial.id)
+              const { Icon, color } = getDivisaoIcon(essencial.id)
               const pct = calcPct(essencial)
               const totalIn = essencial.movements.filter(m => m.type === 'income').reduce((s, m) => s + m.amount, 0)
               return (
@@ -496,18 +492,18 @@ function CaixinhasSection() {
             })()}
 
             {/* ── Grid 2x2 (4 cards restantes) ── */}
-            <div className="home-caixinhas-grid" style={{
+            <div className="home-divisoes-grid" style={{
               display: 'grid',
               gridTemplateColumns: 'repeat(2, 1fr)',
               gap: 12,
             }}>
               <style>{`
                 @media (min-width: 1024px) {
-                  .home-caixinhas-grid { grid-template-columns: repeat(4, 1fr) !important; }
+                  .home-divisoes-grid { grid-template-columns: repeat(4, 1fr) !important; }
                 }
               `}</style>
               {others.slice(0, 4).map((cx) => {
-                const { Icon, color } = getCaixinhaIcon(cx.id)
+                const { Icon, color } = getDivisaoIcon(cx.id)
                 const pct = calcPct(cx)
                 const totalIn = cx.movements.filter(m => m.type === 'income').reduce((s, m) => s + m.amount, 0)
 
@@ -515,7 +511,7 @@ function CaixinhasSection() {
                   <button
                     key={cx.id}
                     onClick={() => navigate(`/divisoes/${cx.id}`)}
-                    className="card card-interactive home-caixinhas-grid-item"
+                    className="card card-interactive home-divisoes-grid-item"
                     style={{
                       textAlign: 'left', cursor: 'pointer',
                       border: 'none', fontFamily: 'var(--font-sans)',
@@ -578,12 +574,11 @@ export default function Home() {
   const [historicoOpen, setHistoricoOpen] = useState(false)
   const [prefill, setPrefill] = useState<{ sourceName: string; amount: number } | undefined>()
   const isMobile = useIsMobile()
-  const [, navigate] = useLocation()
   const { displayName } = useAuth()
 
   const markSaidaFixaPaid = useAppStore(s => s.markSaidaFixaPaid)
 
-  const caixinhas      = useAppStore(useShallow(selectCurrentCaixinhas))
+  const divisoes      = useAppStore(useShallow(selectCurrentDivisoes))
   const entradas       = useAppStore(useShallow(selectCurrentEntradas))
   const saidasFixas    = useAppStore(useShallow(selectCurrentSaidasFixas))
   const expectedIncome = useAppStore(selectExpectedMonthlyIncome)
@@ -591,8 +586,8 @@ export default function Home() {
   const firstName       = displayName?.split(' ')[0] ?? currentUserName.split(' ')[0]
 
   const summary = useMemo(
-    () => getMonthSummary(entradas, saidasFixas, caixinhas, expectedIncome),
-    [entradas, saidasFixas, caixinhas, expectedIncome],
+    () => getMonthSummary(entradas, saidasFixas, divisoes, expectedIncome),
+    [entradas, saidasFixas, divisoes, expectedIncome],
   )
 
   const hour = new Date().getHours()
@@ -639,7 +634,6 @@ export default function Home() {
               incomeProgress={summary.incomeProgress}
               onLancar={() => setLancarOpen(true)}
               onHistorico={() => setHistoricoOpen(true)}
-              onFluxo={() => navigate('/fluxo')}
             />
           </div>
         </>
@@ -667,7 +661,6 @@ export default function Home() {
               incomeProgress={summary.incomeProgress}
               onLancar={() => setLancarOpen(true)}
               onHistorico={() => setHistoricoOpen(true)}
-              onFluxo={() => navigate('/fluxo')}
             />
 
             {/* Right: Próximos Dias */}
@@ -690,8 +683,8 @@ export default function Home() {
         />
       )}
 
-      {/* Caixinhas */}
-      <CaixinhasSection />
+      {/* Divisoes */}
+      <DivisoesSection />
 
       </div>
       <LancarEntradaModal open={lancarOpen} onClose={handleCloseModal} prefill={prefill} />

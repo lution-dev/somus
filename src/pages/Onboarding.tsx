@@ -7,7 +7,7 @@ import { Button, Input } from '../components/ui'
 import SomusLogo from '../components/ui/SomusLogo'
 import type { User } from '../types'
 import { DIVISAO_INFO, DIVISAO_ORDER } from '../lib/divisoes'
-import { getCaixinhaIcon } from '../lib/icons'
+import { getDivisaoIcon } from '../lib/icons'
 import {
   Users,
   Wallet,
@@ -236,7 +236,7 @@ function Step4({ onNext }: { onNext: () => void }) {
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
         {DIVISAO_ORDER.map((id) => {
           const info = DIVISAO_INFO[id]
-          const { Icon, color } = getCaixinhaIcon(id)
+          const { Icon, color } = getDivisaoIcon(id)
           const isOpen = expandedId === id
           return (
             <button
@@ -497,7 +497,7 @@ export default function Onboarding() {
         amount: parseFloat(c.amount) || 0,
         dueDay: parseInt(c.dia) || 1,
         paymentMethod: 'auto_debit' as const,
-        caixinhaId: 'cx-essencial',
+        divisaoId: 'cx-essencial',
         autoDebit: false,
         paidDates: [],
         category: 'Conta fixa',

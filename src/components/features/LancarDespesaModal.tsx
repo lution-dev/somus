@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useAppStore } from '../../stores/useAppStore'
 import { formatCurrency } from '../../lib/calculations'
-import { getCaixinhaIcon } from '../../lib/icons'
+import { getDivisaoIcon } from '../../lib/icons'
 import { Dialog, DialogFooter, Button, Input } from '../ui'
 import { Check, ChevronDown } from 'lucide-react'
 import type { PaymentMethod } from '../../types'
@@ -11,9 +11,9 @@ import { useCurrencyInput } from '../../hooks/useCurrencyInput'
 interface Props {
   open: boolean
   onClose: () => void
-  /** Pre-selected caixinha (divisão) */
-  caixinhaId: string
-  caixinhaName: string
+  /** Pre-selected divisao (divisão) */
+  divisaoId: string
+  divisaoName: string
 }
 
 const PAYMENT_METHODS: { value: PaymentMethod; label: string }[] = [
@@ -24,7 +24,7 @@ const PAYMENT_METHODS: { value: PaymentMethod; label: string }[] = [
   { value: 'auto_debit', label: 'Débito automático' },
 ]
 
-export default function LancarDespesaModal({ open, onClose, caixinhaId, caixinhaName }: Props) {
+export default function LancarDespesaModal({ open, onClose, divisaoId, divisaoName }: Props) {
   const [description, setDescription] = useState('')
   const amountInput = useCurrencyInput()
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod | ''>('')
@@ -35,12 +35,12 @@ export default function LancarDespesaModal({ open, onClose, caixinhaId, caixinha
 
   const currentUser = useAppStore(s => s.currentUser)
   const addSaidaVariavel = useAppStore(s => s.addSaidaVariavel)
-  const { Icon, color } = getCaixinhaIcon(caixinhaId)
+  const { Icon, color } = getDivisaoIcon(divisaoId)
 
   // Reset on open
   useEffect(() => {
     if (open) {
-      setDescription(caixinhaName)
+      setDescription(divisaoName)
       amountInput.reset()
       setPaymentMethod('')
       setDate(new Date().toISOString().slice(0, 10))
@@ -48,7 +48,7 @@ export default function LancarDespesaModal({ open, onClose, caixinhaId, caixinha
       setSubmitted(false)
       setPmOpen(false)
     }
-  }, [open, caixinhaName])
+  }, [open, divisaoName])
 
   const numAmount = amountInput.numericValue
   const isValid = numAmount > 0 && description.trim() && paymentMethod
@@ -57,10 +57,10 @@ export default function LancarDespesaModal({ open, onClose, caixinhaId, caixinha
     if (!isValid || !currentUser || !paymentMethod) return
     addSaidaVariavel({
       userId: currentUser.id,
-      caixinhaId,
+      divisaoId,
       amount: numAmount,
       description: description.trim(),
-      category: caixinhaName,
+      category: divisaoName,
       subcategory: subcategory.trim() || undefined,
       paymentMethod: paymentMethod as PaymentMethod,
       date,
@@ -93,7 +93,7 @@ export default function LancarDespesaModal({ open, onClose, caixinhaId, caixinha
           </motion.div>
         ) : (
           <motion.div key="form" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-            {/* Caixinha badge */}
+            {/* Divisao badge */}
             <div style={{
               display: 'flex', alignItems: 'center', gap: 10,
               background: `${color}15`,
@@ -102,7 +102,7 @@ export default function LancarDespesaModal({ open, onClose, caixinhaId, caixinha
               marginBottom: 16,
             }}>
               <Icon size={18} style={{ color }} />
-              <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-text-primary)' }}>{caixinhaName}</span>
+              <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-text-primary)' }}>{divisaoName}</span>
             </div>
 
 
@@ -111,7 +111,7 @@ export default function LancarDespesaModal({ open, onClose, caixinhaId, caixinha
             <div style={{ marginBottom: 12 }}>
               <Input
                 label="Descrição"
-                placeholder={caixinhaName}
+                placeholder={divisaoName}
                 value={description}
                 onChange={e => setDescription(e.target.value)}
               />

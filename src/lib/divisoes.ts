@@ -1,5 +1,5 @@
 /**
- * Descriptions for each division (caixinha).
+ * Descriptions for each division (divisao).
  * Used in onboarding Step 4 and in the "Entenda as divisões" info panel.
  * Based on the Natália Arcuri method, adapted.
  */

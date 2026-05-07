@@ -103,8 +103,8 @@ export function FirebaseSyncProvider({ children }: FirebaseSyncProviderProps) {
     // Track the last applied JSON to avoid redundant setState calls.
     // This is cheaper than letting React diff the entire tree.
     let lastAppliedJson = JSON.stringify(
-      (({ isOnboarded, currentUser, partner, viewContext, incomeSources, entradas, caixinhas, saidasFixas, saidasVariaveis, objetivos }) =>
-        ({ isOnboarded, currentUser, partner, viewContext, incomeSources, entradas, caixinhas, saidasFixas, saidasVariaveis, objetivos })
+      (({ isOnboarded, currentUser, partner, viewContext, incomeSources, entradas, divisoes, saidasFixas, saidasVariaveis, objetivos }) =>
+        ({ isOnboarded, currentUser, partner, viewContext, incomeSources, entradas, divisoes, saidasFixas, saidasVariaveis, objetivos })
       )(useAppStore.getState() as AppState)
     )
 
@@ -120,7 +120,7 @@ export function FirebaseSyncProvider({ children }: FirebaseSyncProviderProps) {
       // Apply remote state — this IS a genuine change from another device
       log('Listener: REAL-TIME UPDATE from remote device!',
         'entradas:', remoteState.entradas?.length ?? 0,
-        'caixinhas:', remoteState.caixinhas?.length ?? 0)
+        'divisoes:', remoteState.divisoes?.length ?? 0)
       lastAppliedJson = remoteJson
       isRemoteUpdate.current = true
       useAppStore.setState(remoteState)

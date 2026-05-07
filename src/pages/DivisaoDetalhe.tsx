@@ -3,7 +3,7 @@ import { useParams, useLocation } from 'wouter'
 import { useAppStore, selectCurrentSaidasFixas, selectCurrentEntradas } from '../stores/useAppStore'
 import { useShallow } from 'zustand/react/shallow'
 import { formatCurrency, isPaidThisMonth, getDueDayLabel } from '../lib/calculations'
-import { getCaixinhaIcon } from '../lib/icons'
+import { getDivisaoIcon } from '../lib/icons'
 import { ProgressBar, PageHeader, SearchBar, groupByMonth, MonthHeader, ConfirmDialog, Breadcrumb } from '../components/ui'
 import ItemActionSheet from '../components/ui/ItemActionSheet'
 import { useIsMobile } from '../hooks/useIsMobile'
@@ -13,7 +13,7 @@ import EditMovementModal from '../components/features/EditMovementModal'
 import EditSaidaFixaModal from '../components/features/EditSaidaFixaModal'
 import AddSaidaFixaModal from '../components/features/AddSaidaFixaModal'
 import AddObjetivoModal from '../components/features/AddObjetivoModal'
-import type { CaixinhaMovement, SaidaFixa, Objetivo } from '../types'
+import type { DivisaoMovement, SaidaFixa, Objetivo } from '../types'
 
 const HERO_BG = '#001442'
 
@@ -25,7 +25,7 @@ function hexToRgba(hex: string, alpha: number): string {
   return `rgba(${r},${g},${b},${alpha})`
 }
 
-export default function CaixinhaDetalhe() {
+export default function DivisaoDetalhe() {
   const { id } = useParams<{ id: string }>()
   const [, navigate] = useLocation()
   const isEssencial  = id === 'cx-essencial'
@@ -40,22 +40,22 @@ export default function CaixinhaDetalhe() {
   const [addObjetivoOpen, setAddObjetivoOpen] = useState(false)
 
   // Action sheet state
-  const [actionItem, setActionItem] = useState<{ type: 'movement' | 'custo'; item: CaixinhaMovement | SaidaFixa } | null>(null)
+  const [actionItem, setActionItem] = useState<{ type: 'movement' | 'custo'; item: DivisaoMovement | SaidaFixa } | null>(null)
   // Edit modal state
-  const [editMv, setEditMv] = useState<CaixinhaMovement | null>(null)
+  const [editMv, setEditMv] = useState<DivisaoMovement | null>(null)
   const [editSf, setEditSf] = useState<SaidaFixa | null>(null)
   // Objetivo edit/delete
   const [editObjetivoTarget, setEditObjetivoTarget] = useState<Objetivo | null>(null)
   const [deleteObjetivoTarget, setDeleteObjetivoTarget] = useState<Objetivo | null>(null)
   const [objetivoActionTarget, setObjetivoActionTarget] = useState<Objetivo | null>(null)
 
-  const caixinha = useAppStore(s => s.caixinhas.find(cx => cx.id === id))
+  const divisao = useAppStore(s => s.divisoes.find(cx => cx.id === id))
   const saidasFixas = useAppStore(useShallow(selectCurrentSaidasFixas))
   const entradas = useAppStore(useShallow(selectCurrentEntradas))
   const objetivos = useAppStore(useShallow(s => s.objetivos))
   const currentUser = useAppStore(s => s.currentUser)
-  const editCaixinhaMovement = useAppStore(s => s.editCaixinhaMovement)
-  const deleteCaixinhaMovement = useAppStore(s => s.deleteCaixinhaMovement)
+  const editDivisaoMovement = useAppStore(s => s.editDivisaoMovement)
+  const deleteDivisaoMovement = useAppStore(s => s.deleteDivisaoMovement)
   const editSaidaFixa = useAppStore(s => s.editSaidaFixa)
   const deleteSaidaFixa = useAppStore(s => s.deleteSaidaFixa)
   const markSaidaFixaPaid = useAppStore(s => s.markSaidaFixaPaid)
@@ -76,7 +76,7 @@ export default function CaixinhaDetalhe() {
 
   const isMobile = useIsMobile()
 
-  if (!caixinha) {
+  if (!divisao) {
     return (
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '100dvh', gap: 12 }}>
         <Info size={28} color="var(--color-text-tertiary)" />
@@ -85,13 +85,13 @@ export default function CaixinhaDetalhe() {
     )
   }
 
-  const { Icon, color } = getCaixinhaIcon(caixinha.id)
-  const expectedBal = (caixinha.percentage / 100) * expectedIncome
+  const { Icon, color } = getDivisaoIcon(divisao.id)
+  const expectedBal = (divisao.percentage / 100) * expectedIncome
 
 
   // Custos fixos desta divisão
   const custosFixos = useMemo(() =>
-    saidasFixas.filter(sf => sf.caixinhaId === id),
+    saidasFixas.filter(sf => sf.divisaoId === id),
     [saidasFixas, id]
   )
 
@@ -106,9 +106,9 @@ export default function CaixinhaDetalhe() {
       .filter(e => e.date.startsWith(currentMonth))
       .flatMap(e =>
         e.distribution
-          .filter(d => d.caixinhaId === id)
+          .filter(d => d.divisaoId === id)
           .map(d => ({
-            id: `${e.id}-${d.caixinhaId}`,
+            id: `${e.id}-${d.divisaoId}`,
             date: e.date,
             amount: d.amount,
             description: `Entrada — ${e.sourceName}`,
@@ -165,13 +165,13 @@ export default function CaixinhaDetalhe() {
 
   // All movements (filtered) — only expenses; income distributions appear in Fluxo
   const allMovements = useMemo(() => {
-    const sorted = [...(caixinha.movements ?? [])]
+    const sorted = [...(divisao.movements ?? [])]
       .filter(mv => mv.type !== 'income')           // ← saídas apenas
       .sort((a, b) => b.date.localeCompare(a.date))
     if (!mvSearchQuery.trim()) return sorted
     const q = mvSearchQuery.toLowerCase()
     return sorted.filter(mv => mv.description.toLowerCase().includes(q))
-  }, [caixinha.movements, mvSearchQuery])
+  }, [divisao.movements, mvSearchQuery])
 
   const groupedMovements = useMemo(
     () => groupByMonth(allMovements, mv => mv.date, mv => mv.amount),
@@ -197,7 +197,7 @@ export default function CaixinhaDetalhe() {
       {/* Header */}
       {isMobile ? (
         <>
-          <PageHeader title={caixinha.name} back bg={HERO_BG} />
+          <PageHeader title={divisao.name} back bg={HERO_BG} />
           <div style={{
             background: HERO_BG,
             borderRadius: '0 0 24px 24px',
@@ -219,7 +219,7 @@ export default function CaixinhaDetalhe() {
             {/* Meta (title is already in navbar) */}
             <div style={{ textAlign: 'center', marginBottom: 16 }}>
               <p style={{ fontSize: 13, color: 'var(--color-text-secondary)', margin: 0 }}>
-                Meta: {formatCurrency(expectedBal)} · {caixinha.percentage}% do total
+                Meta: {formatCurrency(expectedBal)} · {divisao.percentage}% do total
               </p>
             </div>
 
@@ -264,7 +264,7 @@ export default function CaixinhaDetalhe() {
           <Breadcrumb items={[
             { label: 'Divisões', href: '/divisoes' },
             {
-              label: caixinha.name,
+              label: divisao.name,
               icon: (
                 <div style={{
                   width: 20, height: 20, borderRadius: 6, flexShrink: 0,
@@ -277,7 +277,7 @@ export default function CaixinhaDetalhe() {
             },
           ]} />
           <p style={{ fontSize: 12, color: 'var(--color-text-secondary)', margin: '4px 0 0 4px' }}>
-            {caixinha.percentage}% da renda esperada
+            {divisao.percentage}% da renda esperada
           </p>
         </div>
       )}
@@ -766,15 +766,15 @@ export default function CaixinhaDetalhe() {
       <LancarDespesaModal
         open={despesaOpen}
         onClose={() => setDespesaOpen(false)}
-        caixinhaId={caixinha.id}
-        caixinhaName={caixinha.name}
+        divisaoId={divisao.id}
+        divisaoName={divisao.name}
       />
 
       <AddSaidaFixaModal
         open={addSfOpen}
         onClose={() => setAddSfOpen(false)}
-        caixinhaId={caixinha.id}
-        caixinhaName={caixinha.name}
+        divisaoId={divisao.id}
+        divisaoName={divisao.name}
       />
 
       <AddObjetivoModal
@@ -786,7 +786,7 @@ export default function CaixinhaDetalhe() {
       <ItemActionSheet
         open={!!actionItem}
         onClose={() => setActionItem(null)}
-        title={actionItem?.type === 'custo' ? (actionItem.item as SaidaFixa).name : (actionItem?.item as CaixinhaMovement)?.description ?? ''}
+        title={actionItem?.type === 'custo' ? (actionItem.item as SaidaFixa).name : (actionItem?.item as DivisaoMovement)?.description ?? ''}
         subtitle={actionItem ? formatCurrency(Math.abs(actionItem.item.amount)) : ''}
         actions={actionItem ? (
           actionItem.type === 'custo'
@@ -803,8 +803,8 @@ export default function CaixinhaDetalhe() {
                 ]
               })()
             : [
-                { label: 'Editar', icon: Pencil, color: 'var(--color-accent-primary)', onClick: () => setEditMv(actionItem.item as CaixinhaMovement) },
-                { label: 'Excluir', icon: Trash2, color: 'var(--color-danger)', onClick: () => deleteCaixinhaMovement(caixinha.id, actionItem.item.id) },
+                { label: 'Editar', icon: Pencil, color: 'var(--color-accent-primary)', onClick: () => setEditMv(actionItem.item as DivisaoMovement) },
+                { label: 'Excluir', icon: Trash2, color: 'var(--color-danger)', onClick: () => deleteDivisaoMovement(divisao.id, actionItem.item.id) },
               ]
         ) : undefined}
       />
@@ -818,7 +818,7 @@ export default function CaixinhaDetalhe() {
         initialDate={editMv?.date ?? ''}
         onSave={(updates) => {
           if (!editMv) return
-          editCaixinhaMovement(caixinha.id, editMv.id, updates)
+          editDivisaoMovement(divisao.id, editMv.id, updates)
         }}
       />
 

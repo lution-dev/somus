@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Dialog, DialogFooter, Button, Input } from '../ui'
 import { formatCurrency } from '../../lib/calculations'
-import { getCaixinhaIcon } from '../../lib/icons'
+import { getDivisaoIcon } from '../../lib/icons'
 import type { SaidaFixa, PaymentMethod, BillingCycle } from '../../types'
 import { useCurrencyInput } from '../../hooks/useCurrencyInput'
 
@@ -27,7 +27,7 @@ export default function EditSaidaFixaModal({ open, onClose, onSave, saidaFixa }:
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('pix')
   const [isVariable, setIsVariable] = useState(false)
 
-  const { color } = getCaixinhaIcon(saidaFixa?.caixinhaId ?? 'cx-essencial')
+  const { color } = getDivisaoIcon(saidaFixa?.divisaoId ?? 'cx-essencial')
 
   useEffect(() => {
     if (open && saidaFixa) {

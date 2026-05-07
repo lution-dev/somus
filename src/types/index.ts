@@ -27,9 +27,9 @@ export interface IncomeSource {
 
 // ─── Entradas ───────────────────────────────────────────────────────────────
 
-export interface CaixinhaDistributionItem {
-  caixinhaId: string
-  caixinhaName: string
+export interface DivisaoDistributionItem {
+  divisaoId: string
+  divisaoName: string
   amount: number
   percentage: number
 }
@@ -42,12 +42,12 @@ export interface Entrada {
   amount: number
   date: string
   note?: string
-  distribution: CaixinhaDistributionItem[]
+  distribution: DivisaoDistributionItem[]
 }
 
-// ─── Caixinhas ──────────────────────────────────────────────────────────────
+// ─── Divisoes ──────────────────────────────────────────────────────────────
 
-export interface CaixinhaMovement {
+export interface DivisaoMovement {
   id: string
   date: string
   amount: number
@@ -55,7 +55,7 @@ export interface CaixinhaMovement {
   type: 'income' | 'expense' | 'transfer'
 }
 
-export interface Caixinha {
+export interface Divisao {
   id: string
   userId: string
   name: string
@@ -66,7 +66,7 @@ export interface Caixinha {
   color: string
   isDefault: boolean
   order: number
-  movements: CaixinhaMovement[]
+  movements: DivisaoMovement[]
 }
 
 // ─── Saídas Fixas ───────────────────────────────────────────────────────────
@@ -78,7 +78,7 @@ export interface SaidaFixa {
   amount: number        // always stored as monthly equivalent
   dueDay: number
   paymentMethod: PaymentMethod
-  caixinhaId: string
+  divisaoId: string
   autoDebit: boolean
   paidDates: string[]
   category: string
@@ -92,7 +92,7 @@ export interface SaidaFixa {
 export interface SaidaVariavel {
   id: string
   userId: string
-  caixinhaId: string
+  divisaoId: string
   amount: number
   description: string
   category: string
@@ -119,7 +119,7 @@ export interface Objetivo {
   targetDate?: string
   monthsToAchieve?: number   // meses para atingir o objetivo (calculado ou informado)
   imageUrl?: string
-  caixinhaId?: string
+  divisaoId?: string
   createdAt?: string
   isCouple?: boolean          // true = aparece na aba Casal
   movements: ObjetivoMovement[]
@@ -134,7 +134,7 @@ export interface AppState {
   viewContext: UserContext
   incomeSources: IncomeSource[]
   entradas: Entrada[]
-  caixinhas: Caixinha[]
+  divisoes: Divisao[]
   saidasFixas: SaidaFixa[]
   saidasVariaveis: SaidaVariavel[]
   objetivos: Objetivo[]

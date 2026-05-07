@@ -1,4 +1,4 @@
-import type { Caixinha, CaixinhaDistributionItem, SaidaFixa, Entrada, MonthSummary } from '../types'
+import type { Divisao, DivisaoDistributionItem, SaidaFixa, Entrada, MonthSummary } from '../types'
 
 // ─── Formatação ─────────────────────────────────────────────────────────────
 
@@ -17,17 +17,17 @@ export function formatCurrencyCompact(value: number): string {
   return formatCurrency(value)
 }
 
-// ─── Distribuição automática por caixinha ────────────────────────────────────
+// ─── Distribuição automática por divisao ────────────────────────────────────
 
 export function calculateDistribution(
   amount: number,
-  caixinhas: Caixinha[]
-): CaixinhaDistributionItem[] {
-  const sorted = [...caixinhas].sort((a, b) => a.order - b.order)
+  divisoes: Divisao[]
+): DivisaoDistributionItem[] {
+  const sorted = [...divisoes].sort((a, b) => a.order - b.order)
   const totalPct = sorted.reduce((sum, cx) => sum + cx.percentage, 0)
 
   let remaining = amount
-  const result: CaixinhaDistributionItem[] = []
+  const result: DivisaoDistributionItem[] = []
 
   sorted.forEach((cx, idx) => {
     const isLast = idx === sorted.length - 1
@@ -35,15 +35,15 @@ export function calculateDistribution(
     const allocated = isLast ? Math.round(remaining * 100) / 100 : Math.round(raw * 100) / 100
     remaining -= allocated
     result.push({
-      caixinhaId: cx.id,
-      caixinhaName: cx.name,
+      divisaoId: cx.id,
+      divisaoName: cx.name,
       amount: allocated,
       percentage: cx.percentage,
     })
   })
 
   // RN08: Move dízimo para o início
-  const dizimoIdx = result.findIndex(item => item.caixinhaName.toLowerCase().includes('dízimo') || item.caixinhaName.toLowerCase().includes('dizimo'))
+  const dizimoIdx = result.findIndex(item => item.divisaoName.toLowerCase().includes('dízimo') || item.divisaoName.toLowerCase().includes('dizimo'))
   if (dizimoIdx > 0) {
     const [dizimo] = result.splice(dizimoIdx, 1)
     result.unshift(dizimo)
@@ -57,7 +57,7 @@ export function calculateDistribution(
 export function getMonthSummary(
   entradas: Entrada[],
   saidasFixas: SaidaFixa[],
-  caixinhas: Caixinha[],
+  divisoes: Divisao[],
   expectedMonthlyIncome: number,
   month?: string   // 'YYYY-MM', defaults to current
 ): MonthSummary {
@@ -71,7 +71,7 @@ export function getMonthSummary(
     .filter(sf => sf.paidDates.some(d => d.startsWith(target)))
     .reduce((sum, sf) => sum + sf.amount, 0)
 
-  const availableBalance = caixinhas.reduce((sum, cx) => sum + cx.balance, 0)
+  const availableBalance = divisoes.reduce((sum, cx) => sum + cx.balance, 0)
 
   return {
     totalIncome,
@@ -114,14 +114,14 @@ export function getDueDayLabel(dueDay: number): string {
 
 // ─── Alertas ─────────────────────────────────────────────────────────────────
 
-export function shouldAlertLowBalance(caixinha: Caixinha, expectedIncome: number): boolean {
-  const expectedBalance = (caixinha.percentage / 100) * expectedIncome
-  return caixinha.balance < expectedBalance * 0.5 && expectedBalance > 0
+export function shouldAlertLowBalance(divisao: Divisao, expectedIncome: number): boolean {
+  const expectedBalance = (divisao.percentage / 100) * expectedIncome
+  return divisao.balance < expectedBalance * 0.5 && expectedBalance > 0
 }
 
-export function shouldRedirectReserva(caixinha: Caixinha): boolean {
+export function shouldRedirectReserva(divisao: Divisao): boolean {
   // RN05: Reserva atingiu R$10k → sugerir redirecionar
-  return (caixinha.targetAmount !== undefined) && caixinha.balance >= caixinha.targetAmount
+  return (divisao.targetAmount !== undefined) && divisao.balance >= divisao.targetAmount
 }
 
 // ─── Valores futuros (RN06) ──────────────────────────────────────────────────
