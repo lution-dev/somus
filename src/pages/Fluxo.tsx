@@ -481,7 +481,7 @@ export default function Fluxo() {
           <button
             onClick={() => setLancarOpen(true)}
             style={{
-              width: 48, height: 48, borderRadius: 14,
+              width: 52, height: 52, borderRadius: 16,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               background: 'var(--color-success)',
               border: 'none', cursor: 'pointer',

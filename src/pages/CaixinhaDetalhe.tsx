@@ -4,10 +4,10 @@ import { useAppStore, selectCurrentSaidasFixas, selectCurrentEntradas } from '..
 import { useShallow } from 'zustand/react/shallow'
 import { formatCurrency, isPaidThisMonth, getDueDayLabel } from '../lib/calculations'
 import { getCaixinhaIcon } from '../lib/icons'
-import { ProgressBar, PageHeader, SearchBar, groupByMonth, MonthHeader, ConfirmDialog } from '../components/ui'
+import { ProgressBar, PageHeader, SearchBar, groupByMonth, MonthHeader, ConfirmDialog, Breadcrumb } from '../components/ui'
 import ItemActionSheet from '../components/ui/ItemActionSheet'
 import { useIsMobile } from '../hooks/useIsMobile'
-import { ArrowUpRight, ArrowDownRight, Info, ChevronLeft, Plus, CheckCircle2, XCircle, Pencil, Trash2, Heart, Target } from 'lucide-react'
+import { ArrowUpRight, ArrowDownRight, Info, Plus, CheckCircle2, XCircle, Pencil, Trash2, Heart, Target } from 'lucide-react'
 import LancarDespesaModal from '../components/features/LancarDespesaModal'
 import EditMovementModal from '../components/features/EditMovementModal'
 import EditSaidaFixaModal from '../components/features/EditSaidaFixaModal'
@@ -260,28 +260,25 @@ export default function CaixinhaDetalhe() {
           </div>
         </>
       ) : (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20, paddingTop: 32 }}>
-          <button
-            onClick={() => window.history.back()}
-            style={{
-              cursor: 'pointer', color: 'var(--color-text-secondary)',
-              padding: 6, marginLeft: -6, borderRadius: 8,
-              background: 'none', border: 'none',
-            }}
-          >
-            <ChevronLeft size={20} />
-          </button>
-          <div style={{
-            width: 36, height: 36, borderRadius: 12,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            background: hexToRgba(color, 0.09),
-          }}>
-            <Icon size={18} style={{ color }} />
-          </div>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <h1 style={{ fontSize: 18, fontWeight: 600, color: 'var(--color-text-primary)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{caixinha.name}</h1>
-            <p style={{ fontSize: 12, color: 'var(--color-text-secondary)', margin: 0 }}>{caixinha.percentage}% da renda</p>
-          </div>
+        <div style={{ paddingTop: 28, marginBottom: 20 }}>
+          <Breadcrumb items={[
+            { label: 'Divisões', href: '/divisoes' },
+            {
+              label: caixinha.name,
+              icon: (
+                <div style={{
+                  width: 20, height: 20, borderRadius: 6, flexShrink: 0,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  background: hexToRgba(color, 0.15),
+                }}>
+                  <Icon size={12} style={{ color }} />
+                </div>
+              ),
+            },
+          ]} />
+          <p style={{ fontSize: 12, color: 'var(--color-text-secondary)', margin: '4px 0 0 4px' }}>
+            {caixinha.percentage}% da renda esperada
+          </p>
         </div>
       )}
 

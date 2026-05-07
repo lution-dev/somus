@@ -2,7 +2,7 @@ import { useState, useMemo, useRef } from 'react'
 import { useParams } from 'wouter'
 import { useAppStore } from '../stores/useAppStore'
 import { formatCurrency } from '../lib/calculations'
-import { PageHeader, ProgressBar, SearchBar } from '../components/ui'
+import { PageHeader, ProgressBar, SearchBar, Breadcrumb } from '../components/ui'
 import ImageCropPicker from '../components/ui/ImageCropPicker'
 import ItemActionSheet from '../components/ui/ItemActionSheet'
 import { useIsMobile } from '../hooks/useIsMobile'
@@ -201,7 +201,11 @@ export default function ObjetivoDetalhe() {
           </div>
         </>
       ) : (
-        <div style={{ paddingTop: 32, marginBottom: 24 }}>
+        <div style={{ paddingTop: 28, marginBottom: 24 }}>
+          <Breadcrumb items={[
+            { label: 'Casal', href: '/casal' },
+            { label: objetivo.name },
+          ]} style={{ marginBottom: 20 }} />
           {/* Desktop: Banner wide ou upload */}
           <div
             onClick={() => fileInputRef.current?.click()}

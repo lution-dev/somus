@@ -30,3 +30,6 @@ export { MonthHeader, groupByMonth } from './MonthGroup'
 export type { MonthGroup } from './MonthGroup'
 
 export { default as ConfirmDialog } from './ConfirmDialog'
+
+export { Breadcrumb } from './Breadcrumb'
+export type { BreadcrumbItem } from './Breadcrumb'
