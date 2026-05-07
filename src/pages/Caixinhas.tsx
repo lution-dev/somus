@@ -85,12 +85,13 @@ export default function Relatorios() {
 
       {/* ── Header ─────────────────────────────────────────────────────────── */}
       {isMobile ? (
-        <PageHeader
-          title="Relatórios"
-          rightAction={
-            <MonthNav month={month} today={TODAY} onChange={setMonth} />
-          }
-        />
+        <>
+          <PageHeader title="Relatórios" />
+          {/* Month navigator — row independente abaixo do header */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, padding: '8px 16px 4px' }}>
+            <MonthNav month={month} today={TODAY} onChange={setMonth} showLabel />
+          </div>
+        </>
       ) : (
         <div style={{ paddingTop: 32, marginBottom: 24, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div>
@@ -99,13 +100,6 @@ export default function Relatorios() {
           </div>
           <MonthNav month={month} today={TODAY} onChange={setMonth} />
         </div>
-      )}
-
-      {/* ── Mobile month label ─────────────────────────────────────────────── */}
-      {isMobile && (
-        <p style={{ fontSize: 13, fontWeight: 500, color: 'var(--color-text-secondary)', textAlign: 'center', margin: '0 0 16px' }}>
-          {monthLabel(month)}
-        </p>
       )}
 
       {/* ── Empty state ────────────────────────────────────────────────────── */}
@@ -340,16 +334,21 @@ export default function Relatorios() {
 
 // ── Sub-components ────────────────────────────────────────────────────────────
 
-function MonthNav({ month, today, onChange }: { month: string; today: string; onChange: (m: string) => void }) {
+function MonthNav({ month, today, onChange, showLabel }: { month: string; today: string; onChange: (m: string) => void; showLabel?: boolean }) {
   const isCurrentMonth = month === today
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+    <div style={{ display: 'flex', alignItems: 'center', gap: showLabel ? 8 : 4 }}>
       <button
         onClick={() => onChange(shiftMonth(month, -1))}
         style={{ width: 30, height: 30, borderRadius: 8, border: 'none', background: 'rgba(255,255,255,0.06)', cursor: 'pointer', color: 'var(--color-text-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
       >
         <ChevronLeft size={16} />
       </button>
+      {showLabel && (
+        <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-text-primary)', minWidth: 110, textAlign: 'center' }}>
+          {monthLabel(month)}
+        </span>
+      )}
       <button
         onClick={() => !isCurrentMonth && onChange(shiftMonth(month, 1))}
         style={{ width: 30, height: 30, borderRadius: 8, border: 'none', background: isCurrentMonth ? 'transparent' : 'rgba(255,255,255,0.06)', cursor: isCurrentMonth ? 'default' : 'pointer', color: isCurrentMonth ? 'var(--color-text-tertiary)' : 'var(--color-text-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}

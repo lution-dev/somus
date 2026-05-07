@@ -1,7 +1,7 @@
 /**
  * Descriptions for each division (caixinha).
  * Used in onboarding Step 4 and in the "Entenda as divisões" info panel.
- * Based on the Nati Arcuri method, adapted.
+ * Based on the Natália Arcuri method, adapted.
  */
 export const DIVISAO_INFO: Record<string, { name: string; pct: number; short: string; detail: string }> = {
   'cx-dizimo': {

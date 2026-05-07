@@ -40,7 +40,7 @@ const FEATURES = [
 ]
 
 const STATS = [
-  { icon: PiggyBank,  value: 'Caixinhas',    label: 'Método Nati Arcuri' },
+  { icon: PiggyBank,  value: 'Caixinhas',    label: 'Método Natália Arcuri' },
   { icon: Heart,      value: 'Casal',         label: 'Objetivos juntos' },
   { icon: BarChart3,  value: 'Fluxo',         label: 'Controle mensal' },
 ]

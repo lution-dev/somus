@@ -231,7 +231,7 @@ function Step4({ onNext }: { onNext: () => void }) {
           <Wallet size={28} color="var(--color-accent-primary)" />
         </div>
         <h2 style={heading}>Suas Divisões</h2>
-        <p style={sub}>Método Nati Arcuri — adaptado para vocês. Toque em qualquer divisão para entender o porquê.</p>
+        <p style={sub}>Método Natália Arcuri — adaptado para vocês. Toque em qualquer divisão para entender o porquê.</p>
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
         {DIVISAO_ORDER.map((id) => {
