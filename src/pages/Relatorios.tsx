@@ -514,8 +514,10 @@ function AdherenceScoreCard({ score }: { score: number }) {
             />
           </svg>
           <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-            <span style={{ fontSize: 18, fontWeight: 800, color, lineHeight: 1 }}>{score}</span>
-            <span style={{ fontSize: 9, color, fontWeight: 600, opacity: 0.8 }}>%</span>
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: 1, lineHeight: 1 }}>
+              <span style={{ fontSize: 17, fontWeight: 800, color }}>{score}</span>
+              <span style={{ fontSize: 10, fontWeight: 700, color, opacity: 0.85 }}>%</span>
+            </div>
             
           </div>
         </div>
