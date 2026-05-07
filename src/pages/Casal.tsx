@@ -7,8 +7,7 @@ import { PageHeader, ConfirmDialog } from '../components/ui'
 import ItemActionSheet from '../components/ui/ItemActionSheet'
 import { useIsMobile } from '../hooks/useIsMobile'
 import { useAuth } from '../hooks/useAuth'
-import { Target, Share2, Copy, Heart, CheckCircle2, Send, Users, Sparkles, Plus, Pencil, Trash2 } from 'lucide-react'
-import type { LucideIcon } from 'lucide-react'
+import { Target, Share2, Copy, Heart, CheckCircle2, Send, Users, Plus, Pencil, Trash2 } from 'lucide-react'
 import type { Objetivo } from '../types'
 import AddObjetivoModal from '../components/features/AddObjetivoModal'
 
@@ -45,35 +44,93 @@ export default function Casal() {
   const hasData         = currentUserBalance > 0 || partnerBalance > 0
   const currentUserName = currentUser?.name ?? displayName ?? 'Você'
 
-  const isMobile = useIsMobile()
-  const HERO_BG = '#001442'
+  // ── Sort objetivos by progress (highest pct first) ──────────────────────────
+  const sortedObjetivos = [...objetivos].sort((a, b) => {
+    const pctA = a.targetAmount > 0 ? a.currentAmount / a.targetAmount : 0
+    const pctB = b.targetAmount > 0 ? b.currentAmount / b.targetAmount : 0
+    return pctB - pctA
+  })
+  const featuredObj        = sortedObjetivos[0] ?? null
+  const remainingObjetivos = sortedObjetivos.slice(1)
 
-  // ── Empty state component ──────────────────────────────────────────────────
-  const EmptyCard = ({ icon: Icon, title, desc }: { icon: LucideIcon, title: string, desc: string }) => (
-    <div style={{
-      display: 'flex', flexDirection: 'column', alignItems: 'center',
-      textAlign: 'center', padding: '32px 20px',
-      background: 'var(--color-bg-secondary)',
-      border: '1px solid var(--color-border)',
-      borderRadius: 'var(--radius-card)',
-    }}>
-      <div style={{
-        width: 48, height: 48, borderRadius: 16,
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        background: 'rgba(139,92,246,0.08)',
-        marginBottom: 14,
-      }}>
-        <Icon size={22} color="var(--color-accent-couple)" strokeWidth={1.5} />
+  const isMobile = useIsMobile()
+
+  // ── Reusable objetivo card renderer ─────────────────────────────────────────
+  const renderObjetivoCard = (obj: typeof objetivos[0]) => {
+    const pct       = obj.targetAmount > 0 ? Math.min(100, (obj.currentAmount / obj.targetAmount) * 100) : 0
+    const remaining = Math.max(0, obj.targetAmount - obj.currentAmount)
+    const accent    = '#8B5CF6'
+    return (
+      <div key={obj.id} style={{ position: 'relative' }}>
+        <button
+          onClick={() => navigate(`/casal/objetivo/${obj.id}`)}
+          style={{
+            width: '100%', textAlign: 'left', cursor: 'pointer',
+            background: 'var(--color-bg-secondary)',
+            border: '1px solid rgba(139,92,246,0.2)',
+            borderRadius: 16, padding: 0,
+            fontFamily: 'var(--font-sans)', overflow: 'hidden',
+          }}
+        >
+          {obj.imageUrl ? (
+            <div style={{ position: 'relative', height: 110, overflow: 'hidden' }}>
+              <img src={obj.imageUrl} alt={obj.name} style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: `center ${(obj as any).imagePosition ?? 50}%` }} />
+              <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.1) 60%)' }} />
+              <div style={{ position: 'absolute', top: 10, left: 14, background: 'rgba(139,92,246,0.85)', backdropFilter: 'blur(8px)', borderRadius: 20, padding: '3px 8px', display: 'flex', alignItems: 'center', gap: 4 }}>
+                <Heart size={10} color="white" fill="white" />
+                <span style={{ fontSize: 10, fontWeight: 700, color: 'white' }}>Casal</span>
+              </div>
+              <div style={{ position: 'absolute', bottom: 10, left: 14, right: 14, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+                <p style={{ fontSize: 16, fontWeight: 700, color: 'white', margin: 0, textShadow: '0 1px 4px rgba(0,0,0,0.5)' }}>{obj.name}</p>
+                <span style={{ fontSize: 14, fontWeight: 800, color: 'white', textShadow: '0 1px 4px rgba(0,0,0,0.5)' }}>{Math.round(pct)}%</span>
+              </div>
+            </div>
+          ) : (
+            <div style={{ height: 72, background: `linear-gradient(135deg, ${accent}18 0%, ${accent}08 100%)`, borderBottom: `1px solid ${accent}20`, display: 'flex', alignItems: 'center', padding: '0 44px 0 16px', gap: 12 }}>
+              <div style={{ width: 40, height: 40, borderRadius: 12, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: `${accent}20`, border: `1px solid ${accent}30` }}>
+                <Target size={20} color={accent} strokeWidth={1.5} />
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <p style={{ fontSize: 15, fontWeight: 700, color: 'var(--color-text-primary)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{obj.name}</p>
+                  <Heart size={11} color="#EC4899" fill="#EC4899" style={{ flexShrink: 0 }} />
+                </div>
+              </div>
+              <span style={{ fontSize: 14, fontWeight: 800, color: accent, flexShrink: 0 }}>{Math.round(pct)}%</span>
+            </div>
+          )}
+          <div style={{ padding: '12px 14px' }}>
+            <div style={{ height: 5, background: 'rgba(255,255,255,0.08)', borderRadius: 9999, overflow: 'hidden', marginBottom: 10 }}>
+              <div style={{ height: '100%', borderRadius: 9999, background: accent, width: `${pct}%`, transition: 'width 600ms ease' }} />
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+              <div>
+                <p style={{ fontSize: 11, color: 'var(--color-text-tertiary)', margin: '0 0 1px', textTransform: 'uppercase', letterSpacing: '0.04em', fontWeight: 600 }}>Guardado</p>
+                <p style={{ fontSize: 15, fontWeight: 700, color: 'var(--color-text-primary)', margin: 0 }}>{formatCurrency(obj.currentAmount)}</p>
+              </div>
+              <div style={{ textAlign: 'right' }}>
+                <p style={{ fontSize: 11, color: 'var(--color-text-tertiary)', margin: '0 0 1px', textTransform: 'uppercase', letterSpacing: '0.04em', fontWeight: 600 }}>Faltam</p>
+                <p style={{ fontSize: 13, fontWeight: 600, color: remaining > 0 ? 'var(--color-text-secondary)' : 'var(--color-success)', margin: 0 }}>
+                  {remaining > 0 ? formatCurrency(remaining) : '✓ Meta atingida'}
+                </p>
+              </div>
+            </div>
+          </div>
+        </button>
+        <button
+          onClick={e => { e.stopPropagation(); setObjetivoActionTarget(obj) }}
+          style={{ position: 'absolute', top: 10, right: 10, width: 28, height: 28, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.45)', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.12)', cursor: 'pointer', color: 'white', fontSize: 16, fontWeight: 700, lineHeight: 1 }}
+          aria-label="Opções do objetivo"
+        >⋯</button>
       </div>
-      <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-text-primary)', margin: '0 0 4px' }}>{title}</p>
-      <p style={{ fontSize: 12, color: 'var(--color-text-tertiary)', margin: 0, lineHeight: 1.5, maxWidth: 260 }}>{desc}</p>
-    </div>
-  )
+    )
+  }
+  const HERO_BG = '#001442'
 
   // ── Patrimônio card (shared between mobile/desktop) ─────────────────────────
   const PatrimonioCard = ({ bgBar }: { bgBar: string }) => (
     <div style={{
-      background: isMobile ? 'rgba(255,255,255,0.06)' : 'var(--color-bg-secondary)',
+      background: 'var(--color-bg-secondary)',
       border: '1px solid rgba(139,92,246,0.2)',
       borderRadius: 'var(--radius-card)',
       padding: 20, marginBottom: 16,
@@ -133,20 +190,30 @@ export default function Casal() {
   return (
     <div style={{ minHeight: '100%', paddingBottom: 24 }}>
       {/* Header */}
+      {/* ── Hero header ── */}
       {isMobile ? (
         <>
           <PageHeader title="Casal" bg={HERO_BG} />
-          <div style={{
-            background: HERO_BG,
-            borderRadius: '0 0 24px 24px',
-            padding: '0 16px 20px',
-            marginBottom: 20,
-          }}>
-            <PatrimonioCard bgBar="rgba(255,255,255,0.08)" />
+          <div style={{ background: HERO_BG, borderRadius: '0 0 24px 24px', padding: '0 16px 20px', marginBottom: 20 }}>
+            {featuredObj ? renderObjetivoCard(featuredObj) : (
+              <div style={{ background: 'rgba(139,92,246,0.1)', border: '1.5px dashed rgba(139,92,246,0.3)', borderRadius: 16, padding: 24, display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: 12 }}>
+                <div style={{ width: 48, height: 48, borderRadius: 16, background: 'rgba(139,92,246,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <Target size={22} color="var(--color-accent-couple)" strokeWidth={1.5} />
+                </div>
+                <div>
+                  <p style={{ fontSize: 15, fontWeight: 700, color: 'white', margin: '0 0 4px' }}>Nenhum objetivo ainda</p>
+                  <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.6)', margin: 0, lineHeight: 1.5 }}>Defina aonde vocês querem chegar juntos</p>
+                </div>
+                <button onClick={() => setAddObjetivoOpen(true)} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, fontWeight: 600, padding: '10px 20px', borderRadius: 10, cursor: 'pointer', background: 'var(--color-accent-couple)', color: 'white', border: 'none', fontFamily: 'var(--font-sans)' }}>
+                  <Plus size={14} strokeWidth={2.5} />
+                  Criar primeiro objetivo
+                </button>
+              </div>
+            )}
           </div>
         </>
       ) : (
-        <div style={{ paddingTop: 32, marginBottom: 24 }}>
+        <div style={{ paddingTop: 32, marginBottom: 20 }}>
           <h1 style={{ fontSize: 24, fontWeight: 600, color: 'var(--color-accent-couple)', margin: 0, display: 'flex', alignItems: 'center', gap: 8 }}>
             <Heart size={20} fill="var(--color-accent-couple)" />
             Casal
@@ -157,8 +224,29 @@ export default function Casal() {
 
       <div style={{ padding: isMobile ? '0 16px' : 0 }}>
 
-      {/* Desktop: patrimônio card */}
-      {!isMobile && <PatrimonioCard bgBar="var(--color-bg-tertiary)" />}
+      {/* Desktop: featured objetivo */}
+      {!isMobile && (
+        <div style={{ marginBottom: 20 }}>
+          {featuredObj ? renderObjetivoCard(featuredObj) : (
+            <div style={{ background: 'var(--color-bg-secondary)', border: '1.5px dashed rgba(139,92,246,0.3)', borderRadius: 16, padding: 32, display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: 12 }}>
+              <div style={{ width: 52, height: 52, borderRadius: 16, background: 'rgba(139,92,246,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Target size={24} color="var(--color-accent-couple)" strokeWidth={1.5} />
+              </div>
+              <div>
+                <p style={{ fontSize: 15, fontWeight: 700, color: 'var(--color-text-primary)', margin: '0 0 4px' }}>Nenhum objetivo ainda</p>
+                <p style={{ fontSize: 13, color: 'var(--color-text-tertiary)', margin: 0, lineHeight: 1.5 }}>Defina aonde vocês querem chegar juntos</p>
+              </div>
+              <button onClick={() => setAddObjetivoOpen(true)} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, fontWeight: 600, padding: '10px 24px', borderRadius: 10, cursor: 'pointer', background: 'var(--color-accent-couple)', color: 'white', border: 'none', fontFamily: 'var(--font-sans)' }}>
+                <Plus size={14} strokeWidth={2.5} />
+                Criar primeiro objetivo
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Patrimônio card */}
+      <PatrimonioCard bgBar="var(--color-bg-tertiary)" />
 
       {/* Cards de perfil — grid 1fr 1fr */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 20 }}>
@@ -235,12 +323,12 @@ export default function Casal() {
         )}
       </div>
 
-      {/* Objetivos */}
+      {/* Outros objetivos (all except featured) */}
       <div style={{ marginBottom: 20 }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
           <p className="section-label" style={{ display: 'flex', alignItems: 'center', gap: 6, margin: 0 }}>
             <Target size={13} />
-            Objetivos do casal
+            {remainingObjetivos.length > 0 ? 'Outros objetivos' : 'Objetivos do casal'}
           </p>
           <button
             id="btn-add-objetivo-inline"
@@ -261,86 +349,10 @@ export default function Casal() {
           </button>
         </div>
 
-        {objetivos.length > 0 ? (
+        {remainingObjetivos.length > 0 && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            {objetivos.map((obj) => {
-              const pct       = obj.targetAmount > 0 ? Math.min(100, (obj.currentAmount / obj.targetAmount) * 100) : 0
-              const remaining = Math.max(0, obj.targetAmount - obj.currentAmount)
-              const accent    = '#8B5CF6'
-              return (
-                <div key={obj.id} style={{ position: 'relative' }}>
-                  <button
-                    onClick={() => navigate(`/casal/objetivo/${obj.id}`)}
-                    style={{
-                      width: '100%', textAlign: 'left', cursor: 'pointer',
-                      background: 'var(--color-bg-secondary)',
-                      border: '1px solid rgba(139,92,246,0.2)',
-                      borderRadius: 16,
-                      padding: 0, fontFamily: 'var(--font-sans)',
-                      overflow: 'hidden',
-                    }}
-                  >
-                    {obj.imageUrl ? (
-                      <div style={{ position: 'relative', height: 110, overflow: 'hidden' }}>
-                        <img src={obj.imageUrl} alt={obj.name} style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: `center ${(obj as any).imagePosition ?? 50}%` }} />
-                        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.1) 60%)' }} />
-                        <div style={{ position: 'absolute', top: 10, left: 14, background: 'rgba(139,92,246,0.85)', backdropFilter: 'blur(8px)', borderRadius: 20, padding: '3px 8px', display: 'flex', alignItems: 'center', gap: 4 }}>
-                          <Heart size={10} color="white" fill="white" />
-                          <span style={{ fontSize: 10, fontWeight: 700, color: 'white' }}>Casal</span>
-                        </div>
-                        <div style={{ position: 'absolute', bottom: 10, left: 14, right: 14, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
-                          <p style={{ fontSize: 16, fontWeight: 700, color: 'white', margin: 0, textShadow: '0 1px 4px rgba(0,0,0,0.5)' }}>{obj.name}</p>
-                          <span style={{ fontSize: 14, fontWeight: 800, color: 'white', textShadow: '0 1px 4px rgba(0,0,0,0.5)' }}>{Math.round(pct)}%</span>
-                        </div>
-                      </div>
-                    ) : (
-                      <div style={{ height: 72, background: `linear-gradient(135deg, ${accent}18 0%, ${accent}08 100%)`, borderBottom: `1px solid ${accent}20`, display: 'flex', alignItems: 'center', padding: '0 44px 0 16px', gap: 12 }}>
-                        <div style={{ width: 40, height: 40, borderRadius: 12, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: `${accent}20`, border: `1px solid ${accent}30` }}>
-                          <Target size={20} color={accent} strokeWidth={1.5} />
-                        </div>
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                            <p style={{ fontSize: 15, fontWeight: 700, color: 'var(--color-text-primary)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{obj.name}</p>
-                            <Heart size={11} color="#EC4899" fill="#EC4899" style={{ flexShrink: 0 }} />
-                          </div>
-                        </div>
-                        <span style={{ fontSize: 14, fontWeight: 800, color: accent, flexShrink: 0 }}>{Math.round(pct)}%</span>
-                      </div>
-                    )}
-                    <div style={{ padding: '12px 14px' }}>
-                      <div style={{ height: 5, background: 'rgba(255,255,255,0.08)', borderRadius: 9999, overflow: 'hidden', marginBottom: 10 }}>
-                        <div style={{ height: '100%', borderRadius: 9999, background: accent, width: `${pct}%`, transition: 'width 600ms ease' }} />
-                      </div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
-                        <div>
-                          <p style={{ fontSize: 11, color: 'var(--color-text-tertiary)', margin: '0 0 1px', textTransform: 'uppercase', letterSpacing: '0.04em', fontWeight: 600 }}>Guardado</p>
-                          <p style={{ fontSize: 15, fontWeight: 700, color: 'var(--color-text-primary)', margin: 0 }}>{formatCurrency(obj.currentAmount)}</p>
-                        </div>
-                        <div style={{ textAlign: 'right' }}>
-                          <p style={{ fontSize: 11, color: 'var(--color-text-tertiary)', margin: '0 0 1px', textTransform: 'uppercase', letterSpacing: '0.04em', fontWeight: 600 }}>Faltam</p>
-                          <p style={{ fontSize: 13, fontWeight: 600, color: remaining > 0 ? 'var(--color-text-secondary)' : 'var(--color-success)', margin: 0 }}>
-                            {remaining > 0 ? formatCurrency(remaining) : '✓ Meta atingida'}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  </button>
-                  {/* Botão ⋯ posicionado sobre o header do card */}
-                  <button
-                    onClick={e => { e.stopPropagation(); setObjetivoActionTarget(obj) }}
-                    style={{ position: 'absolute', top: 10, right: 10, width: 28, height: 28, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.45)', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.12)', cursor: 'pointer', color: 'white', fontSize: 16, fontWeight: 700, lineHeight: 1 }}
-                    aria-label="Opções do objetivo"
-                  >⋯</button>
-                </div>
-              )
-            })}
+            {remainingObjetivos.map(renderObjetivoCard)}
           </div>
-        ) : (
-          <EmptyCard
-            icon={Sparkles}
-            title="Nenhum objetivo do casal"
-            desc="Crie um objetivo na aba Divisões → Objetivos e marque como 'Objetivo do Casal'."
-          />
         )}
       </div>
 

@@ -26,7 +26,6 @@ import {
   ChevronDown,
   Wallet,
   History,
-  BarChart3,
 } from 'lucide-react'
 
 // ─── Pill button style ──────────────────────────────────────────────────────
@@ -46,10 +45,10 @@ const pillBtn = (accent: string, bg: string): React.CSSProperties => ({
 
 function BalanceCard({
   total, totalIncome, expectedIncome, incomeProgress,
-  onLancar, onHistorico, onFluxo,
+  onLancar, onHistorico,
 }: {
   total: number; totalIncome: number; expectedIncome: number; incomeProgress: number
-  onLancar: () => void; onHistorico: () => void; onFluxo: () => void
+  onLancar: () => void; onHistorico: () => void
 }) {
   const remaining = Math.max(0, expectedIncome - totalIncome)
 
@@ -92,9 +91,6 @@ function BalanceCard({
         </button>
         <button onClick={onHistorico} style={pillBtn('var(--color-text-secondary)', 'var(--color-bg-tertiary)')}>
           <History size={14} /> Histórico
-        </button>
-        <button onClick={onFluxo} style={pillBtn('var(--color-text-secondary)', 'var(--color-bg-tertiary)')}>
-          <BarChart3 size={14} /> Fluxo
         </button>
       </div>
     </div>
@@ -578,7 +574,6 @@ export default function Home() {
   const [historicoOpen, setHistoricoOpen] = useState(false)
   const [prefill, setPrefill] = useState<{ sourceName: string; amount: number } | undefined>()
   const isMobile = useIsMobile()
-  const [, navigate] = useLocation()
   const { displayName } = useAuth()
 
   const markSaidaFixaPaid = useAppStore(s => s.markSaidaFixaPaid)
@@ -639,7 +634,6 @@ export default function Home() {
               incomeProgress={summary.incomeProgress}
               onLancar={() => setLancarOpen(true)}
               onHistorico={() => setHistoricoOpen(true)}
-              onFluxo={() => navigate('/fluxo')}
             />
           </div>
         </>
@@ -667,7 +661,6 @@ export default function Home() {
               incomeProgress={summary.incomeProgress}
               onLancar={() => setLancarOpen(true)}
               onHistorico={() => setHistoricoOpen(true)}
-              onFluxo={() => navigate('/fluxo')}
             />
 
             {/* Right: Próximos Dias */}
