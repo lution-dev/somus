@@ -28,14 +28,12 @@ function getIsMobile() {
 
 export default function ItemActionSheet({ open, onClose, onEdit, onDelete, title, subtitle, actions }: Props) {
   useEffect(() => {
-    if (open) {
-      const mainEl = document.querySelector('.somus-mobile > main') as HTMLElement | null
-      if (mainEl) mainEl.style.overflowY = 'hidden'
-      document.body.style.overflow = 'hidden'
-    }
+    if (!open) return
+    const mainEl = document.querySelector('.somus-mobile > main') as HTMLElement | null
+    if (mainEl) mainEl.style.overflowY = 'hidden'
+    document.body.style.overflow = 'hidden'
     return () => {
-      const mainEl = document.querySelector('.somus-mobile > main') as HTMLElement | null
-      if (mainEl) mainEl.style.overflowY = ''
+      if (mainEl) mainEl.style.overflowY = 'auto'
       document.body.style.overflow = ''
     }
   }, [open])

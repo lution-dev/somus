@@ -29,17 +29,14 @@ export function Dialog({
   }, [onClose])
 
   useEffect(() => {
-    if (open) {
-      document.addEventListener('keydown', handleKeyDown)
-      // Lock the actual scroll container, not just body
-      const mainEl = document.querySelector('.somus-mobile > main') as HTMLElement | null
-      if (mainEl) mainEl.style.overflowY = 'hidden'
-      document.body.style.overflow = 'hidden'
-    }
+    if (!open) return
+    document.addEventListener('keydown', handleKeyDown)
+    const mainEl = document.querySelector('.somus-mobile > main') as HTMLElement | null
+    if (mainEl) mainEl.style.overflowY = 'hidden'
+    document.body.style.overflow = 'hidden'
     return () => {
       document.removeEventListener('keydown', handleKeyDown)
-      const mainEl = document.querySelector('.somus-mobile > main') as HTMLElement | null
-      if (mainEl) mainEl.style.overflowY = ''
+      if (mainEl) mainEl.style.overflowY = 'auto'
       document.body.style.overflow = ''
     }
   }, [open, handleKeyDown])
