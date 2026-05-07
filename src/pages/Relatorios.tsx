@@ -8,7 +8,7 @@ import { useIsMobile } from '../hooks/useIsMobile'
 import {
   ChevronLeft, ChevronRight,
   ArrowUpRight, ArrowDownRight,
-  TrendingUp, TrendingDown, Minus,
+  TrendingUp, TrendingDown,
   Calendar, AlertTriangle, CheckCircle2,
 } from 'lucide-react'
 
@@ -64,11 +64,16 @@ export default function Relatorios() {
   const [month, setMonth]       = useState(TODAY)
   const [reportCtx, setReportCtx] = useState<'me' | 'partner' | 'couple'>('couple')
 
+  const myName      = currentUser?.name?.split(' ')[0] ?? 'Meu'
+  const partnerName = partner?.name?.split(' ')[0] ?? 'Parceiro(a)'
+
   const ctxOptions: Array<{ key: 'me' | 'partner' | 'couple'; label: string }> = [
-    { key: 'me', label: 'Meu' },
-    ...(partner ? [{ key: 'partner' as const, label: partner.name.split(' ')[0] }] : []),
-    { key: 'couple', label: 'Casal' },
+    { key: 'me',      label: myName },
+    ...(partner ? [{ key: 'partner' as const, label: partnerName }] : []),
+    { key: 'couple',  label: 'Casal' },
   ]
+
+  const ctxLabel = reportCtx === 'me' ? myName : reportCtx === 'partner' ? partnerName : 'Casal'
 
   const divisoes = useMemo(() => {
     if (reportCtx === 'me')      return allDivisoes.filter(cx => cx.userId === currentUser?.id)
@@ -102,57 +107,30 @@ export default function Relatorios() {
       {isMobile ? (
         <>
           <PageHeader title="Relatórios" />
-          {/* Month navigator — row independente abaixo do header */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, padding: '8px 16px 4px' }}>
             <MonthNav month={month} today={TODAY} onChange={setMonth} showLabel />
           </div>
+          {/* Segmented control mobile */}
+          <div style={{ display: 'flex', justifyContent: 'center', padding: '4px 16px 12px' }}>
+            <SegmentedCtrl options={ctxOptions} value={reportCtx} onChange={(v) => setReportCtx(v as 'me' | 'partner' | 'couple')} />
+          </div>
         </>
       ) : (
-        <div style={{ paddingTop: 32, marginBottom: 8, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <div>
+        /* Desktop: título + segmented + monthnav em 1 linha */
+        <div style={{ paddingTop: 32, marginBottom: 24, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
+          <div style={{ flexShrink: 0 }}>
             <h1 style={{ fontSize: 24, fontWeight: 600, color: 'var(--color-text-primary)', margin: 0 }}>Relatórios</h1>
-            <p style={{ fontSize: 13, color: 'var(--color-text-secondary)', margin: '4px 0 0' }}>{monthLabel(month)}</p>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 4 }}>
+              <p style={{ fontSize: 13, color: 'var(--color-text-secondary)', margin: 0 }}>{monthLabel(month)}</p>
+              <span style={{ fontSize: 11, fontWeight: 600, padding: '2px 8px', borderRadius: 99, background: 'rgba(59,130,246,0.12)', color: 'var(--color-accent-primary)', border: '1px solid rgba(59,130,246,0.2)' }}>
+                {ctxLabel}
+              </span>
+            </div>
           </div>
+          <SegmentedCtrl options={ctxOptions} value={reportCtx} onChange={(v) => setReportCtx(v as 'me' | 'partner' | 'couple')} />
           <MonthNav month={month} today={TODAY} onChange={setMonth} />
         </div>
       )}
-
-      {/* ── Context segmented control ──────────────────────────────────────── */}
-      <div style={{ display: 'flex', justifyContent: 'center', padding: isMobile ? '4px 16px 12px' : '0 0 20px' }}>
-        <div style={{
-          display: 'inline-flex',
-          background: 'var(--color-bg-secondary)',
-          border: '1px solid var(--color-border)',
-          borderRadius: 999,
-          padding: 3,
-          gap: 2,
-        }}>
-          {ctxOptions.map(({ key, label }) => {
-            const isActive = reportCtx === key
-            return (
-              <button
-                key={key}
-                onClick={() => setReportCtx(key)}
-                style={{
-                  padding: '6px 16px',
-                  borderRadius: 999,
-                  border: 'none',
-                  cursor: 'pointer',
-                  fontSize: 12,
-                  fontWeight: isActive ? 600 : 500,
-                  fontFamily: 'var(--font-sans)',
-                  background: isActive ? 'var(--color-accent-primary)' : 'transparent',
-                  color: isActive ? 'white' : 'var(--color-text-secondary)',
-                  transition: 'background 150ms ease, color 150ms ease',
-                  whiteSpace: 'nowrap',
-                }}
-              >
-                {label}
-              </button>
-            )
-          })}
-        </div>
-      </div>
 
       {/* ── Empty state ────────────────────────────────────────────────────── */}
       {!hasData ? (
@@ -161,223 +139,169 @@ export default function Relatorios() {
             <Calendar size={24} color="var(--color-accent-primary)" strokeWidth={1.5} />
           </div>
           <p style={{ fontSize: 15, fontWeight: 600, color: 'var(--color-text-primary)', margin: '0 0 6px' }}>Nenhum lançamento</p>
-          <p style={{ fontSize: 13, color: 'var(--color-text-tertiary)', margin: 0, lineHeight: 1.5, maxWidth: 260 }}>
-            Não há movimentos registrados em {monthLabel(month).toLowerCase()}.
+          <p style={{ fontSize: 13, color: 'var(--color-text-tertiary)', margin: 0, lineHeight: 1.5, maxWidth: 280 }}>
+            Nenhum movimento de <strong style={{ color: 'var(--color-text-secondary)' }}>{ctxLabel}</strong> em {monthLabel(month).toLowerCase()}.
           </p>
         </div>
+
       ) : (
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr',
-          gap: 16,
-          padding: isMobile ? '0 16px' : 0,
-          maxWidth: 800, margin: '0 auto',
-        }}>
+        <div style={{ padding: isMobile ? '0 16px' : 0, maxWidth: 1200, margin: '0 auto' }}>
 
-          {/* ── 1. Resumo ──────────────────────────────────────────────────── */}
-          <div style={CARD}>
-            <p className="section-label" style={{ marginBottom: 16 }}>Resumo do mês</p>
-
-            <div style={{ display: 'flex', gap: 12, marginBottom: 16 }}>
-              {/* Entrou */}
-              <div style={{ flex: 1, background: 'rgba(16,185,129,0.06)', border: '1px solid rgba(16,185,129,0.15)', borderRadius: 10, padding: '12px 14px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 6 }}>
-                  <ArrowUpRight size={13} color="var(--color-success)" />
-                  <span style={{ fontSize: 11, color: 'var(--color-text-secondary)', fontWeight: 500 }}>Entrou</span>
-                </div>
-                <p style={{ fontSize: 18, fontWeight: 700, color: 'var(--color-success)', margin: 0, lineHeight: 1 }}>
-                  {formatCurrency(globalIn)}
-                </p>
-              </div>
-
-              {/* Saiu */}
-              <div style={{ flex: 1, background: 'rgba(239,68,68,0.06)', border: '1px solid rgba(239,68,68,0.15)', borderRadius: 10, padding: '12px 14px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 6 }}>
-                  <ArrowDownRight size={13} color="var(--color-danger)" />
-                  <span style={{ fontSize: 11, color: 'var(--color-text-secondary)', fontWeight: 500 }}>Saiu</span>
-                </div>
-                <p style={{ fontSize: 18, fontWeight: 700, color: 'var(--color-danger)', margin: 0, lineHeight: 1 }}>
-                  {formatCurrency(globalOut)}
-                </p>
-              </div>
-            </div>
-
-            <ProgressBar
-              value={usagePct}
-              variant={usagePct >= 100 ? 'danger' : usagePct >= 80 ? 'warning' : 'default'}
-              size="md"
+          {/* ── KPI Strip — 4 cards (desktop only inline, mobile 2x2) ─────────── */}
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(4, 1fr)',
+            gap: isMobile ? 10 : 14,
+            marginBottom: isMobile ? 16 : 20,
+          }}>
+            <KpiCard
+              label="Total entrou"
+              value={formatCurrency(globalIn)}
+              delta={inDelta}
+              positiveIsGood
+              accentColor="var(--color-success)"
+              Icon={ArrowUpRight}
             />
-
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 10 }}>
-              <span style={{ fontSize: 12, color: 'var(--color-text-tertiary)' }}>{Math.round(usagePct)}% utilizado</span>
-              <span style={{ fontSize: 12, color: globalIn - globalOut >= 0 ? 'var(--color-success)' : 'var(--color-danger)', fontWeight: 600 }}>
-                {globalIn - globalOut >= 0 ? '+' : ''}{formatCurrency(globalIn - globalOut)} restante
-              </span>
-            </div>
+            <KpiCard
+              label="Total saiu"
+              value={formatCurrency(globalOut)}
+              delta={outDelta}
+              positiveIsGood={false}
+              accentColor="var(--color-danger)"
+              Icon={ArrowDownRight}
+            />
+            <KpiCard
+              label="Saldo do mês"
+              value={formatCurrency(globalIn - globalOut)}
+              delta={inDelta - outDelta}
+              positiveIsGood
+              accentColor={globalIn - globalOut >= 0 ? 'var(--color-success)' : 'var(--color-danger)'}
+              Icon={globalIn - globalOut >= 0 ? TrendingUp : TrendingDown}
+            />
+            <KpiCard
+              label="Utilizado"
+              value={`${Math.round(usagePct)}%`}
+              delta={null}
+              positiveIsGood={false}
+              accentColor={usagePct >= 100 ? 'var(--color-danger)' : usagePct >= 80 ? 'var(--color-warning)' : 'var(--color-accent-primary)'}
+              Icon={usagePct >= 80 ? AlertTriangle : CheckCircle2}
+              progressPct={usagePct}
+            />
           </div>
 
-          {/* ── 2. Tendência ───────────────────────────────────────────────── */}
-          <div style={CARD}>
-            <p className="section-label" style={{ marginBottom: 16 }}>Tendência vs. mês anterior</p>
+          {/* ── Bento 2 colunas (mobile: 1 col) ────────────────────────────── */}
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr',
+            gap: isMobile ? 12 : 20,
+          }}>
 
-            {prevIn === 0 && prevOut === 0 ? (
-              <p style={{ fontSize: 13, color: 'var(--color-text-tertiary)', margin: 0 }}>
-                Sem dados do mês anterior para comparar.
-              </p>
-            ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-                <TrendRow
-                  label="Receitas"
-                  current={globalIn}
-                  delta={inDelta}
-                  positiveIsGood
-                />
-                <div style={{ height: 1, background: 'var(--color-border)' }} />
-                <TrendRow
-                  label="Gastos"
-                  current={globalOut}
-                  delta={outDelta}
-                  positiveIsGood={false}
-                />
-              </div>
-            )}
-          </div>
+            {/* ── Gastos por divisão ────────────────────────────────────────── */}
+            <div style={CARD}>
+              <p className="section-label" style={{ marginBottom: 16 }}>Gastos por divisão</p>
 
-          {/* ── 3. Gastos por divisão ──────────────────────────────────────── */}
-          <div style={{ ...CARD, gridColumn: isMobile ? undefined : '1 / -1' }}>
-            <p className="section-label" style={{ marginBottom: 16 }}>Gastos por divisão</p>
-
-            {bySpending.length === 0 ? (
-              <p style={{ fontSize: 13, color: 'var(--color-text-tertiary)', margin: 0 }}>Nenhum gasto registrado este mês.</p>
-            ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-                {bySpending.map(({ cx, totalOut }) => {
-                  const { Icon, color } = getDivisaoIcon(cx.id)
-                  const barPct = maxOut > 0 ? (totalOut / maxOut) * 100 : 0
-                  return (
-                    <div key={cx.id}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 7 }}>
-                        <div style={{ width: 28, height: 28, borderRadius: 8, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: `${color}15` }}>
-                          <Icon size={14} style={{ color }} />
-                        </div>
-                        <span style={{ flex: 1, fontSize: 13, fontWeight: 500, color: 'var(--color-text-primary)' }}>{cx.name}</span>
-                        <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--color-text-primary)' }}>{formatCurrency(totalOut)}</span>
-                        <span style={{ fontSize: 11, color: 'var(--color-text-tertiary)', minWidth: 36, textAlign: 'right' }}>
-                          {globalOut > 0 ? Math.round((totalOut / globalOut) * 100) : 0}%
-                        </span>
-                      </div>
-                      <ProgressBar value={barPct} size="sm" />
-                    </div>
-                  )
-                })}
-              </div>
-            )}
-          </div>
-
-          {/* ── 4. Distribuição real vs. esperada ─────────────────────────── */}
-          <div style={{ ...CARD, gridColumn: isMobile ? undefined : '1 / -1' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-              <p className="section-label" style={{ margin: 0 }}>Distribuição real vs. esperada</p>
-              <span style={{ fontSize: 11, color: 'var(--color-text-tertiary)' }}>% dos gastos totais</span>
-            </div>
-
-            {globalOut === 0 ? (
-              <p style={{ fontSize: 13, color: 'var(--color-text-tertiary)', margin: 0 }}>Nenhum gasto registrado este mês.</p>
-            ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                {data
-                  .filter(d => d.totalOut > 0 || d.cx.percentage > 0)
-                  .sort((a, b) => {
-                    const deltaA = globalOut > 0 ? (a.totalOut / globalOut) * 100 - a.cx.percentage : 0
-                    const deltaB = globalOut > 0 ? (b.totalOut / globalOut) * 100 - b.cx.percentage : 0
-                    return Math.abs(deltaB) - Math.abs(deltaA)
-                  })
-                  .map(({ cx, totalOut }) => {
+              {bySpending.length === 0 ? (
+                <p style={{ fontSize: 13, color: 'var(--color-text-tertiary)', margin: 0 }}>Nenhum gasto registrado este mês.</p>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                  {bySpending.map(({ cx, totalOut }) => {
                     const { Icon, color } = getDivisaoIcon(cx.id)
-                    const realPct     = globalOut > 0 ? (totalOut / globalOut) * 100 : 0
-                    const expectedPct = cx.percentage
-                    const delta       = realPct - expectedPct
-                    const overshot    = delta > 5
-                    const undershot   = delta < -5
-
+                    const barPct = maxOut > 0 ? (totalOut / maxOut) * 100 : 0
                     return (
                       <div key={cx.id}>
-                        {/* Row header */}
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 7 }}>
                           <div style={{ width: 28, height: 28, borderRadius: 8, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: `${color}15` }}>
                             <Icon size={14} style={{ color }} />
                           </div>
                           <span style={{ flex: 1, fontSize: 13, fontWeight: 500, color: 'var(--color-text-primary)' }}>{cx.name}</span>
-
-                          {/* Delta badge */}
-                          {overshot && (
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 3, color: 'var(--color-danger)' }}>
-                              <AlertTriangle size={11} />
-                              <span style={{ fontSize: 11, fontWeight: 600 }}>+{Math.round(delta)}pp</span>
-                            </div>
-                          )}
-                          {undershot && (
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 3, color: 'var(--color-success)' }}>
-                              <CheckCircle2 size={11} />
-                              <span style={{ fontSize: 11, fontWeight: 600 }}>{Math.round(delta)}pp</span>
-                            </div>
-                          )}
-
-                          {/* Pcts */}
-                          <span style={{ fontSize: 12, color: overshot ? 'var(--color-danger)' : undershot ? 'var(--color-success)' : 'var(--color-text-secondary)', fontWeight: 600, minWidth: 70, textAlign: 'right' }}>
-                            {Math.round(realPct)}% <span style={{ fontWeight: 400, color: 'var(--color-text-tertiary)' }}>/ {expectedPct}%</span>
+                          <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--color-text-primary)' }}>{formatCurrency(totalOut)}</span>
+                          <span style={{ fontSize: 11, color: 'var(--color-text-tertiary)', minWidth: 36, textAlign: 'right' }}>
+                            {globalOut > 0 ? Math.round((totalOut / globalOut) * 100) : 0}%
                           </span>
                         </div>
-
-                        {/* Dual bar: fill in color up to expected, red if overshoot */}
-                        <div style={{ position: 'relative', height: 5, borderRadius: 3, background: 'rgba(255,255,255,0.06)' }}>
-                          {/* Expected marker */}
-                          <div style={{
-                            position: 'absolute', left: `${Math.min(expectedPct, 100)}%`,
-                            top: -2, bottom: -2, width: 2, borderRadius: 1,
-                            background: 'var(--color-text-tertiary)', opacity: 0.5,
-                            transform: 'translateX(-1px)',
-                          }} />
-                          {/* Fill up to min(real, expected) */}
-                          {totalOut > 0 && (
-                            <div style={{
-                              position: 'absolute', left: 0, top: 0, bottom: 0,
-                              width: `${Math.min(realPct, expectedPct, 100)}%`,
-                              background: color, borderRadius: 3,
-                              transition: 'width 500ms ease',
-                            }} />
-                          )}
-                          {/* Overshoot fill */}
-                          {overshot && (
-                            <div style={{
-                              position: 'absolute',
-                              left: `${Math.min(expectedPct, 100)}%`,
-                              top: 0, bottom: 0,
-                              width: `${Math.min(realPct - expectedPct, 100 - expectedPct)}%`,
-                              background: 'var(--color-danger)', borderRadius: '0 3px 3px 0',
-                              transition: 'width 500ms ease',
-                            }} />
-                          )}
-                        </div>
+                        <ProgressBar value={barPct} size="sm" />
                       </div>
                     )
                   })}
+                </div>
+              )}
+            </div>
 
-                {/* Legend */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: 16, paddingTop: 4 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <div style={{ width: 2, height: 12, background: 'var(--color-text-tertiary)', opacity: 0.5, borderRadius: 1 }} />
-                    <span style={{ fontSize: 11, color: 'var(--color-text-tertiary)' }}>Esperado pelo método</span>
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <div style={{ width: 12, height: 4, background: 'var(--color-danger)', borderRadius: 2 }} />
-                    <span style={{ fontSize: 11, color: 'var(--color-text-tertiary)' }}>Acima do esperado</span>
+            {/* ── Distribuição real vs. esperada ────────────────────────────── */}
+            <div style={CARD}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+                <p className="section-label" style={{ margin: 0 }}>Distribuição real vs. esperada</p>
+                <span style={{ fontSize: 11, color: 'var(--color-text-tertiary)' }}>% dos gastos totais</span>
+              </div>
+
+              {globalOut === 0 ? (
+                <p style={{ fontSize: 13, color: 'var(--color-text-tertiary)', margin: 0 }}>Nenhum gasto registrado este mês.</p>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                  {data
+                    .filter(d => d.totalOut > 0 || d.cx.percentage > 0)
+                    .sort((a, b) => {
+                      const deltaA = globalOut > 0 ? (a.totalOut / globalOut) * 100 - a.cx.percentage : 0
+                      const deltaB = globalOut > 0 ? (b.totalOut / globalOut) * 100 - b.cx.percentage : 0
+                      return Math.abs(deltaB) - Math.abs(deltaA)
+                    })
+                    .map(({ cx, totalOut }) => {
+                      const { Icon, color } = getDivisaoIcon(cx.id)
+                      const realPct     = globalOut > 0 ? (totalOut / globalOut) * 100 : 0
+                      const expectedPct = cx.percentage
+                      const delta       = realPct - expectedPct
+                      const overshot    = delta > 5
+                      const undershot   = delta < -5
+                      return (
+                        <div key={cx.id}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+                            <div style={{ width: 28, height: 28, borderRadius: 8, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: `${color}15` }}>
+                              <Icon size={14} style={{ color }} />
+                            </div>
+                            <span style={{ flex: 1, fontSize: 13, fontWeight: 500, color: 'var(--color-text-primary)' }}>{cx.name}</span>
+                            {overshot && (
+                              <div style={{ display: 'flex', alignItems: 'center', gap: 3, color: 'var(--color-danger)' }}>
+                                <AlertTriangle size={11} />
+                                <span style={{ fontSize: 11, fontWeight: 600 }}>+{Math.round(delta)}pp</span>
+                              </div>
+                            )}
+                            {undershot && (
+                              <div style={{ display: 'flex', alignItems: 'center', gap: 3, color: 'var(--color-success)' }}>
+                                <CheckCircle2 size={11} />
+                                <span style={{ fontSize: 11, fontWeight: 600 }}>{Math.round(delta)}pp</span>
+                              </div>
+                            )}
+                            <span style={{ fontSize: 12, color: overshot ? 'var(--color-danger)' : undershot ? 'var(--color-success)' : 'var(--color-text-secondary)', fontWeight: 600, minWidth: 70, textAlign: 'right' }}>
+                              {Math.round(realPct)}% <span style={{ fontWeight: 400, color: 'var(--color-text-tertiary)' }}>/ {expectedPct}%</span>
+                            </span>
+                          </div>
+                          <div style={{ position: 'relative', height: 5, borderRadius: 3, background: 'rgba(255,255,255,0.06)' }}>
+                            <div style={{ position: 'absolute', left: `${Math.min(expectedPct, 100)}%`, top: -2, bottom: -2, width: 2, borderRadius: 1, background: 'var(--color-text-tertiary)', opacity: 0.5, transform: 'translateX(-1px)' }} />
+                            {totalOut > 0 && (
+                              <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: `${Math.min(realPct, expectedPct, 100)}%`, background: color, borderRadius: 3, transition: 'width 500ms ease' }} />
+                            )}
+                            {overshot && (
+                              <div style={{ position: 'absolute', left: `${Math.min(expectedPct, 100)}%`, top: 0, bottom: 0, width: `${Math.min(realPct - expectedPct, 100 - expectedPct)}%`, background: 'var(--color-danger)', borderRadius: '0 3px 3px 0', transition: 'width 500ms ease' }} />
+                            )}
+                          </div>
+                        </div>
+                      )
+                    })}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 16, paddingTop: 4 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <div style={{ width: 2, height: 12, background: 'var(--color-text-tertiary)', opacity: 0.5, borderRadius: 1 }} />
+                      <span style={{ fontSize: 11, color: 'var(--color-text-tertiary)' }}>Esperado pelo método</span>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <div style={{ width: 12, height: 4, background: 'var(--color-danger)', borderRadius: 2 }} />
+                      <span style={{ fontSize: 11, color: 'var(--color-text-tertiary)' }}>Acima do esperado</span>
+                    </div>
                   </div>
                 </div>
-              </div>
-            )}
-          </div>
+              )}
+            </div>
 
+          </div>
         </div>
       )}
     </div>
@@ -385,6 +309,23 @@ export default function Relatorios() {
 }
 
 // ── Sub-components ────────────────────────────────────────────────────────────
+
+function SegmentedCtrl({
+  options, value, onChange,
+}: { options: { key: string; label: string }[]; value: string; onChange: (v: string) => void }) {
+  return (
+    <div style={{ display: 'inline-flex', background: 'var(--color-bg-secondary)', border: '1px solid var(--color-border)', borderRadius: 999, padding: 3, gap: 2 }}>
+      {options.map(({ key, label }) => {
+        const isActive = value === key
+        return (
+          <button key={key} onClick={() => onChange(key)} style={{ padding: '6px 16px', borderRadius: 999, border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: isActive ? 600 : 500, fontFamily: 'var(--font-sans)', background: isActive ? 'var(--color-accent-primary)' : 'transparent', color: isActive ? 'white' : 'var(--color-text-secondary)', transition: 'background 150ms ease, color 150ms ease', whiteSpace: 'nowrap' }}>
+            {label}
+          </button>
+        )
+      })}
+    </div>
+  )
+}
 
 function MonthNav({ month, today, onChange, showLabel }: { month: string; today: string; onChange: (m: string) => void; showLabel?: boolean }) {
   const isCurrentMonth = month === today
@@ -412,24 +353,47 @@ function MonthNav({ month, today, onChange, showLabel }: { month: string; today:
   )
 }
 
-function TrendRow({ label, current, delta, positiveIsGood }: { label: string; current: number; delta: number; positiveIsGood: boolean }) {
-  const isGood    = positiveIsGood ? delta >= 0 : delta <= 0
-  const isNeutral = delta === 0
-  const color     = isNeutral ? 'var(--color-text-tertiary)' : isGood ? 'var(--color-success)' : 'var(--color-danger)'
-  const Icon      = isNeutral ? Minus : isGood ? TrendingUp : TrendingDown
 
+type KpiCardProps = {
+  label: string
+  value: string
+  delta: number | null
+  positiveIsGood: boolean
+  accentColor: string
+  Icon: React.ElementType
+  progressPct?: number
+}
+
+function KpiCard({ label, value, delta, positiveIsGood, accentColor, Icon, progressPct }: KpiCardProps) {
+  const deltaGood = delta === null ? true : (positiveIsGood ? delta >= 0 : delta <= 0)
+  const deltaColor = delta === null ? 'var(--color-text-tertiary)' : deltaGood ? 'var(--color-success)' : 'var(--color-danger)'
+  const DeltaIcon = delta === null ? null : deltaGood ? TrendingUp : TrendingDown
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-      <div style={{ flex: 1 }}>
-        <p style={{ fontSize: 12, color: 'var(--color-text-secondary)', margin: '0 0 2px' }}>{label}</p>
-        <p style={{ fontSize: 16, fontWeight: 700, color: 'var(--color-text-primary)', margin: 0 }}>{formatCurrency(current)}</p>
+    <div style={{
+      background: 'var(--color-bg-secondary)',
+      border: `1px solid var(--color-border)`,
+      borderTop: `3px solid ${accentColor}`,
+      borderRadius: 'var(--radius-card)',
+      padding: '14px 16px',
+    }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+        <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--color-text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{label}</span>
+        <Icon size={14} color={accentColor} />
       </div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 5, color }}>
-        <Icon size={15} />
-        <span style={{ fontSize: 13, fontWeight: 600 }}>
-          {delta > 0 ? '+' : ''}{formatCurrency(Math.abs(delta))}
-        </span>
-      </div>
+      <p style={{ fontSize: 22, fontWeight: 700, color: 'var(--color-text-primary)', margin: 0, lineHeight: 1 }}>{value}</p>
+      {progressPct !== undefined && (
+        <div style={{ height: 4, background: 'rgba(255,255,255,0.08)', borderRadius: 9999, overflow: 'hidden', marginTop: 10 }}>
+          <div style={{ height: '100%', width: `${Math.min(progressPct, 100)}%`, background: accentColor, borderRadius: 9999, transition: 'width 500ms ease' }} />
+        </div>
+      )}
+      {delta !== null && DeltaIcon && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 8, color: deltaColor }}>
+          <DeltaIcon size={12} />
+          <span style={{ fontSize: 11, fontWeight: 600 }}>
+            {delta > 0 ? '+' : ''}{formatCurrency(Math.abs(delta))} vs mês anterior
+          </span>
+        </div>
+      )}
     </div>
   )
 }

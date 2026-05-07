@@ -9,6 +9,26 @@ import {
 import { db } from './firebase'
 import type { AppState } from '../types'
 
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+/**
+ * Firestore rejects `undefined` values. This recursively converts
+ * all `undefined` to `null` throughout the object tree.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function sanitizeForFirestore(obj: any): any {
+  if (obj === undefined) return null
+  if (obj === null || typeof obj !== 'object') return obj
+  if (obj instanceof Date) return obj
+  if (Array.isArray(obj)) return obj.map(sanitizeForFirestore)
+
+  const clean: Record<string, unknown> = {}
+  for (const [key, value] of Object.entries(obj)) {
+    clean[key] = sanitizeForFirestore(value)
+  }
+  return clean
+}
+
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 /** Keys from AppState that we persist to Firestore */
@@ -32,7 +52,7 @@ export async function saveStateToFirestore(
   uid: string,
   state: AppState
 ): Promise<void> {
-  const data: PersistableState = {
+  const raw = {
     isOnboarded: state.isOnboarded,
     currentUser: state.currentUser,
     partner: state.partner,
@@ -45,6 +65,11 @@ export async function saveStateToFirestore(
     objetivos: state.objetivos,
     lastModified: serverTimestamp(),
   }
+
+  // Sanitize: convert all `undefined` → `null` (Firestore rejects undefined)
+  const data = sanitizeForFirestore(raw) as PersistableState
+  // Restore serverTimestamp (sanitizer would turn it into a plain object)
+  data.lastModified = serverTimestamp()
 
   await setDoc(getUserDocRef(uid), data, { merge: true })
 }
