@@ -46,7 +46,7 @@ export default function ItemActionSheet({ open, onClose, onEdit, onDelete, title
             exit={{ opacity: 0 }}
             onClick={onClose}
             style={{
-              position: 'fixed', inset: 0, zIndex: 100,
+              position: 'fixed', inset: 0, zIndex: 1000,
               background: 'rgba(0,0,0,0.5)',
               backdropFilter: isMobile ? 'none' : 'blur(4px)',
             }}
@@ -64,7 +64,7 @@ export default function ItemActionSheet({ open, onClose, onEdit, onDelete, title
             }
             style={{
               position: 'fixed',
-              zIndex: 101,
+              zIndex: 1001,
               background: 'var(--color-bg-secondary)',
               border: '1px solid var(--color-border)',
               ...(isMobile ? {

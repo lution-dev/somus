@@ -39,12 +39,13 @@ export function Dialog({
   }, [open, handleKeyDown])
 
   const isMobile = getIsMobile()
+  const hasHeader = !!(title || showClose)
 
   return (
     <AnimatePresence>
       {open && (
         <div style={{
-          position: 'fixed', inset: 0, zIndex: 100,
+          position: 'fixed', inset: 0, zIndex: 1000,
           display: 'flex',
           alignItems: isMobile ? 'flex-end' : 'center',
           justifyContent: 'center',
@@ -64,7 +65,7 @@ export function Dialog({
             onClick={onClose}
           />
 
-          {/* Panel */}
+          {/* Panel — flex column so header stays fixed and content scrolls */}
           <motion.div
             initial={isMobile ? { opacity: 0, y: 60 } : { opacity: 0, scale: 0.95 }}
             animate={isMobile ? { opacity: 1, y: 0 } : { opacity: 1, scale: 1 }}
@@ -74,7 +75,8 @@ export function Dialog({
               position: 'relative', zIndex: 10, width: '100%',
               maxWidth: SIZE_WIDTHS[size],
               maxHeight: isMobile ? '90dvh' : '80dvh',
-              overflowY: 'auto',
+              display: 'flex',
+              flexDirection: 'column',
               background: 'var(--color-bg-secondary)',
               border: '1px solid var(--color-border)',
               borderRadius: isMobile ? '20px 20px 0 0' : 16,
@@ -82,16 +84,21 @@ export function Dialog({
               boxShadow: isMobile ? 'none' : '0 16px 48px rgba(0,0,0,0.4)',
             }}
           >
-            {/* Drag handle (mobile only) */}
+            {/* Drag handle (mobile only) — fixed, não rola */}
             {isMobile && (
-              <div style={{ display: 'flex', justifyContent: 'center', paddingTop: 12 }}>
+              <div style={{ display: 'flex', justifyContent: 'center', paddingTop: 12, flexShrink: 0 }}>
                 <div style={{ width: 40, height: 4, borderRadius: 99, background: 'var(--color-border)' }} />
               </div>
             )}
 
-            {/* Header */}
-            {(title || showClose) && (
-              <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', padding: isMobile ? '16px 20px 8px' : '20px 24px 8px' }}>
+            {/* Header — fixo no topo, não rola com o conteúdo */}
+            {hasHeader && (
+              <div style={{
+                display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between',
+                padding: isMobile ? '16px 20px 12px' : '20px 24px 12px',
+                flexShrink: 0,
+                borderBottom: title ? '1px solid var(--color-border)' : 'none',
+              }}>
                 <div>
                   {title && (
                     <h2 style={{ fontSize: 18, fontWeight: 600, color: 'var(--color-text-primary)', margin: 0 }}>{title}</h2>
@@ -119,8 +126,15 @@ export function Dialog({
               </div>
             )}
 
-            {/* Content */}
-            <div style={{ padding: isMobile ? '8px 20px calc(20px + env(safe-area-inset-bottom, 0px))' : '8px 24px 24px' }}>
+            {/* Área de conteúdo rolável */}
+            <div style={{
+              flex: 1,
+              overflowY: 'auto',
+              WebkitOverflowScrolling: 'touch' as any,
+              padding: isMobile
+                ? `${hasHeader ? 16 : 8}px 20px calc(24px + env(safe-area-inset-bottom, 0px))`
+                : `${hasHeader ? 16 : 8}px 24px 24px`,
+            }}>
               {children}
             </div>
           </motion.div>
