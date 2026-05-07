@@ -47,39 +47,37 @@ function aggregateMonth(divisoes: Divisoes, month: string) {
   })
 }
 
-function getDailyChartData(divisoes: Divisoes, month: string) {
-  const [y, m] = month.split('-').map(Number)
-  const daysInMonth = new Date(y, m, 0).getDate()
-  
-  const dailyData = Array.from({ length: daysInMonth }, (_, i) => {
-    const dayStr = String(i + 1).padStart(2, '0')
-    return {
-      day: dayStr,
-      in: 0,
-      out: 0,
-    }
-  })
+// -- Monthly history (last 6 months) -----------------------------------------------
 
-  divisoes.forEach(cx => {
-    cx.movements.forEach(mv => {
-      if (mv.date.startsWith(month)) {
-        const dayStr = mv.date.substring(8, 10)
-        const dayIdx = parseInt(dayStr, 10) - 1
-        if (dailyData[dayIdx]) {
-          if (mv.type === 'income') {
-            dailyData[dayIdx].in += mv.amount
-          } else if (mv.type === 'expense' || mv.amount < 0) {
-            dailyData[dayIdx].out += Math.abs(mv.amount)
-          } else {
-             dailyData[dayIdx].in += mv.amount
-          }
-        }
-      }
-    })
-  })
-
-  return dailyData
+function monthLabelShort(ym: string): string {
+  const [y, m] = ym.split('-').map(Number)
+  return new Date(y, m - 1, 1).toLocaleDateString('pt-BR', { month: 'short' }).replace('.', '')
 }
+
+function getMonthlyHistory(divisoes: Divisoes, anchorMonth: string, count = 6) {
+  return Array.from({ length: count }, (_, i) => {
+    const ym = shiftMonth(anchorMonth, -(count - 1 - i))
+    const agg = aggregateMonth(divisoes, ym)
+    const totalIn  = agg.reduce((s, d) => s + d.totalIn,  0)
+    const totalOut = agg.reduce((s, d) => s + d.totalOut, 0)
+    return { ym, label: monthLabelShort(ym), totalIn, totalOut, balance: totalIn - totalOut }
+  })
+}
+
+// -- Adherence score ----------------------------------------------------------------
+
+function calcAdherenceScore(data: ReturnType<typeof aggregateMonth>, globalIn: number): number {
+  if (globalIn === 0) return 0
+  const divisoesWithPct = data.filter(d => d.cx.percentage > 0)
+  if (divisoesWithPct.length === 0) return 0
+  const totalDev = divisoesWithPct.reduce((sum, d) => {
+    const realPct = (d.totalIn / globalIn) * 100
+    return sum + Math.abs(realPct - d.cx.percentage)
+  }, 0)
+  const avgDev = totalDev / divisoesWithPct.length
+  return Math.max(0, Math.round(100 - avgDev * 2))
+}
+
 
 // ── Card style constant ───────────────────────────────────────────────────────
 
@@ -139,7 +137,8 @@ export default function Relatorios() {
   const inDelta    = globalIn  - prevIn
   const outDelta   = globalOut - prevOut
 
-  const dailyChartData = useMemo(() => getDailyChartData(divisoes, month), [divisoes, month])
+  const monthlyHistory   = useMemo(() => getMonthlyHistory(divisoes, month),  [divisoes, month])
+  const adherenceScore   = useMemo(() => calcAdherenceScore(data, globalIn),   [data, globalIn])
 
   // ── Render ──────────────────────────────────────────────────────────────────
 
@@ -233,15 +232,20 @@ export default function Relatorios() {
             />
           </div>
 
-          {/* ── Gráfico de Projeção Diária ──────────────────────────────────── */}
+          {/* -- Score de Aderencia ao Metodo */}
+          {hasData && (
+            <AdherenceScoreCard score={adherenceScore} />
+          )}
+
+          {/* -- Historico Mensal */}
           <div style={{ ...CARD, marginBottom: isMobile ? 12 : 20 }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-              <p className="section-label" style={{ margin: 0 }}>Projeção Diária</p>
-              <span style={{ fontSize: 11, color: 'var(--color-text-tertiary)' }}>Entradas vs Saídas</span>
+              <p className='section-label' style={{ margin: 0 }}>Historico Mensal</p>
+              <span style={{ fontSize: 11, color: 'var(--color-text-tertiary)' }}>Ultimos 6 meses</span>
             </div>
-            
-            <NativeDailyChart data={dailyChartData} />
+            <MonthlyHistoryChart data={monthlyHistory} currentMonth={month} />
           </div>
+
 
           {/* ── Bento 2 colunas (mobile: 1 col) ─────────────────────────────── */}
           <div style={{
@@ -455,43 +459,83 @@ function KpiCard({ label, value, delta, positiveIsGood, accentColor, Icon, progr
   )
 }
 
-function NativeDailyChart({ data }: { data: Array<{ day: string, in: number, out: number }> }) {
-  const activeDays = data.filter(d => d.in > 0 || d.out > 0)
-  const maxVal = Math.max(...activeDays.map(d => Math.max(d.in, d.out)), 1)
-  const [activeDay, setActiveDay] = useState<string | null>(null)
-  const active = activeDay ? (activeDays.find(d => d.day === activeDay) ?? null) : null
+// -- AdherenceScoreCard -------------------------------------------------------
 
-  if (activeDays.length === 0) {
-    return (
-      <div style={{ height: 80, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <span style={{ fontSize: 13, color: 'var(--color-text-tertiary)' }}>Nenhum lancamento este mes</span>
-      </div>
-    )
-  }
+function AdherenceScoreCard({ score }: { score: number }) {
+  const color = score >= 80 ? "var(--color-success)" : score >= 50 ? "var(--color-warning)" : "var(--color-danger)"
+  const label = score >= 80 ? "Excelente" : score >= 60 ? "Bom" : score >= 40 ? "Regular" : "Precisa melhorar"
+  const msg   = score >= 80
+    ? "Voce esta seguindo muito bem o metodo de distribuicao!"
+    : score >= 60
+    ? "Quase la! Pequenos ajustes vao melhorar sua aderencia."
+    : "A distribuicao real esta longe do planejado. Revise seus aportes."
+
+  const circumference = 2 * Math.PI * 36
+  const strokeDash = (score / 100) * circumference
 
   return (
-    <div style={{ width: '100%' }}>
-      <div style={{
-        height: 36, display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        padding: '0 4px', marginBottom: 8,
-        opacity: active ? 1 : 0, transition: 'opacity 150ms ease', pointerEvents: 'none',
-      }}>
-        {active && (
+    <div style={{
+      background: "var(--color-bg-secondary)", border: "1px solid var(--color-border)",
+      borderRadius: "var(--radius-card)", padding: 20, marginBottom: 0,
+      display: "flex", alignItems: "center", gap: 20,
+    }}>
+      {/* Circle gauge */}
+      <div style={{ flexShrink: 0, position: "relative", width: 88, height: 88 }}>
+        <svg width="88" height="88" viewBox="0 0 88 88">
+          <circle cx="44" cy="44" r="36" fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="8" />
+          <circle cx="44" cy="44" r="36" fill="none" stroke={color} strokeWidth="8"
+            strokeLinecap="round"
+            strokeDasharray={`${strokeDash} ${circumference}`}
+            transform="rotate(-90 44 44)"
+            style={{ transition: "stroke-dasharray 800ms ease" }}
+          />
+        </svg>
+        <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
+          <span style={{ fontSize: 20, fontWeight: 800, color, lineHeight: 1 }}>{score}</span>
+          <span style={{ fontSize: 9, color: "var(--color-text-tertiary)", fontWeight: 500 }}>/ 100</span>
+        </div>
+      </div>
+      {/* Text */}
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: "var(--color-text-tertiary)", margin: 0 }}>
+            Aderencia ao metodo
+          </p>
+          <span style={{ fontSize: 11, fontWeight: 700, padding: "2px 8px", borderRadius: 99, background: `${color}20`, color }}>
+            {label}
+          </span>
+        </div>
+        <p style={{ fontSize: 13, color: "var(--color-text-secondary)", margin: 0, lineHeight: 1.5 }}>{msg}</p>
+      </div>
+    </div>
+  )
+}
+
+// -- MonthlyHistoryChart ------------------------------------------------------
+
+function MonthlyHistoryChart({ data, currentMonth }: { data: Array<{ ym: string, label: string, totalIn: number, totalOut: number, balance: number }>, currentMonth: string }) {
+  const maxVal = Math.max(...data.map(d => Math.max(d.totalIn, d.totalOut)), 1)
+  const [active, setActive] = useState<string | null>(null)
+  const activeItem = active ? data.find(d => d.ym === active) ?? null : null
+
+  return (
+    <div style={{ width: "100%" }}>
+      {/* Info bar */}
+      <div style={{ height: 36, display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8, opacity: activeItem ? 1 : 0, transition: "opacity 150ms ease", pointerEvents: "none" }}>
+        {activeItem && (
           <>
-            <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--color-text-secondary)' }}>Dia {active.day}</span>
-            <div style={{ display: 'flex', gap: 16 }}>
-              {active.in > 0 && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                  <div style={{ width: 7, height: 7, borderRadius: 2, background: 'var(--color-success)' }} />
-                  <span style={{ fontSize: 11, color: 'var(--color-text-secondary)' }}>Entrou:</span>
-                  <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--color-success)' }}>{formatCurrency(active.in)}</span>
-                </div>
-              )}
-              {active.out > 0 && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                  <div style={{ width: 7, height: 7, borderRadius: 2, background: 'var(--color-danger)' }} />
-                  <span style={{ fontSize: 11, color: 'var(--color-text-secondary)' }}>Saiu:</span>
-                  <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--color-danger)' }}>{formatCurrency(active.out)}</span>
+            <span style={{ fontSize: 12, fontWeight: 600, color: "var(--color-text-secondary)" }}>{activeItem.label}</span>
+            <div style={{ display: "flex", gap: 16 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+                <div style={{ width: 7, height: 7, borderRadius: 2, background: "var(--color-success)" }} />
+                <span style={{ fontSize: 11, color: "var(--color-text-secondary)" }}>Entrou:</span>
+                <span style={{ fontSize: 12, fontWeight: 700, color: "var(--color-success)" }}>{formatCurrency(activeItem.totalIn)}</span>
+              </div>
+              {activeItem.totalOut > 0 && (
+                <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+                  <div style={{ width: 7, height: 7, borderRadius: 2, background: "var(--color-danger)" }} />
+                  <span style={{ fontSize: 11, color: "var(--color-text-secondary)" }}>Saiu:</span>
+                  <span style={{ fontSize: 12, fontWeight: 700, color: "var(--color-danger)" }}>{formatCurrency(activeItem.totalOut)}</span>
                 </div>
               )}
             </div>
@@ -499,25 +543,28 @@ function NativeDailyChart({ data }: { data: Array<{ day: string, in: number, out
         )}
       </div>
 
-      <div style={{ width: '100%', display: 'flex', alignItems: 'flex-end', gap: 6, height: 130, position: 'relative' }}>
-        <div style={{ position: 'absolute', bottom: 20, left: 0, right: 0, height: 1, background: 'var(--color-border)' }} />
-        {activeDays.map((d, i) => {
-          const inH = Math.round((d.in / maxVal) * 100)
-          const outH = Math.round((d.out / maxVal) * 100)
-          const isActive = activeDay === d.day
+      {/* Bars */}
+      <div style={{ width: "100%", display: "flex", alignItems: "flex-end", gap: 8, height: 140, position: "relative" }}>
+        <div style={{ position: "absolute", bottom: 20, left: 0, right: 0, height: 1, background: "var(--color-border)" }} />
+        {data.map((d) => {
+          const inH    = Math.round((d.totalIn  / maxVal) * 110)
+          const outH   = Math.round((d.totalOut / maxVal) * 110)
+          const isCurrent = d.ym === currentMonth
+          const isActive  = active === d.ym
+          const hasData   = d.totalIn > 0
           return (
-            <div key={i}
-              onMouseEnter={() => setActiveDay(d.day)}
-              onMouseLeave={() => setActiveDay(null)}
-              onClick={() => setActiveDay(isActive ? null : d.day)}
-              style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, cursor: 'pointer' }}
+            <div key={d.ym}
+              onMouseEnter={() => hasData && setActive(d.ym)}
+              onMouseLeave={() => setActive(null)}
+              onClick={() => setActive(isActive ? null : d.ym)}
+              style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 4, cursor: hasData ? "pointer" : "default" }}
             >
-              <div style={{ display: 'flex', alignItems: 'flex-end', gap: 2, height: 100, width: '100%', justifyContent: 'center' }}>
-                <div style={{ width: 'clamp(4px, 30%, 14px)', height: inH, background: 'var(--color-success)', borderRadius: '3px 3px 0 0', opacity: !activeDay || isActive ? 1 : 0.2, transition: 'opacity 150ms ease' }} />
-                <div style={{ width: 'clamp(4px, 30%, 14px)', height: outH, background: 'var(--color-danger)', borderRadius: '3px 3px 0 0', opacity: !activeDay || isActive ? 1 : 0.2, transition: 'opacity 150ms ease' }} />
+              <div style={{ display: "flex", alignItems: "flex-end", gap: 2, height: 110, width: "100%", justifyContent: "center" }}>
+                <div style={{ width: "clamp(6px, 35%, 18px)", height: inH, background: "var(--color-success)", borderRadius: "3px 3px 0 0", opacity: !active || isActive ? 1 : 0.2, transition: "opacity 150ms ease", boxShadow: isCurrent ? "0 0 8px var(--color-success)" : "none" }} />
+                {outH > 0 && <div style={{ width: "clamp(6px, 35%, 18px)", height: outH, background: "var(--color-danger)", borderRadius: "3px 3px 0 0", opacity: !active || isActive ? 1 : 0.2, transition: "opacity 150ms ease" }} />}
               </div>
-              <span style={{ fontSize: 10, color: isActive ? 'var(--color-accent-primary)' : 'var(--color-text-tertiary)', fontWeight: isActive ? 700 : 400, transition: 'color 150ms ease', whiteSpace: 'nowrap' }}>
-                {d.day}
+              <span style={{ fontSize: 10, color: isCurrent ? "var(--color-accent-primary)" : isActive ? "var(--color-text-primary)" : "var(--color-text-tertiary)", fontWeight: isCurrent || isActive ? 700 : 400, transition: "color 150ms ease", whiteSpace: "nowrap" }}>
+                {d.label}
               </span>
             </div>
           )
@@ -526,3 +573,4 @@ function NativeDailyChart({ data }: { data: Array<{ day: string, in: number, out
     </div>
   )
 }
+
