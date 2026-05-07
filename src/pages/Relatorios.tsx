@@ -1,4 +1,4 @@
-﻿import { useState, useMemo } from 'react'
+import { useState, useMemo } from 'react'
 import { useAppStore, selectCurrentDivisoes } from '../stores/useAppStore'
 import { useShallow } from 'zustand/react/shallow'
 import { formatCurrency } from '../lib/calculations'
@@ -544,7 +544,7 @@ function MonthlyHistoryChart({ data, currentMonth }: { data: Array<{ ym: string,
 
       {/* Bars */}
       <div style={{ width: "100%", display: "flex", alignItems: "flex-end", gap: 8, height: 140, position: "relative" }}>
-        <div style={{ position: "absolute", bottom: 20, left: 0, right: 0, height: 1, background: "var(--color-border)" }} />
+        <div style={{ position: "absolute", bottom: 14, left: 0, right: 0, height: 1, background: "var(--color-border)" }} />
         {data.map((d) => {
           const inH    = Math.round((d.totalIn  / maxVal) * 110)
           const outH   = Math.round((d.totalOut / maxVal) * 110)
@@ -562,7 +562,7 @@ function MonthlyHistoryChart({ data, currentMonth }: { data: Array<{ ym: string,
                 <div style={{ width: "clamp(6px, 35%, 18px)", height: inH, background: "var(--color-success)", borderRadius: "3px 3px 0 0", opacity: !active || isActive ? 1 : 0.2, transition: "opacity 150ms ease", boxShadow: isCurrent ? "0 0 8px var(--color-success)" : "none" }} />
                 {outH > 0 && <div style={{ width: "clamp(6px, 35%, 18px)", height: outH, background: "var(--color-danger)", borderRadius: "3px 3px 0 0", opacity: !active || isActive ? 1 : 0.2, transition: "opacity 150ms ease" }} />}
               </div>
-              <span style={{ fontSize: 10, color: isCurrent ? "var(--color-accent-primary)" : isActive ? "var(--color-text-primary)" : "var(--color-text-tertiary)", fontWeight: isCurrent || isActive ? 700 : 400, transition: "color 150ms ease", whiteSpace: "nowrap" }}>
+              <span style={{ fontSize: 10, lineHeight: '1', color: isCurrent ? "var(--color-accent-primary)" : isActive ? "var(--color-text-primary)" : "var(--color-text-tertiary)", fontWeight: isCurrent || isActive ? 700 : 400, transition: "color 150ms ease", whiteSpace: "nowrap" }}>
                 {d.label}
               </span>
             </div>
