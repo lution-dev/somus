@@ -3,11 +3,13 @@ import { useLocation } from 'wouter'
 import { useAppStore } from '../stores/useAppStore'
 import { useShallow } from 'zustand/react/shallow'
 import { formatCurrency } from '../lib/calculations'
-import { ProgressBar, PageHeader } from '../components/ui'
+import { PageHeader, ConfirmDialog } from '../components/ui'
+import ItemActionSheet from '../components/ui/ItemActionSheet'
 import { useIsMobile } from '../hooks/useIsMobile'
 import { useAuth } from '../hooks/useAuth'
-import { Target, Share2, Copy, Heart, CheckCircle2, Building2, Send, Users, Sparkles, Plus } from 'lucide-react'
+import { Target, Share2, Copy, Heart, CheckCircle2, Building2, Send, Users, Sparkles, Plus, Pencil, Trash2 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
+import type { Objetivo } from '../types'
 import AddObjetivoModal from '../components/features/AddObjetivoModal'
 
 const OBJ_ICONS: Record<string, LucideIcon> = {
@@ -19,13 +21,18 @@ function getObjIcon(id: string): LucideIcon { return OBJ_ICONS[id] || Target }
 export default function Casal() {
   const [copied, setCopied] = useState(false)
   const [addObjetivoOpen, setAddObjetivoOpen] = useState(false)
+  const [objetivoActionTarget, setObjetivoActionTarget] = useState<Objetivo | null>(null)
+  const [editObjetivoTarget, setEditObjetivoTarget] = useState<Objetivo | null>(null)
+  const [deleteObjetivoTarget, setDeleteObjetivoTarget] = useState<Objetivo | null>(null)
   const [, navigate] = useLocation()
   const { photoURL, displayName } = useAuth()
-  const currentUser = useAppStore(s => s.currentUser)
-  const partner     = useAppStore(s => s.partner)
-  const objetivos   = useAppStore(useShallow(s => s.objetivos.filter(o => o.isCouple)))
-  const caixinhas   = useAppStore(useShallow(s => s.caixinhas))
-  const entradas    = useAppStore(useShallow(s => s.entradas))
+  const currentUser    = useAppStore(s => s.currentUser)
+  const partner        = useAppStore(s => s.partner)
+  const objetivos      = useAppStore(useShallow(s => s.objetivos.filter(o => o.isCouple)))
+  const caixinhas      = useAppStore(useShallow(s => s.caixinhas))
+  const entradas       = useAppStore(useShallow(s => s.entradas))
+  const editObjetivo   = useAppStore(s => s.editObjetivo)
+  const deleteObjetivo = useAppStore(s => s.deleteObjetivo)
 
   // ── Calculate real balances ──────────────────────────────────────────────────
   const currentUserBalance = caixinhas
@@ -261,68 +268,76 @@ export default function Casal() {
         </div>
 
         {objetivos.length > 0 ? (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             {objetivos.map((obj) => {
-              const pct     = obj.targetAmount > 0 ? Math.min(100, (obj.currentAmount / obj.targetAmount) * 100) : 0
-              const ObjIcon = getObjIcon(obj.id)
+              const pct       = obj.targetAmount > 0 ? Math.min(100, (obj.currentAmount / obj.targetAmount) * 100) : 0
+              const remaining = Math.max(0, obj.targetAmount - obj.currentAmount)
+              const accent    = '#8B5CF6'
               return (
-                <button
-                  key={obj.id}
-                  onClick={() => navigate(`/casal/objetivo/${obj.id}`)}
-                  className="card-interactive"
-                  style={{
-                    width: '100%', textAlign: 'left', cursor: 'pointer',
-                    background: 'var(--color-bg-secondary)',
-                    border: '1px solid var(--color-border)',
-                    borderRadius: 'var(--radius-card)',
-                    padding: 16,
-                    fontFamily: 'var(--font-sans)',
-                  }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                      {obj.imageUrl ? (
-                        <img
-                          src={obj.imageUrl}
-                          alt={obj.name}
-                          style={{
-                            width: 36, height: 36, borderRadius: 10,
-                            objectFit: 'cover',
-                            objectPosition: `center ${(obj as any).imagePosition ?? 50}%`,
-                            border: '1px solid rgba(139,92,246,0.2)',
-                          }}
-                        />
-                      ) : (
-                        <div style={{
-                          width: 36, height: 36, borderRadius: 12,
-                          display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          background: 'rgba(139,92,246,0.12)',
-                          fontSize: 18,
-                        }}>
-                          {obj.emoji || <ObjIcon size={17} color="var(--color-accent-couple)" />}
+                <div key={obj.id} style={{ position: 'relative' }}>
+                  <button
+                    onClick={() => navigate(`/casal/objetivo/${obj.id}`)}
+                    style={{
+                      width: '100%', textAlign: 'left', cursor: 'pointer',
+                      background: 'var(--color-bg-secondary)',
+                      border: '1px solid rgba(139,92,246,0.2)',
+                      borderRadius: 16,
+                      padding: 0, fontFamily: 'var(--font-sans)',
+                      overflow: 'hidden',
+                    }}
+                  >
+                    {obj.imageUrl ? (
+                      <div style={{ position: 'relative', height: 110, overflow: 'hidden' }}>
+                        <img src={obj.imageUrl} alt={obj.name} style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: `center ${(obj as any).imagePosition ?? 50}%` }} />
+                        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.1) 60%)' }} />
+                        <div style={{ position: 'absolute', top: 10, right: 10, background: 'rgba(139,92,246,0.85)', backdropFilter: 'blur(8px)', borderRadius: 20, padding: '3px 8px', display: 'flex', alignItems: 'center', gap: 4 }}>
+                          <Heart size={10} color="white" fill="white" />
+                          <span style={{ fontSize: 10, fontWeight: 700, color: 'white' }}>Casal</span>
                         </div>
-                      )}
-                      <div>
-                        <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-text-primary)', margin: 0 }}>{obj.name}</p>
-                        {obj.targetDate && (
-                          <p style={{ fontSize: 11, color: 'var(--color-text-tertiary)', margin: 0 }}>
-                            até {new Date(obj.targetDate + 'T12:00:00').toLocaleDateString('pt-BR', { month: 'short', year: '2-digit' })}
+                        <div style={{ position: 'absolute', bottom: 10, left: 14, right: 14, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+                          <p style={{ fontSize: 16, fontWeight: 700, color: 'white', margin: 0, textShadow: '0 1px 4px rgba(0,0,0,0.5)' }}>{obj.name}</p>
+                          <span style={{ fontSize: 14, fontWeight: 800, color: 'white', textShadow: '0 1px 4px rgba(0,0,0,0.5)' }}>{Math.round(pct)}%</span>
+                        </div>
+                      </div>
+                    ) : (
+                      <div style={{ height: 72, background: `linear-gradient(135deg, ${accent}18 0%, ${accent}08 100%)`, borderBottom: `1px solid ${accent}20`, display: 'flex', alignItems: 'center', padding: '0 16px', gap: 12 }}>
+                        <div style={{ width: 40, height: 40, borderRadius: 12, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: `${accent}20`, border: `1px solid ${accent}30` }}>
+                          <Target size={20} color={accent} strokeWidth={1.5} />
+                        </div>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                            <p style={{ fontSize: 15, fontWeight: 700, color: 'var(--color-text-primary)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{obj.name}</p>
+                            <Heart size={11} color="#EC4899" fill="#EC4899" style={{ flexShrink: 0 }} />
+                          </div>
+                        </div>
+                        <span style={{ fontSize: 14, fontWeight: 800, color: accent, flexShrink: 0 }}>{Math.round(pct)}%</span>
+                      </div>
+                    )}
+                    <div style={{ padding: '12px 14px' }}>
+                      <div style={{ height: 5, background: 'rgba(255,255,255,0.08)', borderRadius: 9999, overflow: 'hidden', marginBottom: 10 }}>
+                        <div style={{ height: '100%', borderRadius: 9999, background: accent, width: `${pct}%`, transition: 'width 600ms ease' }} />
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+                        <div>
+                          <p style={{ fontSize: 11, color: 'var(--color-text-tertiary)', margin: '0 0 1px', textTransform: 'uppercase', letterSpacing: '0.04em', fontWeight: 600 }}>Guardado</p>
+                          <p style={{ fontSize: 15, fontWeight: 700, color: 'var(--color-text-primary)', margin: 0 }}>{formatCurrency(obj.currentAmount)}</p>
+                        </div>
+                        <div style={{ textAlign: 'right' }}>
+                          <p style={{ fontSize: 11, color: 'var(--color-text-tertiary)', margin: '0 0 1px', textTransform: 'uppercase', letterSpacing: '0.04em', fontWeight: 600 }}>Faltam</p>
+                          <p style={{ fontSize: 13, fontWeight: 600, color: remaining > 0 ? 'var(--color-text-secondary)' : 'var(--color-success)', margin: 0 }}>
+                            {remaining > 0 ? formatCurrency(remaining) : '✓ Meta atingida'}
                           </p>
-                        )}
+                        </div>
                       </div>
                     </div>
-                    <p style={{ fontSize: 14, fontWeight: 700, color: 'var(--color-accent-couple)', margin: 0 }}>
-                      {Math.round(pct)}%
-                    </p>
-                  </div>
-
-                  <ProgressBar value={pct} variant="couple" size="sm" />
-
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 8 }}>
-                    <p style={{ fontSize: 12, color: 'var(--color-text-secondary)', margin: 0 }}>{formatCurrency(obj.currentAmount)}</p>
-                    <p style={{ fontSize: 12, color: 'var(--color-text-tertiary)', margin: 0 }}>meta {formatCurrency(obj.targetAmount)}</p>
-                  </div>
-                </button>
+                  </button>
+                  {/* Botão ⋯ posicionado sobre o header do card */}
+                  <button
+                    onClick={e => { e.stopPropagation(); setObjetivoActionTarget(obj) }}
+                    style={{ position: 'absolute', top: 10, right: 10, width: 28, height: 28, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.45)', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.12)', cursor: 'pointer', color: 'white', fontSize: 16, fontWeight: 700, lineHeight: 1 }}
+                    aria-label="Opções do objetivo"
+                  >⋯</button>
+                </div>
               )
             })}
           </div>
@@ -335,10 +350,61 @@ export default function Casal() {
         )}
       </div>
 
+      {/* Novo objetivo */}
       <AddObjetivoModal
         open={addObjetivoOpen}
         onClose={() => setAddObjetivoOpen(false)}
         defaultIsCouple
+      />
+
+      {/* Ações do objetivo (⋯) */}
+      <ItemActionSheet
+        open={!!objetivoActionTarget}
+        onClose={() => setObjetivoActionTarget(null)}
+        title={objetivoActionTarget?.name ?? ''}
+        subtitle={objetivoActionTarget ? formatCurrency(objetivoActionTarget.targetAmount) + ' de meta' : ''}
+        actions={objetivoActionTarget ? [
+          {
+            label: 'Editar objetivo',
+            icon: Pencil,
+            color: 'var(--color-accent-primary)',
+            onClick: () => { setEditObjetivoTarget(objetivoActionTarget); setObjetivoActionTarget(null) },
+          },
+          {
+            label: 'Excluir objetivo',
+            icon: Trash2,
+            color: 'var(--color-danger)',
+            onClick: () => { setDeleteObjetivoTarget(objetivoActionTarget); setObjetivoActionTarget(null) },
+          },
+        ] : undefined}
+      />
+
+      {/* Editar objetivo */}
+      <AddObjetivoModal
+        open={!!editObjetivoTarget}
+        onClose={() => setEditObjetivoTarget(null)}
+        defaultIsCouple
+        editTarget={editObjetivoTarget ?? undefined}
+        onSave={(updates) => {
+          if (!editObjetivoTarget) return
+          editObjetivo(editObjetivoTarget.id, updates)
+          setEditObjetivoTarget(null)
+        }}
+      />
+
+      {/* Confirmar exclusão */}
+      <ConfirmDialog
+        open={!!deleteObjetivoTarget}
+        onClose={() => setDeleteObjetivoTarget(null)}
+        onConfirm={() => {
+          if (!deleteObjetivoTarget) return
+          deleteObjetivo(deleteObjetivoTarget.id)
+          setDeleteObjetivoTarget(null)
+        }}
+        title="Excluir objetivo"
+        description={`"${deleteObjetivoTarget?.name ?? ''}" será excluído permanentemente, incluindo todos os lançamentos e o progresso acumulado. Esta ação não pode ser desfeita.`}
+        confirmLabel="Excluir permanentemente"
+        variant="danger"
       />
 
       {/* Código de convite */}

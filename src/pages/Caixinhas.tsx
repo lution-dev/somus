@@ -88,7 +88,7 @@ export default function Caixinhas() {
           caixinhas.map((cx) => {
           const { Icon, color }  = getCaixinhaIcon(cx.id)
           const expectedBal      = (cx.percentage / 100) * expectedIncome
-          const pct              = expectedBal > 0 ? Math.min(100, (cx.balance / expectedBal) * 100) : 100
+          const pct              = expectedBal > 0 ? Math.min(100, (cx.balance / expectedBal) * 100) : 0
           const isLow            = pct < 50 && expectedBal > 0
           const isFull           = pct >= 100
 
