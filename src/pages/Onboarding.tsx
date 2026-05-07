@@ -53,7 +53,7 @@ function Step1({ name, setName, onNext }: { name: string; setName: (v: string) =
 
 function Step2({ onNext, onSkip }: { onNext: () => void; onSkip: () => void }) {
   const [copied, setCopied] = useState(false)
-  const code = 'SOMUS-0001'
+  const code = useAppStore.getState().currentUser?.partnerCode ?? '0001'
 
   function handleCopy() {
     navigator.clipboard.writeText(code).then(() => {

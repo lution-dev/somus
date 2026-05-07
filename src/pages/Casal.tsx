@@ -55,7 +55,8 @@ export default function Casal() {
 
   const isMobile = useIsMobile()
   const HERO_BG = '#001442'
-  const partnerCode = currentUser?.partnerCode ?? 'SOMUS-0001'
+  const rawCode = currentUser?.partnerCode ?? '0001'
+  const partnerCode = rawCode.startsWith('SOMUS-') ? rawCode.replace('SOMUS-', '').slice(-4).toUpperCase() : rawCode
 
   // ── PatrimonioCard — all-in-one, profiles inside ──────────────────────
   const PatrimonioCard = ({ isHero = false }: { isHero?: boolean }) => {

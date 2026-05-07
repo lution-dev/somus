@@ -90,6 +90,18 @@ export default function App() {
     }
   }, [isOnboarded, isAuthenticated, authLoading, location, navigate])
 
+  // ── Code Hygiene (ensure short partnerCode is persisted) ───────────────
+  useEffect(() => {
+    if (!isAuthenticated || !isOnboarded || !currentUser) return
+    const code = currentUser.partnerCode
+    if (code && code.startsWith('SOMUS-')) {
+      const short = code.replace('SOMUS-', '').slice(-4).toUpperCase()
+      useAppStore.setState(s => ({
+        currentUser: s.currentUser ? { ...s.currentUser, partnerCode: short } : null
+      }))
+    }
+  }, [isAuthenticated, isOnboarded, currentUser])
+
   if (authLoading) {
     return (
       <div style={{
