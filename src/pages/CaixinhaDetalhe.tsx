@@ -728,7 +728,7 @@ export default function CaixinhaDetalhe() {
       {isMobile && (
         <div style={{
           position: 'fixed',
-          bottom: 'calc(88px + env(safe-area-inset-bottom, 0px))',
+          bottom: 'calc(80px + env(safe-area-inset-bottom, 0px))',
           right: 20,
           zIndex: 35,
         }}>
@@ -743,7 +743,6 @@ export default function CaixinhaDetalhe() {
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               background: color,
               border: 'none', cursor: 'pointer',
-              boxShadow: `0 4px 20px ${hexToRgba(color, 0.35)}`,
               color: 'white',
             }}
             aria-label="Ação principal"

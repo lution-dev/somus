@@ -473,7 +473,7 @@ export default function Fluxo() {
       {isMobile && (
         <div style={{
           position: 'fixed',
-          bottom: 'calc(96px + env(safe-area-inset-bottom, 0px))',
+          bottom: 'calc(80px + env(safe-area-inset-bottom, 0px))',
           right: 20,
           display: 'flex', flexDirection: 'column', gap: 12,
           zIndex: 35,

@@ -378,7 +378,7 @@ export default function ObjetivoDetalhe() {
       {isMobile && (
         <div style={{
           position: 'fixed',
-          bottom: 'calc(88px + env(safe-area-inset-bottom, 0px))',
+          bottom: 'calc(80px + env(safe-area-inset-bottom, 0px))',
           right: 20, zIndex: 35,
         }}>
           <button
@@ -388,7 +388,6 @@ export default function ObjetivoDetalhe() {
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               background: 'var(--color-accent-couple)',
               border: 'none', cursor: 'pointer',
-              boxShadow: '0 4px 20px rgba(139,92,246,0.35)',
               color: 'white',
             }}
             aria-label="Lançar pagamento"
