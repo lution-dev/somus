@@ -22,6 +22,7 @@ import ObjetivoDetalhe from './pages/ObjetivoDetalhe'
 import Onboarding    from './pages/Onboarding'
 import Perfil        from './pages/Perfil'
 import Login         from './pages/Login'
+import InviteAccept  from './pages/InviteAccept'
 
 export default function App() {
   const isOnboarded   = useAppStore(s => s.isOnboarded)
@@ -115,6 +116,8 @@ export default function App() {
     <FirebaseSyncProvider>
       <Switch>
         <Route path="/onboarding" component={Onboarding} />
+        <Route path="/convite/:code" component={InviteAccept} />
+
         <Route>
           <AppLayout>
             <Switch>

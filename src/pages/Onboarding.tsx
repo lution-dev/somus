@@ -63,7 +63,7 @@ function Step2({ onNext, onSkip }: { onNext: () => void; onSkip: () => void }) {
   }
 
   function handleShare() {
-    const text = `Vem organizar nossas finanças juntos no Somus! Use meu código: ${code}`
+    const text = `💜 Entra comigo no Somus!\n\nhttps://somus.vercel.app/convite/${code}`
     if (navigator.share) {
       navigator.share({ title: 'Somus', text }).catch(() => {})
     } else {
@@ -479,7 +479,7 @@ export default function Onboarding() {
       name: name || displayName || 'Usuário',
       email: email ?? '',
       avatar: photoURL ?? undefined,
-      partnerCode: `SOMUS-${Date.now().toString(36).toUpperCase()}`,
+      partnerCode: Date.now().toString(36).slice(-4).toUpperCase(),
     }
     const incomeSources = sources
       .filter(s => s.name.trim())

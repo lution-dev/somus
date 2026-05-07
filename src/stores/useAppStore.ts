@@ -60,6 +60,9 @@ interface AppActions {
   deleteObjetivoMovement: (objetivoId: string, movementId: string) => void
   updateObjetivoImage: (objetivoId: string, imageUrl: string) => void
 
+  // Partner
+  setPartner: (partner: { id: string; name: string; partnerCode: string } | null) => void
+
   // Reset
   resetAll: () => void
 }
@@ -382,6 +385,8 @@ export const useAppStore = create<AppState & AppActions>()(
             o.id !== id ? o : { ...o, imageUrl }
           ),
         })),
+
+      setPartner: (partner) => set({ partner: partner as AppState['partner'] }),
 
       resetAll: () => set(getInitialState()),
     }),

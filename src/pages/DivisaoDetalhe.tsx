@@ -14,6 +14,7 @@ import EditMovementModal from '../components/features/EditMovementModal'
 import EditSaidaFixaModal from '../components/features/EditSaidaFixaModal'
 import AddSaidaFixaModal from '../components/features/AddSaidaFixaModal'
 import AddObjetivoModal from '../components/features/AddObjetivoModal'
+import ConfirmPaymentModal from '../components/features/ConfirmPaymentModal'
 import type { DivisaoMovement, SaidaFixa, Objetivo } from '../types'
 
 const HERO_BG = '#001442'
@@ -49,6 +50,7 @@ export default function DivisaoDetalhe() {
   const [editObjetivoTarget, setEditObjetivoTarget] = useState<Objetivo | null>(null)
   const [deleteObjetivoTarget, setDeleteObjetivoTarget] = useState<Objetivo | null>(null)
   const [objetivoActionTarget, setObjetivoActionTarget] = useState<Objetivo | null>(null)
+  const [confirmPaySf, setConfirmPaySf] = useState<SaidaFixa | null>(null)
 
   const divisao = useAppStore(s => s.divisoes.find(cx => cx.id === id))
   const saidasFixas = useAppStore(useShallow(selectCurrentSaidasFixas))
@@ -360,7 +362,7 @@ export default function DivisaoDetalhe() {
               <p style={{ fontSize: 12, color: 'var(--color-text-tertiary)', margin: 0 }}>Crie seu primeiro objetivo financeiro</p>
             </div>
           ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: myObjetivos.length === 1 ? '1fr' : '1fr 1fr', gap: 12 }}>
               {myObjetivos.map(obj => (
                 <ObjetivoCard 
                   key={obj.id} 
@@ -735,7 +737,7 @@ export default function DivisaoDetalhe() {
                 return [
                   paid
                     ? { label: 'Desmarcar pagamento', icon: XCircle, color: 'var(--color-warning)', onClick: () => markSaidaFixaUnpaid(sf.id, today) }
-                    : { label: 'Marcar como pago', icon: CheckCircle2, color: 'var(--color-success)', onClick: () => markSaidaFixaPaid(sf.id, today) },
+                    : { label: 'Marcar como pago', icon: CheckCircle2, color: 'var(--color-success)', onClick: () => { setActionItem(null); setConfirmPaySf(sf) } },
                   { label: 'Editar', icon: Pencil, color: 'var(--color-accent-primary)', onClick: () => setEditSf(sf) },
                   { label: 'Excluir', icon: Trash2, color: 'var(--color-danger)', onClick: () => deleteSaidaFixa(sf.id) },
                 ]
@@ -816,6 +818,12 @@ export default function DivisaoDetalhe() {
         description={`"${deleteObjetivoTarget?.name ?? ''}" será excluído permanentemente, incluindo todos os lançamentos e o progresso acumulado. Esta ação não pode ser desfeita.`}
         confirmLabel="Excluir permanentemente"
         variant="danger"
+      />
+      <ConfirmPaymentModal
+        open={!!confirmPaySf}
+        onClose={() => setConfirmPaySf(null)}
+        costName={confirmPaySf?.name}
+        onConfirm={(date) => { if (confirmPaySf) markSaidaFixaPaid(confirmPaySf.id, date) }}
       />
     </div>
   )

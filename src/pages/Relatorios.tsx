@@ -3,7 +3,7 @@ import { useAppStore, selectCurrentDivisoes } from '../stores/useAppStore'
 import { useShallow } from 'zustand/react/shallow'
 import { formatCurrency } from '../lib/calculations'
 import { getDivisaoIcon } from '../lib/icons'
-import { ProgressBar, PageHeader } from '../components/ui'
+import { PageHeader } from '../components/ui'
 import { useIsMobile } from '../hooks/useIsMobile'
 import {
   ChevronLeft, ChevronRight,
@@ -37,9 +37,12 @@ type Divisoes = ReturnType<typeof selectCurrentDivisoes>
 
 function aggregateMonth(divisoes: Divisoes, month: string) {
   return divisoes.map(cx => {
-    const mvs    = cx.movements.filter(mv => mv.date.startsWith(month))
+    const mvs     = cx.movements.filter(mv => mv.date.startsWith(month))
     const totalIn  = mvs.filter(mv => mv.type === 'income').reduce((s, mv) => s + mv.amount, 0)
-    const totalOut = mvs.filter(mv => mv.type === 'expense').reduce((s, mv) => s + mv.amount, 0)
+    // Saídas: movements com type 'expense' OU amount negativo
+    const totalOut = mvs
+      .filter(mv => mv.type === 'expense' || mv.amount < 0)
+      .reduce((s, mv) => s + Math.abs(mv.amount), 0)
     return { cx, totalIn, totalOut }
   })
 }
@@ -56,12 +59,12 @@ const CARD: React.CSSProperties = {
 // ─────────────────────────────────────────────────────────────────────────────
 
 export default function Relatorios() {
-  const allDivisoes = useAppStore(useShallow(s => s.divisoes))
+  const allDivisoes  = useAppStore(useShallow(s => s.divisoes))
   const currentUser  = useAppStore(s => s.currentUser)
   const partner      = useAppStore(s => s.partner)
   const isMobile     = useIsMobile()
   const TODAY        = currentYM()
-  const [month, setMonth]       = useState(TODAY)
+  const [month, setMonth]         = useState(TODAY)
   const [reportCtx, setReportCtx] = useState<'me' | 'partner' | 'couple'>('couple')
 
   const myName      = currentUser?.name?.split(' ')[0] ?? 'Meu'
@@ -73,9 +76,8 @@ export default function Relatorios() {
     { key: 'couple',  label: 'Casal' },
   ]
 
-  const ctxLabel = reportCtx === 'me' ? myName : reportCtx === 'partner' ? partnerName : 'Casal'
-
   const divisoes = useMemo(() => {
+    if (!allDivisoes || allDivisoes.length === 0) return []
     if (reportCtx === 'me')      return allDivisoes.filter(cx => cx.userId === currentUser?.id)
     if (reportCtx === 'partner') return allDivisoes.filter(cx => cx.userId === partner?.id)
     return allDivisoes
@@ -84,7 +86,9 @@ export default function Relatorios() {
   const data     = aggregateMonth(divisoes, month)
   const dataPrev = aggregateMonth(divisoes, shiftMonth(month, -1))
 
+  // Total entrou = soma de todas as entradas (income) das divisões
   const globalIn   = data.reduce((s, d) => s + d.totalIn, 0)
+  // Total saiu = soma de todas as saídas (expense) das divisões
   const globalOut  = data.reduce((s, d) => s + d.totalOut, 0)
   const prevIn     = dataPrev.reduce((s, d) => s + d.totalIn, 0)
   const prevOut    = dataPrev.reduce((s, d) => s + d.totalOut, 0)
@@ -92,8 +96,11 @@ export default function Relatorios() {
 
   const usagePct   = globalIn > 0 ? Math.min(100, (globalOut / globalIn) * 100) : 0
 
-  const bySpending = [...data].filter(d => d.totalOut > 0).sort((a, b) => b.totalOut - a.totalOut)
-  const maxOut     = bySpending[0]?.totalOut ?? 0
+  // Gastos por divisão: divisões com saídas OU com saldo positivo (recebeu entradas)
+  const byActivity = [...data]
+    .filter(d => d.totalIn > 0 || d.totalOut > 0)
+    .sort((a, b) => b.totalIn - a.totalIn)
+  const maxIn = byActivity[0]?.totalIn ?? 0
 
   const inDelta    = globalIn  - prevIn
   const outDelta   = globalOut - prevOut
@@ -107,12 +114,17 @@ export default function Relatorios() {
       {isMobile ? (
         <>
           <PageHeader title="Relatórios" />
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, padding: '8px 16px 4px' }}>
+          {/* Mês + Toggle na mesma linha */}
+          <div style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            padding: '8px 16px 12px', gap: 12,
+          }}>
             <MonthNav month={month} today={TODAY} onChange={setMonth} showLabel />
-          </div>
-          {/* Segmented control mobile */}
-          <div style={{ display: 'flex', justifyContent: 'center', padding: '4px 16px 12px' }}>
-            <SegmentedCtrl options={ctxOptions} value={reportCtx} onChange={(v) => setReportCtx(v as 'me' | 'partner' | 'couple')} />
+            <SegmentedCtrl
+              options={ctxOptions}
+              value={reportCtx}
+              onChange={(v) => setReportCtx(v as 'me' | 'partner' | 'couple')}
+            />
           </div>
         </>
       ) : (
@@ -120,15 +132,11 @@ export default function Relatorios() {
         <div style={{ paddingTop: 32, marginBottom: 24, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
           <div style={{ flexShrink: 0 }}>
             <h1 style={{ fontSize: 24, fontWeight: 600, color: 'var(--color-text-primary)', margin: 0 }}>Relatórios</h1>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 4 }}>
-              <p style={{ fontSize: 13, color: 'var(--color-text-secondary)', margin: 0 }}>{monthLabel(month)}</p>
-              <span style={{ fontSize: 11, fontWeight: 600, padding: '2px 8px', borderRadius: 99, background: 'rgba(59,130,246,0.12)', color: 'var(--color-accent-primary)', border: '1px solid rgba(59,130,246,0.2)' }}>
-                {ctxLabel}
-              </span>
-            </div>
           </div>
-          <SegmentedCtrl options={ctxOptions} value={reportCtx} onChange={(v) => setReportCtx(v as 'me' | 'partner' | 'couple')} />
-          <MonthNav month={month} today={TODAY} onChange={setMonth} />
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <MonthNav month={month} today={TODAY} onChange={setMonth} showLabel />
+            <SegmentedCtrl options={ctxOptions} value={reportCtx} onChange={(v) => setReportCtx(v as 'me' | 'partner' | 'couple')} />
+          </div>
         </div>
       )}
 
@@ -140,14 +148,14 @@ export default function Relatorios() {
           </div>
           <p style={{ fontSize: 15, fontWeight: 600, color: 'var(--color-text-primary)', margin: '0 0 6px' }}>Nenhum lançamento</p>
           <p style={{ fontSize: 13, color: 'var(--color-text-tertiary)', margin: 0, lineHeight: 1.5, maxWidth: 280 }}>
-            Nenhum movimento de <strong style={{ color: 'var(--color-text-secondary)' }}>{ctxLabel}</strong> em {monthLabel(month).toLowerCase()}.
+            Nenhum movimento em {monthLabel(month).toLowerCase()}.
           </p>
         </div>
 
       ) : (
         <div style={{ padding: isMobile ? '0 16px' : 0, maxWidth: 1200, margin: '0 auto' }}>
 
-          {/* ── KPI Strip — 4 cards (desktop only inline, mobile 2x2) ─────────── */}
+          {/* ── KPI Strip ───────────────────────────────────────────────────── */}
           <div style={{
             display: 'grid',
             gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(4, 1fr)',
@@ -189,24 +197,24 @@ export default function Relatorios() {
             />
           </div>
 
-          {/* ── Bento 2 colunas (mobile: 1 col) ────────────────────────────── */}
+          {/* ── Bento 2 colunas (mobile: 1 col) ─────────────────────────────── */}
           <div style={{
             display: 'grid',
             gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr',
             gap: isMobile ? 12 : 20,
           }}>
 
-            {/* ── Gastos por divisão ────────────────────────────────────────── */}
+            {/* ── Gastos por divisão ──────────────────────────────────────────── */}
             <div style={CARD}>
-              <p className="section-label" style={{ marginBottom: 16 }}>Gastos por divisão</p>
+              <p className="section-label" style={{ marginBottom: 16 }}>Entradas por divisão</p>
 
-              {bySpending.length === 0 ? (
-                <p style={{ fontSize: 13, color: 'var(--color-text-tertiary)', margin: 0 }}>Nenhum gasto registrado este mês.</p>
+              {byActivity.length === 0 ? (
+                <p style={{ fontSize: 13, color: 'var(--color-text-tertiary)', margin: 0 }}>Nenhum movimento registrado este mês.</p>
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-                  {bySpending.map(({ cx, totalOut }) => {
+                  {byActivity.map(({ cx, totalIn, totalOut }) => {
                     const { Icon, color } = getDivisaoIcon(cx.id)
-                    const barPct = maxOut > 0 ? (totalOut / maxOut) * 100 : 0
+                    const barPct = maxIn > 0 ? (totalIn / maxIn) * 100 : 0
                     return (
                       <div key={cx.id}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 7 }}>
@@ -214,12 +222,16 @@ export default function Relatorios() {
                             <Icon size={14} style={{ color }} />
                           </div>
                           <span style={{ flex: 1, fontSize: 13, fontWeight: 500, color: 'var(--color-text-primary)' }}>{cx.name}</span>
-                          <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--color-text-primary)' }}>{formatCurrency(totalOut)}</span>
-                          <span style={{ fontSize: 11, color: 'var(--color-text-tertiary)', minWidth: 36, textAlign: 'right' }}>
-                            {globalOut > 0 ? Math.round((totalOut / globalOut) * 100) : 0}%
-                          </span>
+                          <div style={{ textAlign: 'right' }}>
+                            <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--color-success)' }}>+{formatCurrency(totalIn)}</div>
+                            {totalOut > 0 && (
+                              <div style={{ fontSize: 11, color: 'var(--color-danger)' }}>-{formatCurrency(totalOut)}</div>
+                            )}
+                          </div>
                         </div>
-                        <ProgressBar value={barPct} size="sm" />
+                        <div style={{ height: 4, background: 'rgba(255,255,255,0.06)', borderRadius: 99, overflow: 'hidden' }}>
+                          <div style={{ height: '100%', width: `${barPct}%`, background: color, borderRadius: 99, transition: 'width 500ms ease' }} />
+                        </div>
                       </div>
                     )
                   })}
@@ -231,23 +243,23 @@ export default function Relatorios() {
             <div style={CARD}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
                 <p className="section-label" style={{ margin: 0 }}>Distribuição real vs. esperada</p>
-                <span style={{ fontSize: 11, color: 'var(--color-text-tertiary)' }}>% dos gastos totais</span>
+                <span style={{ fontSize: 11, color: 'var(--color-text-tertiary)' }}>% das entradas</span>
               </div>
 
-              {globalOut === 0 ? (
-                <p style={{ fontSize: 13, color: 'var(--color-text-tertiary)', margin: 0 }}>Nenhum gasto registrado este mês.</p>
+              {globalIn === 0 ? (
+                <p style={{ fontSize: 13, color: 'var(--color-text-tertiary)', margin: 0 }}>Nenhum movimento registrado este mês.</p>
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                   {data
-                    .filter(d => d.totalOut > 0 || d.cx.percentage > 0)
+                    .filter(d => d.totalIn > 0 || d.cx.percentage > 0)
                     .sort((a, b) => {
-                      const deltaA = globalOut > 0 ? (a.totalOut / globalOut) * 100 - a.cx.percentage : 0
-                      const deltaB = globalOut > 0 ? (b.totalOut / globalOut) * 100 - b.cx.percentage : 0
+                      const deltaA = globalIn > 0 ? (a.totalIn / globalIn) * 100 - a.cx.percentage : 0
+                      const deltaB = globalIn > 0 ? (b.totalIn / globalIn) * 100 - b.cx.percentage : 0
                       return Math.abs(deltaB) - Math.abs(deltaA)
                     })
-                    .map(({ cx, totalOut }) => {
+                    .map(({ cx, totalIn }) => {
                       const { Icon, color } = getDivisaoIcon(cx.id)
-                      const realPct     = globalOut > 0 ? (totalOut / globalOut) * 100 : 0
+                      const realPct     = globalIn > 0 ? (totalIn / globalIn) * 100 : 0
                       const expectedPct = cx.percentage
                       const delta       = realPct - expectedPct
                       const overshot    = delta > 5
@@ -277,7 +289,7 @@ export default function Relatorios() {
                           </div>
                           <div style={{ position: 'relative', height: 5, borderRadius: 3, background: 'rgba(255,255,255,0.06)' }}>
                             <div style={{ position: 'absolute', left: `${Math.min(expectedPct, 100)}%`, top: -2, bottom: -2, width: 2, borderRadius: 1, background: 'var(--color-text-tertiary)', opacity: 0.5, transform: 'translateX(-1px)' }} />
-                            {totalOut > 0 && (
+                            {totalIn > 0 && (
                               <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: `${Math.min(realPct, expectedPct, 100)}%`, background: color, borderRadius: 3, transition: 'width 500ms ease' }} />
                             )}
                             {overshot && (
@@ -318,7 +330,7 @@ function SegmentedCtrl({
       {options.map(({ key, label }) => {
         const isActive = value === key
         return (
-          <button key={key} onClick={() => onChange(key)} style={{ padding: '6px 16px', borderRadius: 999, border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: isActive ? 600 : 500, fontFamily: 'var(--font-sans)', background: isActive ? 'var(--color-accent-primary)' : 'transparent', color: isActive ? 'white' : 'var(--color-text-secondary)', transition: 'background 150ms ease, color 150ms ease', whiteSpace: 'nowrap' }}>
+          <button key={key} onClick={() => onChange(key)} style={{ padding: '6px 14px', borderRadius: 999, border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: isActive ? 600 : 500, fontFamily: 'var(--font-sans)', background: isActive ? 'var(--color-accent-primary)' : 'transparent', color: isActive ? 'white' : 'var(--color-text-secondary)', transition: 'background 150ms ease, color 150ms ease', whiteSpace: 'nowrap' }}>
             {label}
           </button>
         )
@@ -330,24 +342,24 @@ function SegmentedCtrl({
 function MonthNav({ month, today, onChange, showLabel }: { month: string; today: string; onChange: (m: string) => void; showLabel?: boolean }) {
   const isCurrentMonth = month === today
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: showLabel ? 8 : 4 }}>
+    <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
       <button
         onClick={() => onChange(shiftMonth(month, -1))}
-        style={{ width: 30, height: 30, borderRadius: 8, border: 'none', background: 'rgba(255,255,255,0.06)', cursor: 'pointer', color: 'var(--color-text-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+        style={{ width: 28, height: 28, borderRadius: 8, border: 'none', background: 'rgba(255,255,255,0.06)', cursor: 'pointer', color: 'var(--color-text-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
       >
-        <ChevronLeft size={16} />
+        <ChevronLeft size={15} />
       </button>
       {showLabel && (
-        <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-text-primary)', minWidth: 110, textAlign: 'center' }}>
+        <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text-primary)', minWidth: 100, textAlign: 'center' }}>
           {monthLabel(month)}
         </span>
       )}
       <button
         onClick={() => !isCurrentMonth && onChange(shiftMonth(month, 1))}
-        style={{ width: 30, height: 30, borderRadius: 8, border: 'none', background: isCurrentMonth ? 'transparent' : 'rgba(255,255,255,0.06)', cursor: isCurrentMonth ? 'default' : 'pointer', color: isCurrentMonth ? 'var(--color-text-tertiary)' : 'var(--color-text-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+        style={{ width: 28, height: 28, borderRadius: 8, border: 'none', background: isCurrentMonth ? 'transparent' : 'rgba(255,255,255,0.06)', cursor: isCurrentMonth ? 'default' : 'pointer', color: isCurrentMonth ? 'var(--color-text-tertiary)' : 'var(--color-text-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
         aria-disabled={isCurrentMonth}
       >
-        <ChevronRight size={16} />
+        <ChevronRight size={15} />
       </button>
     </div>
   )

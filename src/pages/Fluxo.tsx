@@ -5,6 +5,7 @@ import { useShallow } from 'zustand/react/shallow'
 import { formatCurrency, isPaidThisMonth, getDueDayLabel, getDaysUntil } from '../lib/calculations'
 import LancarEntradaModal from '../components/features/LancarEntradaModal'
 import EditSaidaFixaModal from '../components/features/EditSaidaFixaModal'
+import ConfirmPaymentModal from '../components/features/ConfirmPaymentModal'
 import ItemActionSheet from '../components/ui/ItemActionSheet'
 import { PageHeader, SearchBar, groupByMonth, MonthHeader, Dialog } from '../components/ui'
 import { useIsMobile } from '../hooks/useIsMobile'
@@ -228,6 +229,7 @@ export default function Fluxo() {
   const [fluxoSearch, setFluxoSearch] = useState('')
   const [actionSf, setActionSf] = useState<SaidaFixa | null>(null)
   const [editSf, setEditSf] = useState<SaidaFixa | null>(null)
+  const [confirmPaySf, setConfirmPaySf] = useState<SaidaFixa | null>(null)
   const isMobile = useIsMobile()
 
   const saidasFixas = useAppStore(useShallow(selectCurrentSaidasFixas))
@@ -588,7 +590,7 @@ export default function Fluxo() {
         actions={actionSf ? [
           ...(isPaidThisMonth(actionSf.paidDates)
             ? [{ label: 'Desmarcar pagamento', icon: XCircle, color: 'var(--color-warning)', onClick: () => { markUnpaid(actionSf.id, new Date().toISOString().slice(0, 10)) } }]
-            : [{ label: 'Marcar como pago', icon: CheckCircle2, color: 'var(--color-success)', onClick: () => { markPaid(actionSf.id, new Date().toISOString().slice(0, 10)) } }]
+            : [{ label: 'Marcar como pago', icon: CheckCircle2, color: 'var(--color-success)', onClick: () => { setConfirmPaySf(actionSf) } }]
           ),
           { label: 'Editar', icon: Pencil, color: 'var(--color-accent-primary)', onClick: () => setEditSf(actionSf) },
           { label: 'Excluir', icon: Trash2, color: 'var(--color-danger)', onClick: () => { if (confirm('Excluir ' + actionSf.name + '?')) deleteSaidaFixa(actionSf.id) } },
@@ -604,6 +606,13 @@ export default function Fluxo() {
           onSave={(data) => { editSaidaFixa(editSf.id, data); setEditSf(null) }}
         />
       )}
+
+      <ConfirmPaymentModal
+        open={!!confirmPaySf}
+        onClose={() => setConfirmPaySf(null)}
+        costName={confirmPaySf?.name}
+        onConfirm={(date) => { if (confirmPaySf) markPaid(confirmPaySf.id, date) }}
+      />
     </div>
   )
 }

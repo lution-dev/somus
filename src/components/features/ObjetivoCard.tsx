@@ -47,7 +47,7 @@ export default function ObjetivoCard({ obj, onNavigate, onAction, accentColor = 
             <div style={{ 
               position: 'absolute', 
               inset: 0, 
-              background: 'linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.2) 50%, rgba(0,0,0,0.4) 100%)' 
+              background: 'linear-gradient(to top, rgba(0,0,0,0.92) 0%, rgba(0,0,0,0.45) 65%, rgba(0,0,0,0.15) 100%)' 
             }} />
             
             {obj.isCouple && (
@@ -72,34 +72,22 @@ export default function ObjetivoCard({ obj, onNavigate, onAction, accentColor = 
               position: 'absolute', 
               bottom: 12, 
               left: 14, 
-              right: 14, 
-              display: 'flex', 
-              justifyContent: 'space-between', 
-              alignItems: 'flex-end' 
+              right: 14,
             }}>
-              <div style={{ flex: 1, minWidth: 0, marginRight: 8 }}>
-                <p style={{ 
-                  fontSize: 16, 
-                  fontWeight: 700, 
-                  color: 'white', 
-                  margin: 0, 
-                  textShadow: '0 1px 4px rgba(0,0,0,0.5)',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  whiteSpace: 'nowrap'
-                }}>
-                  {obj.name}
-                </p>
-              </div>
-              <span style={{ 
+              <p style={{ 
                 fontSize: 14, 
-                fontWeight: 800, 
+                fontWeight: 700, 
                 color: 'white', 
-                textShadow: '0 1px 4px rgba(0,0,0,0.5)',
-                flexShrink: 0 
+                margin: 0, 
+                textShadow: '0 2px 6px rgba(0,0,0,0.7)',
+                display: '-webkit-box',
+                WebkitLineClamp: 2,
+                WebkitBoxOrient: 'vertical',
+                overflow: 'hidden',
+                lineHeight: 1.3,
               }}>
-                {Math.round(pct)}%
-              </span>
+                {obj.name}
+              </p>
             </div>
           </div>
         ) : (
@@ -123,19 +111,19 @@ export default function ObjetivoCard({ obj, onNavigate, onAction, accentColor = 
                 <Target size={20} color={finalAccent} strokeWidth={1.5} />
               </div>
               <div style={{ flex: 1, minWidth: 0, paddingTop: 2 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
-                  <p style={{ 
-                    fontSize: 15, 
-                    fontWeight: 700, 
-                    color: 'var(--color-text-primary)', 
-                    margin: 0, 
-                    overflow: 'hidden', 
-                    textOverflow: 'ellipsis', 
-                    whiteSpace: 'nowrap' 
-                  }}>
-                    {obj.name}
-                  </p>
-                </div>
+                <p style={{ 
+                  fontSize: 14, 
+                  fontWeight: 700, 
+                  color: 'var(--color-text-primary)', 
+                  margin: '0 0 3px', 
+                  display: '-webkit-box',
+                  WebkitLineClamp: 2,
+                  WebkitBoxOrient: 'vertical',
+                  overflow: 'hidden',
+                  lineHeight: 1.3,
+                }}>
+                  {obj.name}
+                </p>
                 {obj.isCouple && (
                   <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                     <Heart size={10} color="var(--color-accent-couple)" fill="var(--color-accent-couple)" />
@@ -143,67 +131,68 @@ export default function ObjetivoCard({ obj, onNavigate, onAction, accentColor = 
                   </div>
                 )}
               </div>
-              <span style={{ 
-                fontSize: 15, 
-                fontWeight: 800, 
-                color: finalAccent, 
-                flexShrink: 0,
-                paddingTop: 2
-              }}>
-                {Math.round(pct)}%
-              </span>
             </div>
           </div>
         )}
 
         <div style={{ padding: '12px 14px' }}>
-          <div style={{ 
-            height: 5, 
-            background: 'rgba(255,255,255,0.06)', 
-            borderRadius: 9999, 
-            overflow: 'hidden', 
-            marginBottom: 10 
-          }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
             <div style={{ 
-              height: '100%', 
+              flex: 1,
+              height: 5, 
+              background: 'rgba(255,255,255,0.06)', 
               borderRadius: 9999, 
-              background: finalAccent, 
-              width: `${pct}%`, 
-              transition: 'width 600ms ease' 
-            }} />
+              overflow: 'hidden', 
+            }}>
+              <div style={{ 
+                height: '100%', 
+                borderRadius: 9999, 
+                background: finalAccent, 
+                width: `${pct}%`, 
+                transition: 'width 600ms ease' 
+              }} />
+            </div>
+            <span style={{ fontSize: 12, fontWeight: 700, color: finalAccent, flexShrink: 0 }}>
+              {Math.round(pct)}%
+            </span>
           </div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
-            <div>
-              <p style={{ 
-                fontSize: 10, 
-                color: 'var(--color-text-tertiary)', 
-                margin: '0 0 1px', 
-                textTransform: 'uppercase', 
-                letterSpacing: '0.04em', 
-                fontWeight: 600 
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+            {/* Guardado */}
+            <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 4 }}>
+              <p style={{
+                fontSize: 10,
+                color: 'var(--color-text-tertiary)',
+                textTransform: 'uppercase',
+                letterSpacing: '0.04em',
+                fontWeight: 600,
+                margin: 0,
+                flexShrink: 0,
               }}>
                 Guardado
               </p>
-              <p style={{ fontSize: 14, fontWeight: 700, color: 'var(--color-text-primary)', margin: 0 }}>
+              <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--color-text-primary)', margin: 0, minWidth: 0 }}>
                 {formatCurrency(obj.currentAmount)}
               </p>
             </div>
-            <div style={{ textAlign: 'right' }}>
-              <p style={{ 
-                fontSize: 10, 
-                color: 'var(--color-text-tertiary)', 
-                margin: '0 0 1px', 
-                textTransform: 'uppercase', 
-                letterSpacing: '0.04em', 
-                fontWeight: 600 
+            {/* Faltam */}
+            <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 4 }}>
+              <p style={{
+                fontSize: 10,
+                color: 'var(--color-text-tertiary)',
+                textTransform: 'uppercase',
+                letterSpacing: '0.04em',
+                fontWeight: 600,
+                margin: 0,
+                flexShrink: 0,
               }}>
                 Faltam
               </p>
-              <p style={{ 
-                fontSize: 13, 
-                fontWeight: 600, 
-                color: remaining > 0 ? 'var(--color-text-secondary)' : 'var(--color-success)', 
-                margin: 0 
+              <p style={{
+                fontSize: 12,
+                fontWeight: 600,
+                color: remaining > 0 ? 'var(--color-text-secondary)' : 'var(--color-success)',
+                margin: 0,
+                minWidth: 0,
               }}>
                 {remaining > 0 ? formatCurrency(remaining) : '✓ Meta'}
               </p>
