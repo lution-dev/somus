@@ -29,6 +29,93 @@ function sanitizeForFirestore(obj: any): any {
   return clean
 }
 
+// ─── Migration: caixinhas → divisoes ──────────────────────────────────────────
+
+/**
+ * Migrates legacy Firestore data that still uses the old "caixinhas" naming.
+ * Handles:
+ * - Top-level field: caixinhas → divisoes
+ * - SaidaFixa items: caixinhaId → divisaoId
+ * - Entrada distribution: caixinhaId/caixinhaName → divisaoId/divisaoName
+ * - Objetivo: caixinhaId → divisaoId
+ * - SaidaVariavel: caixinhaId → divisaoId
+ * - viewContext: 'lucas'|'mirian' → 'personal'
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function migrateFirestoreData(raw: Record<string, any>): AppState {
+  // Divisoes: prefer new name, fall back to old
+  const divisoes = raw.divisoes ?? raw.caixinhas ?? []
+
+  // SaidasFixas: map caixinhaId → divisaoId
+  const saidasFixas = (raw.saidasFixas ?? []).map((sf: Record<string, unknown>) => {
+    const migrated = { ...sf }
+    if ('caixinhaId' in migrated && !('divisaoId' in migrated)) {
+      migrated.divisaoId = migrated.caixinhaId
+      delete migrated.caixinhaId
+    }
+    return migrated
+  })
+
+  // Entradas: map distribution items
+  const entradas = (raw.entradas ?? []).map((e: Record<string, unknown>) => {
+    const dist = (e.distribution as Record<string, unknown>[] | undefined) ?? []
+    return {
+      ...e,
+      distribution: dist.map(d => {
+        const md = { ...d }
+        if ('caixinhaId' in md && !('divisaoId' in md)) {
+          md.divisaoId = md.caixinhaId
+          delete md.caixinhaId
+        }
+        if ('caixinhaName' in md && !('divisaoName' in md)) {
+          md.divisaoName = md.caixinhaName
+          delete md.caixinhaName
+        }
+        return md
+      }),
+    }
+  })
+
+  // SaidasVariaveis: map caixinhaId → divisaoId
+  const saidasVariaveis = (raw.saidasVariaveis ?? []).map((sv: Record<string, unknown>) => {
+    const migrated = { ...sv }
+    if ('caixinhaId' in migrated && !('divisaoId' in migrated)) {
+      migrated.divisaoId = migrated.caixinhaId
+      delete migrated.caixinhaId
+    }
+    return migrated
+  })
+
+  // Objetivos: map caixinhaId → divisaoId
+  const objetivos = (raw.objetivos ?? []).map((obj: Record<string, unknown>) => {
+    const migrated = { ...obj }
+    if ('caixinhaId' in migrated && !('divisaoId' in migrated)) {
+      migrated.divisaoId = migrated.caixinhaId
+      delete migrated.caixinhaId
+    }
+    return migrated
+  })
+
+  // viewContext: migrate old 'lucas'/'mirian' to 'personal'
+  let viewContext = raw.viewContext ?? 'personal'
+  if (viewContext !== 'personal' && viewContext !== 'couple') {
+    viewContext = 'personal'
+  }
+
+  return {
+    isOnboarded: raw.isOnboarded ?? false,
+    currentUser: raw.currentUser ?? null,
+    partner: raw.partner ?? null,
+    viewContext,
+    incomeSources: raw.incomeSources ?? [],
+    entradas,
+    divisoes,
+    saidasFixas,
+    saidasVariaveis,
+    objetivos,
+  }
+}
+
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 /** Keys from AppState that we persist to Firestore */
@@ -86,19 +173,8 @@ export async function loadStateFromFirestore(
   const snap = await getDoc(getUserDocRef(uid))
   if (!snap.exists()) return null
 
-  const data = snap.data() as PersistableState
-  return {
-    isOnboarded: data.isOnboarded ?? false,
-    currentUser: data.currentUser ?? null,
-    partner: data.partner ?? null,
-    viewContext: data.viewContext ?? 'personal',
-    incomeSources: data.incomeSources ?? [],
-    entradas: data.entradas ?? [],
-    divisoes: data.divisoes ?? [],
-    saidasFixas: data.saidasFixas ?? [],
-    saidasVariaveis: data.saidasVariaveis ?? [],
-    objetivos: data.objetivos ?? [],
-  }
+  // Migrate legacy field names (caixinhas → divisoes, caixinhaId → divisaoId)
+  return migrateFirestoreData(snap.data())
 }
 
 // ─── Real-time Listener ───────────────────────────────────────────────────────
@@ -128,19 +204,8 @@ export function subscribeToState(
       // We only care about server-confirmed writes from OTHER devices.
       if (snap.metadata.hasPendingWrites) return
 
-      const data = snap.data() as PersistableState
-      callback({
-        isOnboarded: data.isOnboarded ?? false,
-        currentUser: data.currentUser ?? null,
-        partner: data.partner ?? null,
-        viewContext: data.viewContext ?? 'personal',
-        incomeSources: data.incomeSources ?? [],
-        entradas: data.entradas ?? [],
-        divisoes: data.divisoes ?? [],
-        saidasFixas: data.saidasFixas ?? [],
-        saidasVariaveis: data.saidasVariaveis ?? [],
-        objetivos: data.objetivos ?? [],
-      })
+      // Migrate legacy field names (caixinhas → divisoes, caixinhaId → divisaoId)
+      callback(migrateFirestoreData(snap.data()))
     },
     (error) => {
       console.warn('[Somus] Firestore listener error:', error)

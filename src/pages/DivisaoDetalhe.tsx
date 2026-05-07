@@ -7,7 +7,8 @@ import { getDivisaoIcon } from '../lib/icons'
 import { ProgressBar, PageHeader, SearchBar, groupByMonth, MonthHeader, ConfirmDialog, Breadcrumb } from '../components/ui'
 import ItemActionSheet from '../components/ui/ItemActionSheet'
 import { useIsMobile } from '../hooks/useIsMobile'
-import { ArrowUpRight, ArrowDownRight, Info, Plus, CheckCircle2, XCircle, Pencil, Trash2, Heart, Target } from 'lucide-react'
+import { Plus, Pencil, Trash2, Target, ArrowUpRight, ArrowDownRight, XCircle, CheckCircle2, Info } from 'lucide-react'
+import ObjetivoCard from '../components/features/ObjetivoCard'
 import LancarDespesaModal from '../components/features/LancarDespesaModal'
 import EditMovementModal from '../components/features/EditMovementModal'
 import EditSaidaFixaModal from '../components/features/EditSaidaFixaModal'
@@ -360,78 +361,15 @@ export default function DivisaoDetalhe() {
             </div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-              {myObjetivos.map(obj => {
-                const pct = obj.targetAmount > 0 ? Math.min(100, (obj.currentAmount / obj.targetAmount) * 100) : 0
-                const remaining = Math.max(0, obj.targetAmount - obj.currentAmount)
-                const accentColor = obj.isCouple ? '#8B5CF6' : color
-                return (
-                  <div key={obj.id} style={{ position: 'relative' }}>
-                    <button
-                      onClick={() => navigate(`/casal/objetivo/${obj.id}`)}
-                      style={{
-                        width: '100%', textAlign: 'left', cursor: 'pointer',
-                        background: 'var(--color-bg-secondary)',
-                        border: `1px solid ${obj.isCouple ? 'rgba(139,92,246,0.2)' : 'rgba(255,255,255,0.08)'}`,
-                        borderRadius: 16,
-                        padding: 0, fontFamily: 'var(--font-sans)',
-                        overflow: 'hidden',
-                      }}
-                    >
-                      {obj.imageUrl ? (
-                        <div style={{ position: 'relative', height: 110, overflow: 'hidden' }}>
-                          <img src={obj.imageUrl} alt={obj.name} style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: `center ${(obj as any).imagePosition ?? 50}%` }} />
-                          <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.1) 60%)' }} />
-                          {obj.isCouple && (
-                            <div style={{ position: 'absolute', top: 10, left: 14, background: 'rgba(139,92,246,0.85)', backdropFilter: 'blur(8px)', borderRadius: 20, padding: '3px 8px', display: 'flex', alignItems: 'center', gap: 4 }}>
-                              <Heart size={10} color="white" fill="white" />
-                              <span style={{ fontSize: 10, fontWeight: 700, color: 'white' }}>Casal</span>
-                            </div>
-                          )}
-                          <div style={{ position: 'absolute', bottom: 10, left: 14, right: 14, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
-                            <p style={{ fontSize: 16, fontWeight: 700, color: 'white', margin: 0, textShadow: '0 1px 4px rgba(0,0,0,0.5)' }}>{obj.name}</p>
-                            <span style={{ fontSize: 14, fontWeight: 800, color: 'white', textShadow: '0 1px 4px rgba(0,0,0,0.5)' }}>{Math.round(pct)}%</span>
-                          </div>
-                        </div>
-                      ) : (
-                        <div style={{ height: 72, background: `linear-gradient(135deg, ${accentColor}18 0%, ${accentColor}08 100%)`, borderBottom: `1px solid ${accentColor}20`, display: 'flex', alignItems: 'center', padding: '0 44px 0 16px', gap: 12 }}>
-                          <div style={{ width: 40, height: 40, borderRadius: 12, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: `${accentColor}20`, border: `1px solid ${accentColor}30` }}>
-                            <Target size={20} color={accentColor} strokeWidth={1.5} />
-                          </div>
-                          <div style={{ flex: 1, minWidth: 0 }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                              <p style={{ fontSize: 15, fontWeight: 700, color: 'var(--color-text-primary)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{obj.name}</p>
-                              {obj.isCouple && <Heart size={11} color="#EC4899" fill="#EC4899" style={{ flexShrink: 0 }} />}
-                            </div>
-                          </div>
-                          <span style={{ fontSize: 14, fontWeight: 800, color: accentColor, flexShrink: 0 }}>{Math.round(pct)}%</span>
-                        </div>
-                      )}
-                      <div style={{ padding: '12px 14px' }}>
-                        <div style={{ height: 5, background: 'rgba(255,255,255,0.08)', borderRadius: 9999, overflow: 'hidden', marginBottom: 10 }}>
-                          <div style={{ height: '100%', borderRadius: 9999, background: accentColor, width: `${pct}%`, transition: 'width 600ms ease' }} />
-                        </div>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
-                          <div>
-                            <p style={{ fontSize: 11, color: 'var(--color-text-tertiary)', margin: '0 0 1px', textTransform: 'uppercase', letterSpacing: '0.04em', fontWeight: 600 }}>Guardado</p>
-                            <p style={{ fontSize: 15, fontWeight: 700, color: 'var(--color-text-primary)', margin: 0 }}>{formatCurrency(obj.currentAmount)}</p>
-                          </div>
-                          <div style={{ textAlign: 'right' }}>
-                            <p style={{ fontSize: 11, color: 'var(--color-text-tertiary)', margin: '0 0 1px', textTransform: 'uppercase', letterSpacing: '0.04em', fontWeight: 600 }}>Faltam</p>
-                            <p style={{ fontSize: 13, fontWeight: 600, color: remaining > 0 ? 'var(--color-text-secondary)' : 'var(--color-success)', margin: 0 }}>
-                              {remaining > 0 ? formatCurrency(remaining) : '✓ Meta atingida'}
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                    </button>
-                    <button
-                      onClick={e => { e.stopPropagation(); setObjetivoActionTarget(obj) }}
-                      style={{ position: 'absolute', top: 10, right: 10, width: 28, height: 28, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.45)', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.12)', cursor: 'pointer', color: 'white', fontSize: 16, fontWeight: 700, lineHeight: 1 }}
-                      aria-label="Opções do objetivo"
-                    >⋯</button>
-                  </div>
-                )
-              })}
+              {myObjetivos.map(obj => (
+                <ObjetivoCard 
+                  key={obj.id} 
+                  obj={obj} 
+                  accentColor={color}
+                  onNavigate={(id) => navigate(`/casal/objetivo/${id}`)}
+                  onAction={setObjetivoActionTarget}
+                />
+              ))}
             </div>
           )}
         </div>

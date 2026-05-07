@@ -16,9 +16,9 @@ interface Props {
 
 export default function ImageCropPicker({
   imageSrc,
-  outputWidth = 900,
-  outputHeight = 360,
-  aspect = 900 / 360,
+  outputWidth = 800,
+  outputHeight = 600,
+  aspect = 4 / 3,
   onConfirm,
   onCancel,
 }: Props) {

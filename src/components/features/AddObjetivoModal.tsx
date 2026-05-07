@@ -1,8 +1,8 @@
-﻿import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useAppStore } from '../../stores/useAppStore'
 import { Dialog, DialogFooter, Button, Input } from '../ui'
 import { formatCurrency } from '../../lib/calculations'
-import { RefreshCw, Camera } from 'lucide-react'
+import { RefreshCw, Camera, Trash2 } from 'lucide-react'
 import { useCurrencyInput } from '../../hooks/useCurrencyInput'
 import ImageCropPicker from '../ui/ImageCropPicker'
 
@@ -121,7 +121,7 @@ export default function AddObjetivoModal({ open, onClose, defaultIsCouple = fals
       {cropSrc && (
         <ImageCropPicker
           imageSrc={cropSrc}
-          aspect={2.5}
+          aspect={4/3}
           onConfirm={(dataUrl) => {
             setImageUrl(dataUrl)
             setCropSrc(null)
@@ -248,7 +248,7 @@ export default function AddObjetivoModal({ open, onClose, defaultIsCouple = fals
           }}
         >
           {imageUrl ? (
-            <div style={{ position: 'relative', height: 140 }}>
+            <div style={{ position: 'relative', aspectRatio: '4/3' }}>
               <img
                 src={imageUrl}
                 alt="capa"
@@ -260,6 +260,18 @@ export default function AddObjetivoModal({ open, onClose, defaultIsCouple = fals
                 pointerEvents: 'none',
               }} />
               <div style={{ position: 'absolute', top: 10, right: 10, display: 'flex', gap: 8 }}>
+                <button
+                  type="button"
+                  onClick={(e) => { e.stopPropagation(); setImageUrl(undefined) }}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: 5, padding: '6px 12px', borderRadius: 10,
+                    background: 'rgba(239,68,68,0.7)', backdropFilter: 'blur(10px)',
+                    border: '1px solid rgba(255,255,255,0.2)', color: 'white', fontSize: 12, fontWeight: 600,
+                    cursor: 'pointer',
+                  }}
+                >
+                  <Trash2 size={13} /> Remover
+                </button>
                 <button
                   type="button"
                   onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click() }}
