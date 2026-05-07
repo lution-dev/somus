@@ -387,7 +387,7 @@ export const useAppStore = create<AppState & AppActions>()(
     }),
     {
       name: 'somus-state',
-      version: 9,
+      version: 10,
       migrate: (_persisted: unknown, version: number) => {
         const state = _persisted as Record<string, unknown>
 
@@ -449,6 +449,15 @@ export const useAppStore = create<AppState & AppActions>()(
           if (user) delete user.context
           const partner = state.partner as Record<string, unknown> | null
           if (partner) delete partner.context
+        }
+
+        // v10: migrate caixinhas → divisoes (nomenclature change)
+        if (version < 10) {
+          const oldCaixinhas = (state as Record<string, unknown>).caixinhas as Divisao[] | undefined
+          if (oldCaixinhas && oldCaixinhas.length > 0 && (!state.divisoes || (state.divisoes as Divisao[]).length === 0)) {
+            state.divisoes = oldCaixinhas
+          }
+          delete (state as Record<string, unknown>).caixinhas
         }
 
         return state as unknown as AppState & AppActions
