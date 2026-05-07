@@ -392,7 +392,7 @@ export const useAppStore = create<AppState & AppActions>()(
     }),
     {
       name: 'somus-state',
-      version: 11,
+      version: 12,
       migrate: (_persisted: unknown, version: number) => {
         const state = _persisted as Record<string, unknown>
 
@@ -550,6 +550,18 @@ export const useAppStore = create<AppState & AppActions>()(
                 }),
               }
             })
+          }
+        }
+
+        // v12: shorten old partnerCode from 'SOMUS-XXXXXXXX' format to 4-char code
+        if (version < 12) {
+          const user = state.currentUser as Record<string, unknown> | null
+          if (user && typeof user.partnerCode === 'string') {
+            const old = user.partnerCode as string
+            // Old format: 'SOMUS-XXXXXXXX' → take last 4 chars of suffix
+            if (old.startsWith('SOMUS-')) {
+              user.partnerCode = old.replace('SOMUS-', '').slice(-4).toUpperCase()
+            }
           }
         }
 
