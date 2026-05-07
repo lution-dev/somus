@@ -169,18 +169,76 @@ export const useAppStore = create<AppState & AppActions>()(
       setCaixinhas: (caixinhas) => set({ caixinhas }),
 
       markSaidaFixaPaid: (id, date) =>
-        set((state) => ({
-          saidasFixas: state.saidasFixas.map((sf) =>
-            sf.id !== id ? sf : { ...sf, paidDates: [...sf.paidDates, date] }
-          ),
-        })),
+        set((state) => {
+          const sf = state.saidasFixas.find(s => s.id === id)
+          if (!sf) return state
+
+          const yearMonth = date.slice(0, 7)
+          const svId = `sv-fixed-${id}-${yearMonth}`
+
+          return {
+            saidasFixas: state.saidasFixas.map(s =>
+              s.id !== id ? s : { ...s, paidDates: [...s.paidDates, date] }
+            ),
+            saidasVariaveis: [
+              ...state.saidasVariaveis,
+              {
+                id: svId,
+                userId: sf.userId,
+                caixinhaId: sf.caixinhaId,
+                amount: sf.amount,
+                description: sf.name,
+                category: sf.category,
+                paymentMethod: sf.paymentMethod,
+                date,
+              } as SaidaVariavel,
+            ],
+            caixinhas: state.caixinhas.map(cx =>
+              cx.id !== sf.caixinhaId ? cx : {
+                ...cx,
+                balance: cx.balance - sf.amount,
+                movements: [
+                  ...(cx.movements ?? []),
+                  {
+                    id: `mv-fixed-${id}-${yearMonth}`,
+                    date,
+                    amount: -sf.amount,
+                    description: sf.name,
+                    type: 'expense' as const,
+                  },
+                ],
+              }
+            ),
+          }
+        }),
 
       markSaidaFixaUnpaid: (id, date) =>
-        set((state) => ({
-          saidasFixas: state.saidasFixas.map((sf) =>
-            sf.id !== id ? sf : { ...sf, paidDates: sf.paidDates.filter(d => d !== date) }
-          ),
-        })),
+        set((state) => {
+          const sf = state.saidasFixas.find(s => s.id === id)
+          if (!sf) return state
+
+          const yearMonth = date.slice(0, 7)
+          const svId = `sv-fixed-${id}-${yearMonth}`
+          const mvId = `mv-fixed-${id}-${yearMonth}`
+
+          return {
+            saidasFixas: state.saidasFixas.map(s =>
+              s.id !== id ? s : {
+                ...s,
+                // remove qualquer data do mês corrente (independente do dia exato)
+                paidDates: s.paidDates.filter(d => !d.startsWith(yearMonth)),
+              }
+            ),
+            saidasVariaveis: state.saidasVariaveis.filter(sv => sv.id !== svId),
+            caixinhas: state.caixinhas.map(cx =>
+              cx.id !== sf.caixinhaId ? cx : {
+                ...cx,
+                balance: cx.balance + sf.amount,
+                movements: (cx.movements ?? []).filter(mv => mv.id !== mvId),
+              }
+            ),
+          }
+        }),
 
       addSaidaVariavel: (saida) =>
         set((state) => {

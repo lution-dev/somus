@@ -275,7 +275,7 @@ export default function Fluxo() {
   )
 
   return (
-    <div style={{ minHeight: '100%', paddingBottom: 24 }}>
+    <div style={{ minHeight: '100%', paddingBottom: isMobile ? 120 : 24 }}>
       {/* Header */}
       {isMobile ? (
         <PageHeader 
