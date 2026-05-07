@@ -41,7 +41,7 @@ export function BottomNav({ items }: BottomNavProps) {
           return (
             <button
               key={item.path}
-              onClick={() => navigate(item.path)}
+              onClick={() => navigate(item.path, { replace: true })}
               aria-label={item.label}
               aria-current={isActive ? 'page' : undefined}
               style={{

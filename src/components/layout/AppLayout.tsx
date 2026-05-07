@@ -66,7 +66,7 @@ function Sidebar() {
           return (
             <button
               key={item.path}
-              onClick={() => navigate(item.path)}
+              onClick={() => navigate(item.path, { replace: true })}
               className={active ? 'nav-item nav-item--active' : 'nav-item'}
             >
               <span style={{ flexShrink: 0, display: 'flex' }}>

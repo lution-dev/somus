@@ -1,4 +1,5 @@
 import { useRef, useState, useEffect, useCallback } from 'react'
+import { createPortal } from 'react-dom'
 import { X, Check, ZoomIn, ZoomOut, Move } from 'lucide-react'
 
 interface Props {
@@ -156,10 +157,10 @@ export default function ImageCropPicker({
     onConfirm(canvas.toDataURL('image/jpeg', 0.88))
   }
 
-  return (
+  return createPortal(
     <div
       style={{
-        position: 'fixed', inset: 0, zIndex: 200,
+        position: 'fixed', inset: 0, zIndex: 9500,
         background: 'rgba(0,0,0,0.9)',
         display: 'flex', flexDirection: 'column',
         alignItems: 'center', justifyContent: 'center',
@@ -280,6 +281,7 @@ export default function ImageCropPicker({
           <ZoomIn size={18} />
         </button>
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }

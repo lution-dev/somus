@@ -1,4 +1,5 @@
 import { useEffect, useCallback } from 'react'
+import { createPortal } from 'react-dom'
 import type { HTMLAttributes, ReactNode } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 
@@ -30,10 +31,15 @@ export function Dialog({
   useEffect(() => {
     if (open) {
       document.addEventListener('keydown', handleKeyDown)
+      // Lock the actual scroll container, not just body
+      const mainEl = document.querySelector('.somus-mobile > main') as HTMLElement | null
+      if (mainEl) mainEl.style.overflowY = 'hidden'
       document.body.style.overflow = 'hidden'
     }
     return () => {
       document.removeEventListener('keydown', handleKeyDown)
+      const mainEl = document.querySelector('.somus-mobile > main') as HTMLElement | null
+      if (mainEl) mainEl.style.overflowY = ''
       document.body.style.overflow = ''
     }
   }, [open, handleKeyDown])
@@ -41,16 +47,20 @@ export function Dialog({
   const isMobile = getIsMobile()
   const hasHeader = !!(title || showClose)
 
-  return (
+  const content = (
     <AnimatePresence>
       {open && (
-        <div style={{
-          position: 'fixed', inset: 0, zIndex: 1000,
-          display: 'flex',
-          alignItems: isMobile ? 'flex-end' : 'center',
-          justifyContent: 'center',
-          padding: isMobile ? 0 : 24,
-        }} role="dialog" aria-modal="true">
+        <div
+          style={{
+            position: 'fixed', inset: 0, zIndex: 9000,
+            display: 'flex',
+            alignItems: isMobile ? 'flex-end' : 'center',
+            justifyContent: 'center',
+            padding: isMobile ? 0 : 24,
+          }}
+          role="dialog"
+          aria-modal="true"
+        >
           {/* Backdrop */}
           <motion.div
             initial={{ opacity: 0 }}
@@ -61,6 +71,7 @@ export function Dialog({
               position: 'absolute', inset: 0,
               background: 'rgba(0,0,0,0.6)',
               backdropFilter: 'blur(4px)',
+              touchAction: 'none',
             }}
             onClick={onClose}
           />
@@ -84,14 +95,14 @@ export function Dialog({
               boxShadow: isMobile ? 'none' : '0 16px 48px rgba(0,0,0,0.4)',
             }}
           >
-            {/* Drag handle (mobile only) — fixed, não rola */}
+            {/* Drag handle (mobile only) */}
             {isMobile && (
               <div style={{ display: 'flex', justifyContent: 'center', paddingTop: 12, flexShrink: 0 }}>
                 <div style={{ width: 40, height: 4, borderRadius: 99, background: 'var(--color-border)' }} />
               </div>
             )}
 
-            {/* Header — fixo no topo, não rola com o conteúdo */}
+            {/* Header — fixed at top */}
             {hasHeader && (
               <div style={{
                 display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between',
@@ -126,11 +137,12 @@ export function Dialog({
               </div>
             )}
 
-            {/* Área de conteúdo rolável */}
+            {/* Scrollable content area */}
             <div style={{
               flex: 1,
               overflowY: 'auto',
               WebkitOverflowScrolling: 'touch' as any,
+              overscrollBehavior: 'contain',
               padding: isMobile
                 ? `${hasHeader ? 16 : 8}px 20px calc(24px + env(safe-area-inset-bottom, 0px))`
                 : `${hasHeader ? 16 : 8}px 24px 24px`,
@@ -142,6 +154,8 @@ export function Dialog({
       )}
     </AnimatePresence>
   )
+
+  return createPortal(content, document.body)
 }
 
 export interface DialogFooterProps extends HTMLAttributes<HTMLDivElement> {}

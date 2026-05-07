@@ -1,3 +1,5 @@
+import { useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import { AnimatePresence, motion } from 'framer-motion'
 import { Pencil, Trash2, X } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
@@ -25,7 +27,18 @@ function getIsMobile() {
 }
 
 export default function ItemActionSheet({ open, onClose, onEdit, onDelete, title, subtitle, actions }: Props) {
-  if (!open) return null
+  useEffect(() => {
+    if (open) {
+      const mainEl = document.querySelector('.somus-mobile > main') as HTMLElement | null
+      if (mainEl) mainEl.style.overflowY = 'hidden'
+      document.body.style.overflow = 'hidden'
+    }
+    return () => {
+      const mainEl = document.querySelector('.somus-mobile > main') as HTMLElement | null
+      if (mainEl) mainEl.style.overflowY = ''
+      document.body.style.overflow = ''
+    }
+  }, [open])
 
   const actionList: ActionSheetAction[] = actions ?? [
     ...(onEdit ? [{ label: 'Editar', icon: Pencil, color: 'var(--color-accent-primary)', onClick: onEdit }] : []),
@@ -34,7 +47,7 @@ export default function ItemActionSheet({ open, onClose, onEdit, onDelete, title
 
   const isMobile = getIsMobile()
 
-  return (
+  const content = (
     <AnimatePresence>
       {open && (
         <>
@@ -46,9 +59,10 @@ export default function ItemActionSheet({ open, onClose, onEdit, onDelete, title
             exit={{ opacity: 0 }}
             onClick={onClose}
             style={{
-              position: 'fixed', inset: 0, zIndex: 1000,
+              position: 'fixed', inset: 0, zIndex: 9000,
               background: 'rgba(0,0,0,0.5)',
               backdropFilter: isMobile ? 'none' : 'blur(4px)',
+              touchAction: 'none',
             }}
           />
 
@@ -64,7 +78,7 @@ export default function ItemActionSheet({ open, onClose, onEdit, onDelete, title
             }
             style={{
               position: 'fixed',
-              zIndex: 1001,
+              zIndex: 9001,
               background: 'var(--color-bg-secondary)',
               border: '1px solid var(--color-border)',
               ...(isMobile ? {
@@ -146,4 +160,6 @@ export default function ItemActionSheet({ open, onClose, onEdit, onDelete, title
       )}
     </AnimatePresence>
   )
+
+  return createPortal(content, document.body)
 }

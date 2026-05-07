@@ -262,7 +262,7 @@ export default function CaixinhaDetalhe() {
       ) : (
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20, paddingTop: 32 }}>
           <button
-            onClick={() => navigate('/divisoes')}
+            onClick={() => window.history.back()}
             style={{
               cursor: 'pointer', color: 'var(--color-text-secondary)',
               padding: 6, marginLeft: -6, borderRadius: 8,
