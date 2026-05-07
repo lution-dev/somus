@@ -44,10 +44,10 @@ const pillBtn = (accent: string, bg: string): React.CSSProperties => ({
 // ─── BalanceCard ─────────────────────────────────────────────────────────────
 
 function BalanceCard({
-  total, totalIncome, expectedIncome, incomeProgress,
+  total, totalIncome, expectedIncome,
   onLancar, onHistorico,
 }: {
-  total: number; totalIncome: number; expectedIncome: number; incomeProgress: number
+  total: number; totalIncome: number; expectedIncome: number
   onLancar: () => void; onHistorico: () => void
 }) {
   const remaining = Math.max(0, expectedIncome - totalIncome)
@@ -80,9 +80,6 @@ function BalanceCard({
           </div>
         )}
       </div>
-
-      {/* Barra de progresso da renda */}
-      <ProgressBar value={incomeProgress} size="sm" showLabel label="Renda do mês" />
 
       {/* ── Action pills ── */}
       <div style={{ display: 'flex', gap: 8, marginTop: 16, flexWrap: 'wrap' }}>
@@ -631,7 +628,6 @@ export default function Home() {
               total={summary.availableBalance}
               totalIncome={summary.totalIncome}
               expectedIncome={expectedIncome}
-              incomeProgress={summary.incomeProgress}
               onLancar={() => setLancarOpen(true)}
               onHistorico={() => setHistoricoOpen(true)}
             />
@@ -658,7 +654,6 @@ export default function Home() {
               total={summary.availableBalance}
               totalIncome={summary.totalIncome}
               expectedIncome={expectedIncome}
-              incomeProgress={summary.incomeProgress}
               onLancar={() => setLancarOpen(true)}
               onHistorico={() => setHistoricoOpen(true)}
             />

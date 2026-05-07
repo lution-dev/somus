@@ -6,7 +6,7 @@ import { formatCurrency, isPaidThisMonth, getDueDayLabel, getDaysUntil } from '.
 import LancarEntradaModal from '../components/features/LancarEntradaModal'
 import EditSaidaFixaModal from '../components/features/EditSaidaFixaModal'
 import ItemActionSheet from '../components/ui/ItemActionSheet'
-import { PageHeader, SearchBar, groupByMonth, MonthHeader } from '../components/ui'
+import { PageHeader, SearchBar, groupByMonth, MonthHeader, Dialog } from '../components/ui'
 import { useIsMobile } from '../hooks/useIsMobile'
 import { Check, RefreshCw, Plus, Inbox, ArrowUpRight, CheckCircle2, Pencil, Trash2, XCircle, TrendingUp, AlertCircle } from 'lucide-react'
 import type { SaidaFixa } from '../types'
@@ -25,6 +25,8 @@ function SaidaItem({ sf, isLast, onPress }: {
   const daysUntil  = getDaysUntil(sf.dueDay)
   const isUrgent   = !paid && daysUntil <= 3 && daysUntil >= 0
   const isOverdue  = !paid && daysUntil < 0
+  const [dateDialogOpen, setDateDialogOpen] = useState(false)
+  const [selectedDate, setSelectedDate] = useState(today)
 
   return (
     <motion.div
@@ -112,21 +114,102 @@ function SaidaItem({ sf, isLast, onPress }: {
 
       {/* Action Button */}
       {!sf.autoDebit && (
-        <button
-          onClick={(e) => { e.stopPropagation(); paid ? markUnpaid(sf.id, today) : markPaid(sf.id, today) }}
-          style={{
-            width: 32, height: 32,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            cursor: 'pointer', flexShrink: 0,
-            background: paid ? 'var(--color-success)' : 'transparent',
-            border: `2px solid ${paid ? 'var(--color-success)' : 'var(--color-border)'}`,
-            borderRadius: 10,
-            padding: 0,
-            transition: 'all 200ms cubic-bezier(0.4, 0, 0.2, 1)',
-          }}
-        >
-          <Check size={16} strokeWidth={3} color={paid ? 'white' : 'var(--color-text-tertiary)'} />
-        </button>
+        <>
+          <button
+            onClick={(e) => {
+              e.stopPropagation()
+              if (paid) {
+                markUnpaid(sf.id, today)
+              } else {
+                setDateDialogOpen(true)
+              }
+            }}
+            style={{
+              width: 32, height: 32,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              cursor: 'pointer', flexShrink: 0,
+              background: paid ? 'var(--color-success)' : 'transparent',
+              border: `2px solid ${paid ? 'var(--color-success)' : 'var(--color-border)'}`,
+              borderRadius: 10,
+              padding: 0,
+              transition: 'all 200ms cubic-bezier(0.4, 0, 0.2, 1)',
+            }}
+          >
+            <Check size={16} strokeWidth={3} color={paid ? 'white' : 'var(--color-text-tertiary)'} />
+          </button>
+
+          {/* Date picker dialog */}
+          <Dialog open={dateDialogOpen} onClose={() => setDateDialogOpen(false)} title="Data do pagamento" size="sm">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+              <div>
+                <label style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text-secondary)', display: 'block', marginBottom: 8 }}>
+                  Quando você pagou?
+                </label>
+                <input
+                  type="date"
+                  value={selectedDate}
+                  onChange={(e) => setSelectedDate(e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '10px 12px',
+                    fontSize: 14,
+                    border: '1px solid var(--color-border)',
+                    borderRadius: 8,
+                    background: 'var(--color-bg-tertiary)',
+                    color: 'var(--color-text-primary)',
+                    fontFamily: 'var(--font-sans)',
+                    boxSizing: 'border-box',
+                  }}
+                />
+              </div>
+              <div style={{ display: 'flex', gap: 8 }}>
+                <button
+                  onClick={() => setDateDialogOpen(false)}
+                  style={{
+                    flex: 1,
+                    padding: '10px 16px',
+                    border: '1px solid var(--color-border)',
+                    background: 'transparent',
+                    borderRadius: 8,
+                    color: 'var(--color-text-secondary)',
+                    cursor: 'pointer',
+                    fontFamily: 'var(--font-sans)',
+                    fontSize: 14,
+                    fontWeight: 600,
+                    transition: 'all 150ms ease',
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.background = 'var(--color-bg-tertiary)'}
+                  onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={() => {
+                    markPaid(sf.id, selectedDate)
+                    setDateDialogOpen(false)
+                  }}
+                  style={{
+                    flex: 1,
+                    padding: '10px 16px',
+                    border: 'none',
+                    background: 'var(--color-success)',
+                    borderRadius: 8,
+                    color: 'white',
+                    cursor: 'pointer',
+                    fontFamily: 'var(--font-sans)',
+                    fontSize: 14,
+                    fontWeight: 600,
+                    transition: 'opacity 150ms ease',
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
+                  onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
+                >
+                  Confirmar
+                </button>
+              </div>
+            </div>
+          </Dialog>
+        </>
       )}
       {sf.autoDebit && paid && (
         <div style={{ width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
