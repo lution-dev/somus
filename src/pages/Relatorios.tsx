@@ -47,6 +47,40 @@ function aggregateMonth(divisoes: Divisoes, month: string) {
   })
 }
 
+function getDailyChartData(divisoes: Divisoes, month: string) {
+  const [y, m] = month.split('-').map(Number)
+  const daysInMonth = new Date(y, m, 0).getDate()
+  
+  const dailyData = Array.from({ length: daysInMonth }, (_, i) => {
+    const dayStr = String(i + 1).padStart(2, '0')
+    return {
+      day: dayStr,
+      in: 0,
+      out: 0,
+    }
+  })
+
+  divisoes.forEach(cx => {
+    cx.movements.forEach(mv => {
+      if (mv.date.startsWith(month)) {
+        const dayStr = mv.date.substring(8, 10)
+        const dayIdx = parseInt(dayStr, 10) - 1
+        if (dailyData[dayIdx]) {
+          if (mv.type === 'income') {
+            dailyData[dayIdx].in += mv.amount
+          } else if (mv.type === 'expense' || mv.amount < 0) {
+            dailyData[dayIdx].out += Math.abs(mv.amount)
+          } else {
+             dailyData[dayIdx].in += mv.amount
+          }
+        }
+      }
+    })
+  })
+
+  return dailyData
+}
+
 // ── Card style constant ───────────────────────────────────────────────────────
 
 const CARD: React.CSSProperties = {
@@ -105,6 +139,8 @@ export default function Relatorios() {
   const inDelta    = globalIn  - prevIn
   const outDelta   = globalOut - prevOut
 
+  const dailyChartData = useMemo(() => getDailyChartData(divisoes, month), [divisoes, month])
+
   // ── Render ──────────────────────────────────────────────────────────────────
 
   return (
@@ -113,7 +149,7 @@ export default function Relatorios() {
       {/* ── Header ─────────────────────────────────────────────────────────── */}
       {isMobile ? (
         <>
-          <PageHeader title="Relatórios" />
+          <PageHeader title="Relatórios" bg="#001442" />
           {/* Mês + Toggle na mesma linha */}
           <div style={{
             display: 'flex', alignItems: 'center', justifyContent: 'space-between',
@@ -195,6 +231,16 @@ export default function Relatorios() {
               Icon={usagePct >= 80 ? AlertTriangle : CheckCircle2}
               progressPct={usagePct}
             />
+          </div>
+
+          {/* ── Gráfico de Projeção Diária ──────────────────────────────────── */}
+          <div style={{ ...CARD, marginBottom: isMobile ? 12 : 20 }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+              <p className="section-label" style={{ margin: 0 }}>Projeção Diária</p>
+              <span style={{ fontSize: 11, color: 'var(--color-text-tertiary)' }}>Entradas vs Saídas</span>
+            </div>
+            
+            <NativeDailyChart data={dailyChartData} />
           </div>
 
           {/* ── Bento 2 colunas (mobile: 1 col) ─────────────────────────────── */}
@@ -384,9 +430,8 @@ function KpiCard({ label, value, delta, positiveIsGood, accentColor, Icon, progr
     <div style={{
       background: 'var(--color-bg-secondary)',
       border: `1px solid var(--color-border)`,
-      borderTop: `3px solid ${accentColor}`,
       borderRadius: 'var(--radius-card)',
-      padding: '14px 16px',
+      padding: '16px',
     }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
         <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--color-text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{label}</span>
@@ -409,3 +454,72 @@ function KpiCard({ label, value, delta, positiveIsGood, accentColor, Icon, progr
     </div>
   )
 }
+
+function NativeDailyChart({ data }: { data: Array<{ day: string, in: number, out: number }> }) {
+  const maxVal = Math.max(...data.map(d => Math.max(d.in, d.out)), 1)
+  const [activeDay, setActiveDay] = useState<string | null>(null)
+
+  return (
+    <div style={{ width: '100%', overflowX: 'auto', paddingBottom: 16 }}>
+      <div style={{ display: 'flex', alignItems: 'flex-end', gap: 8, minWidth: 'min-content', height: 180, padding: '0 10px', position: 'relative' }}>
+        {/* Helper Line */}
+        <div style={{ position: 'absolute', bottom: 24, left: 0, right: 0, height: 1, background: 'var(--color-border)' }} />
+        
+        {data.map((d, i) => {
+          const inPct = (d.in / maxVal) * 100
+          const outPct = (d.out / maxVal) * 100
+          const hasData = d.in > 0 || d.out > 0
+          const isActive = activeDay === d.day
+
+          return (
+            <div 
+              key={i} 
+              onMouseEnter={() => setActiveDay(d.day)}
+              onMouseLeave={() => setActiveDay(null)}
+              onClick={() => setActiveDay(isActive ? null : d.day)}
+              style={{ 
+                display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, 
+                width: 32, flexShrink: 0, cursor: 'pointer', position: 'relative'
+              }}
+            >
+              {/* Tooltip Overlay */}
+              {isActive && hasData && (
+                <div style={{
+                  position: 'absolute', bottom: '100%', left: '50%', transform: 'translateX(-50%)',
+                  background: 'var(--color-bg-tertiary)', border: '1px solid var(--color-border)',
+                  padding: '8px 12px', borderRadius: 8, boxShadow: '0 4px 12px rgba(0,0,0,0.5)',
+                  zIndex: 10, width: 140, marginBottom: 8, pointerEvents: 'none'
+                }}>
+                  <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--color-text-primary)', margin: '0 0 6px' }}>Dia {d.day}</p>
+                  {d.in > 0 && (
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 2 }}>
+                      <span style={{ fontSize: 11, color: 'var(--color-text-secondary)' }}>Entrou:</span>
+                      <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--color-success)' }}>{formatCurrency(d.in)}</span>
+                    </div>
+                  )}
+                  {d.out > 0 && (
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <span style={{ fontSize: 11, color: 'var(--color-text-secondary)' }}>Saiu:</span>
+                      <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--color-danger)' }}>{formatCurrency(d.out)}</span>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Bars container */}
+              <div style={{ display: 'flex', alignItems: 'flex-end', gap: 2, height: 140, width: '100%', justifyContent: 'center' }}>
+                <div style={{ width: 8, height: `${inPct}%`, background: 'var(--color-success)', borderRadius: '2px 2px 0 0', opacity: (!activeDay || isActive || !hasData) ? 1 : 0.4, transition: 'all 200ms ease' }} />
+                <div style={{ width: 8, height: `${outPct}%`, background: 'var(--color-danger)', borderRadius: '2px 2px 0 0', opacity: (!activeDay || isActive || !hasData) ? 1 : 0.4, transition: 'all 200ms ease' }} />
+              </div>
+              {/* Day Label */}
+              <span style={{ fontSize: 11, color: (isActive && hasData) ? 'var(--color-text-primary)' : 'var(--color-text-tertiary)', fontWeight: isActive ? 600 : 500, transition: 'color 200ms ease' }}>
+                {d.day}
+              </span>
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
