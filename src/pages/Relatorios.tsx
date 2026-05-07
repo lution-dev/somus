@@ -462,71 +462,73 @@ function KpiCard({ label, value, delta, positiveIsGood, accentColor, Icon, progr
 
 function AdherenceScoreCard({ score }: { score: number }) {
   const [showInfo, setShowInfo] = useState(false)
-  const color = score >= 80 ? "var(--color-success)" : score >= 50 ? "var(--color-warning)" : "var(--color-danger)"
-  const label = score >= 80 ? "Excelente" : score >= 60 ? "Bom" : score >= 40 ? "Regular" : "Precisa melhorar"
+  const color = score >= 80 ? 'var(--color-success)' : score >= 50 ? 'var(--color-warning)' : 'var(--color-danger)'
+  const label = score >= 80 ? 'Excelente' : score >= 60 ? 'Bom' : score >= 40 ? 'Regular' : 'Precisa melhorar'
   const msg   = score >= 80
-    ? "Voce esta seguindo muito bem o metodo de distribuicao!"
+    ? 'Voce esta seguindo muito bem o metodo de distribuicao!'
     : score >= 60
-    ? "Quase la! Pequenos ajustes vao melhorar sua aderencia."
-    : "A distribuicao real esta longe do planejado. Revise seus aportes."
+    ? 'Quase la! Pequenos ajustes vao melhorar sua aderencia.'
+    : 'A distribuicao real esta longe do planejado. Revise seus aportes.'
 
-  const circumference = 2 * Math.PI * 36
+  const r = 28
+  const circumference = 2 * Math.PI * r
   const strokeDash = (score / 100) * circumference
 
   return (
     <div style={{
-      background: "var(--color-bg-secondary)", border: "1px solid var(--color-border)",
-      borderRadius: "var(--radius-card)", padding: 20, marginBottom: 0,
+      background: 'var(--color-bg-secondary)', border: '1px solid var(--color-border)',
+      borderRadius: 'var(--radius-card)', padding: '16px 18px',
     }}>
-      {/* Main row */}
-      <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
-        {/* Circle gauge */}
-        <div style={{ flexShrink: 0, position: "relative", width: 88, height: 88 }}>
-          <svg width="88" height="88" viewBox="0 0 88 88">
-            <circle cx="44" cy="44" r="36" fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="8" />
-            <circle cx="44" cy="44" r="36" fill="none" stroke={color} strokeWidth="8"
-              strokeLinecap="round"
-              strokeDasharray={`${strokeDash} ${circumference}`}
-              transform="rotate(-90 44 44)"
-              style={{ transition: "stroke-dasharray 800ms ease" }}
-            />
-          </svg>
-          <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
-            <span style={{ fontSize: 20, fontWeight: 800, color, lineHeight: 1 }}>{score}</span>
-            <span style={{ fontSize: 9, color: "var(--color-text-tertiary)", fontWeight: 500 }}>/ 100</span>
-          </div>
-        </div>
-
-        {/* Text */}
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 6 }}>
-            <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: "var(--color-text-tertiary)", margin: 0 }}>
-              Aderencia ao metodo
-            </p>
-            <button
-              onClick={() => setShowInfo(v => !v)}
-              style={{
-                background: 'none', border: 'none', cursor: 'pointer', padding: 2,
-                color: showInfo ? 'var(--color-accent-primary)' : 'var(--color-text-tertiary)',
-                display: 'flex', alignItems: 'center', transition: 'color 150ms ease',
-                flexShrink: 0,
-              }}
-              aria-label="O que e este score?"
-            >
-              <Info size={13} />
-            </button>
-            <span style={{ fontSize: 11, fontWeight: 700, padding: "2px 8px", borderRadius: 99, background: `${color}20`, color, marginLeft: 'auto' }}>
-              {label}
-            </span>
-          </div>
-          <p style={{ fontSize: 13, color: "var(--color-text-secondary)", margin: 0, lineHeight: 1.5 }}>{msg}</p>
-        </div>
+      {/* Header row: titulo + info + badge */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 14 }}>
+        <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase', color: 'var(--color-text-tertiary)' }}>
+          Aderencia ao metodo
+        </span>
+        <button
+          onClick={() => setShowInfo(v => !v)}
+          style={{
+            background: 'none', border: 'none', cursor: 'pointer', padding: '2px 3px',
+            color: showInfo ? 'var(--color-accent-primary)' : 'var(--color-text-tertiary)',
+            display: 'flex', alignItems: 'center', transition: 'color 150ms ease', flexShrink: 0,
+          }}
+          aria-label="O que e este score?"
+        >
+          <Info size={13} />
+        </button>
+        <span style={{ marginLeft: 'auto', fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 99, background: `${color}20`, color, whiteSpace: 'nowrap' }}>
+          {label}
+        </span>
       </div>
 
-      {/* Info panel — expande ao clicar no icone */}
+      {/* Score row: gauge menor + mensagem ao lado */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+        {/* Gauge compacto */}
+        <div style={{ flexShrink: 0, position: 'relative', width: 72, height: 72 }}>
+          <svg width="72" height="72" viewBox="0 0 72 72">
+            <circle cx="36" cy="36" r={r} fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="7" />
+            <circle cx="36" cy="36" r={r} fill="none" stroke={color} strokeWidth="7"
+              strokeLinecap="round"
+              strokeDasharray={`${strokeDash} ${circumference}`}
+              transform="rotate(-90 36 36)"
+              style={{ transition: 'stroke-dasharray 800ms ease' }}
+            />
+          </svg>
+          <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+            <span style={{ fontSize: 18, fontWeight: 800, color, lineHeight: 1 }}>{score}</span>
+            <span style={{ fontSize: 8, color: 'var(--color-text-tertiary)', fontWeight: 500 }}>/100</span>
+          </div>
+        </div>
+
+        {/* Mensagem */}
+        <p style={{ flex: 1, fontSize: 13, color: 'var(--color-text-secondary)', margin: 0, lineHeight: 1.55 }}>
+          {msg}
+        </p>
+      </div>
+
+      {/* Info panel */}
       {showInfo && (
         <div style={{
-          marginTop: 16,
+          marginTop: 14,
           padding: '12px 14px',
           background: 'rgba(59,130,246,0.06)',
           border: '1px solid rgba(59,130,246,0.15)',
@@ -540,7 +542,7 @@ function AdherenceScoreCard({ score }: { score: number }) {
             Compara a <strong style={{ color: 'var(--color-text-primary)' }}>distribuicao real</strong> das entradas entre suas divisoes com os <strong style={{ color: 'var(--color-text-primary)' }}>percentuais definidos no metodo</strong>.
           </p>
           <p style={{ fontSize: 12, color: 'var(--color-text-secondary)', margin: 0, lineHeight: 1.6 }}>
-            Exemplo: se voce definiu 50% para Essencial e este mes 50% das entradas foram para Essencial — isso contribui para um score alto.
+            Exemplo: se voce definiu 50% para Essencial e este mes 50% das entradas foram para Essencial &mdash; isso contribui para um score alto.
           </p>
           <p style={{ fontSize: 11, color: 'var(--color-text-tertiary)', margin: 0, lineHeight: 1.5, borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: 8 }}>
             <strong>Nota:</strong> o score analisa a alocacao das entradas, nao os gastos dentro de cada divisao.
