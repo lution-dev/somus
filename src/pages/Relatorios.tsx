@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+﻿import { useState, useMemo } from 'react'
 import { useAppStore, selectCurrentDivisoes } from '../stores/useAppStore'
 import { useShallow } from 'zustand/react/shallow'
 import { formatCurrency } from '../lib/calculations'
@@ -9,7 +9,7 @@ import {
   ChevronLeft, ChevronRight,
   ArrowUpRight, ArrowDownRight,
   TrendingUp, TrendingDown,
-  Calendar, AlertTriangle, CheckCircle2,
+  Calendar, AlertTriangle, CheckCircle2, Info,
 } from 'lucide-react'
 
 // ── Month helpers ─────────────────────────────────────────────────────────────
@@ -461,6 +461,7 @@ function KpiCard({ label, value, delta, positiveIsGood, accentColor, Icon, progr
 // -- AdherenceScoreCard -------------------------------------------------------
 
 function AdherenceScoreCard({ score }: { score: number }) {
+  const [showInfo, setShowInfo] = useState(false)
   const color = score >= 80 ? "var(--color-success)" : score >= 50 ? "var(--color-warning)" : "var(--color-danger)"
   const label = score >= 80 ? "Excelente" : score >= 60 ? "Bom" : score >= 40 ? "Regular" : "Precisa melhorar"
   const msg   = score >= 80
@@ -476,36 +477,76 @@ function AdherenceScoreCard({ score }: { score: number }) {
     <div style={{
       background: "var(--color-bg-secondary)", border: "1px solid var(--color-border)",
       borderRadius: "var(--radius-card)", padding: 20, marginBottom: 0,
-      display: "flex", alignItems: "center", gap: 20,
     }}>
-      {/* Circle gauge */}
-      <div style={{ flexShrink: 0, position: "relative", width: 88, height: 88 }}>
-        <svg width="88" height="88" viewBox="0 0 88 88">
-          <circle cx="44" cy="44" r="36" fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="8" />
-          <circle cx="44" cy="44" r="36" fill="none" stroke={color} strokeWidth="8"
-            strokeLinecap="round"
-            strokeDasharray={`${strokeDash} ${circumference}`}
-            transform="rotate(-90 44 44)"
-            style={{ transition: "stroke-dasharray 800ms ease" }}
-          />
-        </svg>
-        <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
-          <span style={{ fontSize: 20, fontWeight: 800, color, lineHeight: 1 }}>{score}</span>
-          <span style={{ fontSize: 9, color: "var(--color-text-tertiary)", fontWeight: 500 }}>/ 100</span>
+      {/* Main row */}
+      <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
+        {/* Circle gauge */}
+        <div style={{ flexShrink: 0, position: "relative", width: 88, height: 88 }}>
+          <svg width="88" height="88" viewBox="0 0 88 88">
+            <circle cx="44" cy="44" r="36" fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="8" />
+            <circle cx="44" cy="44" r="36" fill="none" stroke={color} strokeWidth="8"
+              strokeLinecap="round"
+              strokeDasharray={`${strokeDash} ${circumference}`}
+              transform="rotate(-90 44 44)"
+              style={{ transition: "stroke-dasharray 800ms ease" }}
+            />
+          </svg>
+          <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
+            <span style={{ fontSize: 20, fontWeight: 800, color, lineHeight: 1 }}>{score}</span>
+            <span style={{ fontSize: 9, color: "var(--color-text-tertiary)", fontWeight: 500 }}>/ 100</span>
+          </div>
+        </div>
+
+        {/* Text */}
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 6 }}>
+            <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: "var(--color-text-tertiary)", margin: 0 }}>
+              Aderencia ao metodo
+            </p>
+            <button
+              onClick={() => setShowInfo(v => !v)}
+              style={{
+                background: 'none', border: 'none', cursor: 'pointer', padding: 2,
+                color: showInfo ? 'var(--color-accent-primary)' : 'var(--color-text-tertiary)',
+                display: 'flex', alignItems: 'center', transition: 'color 150ms ease',
+                flexShrink: 0,
+              }}
+              aria-label="O que e este score?"
+            >
+              <Info size={13} />
+            </button>
+            <span style={{ fontSize: 11, fontWeight: 700, padding: "2px 8px", borderRadius: 99, background: `${color}20`, color, marginLeft: 'auto' }}>
+              {label}
+            </span>
+          </div>
+          <p style={{ fontSize: 13, color: "var(--color-text-secondary)", margin: 0, lineHeight: 1.5 }}>{msg}</p>
         </div>
       </div>
-      {/* Text */}
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
-          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: "var(--color-text-tertiary)", margin: 0 }}>
-            Aderencia ao metodo
+
+      {/* Info panel — expande ao clicar no icone */}
+      {showInfo && (
+        <div style={{
+          marginTop: 16,
+          padding: '12px 14px',
+          background: 'rgba(59,130,246,0.06)',
+          border: '1px solid rgba(59,130,246,0.15)',
+          borderRadius: 10,
+          display: 'flex', flexDirection: 'column', gap: 8,
+        }}>
+          <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--color-accent-primary)', margin: 0 }}>
+            O que este score mede?
           </p>
-          <span style={{ fontSize: 11, fontWeight: 700, padding: "2px 8px", borderRadius: 99, background: `${color}20`, color }}>
-            {label}
-          </span>
+          <p style={{ fontSize: 12, color: 'var(--color-text-secondary)', margin: 0, lineHeight: 1.6 }}>
+            Compara a <strong style={{ color: 'var(--color-text-primary)' }}>distribuicao real</strong> das entradas entre suas divisoes com os <strong style={{ color: 'var(--color-text-primary)' }}>percentuais definidos no metodo</strong>.
+          </p>
+          <p style={{ fontSize: 12, color: 'var(--color-text-secondary)', margin: 0, lineHeight: 1.6 }}>
+            Exemplo: se voce definiu 50% para Essencial e este mes 50% das entradas foram para Essencial — isso contribui para um score alto.
+          </p>
+          <p style={{ fontSize: 11, color: 'var(--color-text-tertiary)', margin: 0, lineHeight: 1.5, borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: 8 }}>
+            <strong>Nota:</strong> o score analisa a alocacao das entradas, nao os gastos dentro de cada divisao.
+          </p>
         </div>
-        <p style={{ fontSize: 13, color: "var(--color-text-secondary)", margin: 0, lineHeight: 1.5 }}>{msg}</p>
-      </div>
+      )}
     </div>
   )
 }
