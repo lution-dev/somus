@@ -385,7 +385,7 @@ export default function CaixinhaDetalhe() {
                           <img src={obj.imageUrl} alt={obj.name} style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: `center ${(obj as any).imagePosition ?? 50}%` }} />
                           <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.1) 60%)' }} />
                           {obj.isCouple && (
-                            <div style={{ position: 'absolute', top: 10, right: 10, background: 'rgba(139,92,246,0.85)', backdropFilter: 'blur(8px)', borderRadius: 20, padding: '3px 8px', display: 'flex', alignItems: 'center', gap: 4 }}>
+                            <div style={{ position: 'absolute', top: 10, left: 14, background: 'rgba(139,92,246,0.85)', backdropFilter: 'blur(8px)', borderRadius: 20, padding: '3px 8px', display: 'flex', alignItems: 'center', gap: 4 }}>
                               <Heart size={10} color="white" fill="white" />
                               <span style={{ fontSize: 10, fontWeight: 700, color: 'white' }}>Casal</span>
                             </div>
@@ -396,7 +396,7 @@ export default function CaixinhaDetalhe() {
                           </div>
                         </div>
                       ) : (
-                        <div style={{ height: 72, background: `linear-gradient(135deg, ${accentColor}18 0%, ${accentColor}08 100%)`, borderBottom: `1px solid ${accentColor}20`, display: 'flex', alignItems: 'center', padding: '0 16px', gap: 12 }}>
+                        <div style={{ height: 72, background: `linear-gradient(135deg, ${accentColor}18 0%, ${accentColor}08 100%)`, borderBottom: `1px solid ${accentColor}20`, display: 'flex', alignItems: 'center', padding: '0 44px 0 16px', gap: 12 }}>
                           <div style={{ width: 40, height: 40, borderRadius: 12, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: `${accentColor}20`, border: `1px solid ${accentColor}30` }}>
                             <Target size={20} color={accentColor} strokeWidth={1.5} />
                           </div>

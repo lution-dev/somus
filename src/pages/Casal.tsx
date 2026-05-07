@@ -7,16 +7,10 @@ import { PageHeader, ConfirmDialog } from '../components/ui'
 import ItemActionSheet from '../components/ui/ItemActionSheet'
 import { useIsMobile } from '../hooks/useIsMobile'
 import { useAuth } from '../hooks/useAuth'
-import { Target, Share2, Copy, Heart, CheckCircle2, Building2, Send, Users, Sparkles, Plus, Pencil, Trash2 } from 'lucide-react'
+import { Target, Share2, Copy, Heart, CheckCircle2, Send, Users, Sparkles, Plus, Pencil, Trash2 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import type { Objetivo } from '../types'
 import AddObjetivoModal from '../components/features/AddObjetivoModal'
-
-const OBJ_ICONS: Record<string, LucideIcon> = {
-  'obj-casamento': Heart,
-  'obj-apto': Building2,
-}
-function getObjIcon(id: string): LucideIcon { return OBJ_ICONS[id] || Target }
 
 export default function Casal() {
   const [copied, setCopied] = useState(false)
@@ -290,7 +284,7 @@ export default function Casal() {
                       <div style={{ position: 'relative', height: 110, overflow: 'hidden' }}>
                         <img src={obj.imageUrl} alt={obj.name} style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: `center ${(obj as any).imagePosition ?? 50}%` }} />
                         <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.1) 60%)' }} />
-                        <div style={{ position: 'absolute', top: 10, right: 10, background: 'rgba(139,92,246,0.85)', backdropFilter: 'blur(8px)', borderRadius: 20, padding: '3px 8px', display: 'flex', alignItems: 'center', gap: 4 }}>
+                        <div style={{ position: 'absolute', top: 10, left: 14, background: 'rgba(139,92,246,0.85)', backdropFilter: 'blur(8px)', borderRadius: 20, padding: '3px 8px', display: 'flex', alignItems: 'center', gap: 4 }}>
                           <Heart size={10} color="white" fill="white" />
                           <span style={{ fontSize: 10, fontWeight: 700, color: 'white' }}>Casal</span>
                         </div>
@@ -300,7 +294,7 @@ export default function Casal() {
                         </div>
                       </div>
                     ) : (
-                      <div style={{ height: 72, background: `linear-gradient(135deg, ${accent}18 0%, ${accent}08 100%)`, borderBottom: `1px solid ${accent}20`, display: 'flex', alignItems: 'center', padding: '0 16px', gap: 12 }}>
+                      <div style={{ height: 72, background: `linear-gradient(135deg, ${accent}18 0%, ${accent}08 100%)`, borderBottom: `1px solid ${accent}20`, display: 'flex', alignItems: 'center', padding: '0 44px 0 16px', gap: 12 }}>
                         <div style={{ width: 40, height: 40, borderRadius: 12, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: `${accent}20`, border: `1px solid ${accent}30` }}>
                           <Target size={20} color={accent} strokeWidth={1.5} />
                         </div>
