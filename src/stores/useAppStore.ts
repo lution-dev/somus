@@ -387,7 +387,7 @@ export const useAppStore = create<AppState & AppActions>()(
     }),
     {
       name: 'somus-state',
-      version: 10,
+      version: 11,
       migrate: (_persisted: unknown, version: number) => {
         const state = _persisted as Record<string, unknown>
 
@@ -453,11 +453,99 @@ export const useAppStore = create<AppState & AppActions>()(
 
         // v10: migrate caixinhas → divisoes (nomenclature change)
         if (version < 10) {
+          // Migrate top-level caixinhas array → divisoes
           const oldCaixinhas = (state as Record<string, unknown>).caixinhas as Divisao[] | undefined
           if (oldCaixinhas && oldCaixinhas.length > 0 && (!state.divisoes || (state.divisoes as Divisao[]).length === 0)) {
             state.divisoes = oldCaixinhas
           }
           delete (state as Record<string, unknown>).caixinhas
+
+          // Rename caixinhaId → divisaoId inside every saidaFixa
+          const saidasFixas = state.saidasFixas as Array<Record<string, unknown>> | undefined
+          if (Array.isArray(saidasFixas)) {
+            state.saidasFixas = saidasFixas.map(sf => {
+              if ('caixinhaId' in sf && !('divisaoId' in sf)) {
+                const { caixinhaId, ...rest } = sf
+                return { ...rest, divisaoId: caixinhaId }
+              }
+              return sf
+            })
+          }
+
+          // Rename caixinhaId → divisaoId inside every saidaVariavel
+          const saidasVariaveis = state.saidasVariaveis as Array<Record<string, unknown>> | undefined
+          if (Array.isArray(saidasVariaveis)) {
+            state.saidasVariaveis = saidasVariaveis.map(sv => {
+              if ('caixinhaId' in sv && !('divisaoId' in sv)) {
+                const { caixinhaId, ...rest } = sv
+                return { ...rest, divisaoId: caixinhaId }
+              }
+              return sv
+            })
+          }
+
+          // Rename caixinhaId → divisaoId inside each entrada's distribution items
+          const entradas = state.entradas as Array<Record<string, unknown>> | undefined
+          if (Array.isArray(entradas)) {
+            state.entradas = entradas.map(e => {
+              const dist = e.distribution as Array<Record<string, unknown>> | undefined
+              if (!Array.isArray(dist)) return e
+              return {
+                ...e,
+                distribution: dist.map(d => {
+                  if ('caixinhaId' in d && !('divisaoId' in d)) {
+                    const { caixinhaId, ...rest } = d
+                    return { ...rest, divisaoId: caixinhaId }
+                  }
+                  return d
+                }),
+              }
+            })
+          }
+        }
+
+        // v11: re-run caixinhaId → divisaoId rename (v10 missed this for
+        // users who were already migrated but still had old field names)
+        if (version < 11) {
+          const saidasFixas = state.saidasFixas as Array<Record<string, unknown>> | undefined
+          if (Array.isArray(saidasFixas)) {
+            state.saidasFixas = saidasFixas.map(sf => {
+              if ('caixinhaId' in sf && !('divisaoId' in sf)) {
+                const { caixinhaId, ...rest } = sf
+                return { ...rest, divisaoId: caixinhaId }
+              }
+              return sf
+            })
+          }
+
+          const saidasVariaveis = state.saidasVariaveis as Array<Record<string, unknown>> | undefined
+          if (Array.isArray(saidasVariaveis)) {
+            state.saidasVariaveis = saidasVariaveis.map(sv => {
+              if ('caixinhaId' in sv && !('divisaoId' in sv)) {
+                const { caixinhaId, ...rest } = sv
+                return { ...rest, divisaoId: caixinhaId }
+              }
+              return sv
+            })
+          }
+
+          const entradas = state.entradas as Array<Record<string, unknown>> | undefined
+          if (Array.isArray(entradas)) {
+            state.entradas = entradas.map(e => {
+              const dist = e.distribution as Array<Record<string, unknown>> | undefined
+              if (!Array.isArray(dist)) return e
+              return {
+                ...e,
+                distribution: dist.map(d => {
+                  if ('caixinhaId' in d && !('divisaoId' in d)) {
+                    const { caixinhaId, ...rest } = d
+                    return { ...rest, divisaoId: caixinhaId }
+                  }
+                  return d
+                }),
+              }
+            })
+          }
         }
 
         return state as unknown as AppState & AppActions
