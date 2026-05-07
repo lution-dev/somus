@@ -152,6 +152,7 @@ body {
 .progress-fill--success { background: var(--color-success); }
 .progress-fill--primary { background: var(--color-accent-primary); }
 .progress-fill--warning { background: var(--color-warning); }
+.progress-fill--danger  { background: var(--color-danger); }
 .progress-fill--couple  { background: var(--color-accent-couple); }
 .progress-fill--lucas   { background: var(--color-lucas); }
 .progress-fill--mirian  { background: var(--color-mirian); }

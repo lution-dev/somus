@@ -17,11 +17,14 @@ interface ProgressBarProps {
  * If a specific variant is given (couple, mirian, etc.), it overrides auto-detection.
  */
 function getFillClass(variant: Variant, pct: number): string {
+  if (variant === 'success') return 'progress-fill--success'
+  if (variant === 'warning') return 'progress-fill--warning'
+  if (variant === 'danger')  return 'progress-fill--danger'
   if (variant === 'couple')  return 'progress-fill--couple'
+  if (variant === 'lucas')   return 'progress-fill--lucas'
   if (variant === 'mirian')  return 'progress-fill--mirian'
-  if (variant === 'danger')  return 'progress-fill--warning' // <50% items get amber
 
-  // Auto-detect by percentage
+  // Auto-detect by percentage (variant === 'default')
   if (pct >= 100) return 'progress-fill--success'
   if (pct >= 50)  return 'progress-fill--primary'
   return 'progress-fill--warning'
