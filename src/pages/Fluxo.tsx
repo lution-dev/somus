@@ -363,15 +363,18 @@ export default function Fluxo() {
             <AnimatePresence initial={false}>
               {!pendingCollapsed && (
                 <motion.div key="pending-section" initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }} style={{ overflow: 'hidden' }}>
-                  {pending.map((item, i) => (
-                    <FixaItem 
-                      key={`${item.data.id}-${item.instanceMonth}`} 
-                      sf={item.data as SaidaFixa} 
-                      yearMonth={item.instanceMonth || yearMonth} 
-                      isLast={i === pending.length - 1 && realized.length === 0} 
-                      onPress={setActionSf} 
-                    />
-                  ))}
+                  {pending.map((item, i) => {
+                    const f = item as Extract<FluxoItem, { type: 'fixa' }>
+                    return (
+                      <FixaItem 
+                        key={`${f.data.id}-${f.instanceMonth}`} 
+                        sf={f.data} 
+                        yearMonth={f.instanceMonth || yearMonth} 
+                        isLast={i === pending.length - 1 && realized.length === 0} 
+                        onPress={setActionSf} 
+                      />
+                    )
+                  })}
                 </motion.div>
               )}
             </AnimatePresence>
@@ -391,7 +394,10 @@ export default function Fluxo() {
                 <motion.div key="realized-section" initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }} style={{ overflow: 'hidden' }}>
                   {realized.map((item, i) => {
                     const isLast = i === realized.length - 1
-                    if (item.type === 'fixa') return <FixaItem key={`${item.data.id}-${item.instanceMonth}`} sf={item.data as SaidaFixa} yearMonth={item.instanceMonth || yearMonth} isLast={isLast} onPress={setActionSf} />
+                    if (item.type === 'fixa') {
+                      const f = item as Extract<FluxoItem, { type: 'fixa' }>
+                      return <FixaItem key={`${f.data.id}-${f.instanceMonth}`} sf={f.data} yearMonth={f.instanceMonth || yearMonth} isLast={isLast} onPress={setActionSf} />
+                    }
                     if (item.type === 'variavel') return <VariavelItem key={`v-${item.data.id}`} sv={item.data as SaidaVariavel} isLast={isLast} />
                     return <EntradaItem key={`e-${item.data.id}`} e={item.data as Entrada} isLast={isLast} />
                   })}
