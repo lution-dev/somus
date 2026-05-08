@@ -8,6 +8,8 @@ import LancarDespesaModal from '../components/features/LancarDespesaModal'
 import EditSaidaFixaModal from '../components/features/EditSaidaFixaModal'
 import EditMonthlyAmountModal from '../components/features/EditMonthlyAmountModal'
 import ConfirmPaymentModal from '../components/features/ConfirmPaymentModal'
+import EditSaidaVariavelModal from '../components/features/EditSaidaVariavelModal'
+import EditEntradaModal from '../components/features/EditEntradaModal'
 import ItemActionSheet from '../components/ui/ItemActionSheet'
 import { PageHeader, SearchBar, Dialog, Button, ConfirmDialog } from '../components/ui'
 import { useIsMobile } from '../hooks/useIsMobile'
@@ -189,15 +191,18 @@ function VariavelItem({ sv, isLast, onPress }: { sv: SaidaVariavel; isLast: bool
   )
 }
 
-function EntradaItem({ e, isLast }: { e: Entrada; isLast: boolean }) {
+function EntradaItem({ e, isLast, onPress }: { e: Entrada; isLast: boolean; onPress: (e: Entrada) => void }) {
   return (
     <motion.div
       initial={{ opacity: 0, x: -10 }}
       animate={{ opacity: 1, x: 0 }}
+      whileHover={{ background: 'rgba(255,255,255,0.03)' }}
+      onClick={() => onPress(e)}
       style={{
         display: 'flex', alignItems: 'center', gap: 12,
         padding: '14px 16px',
         borderBottom: isLast ? 'none' : '1px solid var(--color-border)',
+        cursor: 'pointer',
       }}
     >
       <div style={{
@@ -238,10 +243,13 @@ export default function Fluxo() {
   const [confirmSkipSf, setConfirmSkipSf] = useState<SaidaFixa | null>(null)
   const [confirmDeleteSf, setConfirmDeleteSf] = useState<SaidaFixa | null>(null)
   const [actionSv, setActionSv] = useState<SaidaVariavel | null>(null)
+  const [selectedSv, setSelectedSv] = useState<SaidaVariavel | null>(null)  // mantém referência durante edit/delete
   const [editSvOpen, setEditSvOpen] = useState(false)
   const [confirmDeleteSv, setConfirmDeleteSv] = useState(false)
-  const [editSvAmount, setEditSvAmount] = useState('')
-  const [editSvDesc, setEditSvDesc] = useState('')
+  const [actionEntrada, setActionEntrada]               = useState<Entrada | null>(null)
+  const [selectedEntrada, setSelectedEntrada]           = useState<Entrada | null>(null)
+  const [editEntradaOpen, setEditEntradaOpen]           = useState(false)
+  const [confirmDeleteEntrada, setConfirmDeleteEntrada] = useState(false)
   const isMobile = useIsMobile()
 
   const yearMonth = useMemo(() => new Date().toISOString().slice(0, 7), [])
@@ -255,8 +263,8 @@ export default function Fluxo() {
   const editMonthly      = useAppStore(s => s.editSaidaFixaForMonth)
   const skipMonthly      = useAppStore(s => s.skipSaidaFixaForMonth)
   const deleteSaidaFixa  = useAppStore(s => s.deleteSaidaFixa)
-  const editSaidaVariavel  = useAppStore(s => s.editSaidaVariavel)
-  const deleteSaidaVariavel = useAppStore(s => s.deleteSaidaVariavel)
+  const deleteSaidaVariavel  = useAppStore(s => s.deleteSaidaVariavel)
+  const deleteEntrada        = useAppStore(s => s.deleteEntrada)
 
   // Filtra saídas variáveis e entradas do mês atual
   const currentMonthEntradas = useMemo(() => entradas.filter(e => e.date.startsWith(yearMonth)), [entradas, yearMonth])
@@ -373,15 +381,18 @@ export default function Fluxo() {
             <AnimatePresence initial={false}>
               {!pendingCollapsed && (
                 <motion.div key="pending-section" initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }} style={{ overflow: 'hidden' }}>
-                  {pending.map((item, i) => (
-                    <FixaItem 
-                      key={`${item.data.id}-${item.instanceMonth}`} 
-                      sf={item.data as SaidaFixa} 
-                      yearMonth={item.instanceMonth || yearMonth} 
-                      isLast={i === pending.length - 1 && realized.length === 0} 
-                      onPress={setActionSf} 
-                    />
-                  ))}
+                  {pending.map((item, i) => {
+                    const sfItem = item as Extract<FluxoItem, { type: 'fixa' }>
+                    return (
+                      <FixaItem 
+                        key={`${sfItem.data.id}-${sfItem.instanceMonth}`} 
+                        sf={sfItem.data} 
+                        yearMonth={sfItem.instanceMonth || yearMonth} 
+                        isLast={i === pending.length - 1 && realized.length === 0} 
+                        onPress={setActionSf} 
+                      />
+                    )
+                  })}
                 </motion.div>
               )}
             </AnimatePresence>
@@ -401,9 +412,21 @@ export default function Fluxo() {
                 <motion.div key="realized-section" initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }} style={{ overflow: 'hidden' }}>
                   {realized.map((item, i) => {
                     const isLast = i === realized.length - 1
-                    if (item.type === 'fixa') return <FixaItem key={`${item.data.id}-${item.instanceMonth}`} sf={item.data as SaidaFixa} yearMonth={item.instanceMonth || yearMonth} isLast={isLast} onPress={setActionSf} />
-                    if (item.type === 'variavel') return <VariavelItem key={`v-${item.data.id}`} sv={item.data as SaidaVariavel} isLast={isLast} onPress={setActionSv} />
-                    return <EntradaItem key={`e-${item.data.id}`} e={item.data as Entrada} isLast={isLast} />
+                    if (item.type === 'fixa') {
+                      return (
+                        <FixaItem 
+                          key={`${item.data.id}-${item.instanceMonth}`} 
+                          sf={item.data} 
+                          yearMonth={item.instanceMonth || yearMonth} 
+                          isLast={isLast} 
+                          onPress={setActionSf} 
+                        />
+                      )
+                    }
+                    if (item.type === 'variavel') {
+                      return <VariavelItem key={`v-${item.data.id}`} sv={item.data} isLast={isLast} onPress={setActionSv} />
+                    }
+                    return <EntradaItem key={`e-${item.data.id}`} e={item.data} isLast={isLast} onPress={setActionEntrada} />
                   })}
                 </motion.div>
               )}
@@ -656,65 +679,66 @@ export default function Fluxo() {
         subtitle={actionSv ? `-${formatCurrency(actionSv.amount)} · ${new Date(actionSv.date + 'T12:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })}` : ''}
         actions={actionSv ? [
           { label: 'Editar lançamento', icon: Pencil, color: 'var(--color-accent-primary)', onClick: () => {
-            setEditSvAmount(String(actionSv.amount).replace('.', ','))
-            setEditSvDesc(actionSv.description)
+            setSelectedSv(actionSv)
             setEditSvOpen(true)
             setActionSv(null)
           }},
           { label: 'Excluir lançamento', icon: Trash2, color: 'var(--color-danger)', onClick: () => {
+            setSelectedSv(actionSv)
             setConfirmDeleteSv(true)
             setActionSv(null)
           }},
         ] : []}
       />
 
-      {/* ── Variável: Edit Modal ── */}
-      <Dialog open={editSvOpen} onClose={() => setEditSvOpen(false)} title="Editar lançamento" size="sm">
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-          <div>
-            <label style={{ fontSize: 12, color: 'var(--color-text-secondary)', marginBottom: 4, display: 'block' }}>Descrição</label>
-            <input
-              value={editSvDesc}
-              onChange={e => setEditSvDesc(e.target.value)}
-              style={{ width: '100%', padding: '10px 12px', borderRadius: 10, border: '1px solid var(--color-border)', background: 'var(--color-bg-tertiary)', color: 'var(--color-text-primary)', fontSize: 14, boxSizing: 'border-box' }}
-            />
-          </div>
-          <div>
-            <label style={{ fontSize: 12, color: 'var(--color-text-secondary)', marginBottom: 4, display: 'block' }}>Valor (R$)</label>
-            <input
-              type="number"
-              step="0.01"
-              value={editSvAmount}
-              onChange={e => setEditSvAmount(e.target.value)}
-              style={{ width: '100%', padding: '10px 12px', borderRadius: 10, border: '1px solid var(--color-border)', background: 'var(--color-bg-tertiary)', color: 'var(--color-text-primary)', fontSize: 14, boxSizing: 'border-box' }}
-            />
-          </div>
-          <div style={{ display: 'flex', gap: 8, marginTop: 4 }}>
-            <button onClick={() => setEditSvOpen(false)} style={{ flex: 1, padding: '11px', borderRadius: 10, border: '1px solid var(--color-border)', background: 'transparent', color: 'var(--color-text-secondary)', fontWeight: 600, cursor: 'pointer', fontSize: 14 }}>Cancelar</button>
-            <button
-              onClick={() => {
-                if (!actionSv && !editSvOpen) return
-                const svId = actionSv?.id ?? ''
-                const amount = parseFloat(editSvAmount.replace(',', '.'))
-                if (!isNaN(amount) && amount > 0) {
-                  // Find sv from last actionSv before it was cleared
-                  const sv = useAppStore.getState().saidasVariaveis.find(s => s.id === svId)
-                  if (sv) editSaidaVariavel(sv.id, { amount, description: editSvDesc })
-                  setEditSvOpen(false)
-                }
-              }}
-              style={{ flex: 1, padding: '11px', borderRadius: 10, border: 'none', background: 'var(--color-accent-primary)', color: '#fff', fontWeight: 700, cursor: 'pointer', fontSize: 14 }}
-            >Salvar</button>
-          </div>
-        </div>
-      </Dialog>
+      <EditSaidaVariavelModal
+        open={editSvOpen}
+        onClose={() => { setEditSvOpen(false); setSelectedSv(null) }}
+        saidaVariavel={selectedSv}
+      />
 
       <ConfirmDialog
         open={confirmDeleteSv}
         onClose={() => setConfirmDeleteSv(false)}
-        onConfirm={() => { if (actionSv) deleteSaidaVariavel(actionSv.id) }}
+        onConfirm={() => { if (selectedSv) { deleteSaidaVariavel(selectedSv.id); setSelectedSv(null) } }}
         title="Excluir lançamento?"
-        description={`Isso removerá "${actionSv?.description}" e estornará R$\u00a0${actionSv ? actionSv.amount.toFixed(2).replace('.', ',') : ''} no saldo da divisão.`}
+        description={`Isso removerá "${selectedSv?.description}" e estornará R$\u00a0${selectedSv ? selectedSv.amount.toFixed(2).replace('.', ',') : ''} no saldo da divisão.`}
+        confirmLabel="Excluir"
+        variant="danger"
+      />
+
+      {/* ── Entrada: Action Sheet ── */}
+      <ItemActionSheet
+        open={!!actionEntrada}
+        onClose={() => setActionEntrada(null)}
+        title={actionEntrada?.sourceName ?? ''}
+        subtitle={actionEntrada ? `+${formatCurrency(actionEntrada.amount)} · ${new Date(actionEntrada.date + 'T12:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })}` : ''}
+        actions={actionEntrada ? [
+          { label: 'Editar entrada', icon: Pencil, color: 'var(--color-success)', onClick: () => {
+            setSelectedEntrada(actionEntrada)
+            setEditEntradaOpen(true)
+            setActionEntrada(null)
+          }},
+          { label: 'Excluir entrada', icon: Trash2, color: 'var(--color-danger)', onClick: () => {
+            setSelectedEntrada(actionEntrada)
+            setConfirmDeleteEntrada(true)
+            setActionEntrada(null)
+          }},
+        ] : []}
+      />
+
+      <EditEntradaModal
+        open={editEntradaOpen}
+        onClose={() => { setEditEntradaOpen(false); setSelectedEntrada(null) }}
+        entrada={selectedEntrada}
+      />
+
+      <ConfirmDialog
+        open={confirmDeleteEntrada}
+        onClose={() => setConfirmDeleteEntrada(false)}
+        onConfirm={() => { if (selectedEntrada) { deleteEntrada(selectedEntrada.id); setSelectedEntrada(null) } }}
+        title="Excluir entrada?"
+        description={`Isso removerá "${selectedEntrada?.sourceName}" e estornará +R$\u00a0${selectedEntrada ? selectedEntrada.amount.toFixed(2).replace('.', ',') : ''} das divisões.`}
         confirmLabel="Excluir"
         variant="danger"
       />
