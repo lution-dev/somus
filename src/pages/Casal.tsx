@@ -55,7 +55,7 @@ export default function Casal() {
   })
 
   const isMobile = useIsMobile()
-  const HERO_BG = '#001442'
+  const HERO_BG = '#150D27'
   const rawCode = currentUser?.partnerCode ?? '0001'
   const partnerCode = rawCode.startsWith('SOMUS-') ? rawCode.replace('SOMUS-', '').slice(-4).toUpperCase() : rawCode
   const { hidden: balanceHidden, toggle: toggleBalanceHidden } = useBalanceHidden()

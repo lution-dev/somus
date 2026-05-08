@@ -98,6 +98,7 @@ export default function Relatorios() {
   const TODAY        = currentYM()
   const [month, setMonth]         = useState(TODAY)
   const [reportCtx, setReportCtx] = useState<'me' | 'partner' | 'couple'>('couple')
+  const headerBg = reportCtx === 'couple' ? '#150D27' : '#001442'
 
   const myName      = currentUser?.name?.split(' ')[0] ?? 'Meu'
   const partnerName = partner?.name?.split(' ')[0] ?? 'Parceiro(a)'
@@ -150,7 +151,7 @@ export default function Relatorios() {
         <>
           <PageHeader
             title="Relatórios"
-            bg="#001442"
+            bg={headerBg}
             rightAction={
               <MonthNav month={month} today={TODAY} onChange={setMonth} showLabel />
             }
