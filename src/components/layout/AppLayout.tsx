@@ -43,10 +43,13 @@ function Sidebar() {
   return (
     <aside style={{
       width: 220, minWidth: 220,
-      background: 'var(--color-bg-primary)',
-      borderRight: '1px solid rgba(255,255,255,0.04)',
+      background: 'rgba(10, 10, 10, 0.55)',
+      backdropFilter: 'blur(20px) saturate(180%)',
+      WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+      borderRight: '1px solid rgba(255,255,255,0.06)',
       display: 'flex', flexDirection: 'column',
       height: '100dvh', position: 'sticky', top: 0, flexShrink: 0,
+      zIndex: 10,
     }}>
       {/* Logo */}
       <div style={{ padding: '28px 20px 20px', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
@@ -249,8 +252,18 @@ export function AppLayout({ children }: AppLayoutProps) {
           background: 'var(--color-bg-primary)',
           flexDirection: 'row',
           overflow: 'hidden',
+          position: 'relative',
         }}
       >
+        {/* Global ambient radial glow — visible through the glass sidebar */}
+        <div style={{
+          position: 'absolute',
+          top: 0, left: 0, right: 0, height: 600,
+          background: 'radial-gradient(circle at 30% -100px, #3B82F6 0%, transparent 60%)',
+          opacity: 0.07,
+          pointerEvents: 'none',
+          zIndex: 0,
+        }} />
         <Sidebar />
         <main style={{
           flex: 1,
@@ -258,8 +271,9 @@ export function AppLayout({ children }: AppLayoutProps) {
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
-          background: 'var(--color-bg-primary)',
+          background: 'transparent',
           position: 'relative',
+          zIndex: 1,
         }}>
           <div style={{ width: '100%', maxWidth: 960, padding: '0 40px', flex: 1 }}>
             {children}
