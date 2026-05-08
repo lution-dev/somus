@@ -223,14 +223,6 @@ export default function AddSaidaFixaModal({ open, onClose, divisaoId, divisaoNam
 
       <DialogFooter>
         <Button
-          variant="ghost"
-          size="md"
-          fullWidth
-          onClick={onClose}
-        >
-          Cancelar
-        </Button>
-        <Button
           variant="primary"
           size="md"
           fullWidth
@@ -239,8 +231,16 @@ export default function AddSaidaFixaModal({ open, onClose, divisaoId, divisaoNam
           style={isValid ? { background: color } : undefined}
         >
           {!isVariable && numAmount > 0
-            ? `Enviar — ${formatCurrency(monthlyAmount)}/mês`
-            : 'Enviar'}
+            ? `Adicionar — ${formatCurrency(monthlyAmount)}/mês`
+            : 'Adicionar'}
+        </Button>
+        <Button
+          variant="ghost"
+          size="md"
+          fullWidth
+          onClick={onClose}
+        >
+          Cancelar
         </Button>
       </DialogFooter>
     </Dialog>
