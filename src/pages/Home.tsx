@@ -22,7 +22,6 @@ import {
   TrendingUp,
   Calendar,
   ArrowUpRight,
-  ChevronRight,
   ChevronDown,
   Wallet,
   History,

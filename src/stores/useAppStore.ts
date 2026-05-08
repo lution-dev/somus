@@ -30,6 +30,8 @@ interface AppActions {
 
   // Entradas
   addEntrada: (entrada: Omit<Entrada, 'id'>) => void
+  editEntrada: (id: string, updates: { amount?: number; sourceName?: string; date?: string; note?: string }) => void
+  deleteEntrada: (id: string) => void
 
   // Divisoes
   updateDivisaoBalance: (divisaoId: string, amount: number, description: string) => void
@@ -153,6 +155,45 @@ export const useAppStore = create<AppState & AppActions>()(
           }
         })
       },
+
+      editEntrada: (id, updates) =>
+        set((state) => {
+          const e = state.entradas.find(x => x.id === id)
+          if (!e) return state
+          const amountDiff = (updates.amount ?? e.amount) - e.amount
+          return {
+            entradas: state.entradas.map(x => x.id !== id ? x : { ...x, ...updates }),
+            divisoes: amountDiff !== 0
+              ? state.divisoes.map(cx => {
+                  const dist = e.distribution.find(d => d.divisaoId === cx.id)
+                  if (!dist) return cx
+                  const ratio = dist.amount / e.amount
+                  return {
+                    ...cx,
+                    balance: cx.balance + amountDiff * ratio,
+                  }
+                })
+              : state.divisoes,
+          }
+        }),
+
+      deleteEntrada: (id) =>
+        set((state) => {
+          const e = state.entradas.find(x => x.id === id)
+          if (!e) return state
+          return {
+            entradas: state.entradas.filter(x => x.id !== id),
+            divisoes: state.divisoes.map(cx => {
+              const dist = e.distribution.find(d => d.divisaoId === cx.id)
+              if (!dist) return cx
+              return {
+                ...cx,
+                balance: cx.balance - dist.amount,
+                movements: (cx.movements ?? []).filter(mv => mv.description !== `Distribuição — ${e.sourceName}`),
+              }
+            }),
+          }
+        }),
 
       updateDivisaoBalance: (divisaoId, amount, description) =>
         set((state) => ({
