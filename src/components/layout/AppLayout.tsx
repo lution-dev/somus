@@ -43,8 +43,8 @@ function Sidebar() {
   return (
     <aside style={{
       width: 220, minWidth: 220,
-      background: 'linear-gradient(180deg, #141414 0%, #0E0E0E 100%)',
-      borderRight: '1px solid rgba(255,255,255,0.06)',
+      background: 'var(--color-bg-primary)',
+      borderRight: '1px solid rgba(255,255,255,0.04)',
       display: 'flex', flexDirection: 'column',
       height: '100dvh', position: 'sticky', top: 0, flexShrink: 0,
     }}>
