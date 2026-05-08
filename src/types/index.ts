@@ -102,6 +102,7 @@ export interface SaidaVariavel {
   subcategory?: string
   paymentMethod: PaymentMethod
   date: string
+  status?: 'realized' | 'pending'
 }
 
 export interface ObjetivoMovement {

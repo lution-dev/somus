@@ -111,7 +111,7 @@ export default function LancarDespesaModal({ open, onClose, divisaoId, divisaoNa
             <div style={{ marginBottom: 12 }}>
               <Input
                 label="Descrição"
-                placeholder={divisaoName}
+                placeholder="Ex: Conta de luz, Netflix..."
                 value={description}
                 onChange={e => setDescription(e.target.value)}
               />

@@ -51,6 +51,7 @@ interface AppActions {
 
   // Saídas Variáveis
   addSaidaVariavel: (saida: Omit<SaidaVariavel, 'id'>) => void
+  confirmSaidaVariavel: (id: string, confirmationDate: string) => void
   editSaidaVariavel: (id: string, updates: { amount?: number; description?: string; date?: string; category?: string }) => void
   deleteSaidaVariavel: (id: string) => void
 
@@ -292,7 +293,24 @@ export const useAppStore = create<AppState & AppActions>()(
 
       addSaidaVariavel: (saida) =>
         set((state) => {
-          const newSaida = { ...saida, id: `sv-${Date.now()}` }
+          const id = `sv-${Date.now()}`
+          const today = new Date().toISOString().split('T')[0]
+          const isPending = saida.date > today
+          
+          const newSaida: SaidaVariavel = { 
+            ...saida, 
+            id, 
+            status: isPending ? 'pending' : 'realized' 
+          }
+          
+          // Se for pendente, NÃO desconta do saldo agora
+          if (isPending) {
+            return {
+              saidasVariaveis: [...state.saidasVariaveis, newSaida],
+            }
+          }
+
+          // Se for realizado (hoje ou passado), desconta do saldo
           return {
             saidasVariaveis: [...state.saidasVariaveis, newSaida],
             divisoes: state.divisoes.map((cx) =>
@@ -302,7 +320,7 @@ export const useAppStore = create<AppState & AppActions>()(
                 movements: [
                   ...(cx.movements ?? []),
                   {
-                    id: `mv-${Date.now()}-sv`,
+                    id: `mv-${id}-sv`,
                     date: saida.date,
                     amount: -saida.amount,
                     description: saida.description,
@@ -314,36 +332,88 @@ export const useAppStore = create<AppState & AppActions>()(
           }
         }),
 
-      editSaidaVariavel: (id, updates) =>
+      confirmSaidaVariavel: (id, confirmationDate) =>
         set((state) => {
           const sv = state.saidasVariaveis.find(s => s.id === id)
-          if (!sv) return state
-          const amountDiff = (updates.amount ?? sv.amount) - sv.amount
+          if (!sv || sv.status !== 'pending') return state
+
           return {
-            saidasVariaveis: state.saidasVariaveis.map(s =>
-              s.id !== id ? s : { ...s, ...updates }
+            saidasVariaveis: state.saidasVariaveis.map(s => 
+              s.id === id ? { ...s, status: 'realized', date: confirmationDate } : s
             ),
-            divisoes: amountDiff !== 0
-              ? state.divisoes.map(cx =>
-                  cx.id !== sv.divisaoId ? cx : {
-                    ...cx,
-                    balance: cx.balance - amountDiff,
-                    movements: (cx.movements ?? []).map(mv =>
-                      mv.id !== `mv-sv-${id}` ? mv : { ...mv, amount: -(updates.amount ?? sv.amount) }
-                    ),
+            divisoes: state.divisoes.map(cx => 
+              cx.id !== sv.divisaoId ? cx : {
+                ...cx,
+                balance: cx.balance - sv.amount,
+                movements: [
+                  ...(cx.movements ?? []),
+                  {
+                    id: `mv-${id}-sv`,
+                    date: confirmationDate,
+                    amount: -sv.amount,
+                    description: sv.description,
+                    type: 'expense' as const,
                   }
+                ]
+              }
+            )
+          }
+        }),
+
+      editSaidaVariavel: (id, updates) =>
+        set((state) => {
+          const sv = state.saidasVariaveis.find((s) => s.id === id)
+          if (!sv) return state
+
+          const isPending = sv.status === 'pending'
+          
+          // Se o valor mudou e NÃO era pendente, precisamos ajustar o saldo
+          let nextDivisoes = state.divisoes
+          if (!isPending && updates.amount !== undefined && updates.amount !== sv.amount) {
+            const diff = updates.amount - sv.amount
+            nextDivisoes = state.divisoes.map(cx => 
+              cx.id !== sv.divisaoId ? cx : {
+                ...cx,
+                balance: cx.balance - diff,
+                movements: (cx.movements ?? []).map(mv => 
+                  mv.id === `mv-${id}-sv` ? { ...mv, amount: -updates.amount!, date: updates.date ?? mv.date } : mv
                 )
-              : state.divisoes,
+              }
+            )
+          } else if (!isPending && (updates.date || updates.description)) {
+            // Atualiza o movimento se mudou data ou descrição
+            nextDivisoes = state.divisoes.map(cx => 
+              cx.id !== sv.divisaoId ? cx : {
+                ...cx,
+                movements: (cx.movements ?? []).map(mv => 
+                  mv.id === `mv-${id}-sv` ? { 
+                    ...mv, 
+                    date: updates.date ?? mv.date,
+                    description: updates.description ?? mv.description
+                  } : mv
+                )
+              }
+            )
+          }
+
+          return {
+            saidasVariaveis: state.saidasVariaveis.map((s) =>
+              s.id === id ? { ...s, ...updates } : s
+            ),
+            divisoes: nextDivisoes,
           }
         }),
 
       deleteSaidaVariavel: (id) =>
         set((state) => {
-          const sv = state.saidasVariaveis.find(s => s.id === id)
+          const sv = state.saidasVariaveis.find((s) => s.id === id)
           if (!sv) return state
+
+          const isPending = sv.status === 'pending'
+
           return {
-            saidasVariaveis: state.saidasVariaveis.filter(s => s.id !== id),
-            divisoes: state.divisoes.map(cx =>
+            saidasVariaveis: state.saidasVariaveis.filter((s) => s.id !== id),
+            divisoes: isPending ? state.divisoes : state.divisoes.map((cx) =>
               cx.id !== sv.divisaoId ? cx : {
                 ...cx,
                 balance: cx.balance + sv.amount,
