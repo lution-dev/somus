@@ -43,8 +43,6 @@ export default function Casal() {
   const currentUserEntradas = entradas.filter(e => e.userId === (currentUser?.id ?? ''))
 
   const totalCouple = currentUserBalance + partnerBalance
-  const currentPct  = totalCouple > 0 ? (currentUserBalance / totalCouple) * 100 : 50
-  const partnerPct  = 100 - currentPct
 
   const hasPartner      = partner !== null
   const currentUserName = currentUser?.name ?? displayName ?? 'Você'
@@ -65,7 +63,6 @@ export default function Casal() {
 
   // ── PatrimonioCard — all-in-one, profiles inside ──────────────────────
   const PatrimonioCard = ({ isHero = false }: { isHero?: boolean }) => {
-    const barBg = isHero ? 'rgba(255,255,255,0.12)' : 'var(--color-bg-tertiary)'
 
     return (
       <div style={{
