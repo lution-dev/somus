@@ -159,7 +159,7 @@ export default function Relatorios() {
           />
           {/* Toggle abaixo da navbar — gradient hero */}
           <div style={{
-            background: `linear-gradient(to bottom, ${headerBg}CC 0%, transparent 100%)`,
+            background: `linear-gradient(to bottom, ${headerBg} 0%, transparent 100%)`,
             padding: '10px 16px 20px',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}>
