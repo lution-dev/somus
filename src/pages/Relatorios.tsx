@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+﻿import { useState, useMemo } from 'react'
 import { useAppStore, selectCurrentDivisoes } from '../stores/useAppStore'
 import { useShallow } from 'zustand/react/shallow'
 import { formatCurrency } from '../lib/calculations'
@@ -148,18 +148,17 @@ export default function Relatorios() {
       {/* ── Header ─────────────────────────────────────────────────────────── */}
       {isMobile ? (
         <>
-          <PageHeader title="Relatórios" bg="#001442" />
-          {/* Mês — linha 1 */}
+          <PageHeader
+            title="Relatórios"
+            bg="#001442"
+            rightAction={
+              <MonthNav month={month} today={TODAY} onChange={setMonth} showLabel />
+            }
+          />
+          {/* Toggle abaixo da navbar */}
           <div style={{
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            padding: '8px 16px 0',
-          }}>
-            <MonthNav month={month} today={TODAY} onChange={setMonth} showLabel />
-          </div>
-          {/* Toggle — linha 2 */}
-          <div style={{
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            padding: '8px 16px 12px',
+            padding: '10px 16px 12px',
           }}>
             <SegmentedCtrl
               options={ctxOptions}
