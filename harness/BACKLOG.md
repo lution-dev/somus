@@ -417,3 +417,39 @@
 - [x] Integração de saídas variáveis no fluxo do mês atual
 - [x] Action sheet com atalho rápido Editar valor deste mês
 **Status:** ? Concluído
+
+---
+
+#### T-AD-22: Fluxo/Home: Refinamento de Pendências e Ícones
+**Tipo:** UX / Visual
+**Arquivo:** src/pages/Fluxo.tsx + src/pages/Home.tsx
+**Critérios:**
+- [x] Home: Próximos dias agora usa valor efetivo (overrides)
+- [x] Home: Trocar ícone de despesa pendente para AlertCircle
+- [x] Fluxo: Substituir pontos coloridos por ícones de status (Check/Alerta)
+- [x] Fluxo: Restaurar divisões Pendentes vs Lançamentos do mês
+- [x] Fluxo: Animação de glow nos itens pendentes
+**Status:** ? Concluído
+
+---
+
+#### T-AD-23: Home: Exibição de Pendências Atrasadas
+**Tipo:** UX / Feature
+**Arquivo:** src/pages/Home.tsx
+**Critérios:**
+- [x] Incluir itens atrasados (days < 0) na seção Próximos dias
+- [x] Janela de exibição aumentada para 15 dias
+- [x] Label corrigido: Atrasado há Xd
+- [x] Limite de itens na Home aumentado de 5 para 10
+**Status:** ? Concluído
+
+---
+
+#### T-AD-24: Fix: Cálculo de dias para itens atrasados
+**Tipo:** Bug / UX
+**Arquivo:** src/lib/calculations.ts
+**Critérios:**
+- [x] Corrigido getDaysUntil para não saltar automaticamente para o próximo mês
+- [x] Normalização de horário para cálculos de dias inteiros precisos
+- [x] Suporte a dias negativos para exibição de atrasos (Atrasado há Xd)
+**Status:** ? Concluído

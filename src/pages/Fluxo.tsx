@@ -345,7 +345,7 @@ export default function Fluxo() {
           <>
             <SectionLabel icon={<Clock size={12} />} count={pending.length}>Pendentes</SectionLabel>
             {pending.map((item, i) => (
-              <FixaItem key={`f-${item.data.id}`} sf={item.data} isLast={i === pending.length - 1 && realized.length === 0} onPress={setActionSf} yearMonth={yearMonth} />
+              <FixaItem key={`f-${item.data.id}`} sf={item.data as SaidaFixa} isLast={i === pending.length - 1 && realized.length === 0} onPress={setActionSf} yearMonth={yearMonth} />
             ))}
           </>
         )}
@@ -355,9 +355,9 @@ export default function Fluxo() {
             <SectionLabel icon={<TrendingUp size={12} />} count={realized.length}>Lançamentos do mês</SectionLabel>
             {realized.map((item, i) => {
               const isLast = i === realized.length - 1
-              if (item.type === 'fixa') return <FixaItem key={`f-${item.data.id}`} sf={item.data} isLast={isLast} onPress={setActionSf} yearMonth={yearMonth} />
-              if (item.type === 'variavel') return <VariavelItem key={`v-${item.data.id}`} sv={item.data} isLast={isLast} />
-              return <EntradaItem key={`e-${item.data.id}`} e={item.data} isLast={isLast} />
+              if (item.type === 'fixa') return <FixaItem key={`f-${item.data.id}`} sf={item.data as SaidaFixa} isLast={isLast} onPress={setActionSf} yearMonth={yearMonth} />
+              if (item.type === 'variavel') return <VariavelItem key={`v-${item.data.id}`} sv={item.data as SaidaVariavel} isLast={isLast} />
+              return <EntradaItem key={`e-${item.data.id}`} e={item.data as Entrada} isLast={isLast} />
             })}
           </>
         )}

@@ -40,6 +40,9 @@ npm install && npm run dev
 - **T-S01-09** ✅ Dashboard Home (balance card, timeline 7 dias, grid divisoes, toggle)
 - **T-S01-10** — Redesign Fluxo 10/10 (progress bar, desktop 2-column, tab badges, urgency)
 - **T-AD-21** — Fluxo Redesign (lista unificada, monthly instances, overrides de valor, filtros)
+- **T-AD-22** — Fluxo/Home: Refinamento de ícones e pendências (Glow, status icons, section labels)
+- **T-AD-23** — Home: Exibição de pendências atrasadas (Atrasado há Xd) e expansão da janela para 15 dias
+- **T-AD-24** — Fix: Cálculo de dias para atrasados (correção do salto de mês em getDaysUntil)
 
 ## Arquitetura de Arquivos
 ```

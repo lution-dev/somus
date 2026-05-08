@@ -9,7 +9,7 @@ import {
   selectExpectedMonthlyIncome,
 } from '../stores/useAppStore'
 import { useShallow } from 'zustand/react/shallow'
-import { formatCurrency, getMonthSummary, getDaysUntil, isPaidThisMonth } from '../lib/calculations'
+import { formatCurrency, getMonthSummary, getDaysUntil, isPaidThisMonth, getEffectiveAmount } from '../lib/calculations'
 import { getDivisaoIcon } from '../lib/icons'
 import { ProgressBar, PageHeader, Dialog, groupByMonth, MonthHeader } from '../components/ui'
 import { useIsMobile } from '../hooks/useIsMobile'
@@ -21,7 +21,6 @@ import {
   TrendingUp,
   Calendar,
   ArrowUpRight,
-  ArrowDownRight,
   ChevronRight,
   ChevronDown,
   Wallet,
@@ -173,7 +172,7 @@ function ProximosDias({ onEntradaClick, onDespesaClick, isDesktop }: {
         id: sf.id, name: sf.name, amount: getEffectiveAmount(sf),
         days: getDaysUntil(sf.dueDay), type: 'despesa' as const,
       }))
-      .filter(d => d.days >= 0 && d.days <= 10)
+      .filter(d => d.days <= 15) // Inclui atrasados e próximos 15 dias
 
     const entradas = incomeSources
       .filter(src => src.expectedDay !== undefined)
@@ -183,7 +182,7 @@ function ProximosDias({ onEntradaClick, onDespesaClick, isDesktop }: {
       }))
       .filter(e => e.days > 0 && e.days <= 10)
 
-    return [...despesas, ...entradas].sort((a, b) => a.days - b.days).slice(0, 5)
+    return [...despesas, ...entradas].sort((a, b) => a.days - b.days).slice(0, 10) // Aumentado para 10 itens no total
   }, [saidasFixas, incomeSources])
 
   const [collapsed, setCollapsed] = useState(() => localStorage.getItem('somus:proxDias') === 'collapsed')
@@ -227,7 +226,10 @@ function ProximosDias({ onEntradaClick, onDespesaClick, isDesktop }: {
       <div style={{ flex: 1, minWidth: 0 }}>
         <p style={{ fontSize: 14, fontWeight: 500, color: 'var(--color-text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', margin: 0 }}>{item.name}</p>
         <p style={{ fontSize: 12, color: 'var(--color-text-secondary)', margin: 0 }}>
-          {item.days === 0 ? 'Hoje' : item.days === 1 ? 'Amanhã' : `Em ${item.days} dias`}
+          {item.days === 0 ? 'Hoje' : 
+           item.days === 1 ? 'Amanhã' : 
+           item.days < 0 ? `Atrasado há ${Math.abs(item.days)}d` : 
+           `Em ${item.days} dias`}
         </p>
       </div>
       <span style={{
@@ -344,9 +346,19 @@ function ProximosDias({ onEntradaClick, onDespesaClick, isDesktop }: {
         <span className="section-label" style={{ marginBottom: 0, flex: 1, textAlign: 'left' }}>
           Próximos dias
         </span>
-        <span style={{
-          fontSize: 11, color: 'var(--color-text-tertiary)', marginRight: 2,
-        }}>
+        <span style={(() => {
+            const hasOverdue = upcoming.some(i => i.days < 0)
+            const hasUrgent  = upcoming.some(i => i.days >= 0 && i.days <= 3)
+            const bg    = hasOverdue ? 'rgba(239,68,68,0.15)'    : hasUrgent ? 'rgba(245,158,11,0.15)' : 'rgba(255,255,255,0.06)'
+            const color = hasOverdue ? 'var(--color-danger)'      : hasUrgent ? 'var(--color-warning)'  : 'var(--color-text-tertiary)'
+            const border= hasOverdue ? 'rgba(239,68,68,0.3)'     : hasUrgent ? 'rgba(245,158,11,0.3)'  : 'var(--color-border)'
+            return {
+              fontSize: 11, fontWeight: 700, lineHeight: 1,
+              padding: '3px 7px', borderRadius: 20,
+              background: bg, color, border: `1px solid ${border}`,
+              marginRight: 2,
+            }
+          })()}>
           {upcoming.length}
         </span>
         <ChevronDown

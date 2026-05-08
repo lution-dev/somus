@@ -94,9 +94,11 @@ export function isFuture(dateStr: string): boolean {
 
 export function getDaysUntil(day: number): number {
   const today = new Date()
+  today.setHours(0, 0, 0, 0) // Normaliza hoje para início do dia para cálculo de dias inteiros
   const target = new Date(today.getFullYear(), today.getMonth(), day)
-  if (target < today) target.setMonth(target.getMonth() + 1)
-  return Math.ceil((target.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
+  
+  const diffTime = target.getTime() - today.getTime()
+  return Math.floor(diffTime / (1000 * 60 * 60 * 24))
 }
 
 export function isPaidThisMonth(paidDates: string[]): boolean {
@@ -118,6 +120,7 @@ export function getDueDayLabel(dueDay: number): string {
   const days = getDaysUntil(dueDay)
   if (days === 0) return 'Vence hoje'
   if (days === 1) return 'Vence amanhã'
+  if (days < 0) return `Atrasado há ${Math.abs(days)}d`
   if (days <= 7) return `Vence em ${days} dias`
   return `Dia ${dueDay}`
 }
