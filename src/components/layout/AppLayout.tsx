@@ -62,9 +62,10 @@ function Sidebar() {
       {/* Nav */}
       <nav style={{ flex: 1, padding: '12px 10px', display: 'flex', flexDirection: 'column', gap: 2 }}>
         {NAV_ITEMS.map(item => {
+          const claimedByActiveFor = NAV_ITEMS.some(i => i.activeFor?.some(p => location.startsWith(p)))
           const active =
             location === item.path ||
-            (location.startsWith(item.path + '/') && !(item.activeFor?.length)) ||
+            (!claimedByActiveFor && location.startsWith(item.path + '/')) ||
             (item.activeFor?.some(prefix => location.startsWith(prefix)) ?? false)
           return (
             <button

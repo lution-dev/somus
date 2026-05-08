@@ -7,11 +7,13 @@ import { PageHeader, ConfirmDialog } from '../components/ui'
 import ItemActionSheet from '../components/ui/ItemActionSheet'
 import { useIsMobile } from '../hooks/useIsMobile'
 import { useAuth } from '../hooks/useAuth'
-import { Share2, Copy, CheckCircle2, Send, UserPlus, Plus, Pencil, Trash2, Target, Eye, EyeOff } from 'lucide-react'
+import { Share2, Copy, CheckCircle2, Send, UserPlus, Plus, Pencil, Trash2, Target, Eye, EyeOff, Heart, Link2, Loader2 } from 'lucide-react'
 import { useBalanceHidden } from '../hooks/useBalanceHidden'
 import type { Objetivo } from '../types'
 import AddObjetivoModal from '../components/features/AddObjetivoModal'
 import ObjetivoCard from '../components/features/ObjetivoCard'
+import { collection, query, where, getDocs, doc, setDoc } from 'firebase/firestore'
+import { db } from '../lib/firebase'
 
 export default function Casal() {
   const [copied, setCopied] = useState(false)
@@ -359,48 +361,185 @@ export default function Casal() {
   )
 }
 
-function InviteCodeCard({ copied, setCopied, partnerCode }: { copied: boolean; setCopied: (v: boolean) => void; partnerCode: string }) {
+function InviteCodeCard({
+  copied, setCopied, partnerCode
+}: {
+  copied: boolean
+  setCopied: (v: boolean) => void
+  partnerCode: string
+}) {
+  const { uid } = useAuth()
+  const currentUser = useAppStore(s => s.currentUser)
+  const setPartner  = useAppStore(s => s.setPartner)
+
+  const [inputCode, setInputCode] = useState('')
+  const [linkStatus, setLinkStatus] = useState<'idle' | 'loading' | 'found' | 'not_found' | 'error' | 'done'>('idle')
+  const [foundName, setFoundName] = useState('')
+  const [foundUid, setFoundUid]   = useState('')
+  const normalised = inputCode.trim().toUpperCase()
+
+  async function handleSearch() {
+    if (!normalised || !uid) return
+    setLinkStatus('loading')
+    try {
+      const q = query(collection(db, 'users'), where('currentUser.partnerCode', '==', normalised))
+      const snap = await getDocs(q)
+      if (snap.empty) { setLinkStatus('not_found'); return }
+      const found = snap.docs[0]
+      if (found.id === uid) { setLinkStatus('not_found'); return }
+      setFoundName(found.data()?.currentUser?.name ?? 'Parceiro(a)')
+      setFoundUid(found.id)
+      setLinkStatus('found')
+    } catch {
+      setLinkStatus('error')
+    }
+  }
+
+  async function handleLink() {
+    if (!uid || !foundUid || !currentUser) return
+    setLinkStatus('loading')
+    try {
+      // Link current user → partner
+      await setDoc(doc(db, 'users', uid), {
+        partner: { id: foundUid, name: foundName, partnerCode: normalised },
+      }, { merge: true })
+      // Link partner → current user (bilateral)
+      await setDoc(doc(db, 'users', foundUid), {
+        partner: { id: uid, name: currentUser.name, partnerCode: currentUser.partnerCode ?? '' },
+      }, { merge: true })
+      // Update local Zustand immediately
+      setPartner({ id: foundUid, name: foundName, partnerCode: normalised })
+      setLinkStatus('done')
+    } catch {
+      setLinkStatus('error')
+    }
+  }
+
   return (
-    <div style={{ background: 'var(--color-bg-secondary)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-card)', padding: 16 }}>
-      <p style={{ fontSize: 11, fontWeight: 600, color: 'var(--color-text-tertiary)', margin: '0 0 6px', display: 'flex', alignItems: 'center', gap: 5, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-        <Share2 size={11} />Vincular parceiro(a)
-      </p>
-      <p style={{ fontSize: 20, fontWeight: 700, letterSpacing: '0.12em', color: 'var(--color-accent-couple)', margin: 0 }}>{partnerCode}</p>
-      <p style={{ fontSize: 12, color: 'var(--color-text-tertiary)', margin: '4px 0 0' }}>Compartilhe este código para conectar as finanças do casal</p>
-      <div style={{ display: 'flex', gap: 8, marginTop: 14 }}>
-        <button
-          style={{
-            display: 'flex', alignItems: 'center', gap: 6, flex: 1, fontSize: 12, fontWeight: 600,
-            padding: '10px 12px', borderRadius: 10, cursor: 'pointer',
-            background: copied ? 'rgba(16,185,129,0.1)' : 'rgba(139,92,246,0.08)',
-            color: copied ? 'var(--color-success)' : 'var(--color-accent-couple)',
-            border: `1px solid ${copied ? 'rgba(16,185,129,0.2)' : 'rgba(139,92,246,0.15)'}`,
-            fontFamily: 'var(--font-sans)', transition: 'all 200ms ease', justifyContent: 'center',
-          }}
-          onClick={() => { navigator.clipboard.writeText(partnerCode); setCopied(true); setTimeout(() => setCopied(false), 2000) }}
-        >
-          {copied ? <CheckCircle2 size={13} /> : <Copy size={13} />}
-          {copied ? 'Copiado!' : 'Copiar código'}
-        </button>
-        <button
-          style={{
-            display: 'flex', alignItems: 'center', gap: 6, flex: 1, fontSize: 12, fontWeight: 600,
-            padding: '10px 12px', borderRadius: 10, cursor: 'pointer',
-            background: 'var(--color-accent-couple)', color: 'white',
-            border: 'none', fontFamily: 'var(--font-sans)', transition: 'opacity 150ms ease',
-            justifyContent: 'center',
-          }}
-          onMouseEnter={e => e.currentTarget.style.opacity = '0.85'}
-          onMouseLeave={e => e.currentTarget.style.opacity = '1'}
-          onClick={() => {
-            const msg = `💜 Entra comigo no Somus!\n\nCódigo: ${partnerCode}\n\nhttps://somus.vercel.app`
-            if (navigator.share) { navigator.share({ title: 'Somus', text: msg }).catch(() => {}) }
-            else { navigator.clipboard.writeText(msg); setCopied(true); setTimeout(() => setCopied(false), 2000) }
-          }}
-        >
-          <Send size={13} />Compartilhar
-        </button>
+    <div style={{ background: 'var(--color-bg-secondary)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-card)', padding: 16, display: 'flex', flexDirection: 'column', gap: 16 }}>
+
+      {/* ── Seu código ── */}
+      <div>
+        <p style={{ fontSize: 11, fontWeight: 600, color: 'var(--color-text-tertiary)', margin: '0 0 6px', display: 'flex', alignItems: 'center', gap: 5, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+          <Share2 size={11} />Seu código de convite
+        </p>
+        <p style={{ fontSize: 20, fontWeight: 700, letterSpacing: '0.12em', color: 'var(--color-accent-couple)', margin: 0 }}>{partnerCode}</p>
+        <p style={{ fontSize: 12, color: 'var(--color-text-tertiary)', margin: '4px 0 0' }}>Compartilhe para conectar as finanças do casal</p>
+        <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
+          <button
+            style={{
+              display: 'flex', alignItems: 'center', gap: 6, flex: 1, fontSize: 12, fontWeight: 600,
+              padding: '9px 12px', borderRadius: 10, cursor: 'pointer',
+              background: copied ? 'rgba(16,185,129,0.1)' : 'rgba(139,92,246,0.08)',
+              color: copied ? 'var(--color-success)' : 'var(--color-accent-couple)',
+              border: `1px solid ${copied ? 'rgba(16,185,129,0.2)' : 'rgba(139,92,246,0.15)'}`,
+              fontFamily: 'var(--font-sans)', transition: 'all 200ms ease', justifyContent: 'center',
+            }}
+            onClick={() => { navigator.clipboard.writeText(partnerCode); setCopied(true); setTimeout(() => setCopied(false), 2000) }}
+          >
+            {copied ? <CheckCircle2 size={13} /> : <Copy size={13} />}
+            {copied ? 'Copiado!' : 'Copiar código'}
+          </button>
+          <button
+            style={{
+              display: 'flex', alignItems: 'center', gap: 6, flex: 1, fontSize: 12, fontWeight: 600,
+              padding: '9px 12px', borderRadius: 10, cursor: 'pointer',
+              background: 'var(--color-accent-couple)', color: 'white',
+              border: 'none', fontFamily: 'var(--font-sans)', transition: 'opacity 150ms ease',
+              justifyContent: 'center',
+            }}
+            onMouseEnter={e => e.currentTarget.style.opacity = '0.85'}
+            onMouseLeave={e => e.currentTarget.style.opacity = '1'}
+            onClick={() => {
+              const msg = `💜 Entra comigo no Somus!\n\nCódigo: ${partnerCode}\n\nhttps://somus.vercel.app`
+              if (navigator.share) { navigator.share({ title: 'Somus', text: msg }).catch(() => {}) }
+              else { navigator.clipboard.writeText(msg); setCopied(true); setTimeout(() => setCopied(false), 2000) }
+            }}
+          >
+            <Send size={13} />Compartilhar
+          </button>
+        </div>
       </div>
+
+      {/* ── Divisor ── */}
+      <div style={{ height: 1, background: 'var(--color-border)' }} />
+
+      {/* ── Inserir código do parceiro ── */}
+      {linkStatus !== 'done' ? (
+        <div>
+          <p style={{ fontSize: 11, fontWeight: 600, color: 'var(--color-text-tertiary)', margin: '0 0 8px', display: 'flex', alignItems: 'center', gap: 5, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+            <Link2 size={11} />Já tem o código do seu par?
+          </p>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <input
+              value={inputCode}
+              onChange={e => { setInputCode(e.target.value.toUpperCase()); setLinkStatus('idle') }}
+              placeholder="Ex: AB3F"
+              maxLength={6}
+              style={{
+                flex: 1, padding: '9px 12px', borderRadius: 10, fontSize: 13, fontWeight: 600,
+                fontFamily: 'monospace', letterSpacing: '0.12em',
+                background: 'var(--color-bg-tertiary)',
+                border: `1px solid ${
+                  linkStatus === 'found' ? 'rgba(139,92,246,0.4)'
+                  : linkStatus === 'not_found' || linkStatus === 'error' ? 'rgba(239,68,68,0.4)'
+                  : 'var(--color-border)'
+                }`,
+                color: 'var(--color-text-primary)', outline: 'none',
+                transition: 'border-color 200ms ease',
+              }}
+            />
+            <button
+              onClick={linkStatus === 'found' ? handleLink : handleSearch}
+              disabled={!normalised || linkStatus === 'loading'}
+              style={{
+                padding: '9px 14px', borderRadius: 10, fontSize: 12, fontWeight: 700,
+                border: 'none', cursor: normalised ? 'pointer' : 'default',
+                background: linkStatus === 'found' ? 'var(--color-accent-couple)' : normalised ? 'rgba(139,92,246,0.15)' : 'var(--color-bg-tertiary)',
+                color: linkStatus === 'found' ? 'white' : normalised ? 'var(--color-accent-couple)' : 'var(--color-text-tertiary)',
+                fontFamily: 'var(--font-sans)',
+                display: 'flex', alignItems: 'center', gap: 6,
+                transition: 'all 200ms ease', flexShrink: 0,
+                minWidth: 72, justifyContent: 'center',
+              }}
+            >
+              {linkStatus === 'loading'
+                ? <Loader2 size={13} style={{ animation: 'casal-spin 0.8s linear infinite' }} />
+                : linkStatus === 'found'
+                ? <><Heart size={12} fill="white" />Unir</>
+                : 'Buscar'}
+            </button>
+          </div>
+
+          {/* Feedback messages */}
+          {linkStatus === 'found' && (
+            <p style={{ fontSize: 12, color: 'var(--color-accent-couple)', margin: '6px 0 0', display: 'flex', alignItems: 'center', gap: 5 }}>
+              <Heart size={11} fill="var(--color-accent-couple)" />
+              {foundName} encontrado(a)! Clique em Unir para conectar.
+            </p>
+          )}
+          {linkStatus === 'not_found' && (
+            <p style={{ fontSize: 12, color: 'var(--color-danger)', margin: '6px 0 0' }}>
+              Código não encontrado. Confirme com seu par.
+            </p>
+          )}
+          {linkStatus === 'error' && (
+            <p style={{ fontSize: 12, color: 'var(--color-danger)', margin: '6px 0 0' }}>
+              Erro de conexão. Tente novamente.
+            </p>
+          )}
+        </div>
+      ) : (
+        // Success state
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', background: 'rgba(139,92,246,0.08)', borderRadius: 10, border: '1px solid rgba(139,92,246,0.2)' }}>
+          <Heart size={16} color="var(--color-accent-couple)" fill="var(--color-accent-couple)" />
+          <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-accent-couple)', margin: 0 }}>
+            Vocês estão conectados! 💜
+          </p>
+        </div>
+      )}
+
+      <style>{`@keyframes casal-spin { to { transform: rotate(360deg); } }`}</style>
     </div>
   )
 }

@@ -39,9 +39,11 @@ export function BottomNav({ items }: BottomNavProps) {
       {/* Nav buttons */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-around', padding: '0 4px', height: 56 }}>
         {items.map((item) => {
+          // If any item claims this route via activeFor, suppress startsWith for the rest
+          const claimedByActiveFor = items.some(i => i.activeFor?.some(p => location.startsWith(p)))
           const isActive =
             location === item.path ||
-            location.startsWith(item.path + '/') ||
+            (!claimedByActiveFor && location.startsWith(item.path + '/')) ||
             (item.activeFor?.some(prefix => location.startsWith(prefix)) ?? false)
           return (
             <button
