@@ -395,7 +395,7 @@ function ProximosDias({ onEntradaClick, onDespesaClick, isDesktop }: {
   )
 
   if (upcoming.length === 0) return (
-    <div style={{ marginTop: 20 }}>
+    <div style={{ marginTop: 4 }}>
       {mobileHeader}
       {!collapsed && (
         <div style={{
@@ -412,7 +412,7 @@ function ProximosDias({ onEntradaClick, onDespesaClick, isDesktop }: {
   )
 
   return (
-    <div style={{ marginTop: 20 }}>
+    <div style={{ marginTop: 4 }}>
       {mobileHeader}
 
       <AnimatePresence initial={false}>
