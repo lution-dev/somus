@@ -157,17 +157,27 @@ export default function Relatorios() {
               <MonthNav month={month} today={TODAY} onChange={setMonth} showLabel />
             }
           />
-          {/* Toggle abaixo da navbar — gradient hero */}
-          <div style={{
-            background: `linear-gradient(to bottom, ${headerBg} 0%, transparent 100%)`,
-            padding: '10px 16px 20px',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-          }}>
-            <SegmentedCtrl
-              options={ctxOptions}
-              value={reportCtx}
-              onChange={(v) => setReportCtx(v as 'me' | 'partner' | 'couple')}
-            />
+          {/* Toggle abaixo da navbar — gradient hero estendido */}
+          <div style={{ position: 'relative' }}>
+            <div style={{
+              position: 'absolute',
+              top: 0, left: 0, right: 0,
+              height: 140,
+              background: `linear-gradient(to bottom, ${headerBg} 0%, transparent 100%)`,
+              pointerEvents: 'none',
+              zIndex: 0,
+            }} />
+            <div style={{
+              position: 'relative', zIndex: 1,
+              padding: '10px 16px 20px',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}>
+              <SegmentedCtrl
+                options={ctxOptions}
+                value={reportCtx}
+                onChange={(v) => setReportCtx(v as 'me' | 'partner' | 'couple')}
+              />
+            </div>
           </div>
         </>
       ) : (
