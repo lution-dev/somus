@@ -466,3 +466,21 @@
 - [x] Filtrar itens pulados na Home e no Fluxo (lista e totais)
 - [x] Renomear 'Excluir' para 'Excluir permanentemente' para clareza
 **Status:** ? Concluído
+
+---
+
+#### T-AD-26: Fluxo: Mês por extenso na Navbar
+**Tipo:** Visual
+**Arquivo:** src/pages/Fluxo.tsx
+**Critérios:**
+- [x] Alterar formato do mês de 'short' para 'long' na Navbar do Fluxo
+**Status:** ? Concluído
+
+---
+
+#### T-AD-27: Fluxo: Padronização de espaçamentos (UI)
+**Tipo:** Visual / Polimento
+**Arquivo:** src/pages/Fluxo.tsx
+**Critérios:**
+- [x] Padronizar espaçamentos entre Choice, Busca e Lista para 16px
+**Status:** ? Concluído

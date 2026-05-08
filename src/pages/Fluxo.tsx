@@ -247,6 +247,8 @@ export default function Fluxo() {
   const [editSf, setEditSf] = useState<SaidaFixa | null>(null)
   const [editMonthlySf, setEditMonthlySf] = useState<SaidaFixa | null>(null)
   const [confirmPaySf, setConfirmPaySf] = useState<SaidaFixa | null>(null)
+  const [pendingCollapsed, setPendingCollapsed] = useState(false)
+  const [realizedCollapsed, setRealizedCollapsed] = useState(false)
   const isMobile = useIsMobile()
 
   const yearMonth = useMemo(() => new Date().toISOString().slice(0, 7), [])
@@ -329,29 +331,65 @@ export default function Fluxo() {
       )
     }
 
-    const pending = unifiedList.filter(item => item.type === 'fixa' && !isPaidThisMonth(item.data.paidDates))
+    const pending  = unifiedList.filter(item => item.type === 'fixa' && !isPaidThisMonth(item.data.paidDates))
     const realized = unifiedList.filter(item => item.type !== 'fixa' || isPaidThisMonth(item.data.paidDates))
 
     return (
       <>
         {pending.length > 0 && (
           <>
-            <SectionLabel icon={<Clock size={12} />} count={pending.length}>Pendentes</SectionLabel>
-            {pending.map((item, i) => (
-              <FixaItem key={`f-${item.data.id}`} sf={item.data as SaidaFixa} isLast={i === pending.length - 1 && realized.length === 0} onPress={setActionSf} yearMonth={yearMonth} />
-            ))}
+            <SectionLabel
+              icon={<Clock size={12} />}
+              count={pending.length}
+              collapsed={pendingCollapsed}
+              onClick={() => setPendingCollapsed(v => !v)}
+            >Pendentes</SectionLabel>
+            <AnimatePresence initial={false}>
+              {!pendingCollapsed && (
+                <motion.div
+                  key="pending-section"
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: 'auto', opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.2, ease: [0.25, 0.46, 0.45, 0.94] }}
+                  style={{ overflow: 'hidden' }}
+                >
+                  {pending.map((item, i) => (
+                    <FixaItem key={`f-${item.data.id}`} sf={item.data as SaidaFixa} isLast={i === pending.length - 1 && realized.length === 0} onPress={setActionSf} yearMonth={yearMonth} />
+                  ))}
+                </motion.div>
+              )}
+            </AnimatePresence>
           </>
         )}
-        
+
         {realized.length > 0 && (
           <>
-            <SectionLabel icon={<TrendingUp size={12} />} count={realized.length}>Lançamentos do mês</SectionLabel>
-            {realized.map((item, i) => {
-              const isLast = i === realized.length - 1
-              if (item.type === 'fixa') return <FixaItem key={`f-${item.data.id}`} sf={item.data as SaidaFixa} isLast={isLast} onPress={setActionSf} yearMonth={yearMonth} />
-              if (item.type === 'variavel') return <VariavelItem key={`v-${item.data.id}`} sv={item.data as SaidaVariavel} isLast={isLast} />
-              return <EntradaItem key={`e-${item.data.id}`} e={item.data as Entrada} isLast={isLast} />
-            })}
+            <SectionLabel
+              icon={<TrendingUp size={12} />}
+              count={realized.length}
+              collapsed={realizedCollapsed}
+              onClick={() => setRealizedCollapsed(v => !v)}
+            >Lançamentos do mês</SectionLabel>
+            <AnimatePresence initial={false}>
+              {!realizedCollapsed && (
+                <motion.div
+                  key="realized-section"
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: 'auto', opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.2, ease: [0.25, 0.46, 0.45, 0.94] }}
+                  style={{ overflow: 'hidden' }}
+                >
+                  {realized.map((item, i) => {
+                    const isLast = i === realized.length - 1
+                    if (item.type === 'fixa') return <FixaItem key={`f-${item.data.id}`} sf={item.data as SaidaFixa} isLast={isLast} onPress={setActionSf} yearMonth={yearMonth} />
+                    if (item.type === 'variavel') return <VariavelItem key={`v-${item.data.id}`} sv={item.data as SaidaVariavel} isLast={isLast} />
+                    return <EntradaItem key={`e-${item.data.id}`} e={item.data as Entrada} isLast={isLast} />
+                  })}
+                </motion.div>
+              )}
+            </AnimatePresence>
           </>
         )}
       </>
@@ -370,7 +408,7 @@ export default function Fluxo() {
               background: 'rgba(255,255,255,0.08)', padding: '4px 10px', borderRadius: 8,
               fontSize: 12, fontWeight: 600, color: 'var(--color-text-secondary)', textTransform: 'capitalize'
             }}>
-              {new Date().toLocaleString('pt-BR', { month: 'short' })}
+              {new Date().toLocaleString('pt-BR', { month: 'long' })}
             </div>
           }
         />
@@ -423,7 +461,7 @@ export default function Fluxo() {
         </div>
 
         {/* Filters and Search */}
-        <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: 12, marginBottom: 16, alignItems: isMobile ? 'flex-start' : 'center' }}>
+        <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: 16, marginBottom: 16, alignItems: isMobile ? 'flex-start' : 'center' }}>
           {/* Segmented control tab bar */}
           <div style={{
             display: 'inline-flex',
@@ -578,17 +616,26 @@ export default function Fluxo() {
   )
 }
 
-function SectionLabel({ children, count, icon }: { children: React.ReactNode; count?: number; icon?: React.ReactNode }) {
+function SectionLabel({ children, count, icon, onClick, collapsed }: {
+  children: React.ReactNode
+  count?: number
+  icon?: React.ReactNode
+  onClick?: () => void
+  collapsed?: boolean
+}) {
   return (
     <div
+      onClick={onClick}
       style={{ 
-        padding: '12px 16px', 
+        padding: '10px 16px', 
         margin: 0, 
         borderBottom: '1px solid var(--color-border)',
         display: 'flex',
         alignItems: 'center',
         gap: 8,
-        background: 'rgba(255,255,255,0.02)'
+        background: 'rgba(255,255,255,0.02)',
+        cursor: onClick ? 'pointer' : 'default',
+        userSelect: 'none',
       }}
     >
       {icon && <span style={{ color: 'var(--color-text-tertiary)', display: 'flex' }}>{icon}</span>}
@@ -606,6 +653,17 @@ function SectionLabel({ children, count, icon }: { children: React.ReactNode; co
         }}>
           {count}
         </span>
+      )}
+      {onClick && (
+        <ChevronDown
+          size={13}
+          color="var(--color-text-tertiary)"
+          style={{
+            transition: 'transform 200ms ease',
+            transform: collapsed ? 'rotate(-90deg)' : 'rotate(0deg)',
+            flexShrink: 0,
+          }}
+        />
       )}
     </div>
   )

@@ -44,6 +44,8 @@ npm install && npm run dev
 - **T-AD-23** — Home: Exibição de pendências atrasadas (Atrasado há Xd) e expansão da janela para 15 dias
 - **T-AD-24** — Fix: Cálculo de dias para atrasados (correção do salto de mês em getDaysUntil)
 - **T-AD-25** — Fluxo: Recurso 'Pular este mês' (ignora custo sem deletar template)
+- **T-AD-26** — Fluxo: Mês por extenso na Navbar (long format)
+- **T-AD-27** — Fluxo: Padronização de espaçamentos (Choice/Busca/Lista)
 
 ## Arquitetura de Arquivos
 ```

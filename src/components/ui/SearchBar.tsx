@@ -13,7 +13,7 @@ export default function SearchBar({ value, onChange, placeholder = 'Procurar' }:
       background: 'var(--color-bg-secondary)',
       border: '1px solid var(--color-border)',
       borderRadius: 'var(--radius-card)',
-      padding: '0 12px', marginBottom: 16,
+      padding: '0 12px',
     }}>
       <Search size={16} color="var(--color-text-tertiary)" />
       <input
