@@ -27,7 +27,7 @@ export default function InviteAccept() {
     async function lookup() {
       try {
         // Find the user whose partnerCode matches
-        const usersRef = collection(db, 'somus_states')
+        const usersRef = collection(db, 'users')
         const q = query(usersRef, where('currentUser.partnerCode', '==', code))
         const snap = await getDocs(q)
 
@@ -67,14 +67,14 @@ export default function InviteAccept() {
     try {
       // Link both users to each other in Firestore
       // Update current user's doc
-      await setDoc(doc(db, 'somus_states', uid), {
+      await setDoc(doc(db, 'users', uid), {
         partner: { id: inviterUid, name: inviterName, partnerCode: code },
       }, { merge: true })
 
       // Update inviter's doc with current user info
       const myName = currentUser.name ?? 'Parceiro(a)'
       const myCode = currentUser.partnerCode ?? ''
-      await setDoc(doc(db, 'somus_states', inviterUid), {
+      await setDoc(doc(db, 'users', inviterUid), {
         partner: { id: uid, name: myName, partnerCode: myCode },
       }, { merge: true })
 
