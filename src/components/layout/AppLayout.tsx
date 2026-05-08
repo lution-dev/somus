@@ -43,24 +43,24 @@ function Sidebar() {
   return (
     <aside style={{
       width: 220, minWidth: 220,
-      background: 'var(--color-bg-sidebar)',
-      borderRight: '1px solid var(--color-border)',
+      background: 'linear-gradient(180deg, #141414 0%, #0E0E0E 100%)',
+      borderRight: '1px solid rgba(255,255,255,0.06)',
       display: 'flex', flexDirection: 'column',
       height: '100dvh', position: 'sticky', top: 0, flexShrink: 0,
     }}>
       {/* Logo */}
-      <div style={{ padding: '28px 20px 20px', borderBottom: '1px solid var(--color-border)' }}>
+      <div style={{ padding: '28px 20px 20px', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <SomusLogo size={28} />
           <div>
-            <p style={{ fontSize: 14, fontWeight: 700, color: 'var(--color-text-primary)', lineHeight: 1.2, margin: 0 }}>Somus</p>
-            <p style={{ fontSize: 11, color: 'var(--color-text-tertiary)', lineHeight: 1.3, margin: 0 }}>Finanças do casal</p>
+            <p style={{ fontSize: 14, fontWeight: 800, color: 'var(--color-text-primary)', lineHeight: 1.2, margin: 0, letterSpacing: '-0.02em' }}>Somus</p>
+            <p style={{ fontSize: 10, color: 'var(--color-text-tertiary)', lineHeight: 1.3, margin: 0, letterSpacing: '0.04em', textTransform: 'uppercase' }}>Finanças do casal</p>
           </div>
         </div>
       </div>
 
       {/* Nav */}
-      <nav style={{ flex: 1, padding: '12px 10px', display: 'flex', flexDirection: 'column', gap: 2 }}>
+      <nav style={{ flex: 1, padding: '16px 10px', display: 'flex', flexDirection: 'column', gap: 2 }}>
         {NAV_ITEMS.map(item => {
           const claimedByActiveFor = NAV_ITEMS.some(i => i.activeFor?.some(p => location.startsWith(p)))
           const active =
@@ -84,7 +84,8 @@ function Sidebar() {
 
       {/* User footer */}
       <div ref={menuRef} style={{
-        padding: '12px 12px', borderTop: '1px solid var(--color-border)',
+        padding: '10px 10px', borderTop: '1px solid rgba(255,255,255,0.05)',
+        background: 'rgba(255,255,255,0.015)',
         position: 'relative',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -109,7 +110,7 @@ function Sidebar() {
                 style={{
                   width: 32, height: 32, borderRadius: '50%',
                   objectFit: 'cover', flexShrink: 0,
-                  border: '2px solid var(--color-border)',
+                  boxShadow: '0 0 0 2px rgba(59,130,246,0.4)',
                 }}
               />
             ) : (
