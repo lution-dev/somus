@@ -2,25 +2,25 @@ import React, { useMemo, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAppStore, selectCurrentSaidasFixas, selectCurrentEntradas } from '../stores/useAppStore'
 import { useShallow } from 'zustand/react/shallow'
-import { formatCurrency, isPaidThisMonth, getDueDayLabel, getDaysUntil, getEffectiveAmount } from '../lib/calculations'
+import { formatCurrency, isPaidForMonth, getDueDayLabel, getDaysUntil, getEffectiveAmount, getUnpaidMonths } from '../lib/calculations'
 import LancarEntradaModal from '../components/features/LancarEntradaModal'
 import LancarDespesaModal from '../components/features/LancarDespesaModal'
 import EditSaidaFixaModal from '../components/features/EditSaidaFixaModal'
 import EditMonthlyAmountModal from '../components/features/EditMonthlyAmountModal'
 import ConfirmPaymentModal from '../components/features/ConfirmPaymentModal'
 import ItemActionSheet from '../components/ui/ItemActionSheet'
-import { PageHeader, SearchBar, Dialog, Button } from '../components/ui'
+import { PageHeader, SearchBar, Dialog, Button, ConfirmDialog } from '../components/ui'
 import { useIsMobile } from '../hooks/useIsMobile'
 import { getDivisaoIcon } from '../lib/icons'
-import { Check, RefreshCw, Plus, Inbox, ArrowUpRight, ArrowDownLeft, CheckCircle2, Pencil, Trash2, XCircle, TrendingUp, AlertCircle, Clock, ChevronDown } from 'lucide-react'
+import { RefreshCw, Plus, Inbox, ArrowUpRight, ArrowDownLeft, CheckCircle2, Pencil, Trash2, XCircle, TrendingUp, AlertCircle, Clock, ChevronDown } from 'lucide-react'
 import type { SaidaFixa, SaidaVariavel, Entrada } from '../types'
 
 // ─── Tipos Locais ─────────────────────────────────────────────────────────────
 
-type FluxoItem = 
-  | { type: 'fixa'; data: SaidaFixa }
+type FluxoItem =
+  | { type: 'fixa';     data: SaidaFixa;     instanceMonth?: string }
   | { type: 'variavel'; data: SaidaVariavel }
-  | { type: 'entrada'; data: Entrada }
+  | { type: 'entrada';  data: Entrada }
 
 // ─── Componentes de Item ──────────────────────────────────────────────────────
 
@@ -30,15 +30,12 @@ function FixaItem({ sf, isLast, onPress, yearMonth }: {
   onPress: (sf: SaidaFixa) => void
   yearMonth: string
 }) {
-  const markPaid   = useAppStore(s => s.markSaidaFixaPaid)
-  const markUnpaid = useAppStore(s => s.markSaidaFixaUnpaid)
-  const paid       = isPaidThisMonth(sf.paidDates)
-  const today      = new Date().toISOString().slice(0, 10)
+  const paid       = isPaidForMonth(sf, yearMonth)
+  const isPastMonth = yearMonth < new Date().toISOString().slice(0, 7)
   const daysUntil  = getDaysUntil(sf.dueDay)
-  const isUrgent   = !paid && daysUntil <= 3 && daysUntil >= 0
-  const isOverdue  = !paid && daysUntil < 0
+  const isUrgent   = !paid && !isPastMonth && daysUntil <= 3 && daysUntil >= 0
+  const isOverdue  = !paid && (isPastMonth || daysUntil < 0)
   const [dateDialogOpen, setDateDialogOpen] = useState(false)
-  const [selectedDate, setSelectedDate] = useState(today)
   
   const effectiveAmount = getEffectiveAmount(sf, yearMonth)
   const hasOverride = sf.monthlyAmountOverrides?.[yearMonth] !== undefined
@@ -62,12 +59,12 @@ function FixaItem({ sf, isLast, onPress, yearMonth }: {
     >
       <div style={{ 
         width: 32, height: 32, borderRadius: 10, flexShrink: 0, 
-        background: paid ? 'rgba(16,185,129,0.1)' : `${sf.color || 'var(--color-accent-primary)'}15`,
+        background: paid ? 'rgba(239,68,68,0.1)' : `${sf.color || 'var(--color-accent-primary)'}15`,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        border: `1px solid ${paid ? 'transparent' : `${sf.color || 'var(--color-accent-primary)'}30`}`
+        border: `1px solid ${paid ? 'rgba(239,68,68,0.2)' : `${sf.color || 'var(--color-accent-primary)'}30`}`
       }}>
         {paid ? (
-          <CheckCircle2 size={18} color="var(--color-success)" />
+          <ArrowDownLeft size={18} color="var(--color-danger)" />
         ) : (
           <AlertCircle size={18} color={isOverdue ? 'var(--color-danger)' : sf.color || 'var(--color-accent-primary)'} />
         )}
@@ -103,7 +100,7 @@ function FixaItem({ sf, isLast, onPress, yearMonth }: {
               display: 'flex', alignItems: 'center', gap: 3
             }}>
               <AlertCircle size={10} />
-              {isOverdue ? 'Atrasado' : daysUntil === 0 ? 'Hoje' : `Em ${daysUntil}d`}
+              {isOverdue ? (isPastMonth ? `Atrasado · ${new Date(yearMonth + '-01T12:00:00').toLocaleString('pt-BR', { month: 'long' })}` : 'Atrasado') : daysUntil === 0 ? 'Hoje' : `Em ${daysUntil}d`}
             </span>
           )}
         </div>
@@ -116,53 +113,39 @@ function FixaItem({ sf, isLast, onPress, yearMonth }: {
       </div>
 
       {!sf.autoDebit && (
-        <>
-          <button
-            onClick={(e) => {
-              e.stopPropagation()
-              if (paid) { markUnpaid(sf.id, today) } else { setDateDialogOpen(true) }
-            }}
-            style={{
-              width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center',
-              cursor: 'pointer', flexShrink: 0,
-              background: paid ? 'var(--color-success)' : 'transparent',
-              border: `2px solid ${paid ? 'var(--color-success)' : 'var(--color-border)'}`,
-              borderRadius: 10, padding: 0,
-              transition: 'all 200ms cubic-bezier(0.4, 0, 0.2, 1)',
-            }}
-          >
-            <Check size={16} strokeWidth={3} color={paid ? 'white' : 'var(--color-text-tertiary)'} />
-          </button>
-
-          <Dialog open={dateDialogOpen} onClose={() => setDateDialogOpen(false)} title="Data do pagamento" size="sm">
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-              <div>
-                <label style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text-secondary)', display: 'block', marginBottom: 8 }}>
-                  Quando você pagou?
-                </label>
-                <input
-                  type="date"
-                  value={selectedDate}
-                  onChange={(e) => setSelectedDate(e.target.value)}
-                  style={{
-                    width: '100%', padding: '10px 12px', fontSize: 14,
-                    border: '1px solid var(--color-border)', borderRadius: 8,
-                    background: 'var(--color-bg-tertiary)', color: 'var(--color-text-primary)',
-                    fontFamily: 'var(--font-sans)', boxSizing: 'border-box',
-                  }}
-                />
-              </div>
-              <div style={{ display: 'flex', gap: 8 }}>
-                <Button variant="ghost" fullWidth onClick={() => setDateDialogOpen(false)}>Cancelar</Button>
-                <Button variant="primary" fullWidth style={{ background: 'var(--color-success)' }} onClick={() => {
-                  markPaid(sf.id, selectedDate)
-                  setDateDialogOpen(false)
-                }}>Confirmar</Button>
-              </div>
-            </div>
-          </Dialog>
-        </>
+        <button
+          onClick={(e) => {
+            e.stopPropagation()
+            if (paid) {
+              useAppStore.getState().markSaidaFixaUnpaid(sf.id, yearMonth)
+            } else {
+              setDateDialogOpen(true)
+            }
+          }}
+          style={{
+            padding: '6px 12px',
+            borderRadius: 8,
+            fontSize: 12,
+            fontWeight: 600,
+            background: paid ? 'rgba(16,185,129,0.1)' : 'var(--color-bg-primary)',
+            color: paid ? 'var(--color-success)' : 'var(--color-text-secondary)',
+            border: paid ? '1px solid rgba(16,185,129,0.2)' : '1px solid var(--color-border)',
+            cursor: 'pointer',
+          }}
+        >
+          {paid ? 'Pago' : 'Marcar pago'}
+        </button>
       )}
+
+      <ConfirmPaymentModal
+        open={dateDialogOpen}
+        onClose={() => setDateDialogOpen(false)}
+        costName={sf.name}
+        onConfirm={(date) => {
+          useAppStore.getState().markSaidaFixaPaid(sf.id, date, yearMonth)
+          setDateDialogOpen(false)
+        }}
+      />
       {sf.autoDebit && paid && (
         <div style={{ width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <CheckCircle2 size={18} color="var(--color-success)" />
@@ -249,6 +232,8 @@ export default function Fluxo() {
   const [confirmPaySf, setConfirmPaySf] = useState<SaidaFixa | null>(null)
   const [pendingCollapsed, setPendingCollapsed] = useState(false)
   const [realizedCollapsed, setRealizedCollapsed] = useState(false)
+  const [confirmSkipSf, setConfirmSkipSf] = useState<SaidaFixa | null>(null)
+  const [confirmDeleteSf, setConfirmDeleteSf] = useState<SaidaFixa | null>(null)
   const isMobile = useIsMobile()
 
   const yearMonth = useMemo(() => new Date().toISOString().slice(0, 7), [])
@@ -258,7 +243,6 @@ export default function Fluxo() {
   const saidasVariaveis  = useAppStore(useShallow(s => s.saidasVariaveis))
   const divisoes         = useAppStore(useShallow(s => s.divisoes))
   const markPaid         = useAppStore(s => s.markSaidaFixaPaid)
-  const markUnpaid       = useAppStore(s => s.markSaidaFixaUnpaid)
   const editSaidaFixa    = useAppStore(s => s.editSaidaFixa)
   const editMonthly      = useAppStore(s => s.editSaidaFixaForMonth)
   const skipMonthly      = useAppStore(s => s.skipSaidaFixaForMonth)
@@ -270,69 +254,71 @@ export default function Fluxo() {
 
   const unifiedList = useMemo(() => {
     const q = fluxoSearch.toLowerCase()
-    
     let items: FluxoItem[] = []
 
     if (filterType === 'all' || filterType === 'saidas') {
       saidasFixas.forEach(sf => {
-        const isSkipped = sf.skippedMonths?.includes(yearMonth)
-        if (!isSkipped) items.push({ type: 'fixa', data: sf })
+        // Pendentes: todos os meses não pagos até o atual
+        const unpaidMonths = getUnpaidMonths(sf, yearMonth)
+        unpaidMonths.forEach(m => items.push({ type: 'fixa', data: sf, instanceMonth: m }))
+
+        // Realizados: pago neste mês
+        if (isPaidForMonth(sf, yearMonth)) {
+          items.push({ type: 'fixa', data: sf, instanceMonth: yearMonth })
+        }
       })
-      currentMonthVariaveis.forEach(sv => items.push({ type: 'variavel', data: sv }))
+
+      // Despesas variáveis manuais (exclui as geradas automaticamente por custos fixos)
+      currentMonthVariaveis.forEach(sv => {
+        if (!sv.id.startsWith('sv-fixed-')) {
+          items.push({ type: 'variavel', data: sv })
+        }
+      })
     }
+
     if (filterType === 'all' || filterType === 'entradas') {
       currentMonthEntradas.forEach(e => items.push({ type: 'entrada', data: e }))
     }
 
     if (q) {
       items = items.filter(item => {
-        if (item.type === 'fixa') return item.data.name.toLowerCase().includes(q)
+        if (item.type === 'fixa')     return item.data.name.toLowerCase().includes(q)
         if (item.type === 'variavel') return item.data.description.toLowerCase().includes(q)
         return item.data.sourceName.toLowerCase().includes(q)
       })
     }
 
-    // Ordenação: Pendentes Primeiro -> Data (mais recente)
-    return items.sort((a, b) => {
-      // Prioridade 1: Fixas Pendentes no topo
-      const aPaid = a.type === 'fixa' ? isPaidThisMonth(a.data.paidDates) : true
-      const bPaid = b.type === 'fixa' ? isPaidThisMonth(b.data.paidDates) : true
-      
-      if (!aPaid && bPaid) return -1
-      if (aPaid && !bPaid) return 1
-
-      // Prioridade 2: Ordem cronológica por dia (Fixas usam dueDay, resto usa date)
+    // Ordenação: pendentes primeiro; pagos por data desc (mais recente no topo)
+    items.sort((a, b) => {
+      const aPaid = a.type === 'fixa' ? isPaidForMonth(a.data, a.instanceMonth || yearMonth) : true
+      const bPaid = b.type === 'fixa' ? isPaidForMonth(b.data, b.instanceMonth || yearMonth) : true
+      if (!aPaid && bPaid)  return -1
+      if (aPaid  && !bPaid) return 1
       const aDay = a.type === 'fixa' ? a.data.dueDay : parseInt(a.data.date.split('-')[2])
       const bDay = b.type === 'fixa' ? b.data.dueDay : parseInt(b.data.date.split('-')[2])
-      
-      return aDay - bDay
+      if (aPaid && bPaid) return bDay - aDay  // pagos: mais recentes primeiro
+      return aDay - bDay                      // pendentes: mais próximos primeiro
     })
-  }, [saidasFixas, currentMonthVariaveis, currentMonthEntradas, filterType, fluxoSearch])
+
+    return items
+  }, [saidasFixas, currentMonthVariaveis, currentMonthEntradas, filterType, fluxoSearch, yearMonth])
 
   // Cálculos de resumo
   const nonSkippedFixas = saidasFixas.filter(sf => !sf.skippedMonths?.includes(yearMonth))
-  const totalFixasPending = nonSkippedFixas.filter(sf => !isPaidThisMonth(sf.paidDates)).reduce((s, sf) => s + getEffectiveAmount(sf, yearMonth), 0)
-  const totalFixasPaid = nonSkippedFixas.filter(sf => isPaidThisMonth(sf.paidDates)).reduce((s, sf) => s + getEffectiveAmount(sf, yearMonth), 0)
+  const totalFixasPending = nonSkippedFixas.filter(sf => !isPaidForMonth(sf, yearMonth)).reduce((s, sf) => s + getEffectiveAmount(sf, yearMonth), 0)
+  const totalFixasPaid = nonSkippedFixas.filter(sf => isPaidForMonth(sf, yearMonth)).reduce((s, sf) => s + getEffectiveAmount(sf, yearMonth), 0)
   const totalVariaveis = currentMonthVariaveis.reduce((s, sv) => s + sv.amount, 0)
   
   const totalPagoNoMes = totalFixasPaid + totalVariaveis
-  const paidPct = Math.round((saidasFixas.filter(sf => isPaidThisMonth(sf.paidDates)).length / (saidasFixas.length || 1)) * 100)
+  const paidPct = Math.round((saidasFixas.filter(sf => isPaidForMonth(sf, yearMonth)).length / (saidasFixas.length || 1)) * 100)
 
   const currentMonthLabel = new Date().toLocaleString('pt-BR', { month: 'long', year: 'numeric' })
 
   const renderUnifiedList = () => {
-    if (unifiedList.length === 0) {
-      return (
-        <EmptyState 
-          icon={<Inbox size={24} />}
-          label="Nenhum lançamento encontrado" 
-          desc="Tente mudar os filtros ou adicione novos lançamentos." 
-        />
-      )
-    }
+    if (unifiedList.length === 0) return <EmptyState icon={<Inbox size={24} />} label="Nenhum lançamento encontrado" desc="Tente mudar os filtros ou adicione novos lançamentos." />
 
-    const pending  = unifiedList.filter(item => item.type === 'fixa' && !isPaidThisMonth(item.data.paidDates))
-    const realized = unifiedList.filter(item => item.type !== 'fixa' || isPaidThisMonth(item.data.paidDates))
+    const pending  = unifiedList.filter(item => item.type === 'fixa' && !isPaidForMonth(item.data as SaidaFixa, item.instanceMonth || yearMonth))
+    const realized = unifiedList.filter(item => item.type !== 'fixa' || isPaidForMonth(item.data as SaidaFixa, item.instanceMonth || yearMonth))
 
     return (
       <>
@@ -376,16 +362,15 @@ export default function Fluxo() {
             >Pendentes</SectionLabel>
             <AnimatePresence initial={false}>
               {!pendingCollapsed && (
-                <motion.div
-                  key="pending-section"
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: 'auto', opacity: 1 }}
-                  exit={{ height: 0, opacity: 0 }}
-                  transition={{ duration: 0.2, ease: [0.25, 0.46, 0.45, 0.94] }}
-                  style={{ overflow: 'hidden' }}
-                >
+                <motion.div key="pending-section" initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }} style={{ overflow: 'hidden' }}>
                   {pending.map((item, i) => (
-                    <FixaItem key={`f-${item.data.id}`} sf={item.data as SaidaFixa} isLast={i === pending.length - 1 && realized.length === 0} onPress={setActionSf} yearMonth={yearMonth} />
+                    <FixaItem 
+                      key={`${item.data.id}-${item.instanceMonth}`} 
+                      sf={item.data as SaidaFixa} 
+                      yearMonth={item.instanceMonth || yearMonth} 
+                      isLast={i === pending.length - 1 && realized.length === 0} 
+                      onPress={setActionSf} 
+                    />
                   ))}
                 </motion.div>
               )}
@@ -403,17 +388,10 @@ export default function Fluxo() {
             >Lançamentos do mês</SectionLabel>
             <AnimatePresence initial={false}>
               {!realizedCollapsed && (
-                <motion.div
-                  key="realized-section"
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: 'auto', opacity: 1 }}
-                  exit={{ height: 0, opacity: 0 }}
-                  transition={{ duration: 0.2, ease: [0.25, 0.46, 0.45, 0.94] }}
-                  style={{ overflow: 'hidden' }}
-                >
+                <motion.div key="realized-section" initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }} style={{ overflow: 'hidden' }}>
                   {realized.map((item, i) => {
                     const isLast = i === realized.length - 1
-                    if (item.type === 'fixa') return <FixaItem key={`f-${item.data.id}`} sf={item.data as SaidaFixa} isLast={isLast} onPress={setActionSf} yearMonth={yearMonth} />
+                    if (item.type === 'fixa') return <FixaItem key={`${item.data.id}-${item.instanceMonth}`} sf={item.data as SaidaFixa} yearMonth={item.instanceMonth || yearMonth} isLast={isLast} onPress={setActionSf} />
                     if (item.type === 'variavel') return <VariavelItem key={`v-${item.data.id}`} sv={item.data as SaidaVariavel} isLast={isLast} />
                     return <EntradaItem key={`e-${item.data.id}`} e={item.data as Entrada} isLast={isLast} />
                   })}
@@ -601,16 +579,16 @@ export default function Fluxo() {
         title={actionSf?.name ?? ''}
         subtitle={actionSf ? formatCurrency(getEffectiveAmount(actionSf, yearMonth)) + ' · Dia ' + actionSf.dueDay : ''}
         actions={actionSf ? [
-          ...(isPaidThisMonth(actionSf.paidDates)
-            ? [{ label: 'Desmarcar pagamento', icon: XCircle, color: 'var(--color-warning)', onClick: () => { markUnpaid(actionSf.id, new Date().toISOString().slice(0, 10)) } }]
+          ...(isPaidForMonth(actionSf, yearMonth)
+            ? [{ label: 'Desmarcar pagamento', icon: XCircle, color: 'var(--color-warning)', onClick: () => { useAppStore.getState().markSaidaFixaUnpaid(actionSf.id, yearMonth) } }]
             : [
                 { label: 'Marcar como pago', icon: CheckCircle2, color: 'var(--color-success)', onClick: () => { setConfirmPaySf(actionSf) } },
-                { label: 'Pular este mês', icon: XCircle, color: 'var(--color-warning)', onClick: () => { if (confirm('Pular o pagamento de ' + actionSf.name + ' este mês?')) skipMonthly(actionSf.id, yearMonth); setActionSf(null) } }
+                { label: 'Pular este mês', icon: XCircle, color: 'var(--color-warning)', onClick: () => { setConfirmSkipSf(actionSf); setActionSf(null) } }
               ]
           ),
-          { label: 'Editar valor deste mês', icon: TrendingUp, color: 'var(--color-accent-blue-light)', onClick: () => setEditMonthlySf(actionSf) },
-          { label: 'Editar custo fixo base', icon: Pencil, color: 'var(--color-accent-primary)', onClick: () => setEditSf(actionSf) },
-          { label: 'Excluir permanentemente', icon: Trash2, color: 'var(--color-danger)', onClick: () => { if (confirm('Excluir ' + actionSf.name + ' de TODOS os meses?')) deleteSaidaFixa(actionSf.id) } },
+          { label: 'Editar valor deste mês', icon: TrendingUp, color: 'var(--color-accent-blue-light)', onClick: () => { setEditMonthlySf(actionSf); setActionSf(null) } },
+          { label: 'Editar custo fixo base', icon: Pencil, color: 'var(--color-accent-primary)', onClick: () => { setEditSf(actionSf); setActionSf(null) } },
+          { label: 'Excluir permanentemente', icon: Trash2, color: 'var(--color-danger)', onClick: () => { setConfirmDeleteSf(actionSf); setActionSf(null) } },
         ] : []}
       />
 
@@ -637,7 +615,27 @@ export default function Fluxo() {
         open={!!confirmPaySf}
         onClose={() => setConfirmPaySf(null)}
         costName={confirmPaySf?.name}
-        onConfirm={(date) => { if (confirmPaySf) markPaid(confirmPaySf.id, date) }}
+        onConfirm={(date) => { if (confirmPaySf) markPaid(confirmPaySf.id, date, yearMonth) }}
+      />
+
+      <ConfirmDialog
+        open={!!confirmSkipSf}
+        onClose={() => setConfirmSkipSf(null)}
+        onConfirm={() => { if (confirmSkipSf) skipMonthly(confirmSkipSf.id, yearMonth) }}
+        title="Pular este mês?"
+        description={`O custo "${confirmSkipSf?.name}" não será cobrado este mês, mas continuará aparecendo nos próximos.`}
+        confirmLabel="Pular mês"
+        variant="warning"
+      />
+
+      <ConfirmDialog
+        open={!!confirmDeleteSf}
+        onClose={() => setConfirmDeleteSf(null)}
+        onConfirm={() => { if (confirmDeleteSf) deleteSaidaFixa(confirmDeleteSf.id) }}
+        title="Excluir permanentemente?"
+        description={`Isso removerá o custo "${confirmDeleteSf?.name}" de TODOS os meses passados e futuros. Esta ação não pode ser desfeita.`}
+        confirmLabel="Excluir custo"
+        variant="danger"
       />
     </div>
   )

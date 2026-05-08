@@ -499,7 +499,6 @@ export default function Onboarding() {
         paymentMethod: 'auto_debit' as const,
         divisaoId: 'cx-essencial',
         autoDebit: false,
-        paidDates: [],
         category: 'Conta fixa',
       }))
     const objetivos = goals

@@ -106,6 +106,8 @@ src/
 | 2026-05-01 | Auth anônimo em vez de email/senha | UX mais simples pro MVP, migra depois |
 | 2026-05-01 | Single-document per user no Firestore | Volume pequeno, minimiza reads no free tier |
 | 2026-05-08 | Instâncias Mensais de Custos Fixos (Overrides) | Permitir edição de valor pontual no Fluxo sem alterar o template base do custo |
+| 2026-05-08 | Carry-Over Financeiro Histórico (v15) | Rastrear pagamentos por mês (Record) para garantir que contas atrasadas acumulem no fluxo até serem pagas. |
+| 2026-05-08 | Refinamento de UI/UX Fluxo | Substituição de confirmações nativas por ConfirmDialog, correção de duplicados e ajuste de ordenação (mais recentes primeiro). |
 
 ## Bloqueios
 Nenhum.

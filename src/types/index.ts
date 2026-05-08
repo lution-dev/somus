@@ -80,7 +80,8 @@ export interface SaidaFixa {
   paymentMethod: PaymentMethod
   divisaoId: string
   autoDebit: boolean
-  paidDates: string[]
+  payments: Record<string, string>      // key: 'YYYY-MM', value: 'YYYY-MM-DD' (real payment date)
+  startDate?: string                    // format: 'YYYY-MM' (when this recurring cost started)
   category: string
   color?: string
   isVariable?: boolean   // valor não contabiliza no total

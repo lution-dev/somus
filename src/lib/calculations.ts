@@ -68,7 +68,7 @@ export function getMonthSummary(
     .reduce((sum, e) => sum + e.amount, 0)
 
   const totalExpenses = saidasFixas
-    .filter(sf => sf.paidDates.some(d => d.startsWith(target)))
+    .filter(sf => isPaidForMonth(sf, target))
     .reduce((sum, sf) => sum + sf.amount, 0)
 
   const availableBalance = divisoes.reduce((sum, cx) => sum + cx.balance, 0)
@@ -101,9 +101,47 @@ export function getDaysUntil(day: number): number {
   return Math.floor(diffTime / (1000 * 60 * 60 * 24))
 }
 
-export function isPaidThisMonth(paidDates: string[]): boolean {
+// RN09: Verifica se uma saída fixa foi paga em um mês específico
+export const isPaidForMonth = (sf: SaidaFixa, yearMonth: string) => {
+  return !!(sf.payments ?? {})[yearMonth]
+}
+
+export const isPaidThisMonth = (sf: SaidaFixa) => {
   const currentMonth = new Date().toISOString().slice(0, 7)
-  return paidDates.some(d => d.startsWith(currentMonth))
+  return isPaidForMonth(sf, currentMonth)
+}
+
+/**
+ * Retorna lista de meses (YYYY-MM) que não foram pagos nem pulados, 
+ * desde startDate até o mês atual.
+ */
+export function getUnpaidMonths(sf: SaidaFixa, currentYearMonth: string): string[] {
+  // Se startDate não estiver definido, usa o mês atual como fallback
+  // para garantir que o item apareça como pendente se não foi pago
+  const startDate = sf.startDate || currentYearMonth
+  
+  const unpaid: string[] = []
+  let [year, month] = startDate.split('-').map(Number)
+  const [currYear, currMonth] = currentYearMonth.split('-').map(Number)
+
+  while (year < currYear || (year === currYear && month <= currMonth)) {
+    const ym = `${year}-${month.toString().padStart(2, '0')}`
+    
+    const isPaid = !!(sf.payments ?? {})[ym]
+    const isSkipped = sf.skippedMonths?.includes(ym)
+    
+    if (!isPaid && !isSkipped) {
+      unpaid.push(ym)
+    }
+
+    month++
+    if (month > 12) {
+      month = 1
+      year++
+    }
+  }
+
+  return unpaid
 }
 
 /**

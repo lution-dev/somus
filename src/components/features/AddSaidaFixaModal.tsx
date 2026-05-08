@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { useAppStore } from '../../stores/useAppStore'
 import { Dialog, DialogFooter, Button, Input } from '../ui'
 import { formatCurrency } from '../../lib/calculations'
@@ -64,7 +64,6 @@ export default function AddSaidaFixaModal({ open, onClose, divisaoId, divisaoNam
       paymentMethod,
       divisaoId,
       autoDebit: paymentMethod === 'auto_debit',
-      paidDates: [],
       category: divisaoName,
       color,
       isVariable,

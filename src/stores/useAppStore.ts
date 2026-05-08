@@ -23,7 +23,7 @@ interface AppActions {
   // Setup
   completeOnboarding: (user: User, initial: {
     incomeSources: Omit<IncomeSource, 'id'>[]
-    saidasFixas: Omit<SaidaFixa, 'id'>[]
+    saidasFixas: Omit<SaidaFixa, 'id' | 'payments' | 'startDate'>[]
     objetivos: Omit<Objetivo, 'id' | 'movements' | 'currentAmount'>[]
   }) => void
   setViewContext: (ctx: UserContext) => void
@@ -38,9 +38,9 @@ interface AppActions {
   deleteDivisaoMovement: (divisaoId: string, movementId: string) => void
 
   // Saídas Fixas
-  markSaidaFixaPaid: (id: string, date: string) => void
-  markSaidaFixaUnpaid: (id: string, date: string) => void
-  addSaidaFixa: (sf: Omit<SaidaFixa, 'id'>) => void
+  markSaidaFixaPaid: (id: string, date: string, targetMonth?: string) => void
+  markSaidaFixaUnpaid: (id: string, targetMonth: string) => void
+  addSaidaFixa: (sf: Omit<SaidaFixa, 'id' | 'payments' | 'startDate'>) => void
   editSaidaFixa: (id: string, updates: Partial<SaidaFixa>) => void
   editSaidaFixaForMonth: (id: string, yearMonth: string, amount: number) => void
   skipSaidaFixaForMonth: (id: string, yearMonth: string) => void
@@ -110,7 +110,7 @@ export const useAppStore = create<AppState & AppActions>()(
             ...src, id: `src-${Date.now()}-${i}`,
           }))
           const saidasFixas = initial.saidasFixas.map((sf, i) => ({
-            ...sf, id: `sf-${Date.now()}-${i}`,
+            ...sf, id: `sf-${Date.now()}-${i}`, payments: {}, startDate: new Date().toISOString().slice(0, 7)
           }))
           const objetivos = initial.objetivos.map((obj, i) => ({
             ...obj, id: `obj-${Date.now()}-${i}`,
@@ -174,17 +174,20 @@ export const useAppStore = create<AppState & AppActions>()(
 
       setDivisoes: (divisoes) => set({ divisoes }),
 
-      markSaidaFixaPaid: (id, date) =>
+      markSaidaFixaPaid: (id, date, targetMonth) =>
         set((state) => {
           const sf = state.saidasFixas.find(s => s.id === id)
           if (!sf) return state
 
-          const yearMonth = date.slice(0, 7)
+          const yearMonth = targetMonth || date.slice(0, 7)
           const svId = `sv-fixed-${id}-${yearMonth}`
 
           return {
             saidasFixas: state.saidasFixas.map(s =>
-              s.id !== id ? s : { ...s, paidDates: [...s.paidDates, date] }
+              s.id !== id ? s : { 
+                ...s, 
+                payments: { ...s.payments, [yearMonth]: date } 
+              }
             ),
             saidasVariaveis: [
               ...state.saidasVariaveis,
@@ -218,23 +221,21 @@ export const useAppStore = create<AppState & AppActions>()(
           }
         }),
 
-      markSaidaFixaUnpaid: (id, date) =>
+      markSaidaFixaUnpaid: (id, targetMonth) =>
         set((state) => {
           const sf = state.saidasFixas.find(s => s.id === id)
           if (!sf) return state
 
-          const yearMonth = date.slice(0, 7)
-          const svId = `sv-fixed-${id}-${yearMonth}`
-          const mvId = `mv-fixed-${id}-${yearMonth}`
+          const svId = `sv-fixed-${id}-${targetMonth}`
+          const mvId = `mv-fixed-${id}-${targetMonth}`
 
           return {
-            saidasFixas: state.saidasFixas.map(s =>
-              s.id !== id ? s : {
-                ...s,
-                // remove qualquer data do mês corrente (independente do dia exato)
-                paidDates: s.paidDates.filter(d => !d.startsWith(yearMonth)),
-              }
-            ),
+            saidasFixas: state.saidasFixas.map(s => {
+              if (s.id !== id) return s
+              const nextPayments = { ...s.payments }
+              delete nextPayments[targetMonth]
+              return { ...s, payments: nextPayments }
+            }),
             saidasVariaveis: state.saidasVariaveis.filter(sv => sv.id !== svId),
             divisoes: state.divisoes.map(cx =>
               cx.id !== sf.divisaoId ? cx : {
@@ -329,7 +330,15 @@ export const useAppStore = create<AppState & AppActions>()(
       // ── Saída Fixa CRUD ──
       addSaidaFixa: (sf) =>
         set((state) => ({
-          saidasFixas: [...state.saidasFixas, { ...sf, id: `sf-${Date.now()}` }],
+          saidasFixas: [
+            ...state.saidasFixas, 
+            { 
+              ...sf, 
+              id: `sf-${Date.now()}`, 
+              payments: {}, 
+              startDate: new Date().toISOString().slice(0, 7) 
+            }
+          ],
         })),
 
       editSaidaFixa: (id, updates) =>
@@ -428,7 +437,7 @@ export const useAppStore = create<AppState & AppActions>()(
     }),
     {
       name: 'somus-state',
-      version: 14,
+      version: 15,
       migrate: (_persisted: unknown, version: number) => {
         const state = _persisted as Record<string, unknown>
 
@@ -603,7 +612,26 @@ export const useAppStore = create<AppState & AppActions>()(
 
         // v13: add monthlyAmountOverrides to SaidaFixa — no-op, field is optional
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        if (version < 13) { /* no migration needed */ }
+        // v15: paidDates array -> payments Record + startDate
+        if (version < 15) {
+          const s = state as any
+          if (s.saidasFixas) {
+            s.saidasFixas = s.saidasFixas.map((sf: any) => {
+              const payments: Record<string, string> = {}
+              if (Array.isArray(sf.paidDates)) {
+                sf.paidDates.forEach((d: string) => {
+                  payments[d.slice(0, 7)] = d
+                })
+              }
+              delete sf.paidDates
+              return {
+                ...sf,
+                payments,
+                startDate: sf.startDate || "2026-05" // Default for existing items
+              }
+            })
+          }
+        }
 
         return state as unknown as AppState & AppActions
       },

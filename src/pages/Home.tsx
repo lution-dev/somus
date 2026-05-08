@@ -169,9 +169,9 @@ function ProximosDias({ onEntradaClick, onDespesaClick, isDesktop }: {
   const upcoming = useMemo(() => {
     const todayStr = new Date().toISOString().slice(0, 7) // 'YYYY-MM'
     const despesas = saidasFixas
-      .filter(sf => !isPaidThisMonth(sf.paidDates) && !sf.skippedMonths?.includes(todayStr))
+      .filter(sf => !isPaidThisMonth(sf) && !sf.skippedMonths?.includes(todayStr))
       .map(sf => ({
-        id: sf.id, name: sf.name, amount: getEffectiveAmount(sf),
+        id: sf.id, name: sf.name, amount: getEffectiveAmount(sf, todayStr),
         days: getDaysUntil(sf.dueDay), type: 'despesa' as const,
       }))
       .filter(d => d.days <= 15) // Inclui atrasados e próximos 15 dias
@@ -247,22 +247,17 @@ function ProximosDias({ onEntradaClick, onDespesaClick, isDesktop }: {
     </div>
   )
 
-  // ══════════════════════════════════════════════
-  //  DESKTOP: card-style, scrollable list (max 4 visible)
+  //  DESKTOP: clean list, no card background
   // ══════════════════════════════════════════════
   if (isDesktop) {
     return (
       <div style={{
-        background: 'var(--color-bg-secondary)',
-        border: '1px solid var(--color-border)',
-        borderRadius: 'var(--radius-card)',
-        padding: 20,
         display: 'flex',
         flexDirection: 'column',
         minHeight: 0,
       }}>
         {/* Header */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 16 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12 }}>
           <Calendar size={13} color="var(--color-text-tertiary)" />
           <p className="section-label" style={{ marginBottom: 0, flex: 1 }}>Próximos dias</p>
           {upcoming.length > 0 && (
@@ -276,7 +271,8 @@ function ProximosDias({ onEntradaClick, onDespesaClick, isDesktop }: {
         {upcoming.length === 0 ? (
           <div style={{
             flex: 1, display: 'flex', flexDirection: 'column',
-            alignItems: 'center', justifyContent: 'center', gap: 8, padding: '20px 0',
+            alignItems: 'center', justifyContent: 'center', gap: 8, padding: '40px 0',
+            background: 'var(--color-bg-secondary)', borderRadius: 16, border: '1px solid var(--color-border)'
           }}>
             <Calendar size={28} color="var(--color-text-tertiary)" strokeWidth={1.25} />
             <p style={{ fontSize: 13, color: 'var(--color-text-tertiary)', margin: 0, textAlign: 'center' }}>
@@ -284,19 +280,13 @@ function ProximosDias({ onEntradaClick, onDespesaClick, isDesktop }: {
             </p>
           </div>
         ) : (
-          /* Outer: clips to border-radius. Inner: scrolls. */
+          /* Scrollable wrapper with max height */
           <div style={{
-            borderRadius: 12,
-            border: '1px solid var(--color-border)',
-            overflow: 'hidden',
+            maxHeight: 280,
+            overflowY: 'auto',
+            overflowX: 'hidden',
           }}>
-            <div style={{
-              maxHeight: 232,
-              overflowY: 'auto',
-              overflowX: 'hidden',
-            }}>
-              {upcoming.map(renderItem)}
-            </div>
+            {upcoming.map(renderItem)}
           </div>
         )}
       </div>

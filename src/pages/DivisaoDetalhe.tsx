@@ -501,7 +501,7 @@ export default function DivisaoDetalhe() {
                     </p>
                   </div>
                   {group.items.map((sf, i) => {
-                    const paid = isPaidThisMonth(sf.paidDates)
+                    const paid = isPaidThisMonth(sf)
                     return (
                       <div
                         key={sf.id}
@@ -556,7 +556,7 @@ export default function DivisaoDetalhe() {
                     </p>
                   </div>
                   {group.items.map((sf, i) => {
-                    const paid = isPaidThisMonth(sf.paidDates)
+                    const paid = isPaidThisMonth(sf)
                     return (
                       <div
                         key={sf.id}
@@ -732,11 +732,10 @@ export default function DivisaoDetalhe() {
           actionItem.type === 'custo'
             ? (() => {
                 const sf = actionItem.item as SaidaFixa
-                const paid = isPaidThisMonth(sf.paidDates)
-                const today = new Date().toISOString().slice(0, 10)
+                const paid = isPaidThisMonth(sf)
                 return [
                   paid
-                    ? { label: 'Desmarcar pagamento', icon: XCircle, color: 'var(--color-warning)', onClick: () => markSaidaFixaUnpaid(sf.id, today) }
+                    ? { label: 'Desmarcar pagamento', icon: XCircle, color: 'var(--color-warning)', onClick: () => markSaidaFixaUnpaid(sf.id, currentMonth) }
                     : { label: 'Marcar como pago', icon: CheckCircle2, color: 'var(--color-success)', onClick: () => { setActionItem(null); setConfirmPaySf(sf) } },
                   { label: 'Editar', icon: Pencil, color: 'var(--color-accent-primary)', onClick: () => setEditSf(sf) },
                   { label: 'Excluir', icon: Trash2, color: 'var(--color-danger)', onClick: () => deleteSaidaFixa(sf.id) },
@@ -823,7 +822,9 @@ export default function DivisaoDetalhe() {
         open={!!confirmPaySf}
         onClose={() => setConfirmPaySf(null)}
         costName={confirmPaySf?.name}
-        onConfirm={(date) => { if (confirmPaySf) markSaidaFixaPaid(confirmPaySf.id, date) }}
+        onConfirm={(date) => {
+          if (confirmPaySf) markSaidaFixaPaid(confirmPaySf.id, date, currentMonth)
+        }}
       />
     </div>
   )
