@@ -26,6 +26,8 @@ import {
   Wallet,
   History,
   AlertCircle,
+  Eye,
+  EyeOff,
 } from 'lucide-react'
 
 // ─── Pill button style ──────────────────────────────────────────────────────
@@ -45,12 +47,14 @@ const pillBtn = (accent: string, bg: string): React.CSSProperties => ({
 
 function BalanceCard({
   total, totalIncome, expectedIncome,
-  onLancar, onHistorico,
+  onLancar, onHistorico, balanceHidden, onToggleHidden,
 }: {
   total: number; totalIncome: number; expectedIncome: number
   onLancar: () => void; onHistorico: () => void
+  balanceHidden: boolean; onToggleHidden: () => void
 }) {
   const remaining = Math.max(0, expectedIncome - totalIncome)
+  const mask = '•••••'
 
   return (
     <div style={{
@@ -59,24 +63,40 @@ function BalanceCard({
       borderRadius: 'var(--radius-card)',
       padding: 20,
     }}>
-      {/* Label */}
-      <p className="section-label" style={{ marginBottom: 4 }}>Saldo disponível</p>
+      {/* Label row with eye toggle */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
+        <p className="section-label" style={{ margin: 0 }}>Saldo disponível</p>
+        <button
+          onClick={onToggleHidden}
+          style={{
+            background: 'none', border: 'none', cursor: 'pointer', padding: 4,
+            color: 'var(--color-text-tertiary)', display: 'flex', alignItems: 'center',
+            transition: 'color 150ms ease',
+          }}
+        >
+          {balanceHidden ? <Eye size={16} /> : <EyeOff size={16} />}
+        </button>
+      </div>
 
       {/* Valor principal */}
       <p style={{ fontSize: 36, fontWeight: 700, color: 'var(--color-text-primary)', lineHeight: 1, marginBottom: 12 }}>
-        {formatCurrency(total)}
+        {balanceHidden ? <span style={{ letterSpacing: 4 }}>{mask}</span> : formatCurrency(total)}
       </p>
 
       {/* Indicadores */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 14 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
           <TrendingUp size={13} color="var(--color-success)" />
-          <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--color-success)' }}>{formatCurrency(totalIncome)} recebido</span>
+          <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--color-success)' }}>
+            {balanceHidden ? mask : formatCurrency(totalIncome)} recebido
+          </span>
         </div>
         {remaining > 0 && (
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
             <Calendar size={13} color="var(--color-warning)" />
-            <span style={{ fontSize: 12, color: 'var(--color-warning)' }}>~{formatCurrency(remaining)} a receber</span>
+            <span style={{ fontSize: 12, color: 'var(--color-warning)' }}>
+              ~{balanceHidden ? mask : formatCurrency(remaining)} a receber
+            </span>
           </div>
         )}
       </div>
@@ -164,6 +184,7 @@ function ProximosDias({ onEntradaClick, onDespesaClick, isDesktop }: {
   const incomeSources = useAppStore(useShallow(s =>
     s.incomeSources.filter(src => src.userId === (s.currentUser?.id ?? ''))
   ))
+  const saidasVariaveis = useAppStore(useShallow(s => s.saidasVariaveis))
 
   const upcoming = useMemo(() => {
     const todayStr = new Date().toISOString().slice(0, 7) // 'YYYY-MM'
@@ -173,7 +194,16 @@ function ProximosDias({ onEntradaClick, onDespesaClick, isDesktop }: {
         id: sf.id, name: sf.name, amount: getEffectiveAmount(sf, todayStr),
         days: getDaysUntil(sf.dueDay), type: 'despesa' as const,
       }))
-      .filter(d => d.days <= 15) // Inclui atrasados e próximos 15 dias
+
+    const variables = saidasVariaveis
+      .filter(sv => sv.status === 'pending')
+      .map(sv => {
+        const day = parseInt(sv.date.split('-')[2])
+        return {
+          id: sv.id, name: sv.description, amount: sv.amount,
+          days: getDaysUntil(day), type: 'despesa' as const, // Treat as despesa for UI consistency
+        }
+      })
 
     const entradas = incomeSources
       .filter(src => src.expectedDay !== undefined)
@@ -183,8 +213,10 @@ function ProximosDias({ onEntradaClick, onDespesaClick, isDesktop }: {
       }))
       .filter(e => e.days > 0 && e.days <= 10)
 
-    return [...despesas, ...entradas].sort((a, b) => a.days - b.days).slice(0, 10)
-  }, [saidasFixas, incomeSources])
+    return [...despesas, ...variables, ...entradas]
+      .sort((a, b) => a.days - b.days)
+      .slice(0, 10)
+  }, [saidasFixas, saidasVariaveis, incomeSources])
 
   // Status counts for mobile header badges
   const overdueCount  = upcoming.filter(i => i.type === 'despesa' && i.days < 0).length
@@ -409,9 +441,10 @@ function ProximosDias({ onEntradaClick, onDespesaClick, isDesktop }: {
 
 // ─── Divisoes Grid (Home) ────────────────────────────────────────────────
 
-function DivisoesSection() {
+function DivisoesSection({ balanceHidden = false }: { balanceHidden?: boolean }) {
   const [, navigate]   = useLocation()
   const divisoes      = useAppStore(useShallow(selectCurrentDivisoes))
+  const mask = '•••'
 
   return (
     <div style={{ marginTop: 20 }}>
@@ -488,7 +521,7 @@ function DivisoesSection() {
                     </div>
                     <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, marginBottom: 6 }}>
                       <p style={{ fontSize: 18, fontWeight: 700, color: 'var(--color-text-primary)', margin: 0 }}>
-                        {formatCurrency(essencial.balance)}
+                        {balanceHidden ? <span style={{ letterSpacing: 2 }}>{mask}</span> : formatCurrency(essencial.balance)}
                       </p>
                       {totalIn > 0 && (
                         <span style={{
@@ -555,7 +588,7 @@ function DivisoesSection() {
                     {/* Valor + % gasto */}
                     <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, marginBottom: 8 }}>
                       <p style={{ fontSize: 14, fontWeight: 700, color: 'var(--color-text-primary)', margin: 0 }}>
-                        {formatCurrency(cx.balance)}
+                        {balanceHidden ? <span style={{ letterSpacing: 2 }}>{mask}</span> : formatCurrency(cx.balance)}
                       </p>
                       {totalIn > 0 && (
                         <span style={{
@@ -586,6 +619,7 @@ export default function Home() {
   const [historicoOpen, setHistoricoOpen] = useState(false)
   const [prefill, setPrefill] = useState<{ sourceName: string; amount: number } | undefined>()
   const [confirmPayId, setConfirmPayId] = useState<string | null>(null)
+  const [balanceHidden, setBalanceHidden] = useState(() => localStorage.getItem('somus:balanceHidden') === 'true')
   const isMobile = useIsMobile()
   const { displayName } = useAuth()
 
@@ -623,6 +657,14 @@ export default function Home() {
     setPrefill(undefined)
   }
 
+  function toggleBalanceHidden() {
+    setBalanceHidden(prev => {
+      const next = !prev
+      localStorage.setItem('somus:balanceHidden', String(next))
+      return next
+    })
+  }
+
   return (
     <div style={{ minHeight: '100%' }}>
       {/* ── Hero Header Section ── */}
@@ -646,6 +688,8 @@ export default function Home() {
               expectedIncome={expectedIncome}
               onLancar={() => setLancarOpen(true)}
               onHistorico={() => setHistoricoOpen(true)}
+              balanceHidden={balanceHidden}
+              onToggleHidden={toggleBalanceHidden}
             />
           </div>
         </>
@@ -673,6 +717,8 @@ export default function Home() {
               expectedIncome={expectedIncome}
               onLancar={() => setLancarOpen(true)}
               onHistorico={() => setHistoricoOpen(true)}
+              balanceHidden={balanceHidden}
+              onToggleHidden={toggleBalanceHidden}
             />
 
             {/* Right: Próximos Dias */}
@@ -696,7 +742,7 @@ export default function Home() {
       )}
 
       {/* Divisoes */}
-      <DivisoesSection />
+      <DivisoesSection balanceHidden={balanceHidden} />
 
       </div>
       <LancarEntradaModal open={lancarOpen} onClose={handleCloseModal} prefill={prefill} />
@@ -704,9 +750,18 @@ export default function Home() {
       <ConfirmPaymentModal
         open={!!confirmPayId}
         onClose={() => setConfirmPayId(null)}
-        costName={confirmPayId ? (saidasFixasAll.find(s => s.id === confirmPayId)?.name ?? '') : ''}
+        costName={confirmPayId ? (
+          saidasFixasAll.find(s => s.id === confirmPayId)?.name ?? 
+          useAppStore.getState().saidasVariaveis.find(s => s.id === confirmPayId)?.description ?? ''
+        ) : ''}
         onConfirm={(date) => {
-          if (confirmPayId) markSaidaFixaPaid(confirmPayId, date)
+          if (confirmPayId) {
+            if (confirmPayId.startsWith('sv-')) {
+              useAppStore.getState().confirmSaidaVariavel(confirmPayId, date)
+            } else {
+              markSaidaFixaPaid(confirmPayId, date)
+            }
+          }
           setConfirmPayId(null)
         }}
       />

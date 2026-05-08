@@ -4,7 +4,7 @@ import { useAppStore } from '../../stores/useAppStore'
 import { formatCurrency } from '../../lib/calculations'
 import { getDivisaoIcon } from '../../lib/icons'
 import { Dialog, DialogFooter, Button, Input } from '../ui'
-import { Check, ChevronDown } from 'lucide-react'
+import { Check, ChevronDown, AlertCircle } from 'lucide-react'
 import type { PaymentMethod } from '../../types'
 import { useCurrencyInput } from '../../hooks/useCurrencyInput'
 
@@ -88,8 +88,12 @@ export default function LancarDespesaModal({ open, onClose, divisaoId, divisaoNa
             }}>
               <Check size={32} color="var(--color-success)" strokeWidth={2.5} />
             </div>
-            <p style={{ fontSize: 18, fontWeight: 700, color: 'var(--color-success)', margin: 0 }}>Despesa lançada!</p>
-            <p style={{ fontSize: 14, color: 'var(--color-text-secondary)', margin: 0 }}>Saldo da divisão atualizado</p>
+            <p style={{ fontSize: 18, fontWeight: 700, color: 'var(--color-success)', margin: 0 }}>
+              {date > new Date().toISOString().slice(0, 10) ? 'Despesa agendada!' : 'Despesa lançada!'}
+            </p>
+            <p style={{ fontSize: 14, color: 'var(--color-text-secondary)', margin: 0 }}>
+              {date > new Date().toISOString().slice(0, 10) ? 'Ela aparecerá como pendente na data.' : 'Saldo da divisão atualizado'}
+            </p>
           </motion.div>
         ) : (
           <motion.div key="form" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
@@ -200,6 +204,20 @@ export default function LancarDespesaModal({ open, onClose, divisaoId, divisaoNa
                 value={date}
                 onChange={e => setDate(e.target.value)}
               />
+              {date > new Date().toISOString().slice(0, 10) && (
+                <p style={{
+                  fontSize: 11,
+                  color: 'var(--color-warning)',
+                  margin: '4px 0 0',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 4,
+                  fontWeight: 500
+                }}>
+                  <AlertCircle size={12} />
+                  <span>Ficará salvo como agendamento para você confirmar no dia</span>
+                </p>
+              )}
             </div>
 
 

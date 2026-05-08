@@ -33,8 +33,9 @@ export function useFluxoProjection() {
     const monthEntradas = entradas.filter((e) => e.date.startsWith(yearMonth))
     const monthVariaveis = saidasVariaveis.filter((s) => s.date.startsWith(yearMonth))
 
-    // Fixas pendentes
+    // Custos pendentes (Fixos + Variáveis agendadas)
     const pendingFixas = saidasFixas.filter((f) => !isPaidForMonth(f, yearMonth))
+    const pendingVariaveis = saidasVariaveis.filter(v => v.status === 'pending' && v.date.startsWith(yearMonth))
 
     const days: ProjectionDay[] = []
 
@@ -50,7 +51,9 @@ export function useFluxoProjection() {
     for (let d = todayDay - 1; d >= 1; d--) {
       const dayStr = `${yearMonth}-${(d + 1).toString().padStart(2, '0')}`
       const dayEntradas = monthEntradas.filter((e) => e.date === dayStr).reduce((sum, e) => sum + e.amount, 0)
-      const dayVariaveis = monthVariaveis.filter((v) => v.date === dayStr).reduce((sum, v) => sum + v.amount, 0)
+      const dayVariaveis = monthVariaveis
+        .filter((v) => v.date === dayStr && v.status !== 'pending') // Só variáveis REALIZADAS entram no histórico
+        .reduce((sum, v) => sum + v.amount, 0)
       
       runningBalanceHistory = runningBalanceHistory - dayEntradas + dayVariaveis
       historicalData[d] = runningBalanceHistory
@@ -66,16 +69,21 @@ export function useFluxoProjection() {
         .filter((f) => f.dueDay === d)
         .reduce((sum, f) => sum + getEffectiveAmount(f, yearMonth), 0)
       
-      runningBalanceProj -= dayFixas
+      const dayVariaveis = pendingVariaveis
+        .filter(v => parseInt(v.date.split('-')[2]) === d)
+        .reduce((sum, v) => sum + v.amount, 0)
+      
+      runningBalanceProj -= (dayFixas + dayVariaveis)
       projectionData[d] = runningBalanceProj
     }
 
     // Montar array final
     for (let d = 1; d <= lastDayOfMonth; d++) {
       const dateStr = `${yearMonth}-${d.toString().padStart(2, '0')}`
-      const eventos = pendingFixas
-        .filter((f) => f.dueDay === d)
-        .map((f) => ({ name: f.name, amount: getEffectiveAmount(f, yearMonth) }))
+      const eventos = [
+        ...pendingFixas.filter((f) => f.dueDay === d).map((f) => ({ name: f.name, amount: getEffectiveAmount(f, yearMonth) })),
+        ...pendingVariaveis.filter(v => parseInt(v.date.split('-')[2]) === d).map(v => ({ name: v.description, amount: v.amount }))
+      ]
 
       days.push({
         day: d,

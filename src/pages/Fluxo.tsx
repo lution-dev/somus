@@ -183,6 +183,9 @@ function FixaItem({ sf, isLast, onPress, yearMonth }: {
 }
 
 function VariavelItem({ sv, isLast, onPress }: { sv: SaidaVariavel; isLast: boolean; onPress: (sv: SaidaVariavel) => void }) {
+  const isPending = sv.status === 'pending'
+  const isMobile = useIsMobile()
+
   return (
     <motion.div
       initial={{ opacity: 0, x: -10 }}
@@ -194,24 +197,50 @@ function VariavelItem({ sv, isLast, onPress }: { sv: SaidaVariavel; isLast: bool
         padding: '14px 16px',
         borderBottom: isLast ? 'none' : '1px solid var(--color-border)',
         cursor: 'pointer',
+        opacity: isPending ? 1 : 0.55,
       }}
     >
       <div style={{
         width: 32, height: 32, borderRadius: 10,
         display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-        background: 'rgba(239,68,68,0.1)',
+        background: isPending ? 'rgba(245,158,11,0.1)' : 'rgba(239,68,68,0.1)',
       }}>
-        <ArrowDownLeft size={16} color="var(--color-danger)" />
+        {isPending ? <AlertCircle size={16} color="var(--color-warning)" /> : <ArrowDownLeft size={16} color="var(--color-danger)" />}
       </div>
       <div style={{ flex: 1, minWidth: 0 }}>
-        <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-text-primary)', margin: '0 0 2px' }}>{sv.description}</p>
+        <p style={{ 
+          fontSize: 14, fontWeight: 600, color: 'var(--color-text-primary)', margin: '0 0 2px',
+          textDecoration: !isPending ? 'line-through' : 'none'
+        }}>{sv.description}</p>
         <p style={{ fontSize: 12, color: 'var(--color-text-secondary)', margin: 0 }}>
+          {isPending ? 'Agendado para ' : ''}
           {new Date(sv.date + 'T12:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })}
         </p>
       </div>
-      <span style={{ fontSize: 15, fontWeight: 700, color: 'var(--color-danger)', flexShrink: 0 }}>
-        -{formatCurrency(sv.amount)}
-      </span>
+      <div style={{ textAlign: 'right', display: 'flex', alignItems: 'center', gap: 12 }}>
+        <span style={{ fontSize: 15, fontWeight: 700, color: isPending ? 'var(--color-text-primary)' : 'var(--color-danger)', flexShrink: 0 }}>
+          -{formatCurrency(sv.amount)}
+        </span>
+        
+        {isPending && (
+          isMobile ? (
+            <div style={{
+              width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center',
+              border: '2px solid var(--color-border)', borderRadius: 10,
+            }}>
+              <Check size={16} color="var(--color-text-tertiary)" />
+            </div>
+          ) : (
+            <div style={{
+              padding: '6px 12px', borderRadius: 8, fontSize: 12, fontWeight: 600,
+              background: 'var(--color-bg-primary)', color: 'var(--color-text-secondary)',
+              border: '1px solid var(--color-border)',
+            }}>
+              Confirmar
+            </div>
+          )
+        )}
+      </div>
     </motion.div>
   )
 }
@@ -271,6 +300,7 @@ export default function Fluxo() {
   const [selectedSv, setSelectedSv] = useState<SaidaVariavel | null>(null)  // mantém referência durante edit/delete
   const [editSvOpen, setEditSvOpen] = useState(false)
   const [confirmDeleteSv, setConfirmDeleteSv] = useState(false)
+  const [confirmPaySv, setConfirmPaySv] = useState<SaidaVariavel | null>(null)
   const [actionEntrada, setActionEntrada]               = useState<Entrada | null>(null)
   const [selectedEntrada, setSelectedEntrada]           = useState<Entrada | null>(null)
   const [editEntradaOpen, setEditEntradaOpen]           = useState(false)
@@ -333,12 +363,20 @@ export default function Fluxo() {
 
     // Ordenação: pendentes primeiro; pagos por data desc (mais recente no topo)
     items.sort((a, b) => {
-      const aPaid = a.type === 'fixa' ? isPaidForMonth(a.data, a.instanceMonth || yearMonth) : true
-      const bPaid = b.type === 'fixa' ? isPaidForMonth(b.data, b.instanceMonth || yearMonth) : true
+      const aPaid = a.type === 'fixa' 
+        ? isPaidForMonth(a.data, a.instanceMonth || yearMonth) 
+        : (a.type === 'variavel' ? a.data.status !== 'pending' : true)
+      
+      const bPaid = b.type === 'fixa' 
+        ? isPaidForMonth(b.data, b.instanceMonth || yearMonth) 
+        : (b.type === 'variavel' ? b.data.status !== 'pending' : true)
+      
       if (!aPaid && bPaid)  return -1
       if (aPaid  && !bPaid) return 1
+      
       const aDay = a.type === 'fixa' ? a.data.dueDay : parseInt(a.data.date.split('-')[2])
       const bDay = b.type === 'fixa' ? b.data.dueDay : parseInt(b.data.date.split('-')[2])
+      
       if (aPaid && bPaid) return bDay - aDay  // pagos: mais recentes primeiro
       return aDay - bDay                      // pendentes: mais próximos primeiro
     })
@@ -360,8 +398,16 @@ export default function Fluxo() {
   const renderUnifiedList = () => {
     if (unifiedList.length === 0) return <EmptyState icon={<Inbox size={24} />} label="Nenhum lançamento encontrado" desc="Tente mudar os filtros ou adicione novos lançamentos." />
 
-    const pending  = unifiedList.filter(item => item.type === 'fixa' && !isPaidForMonth(item.data as SaidaFixa, item.instanceMonth || yearMonth))
-    const realized = unifiedList.filter(item => item.type !== 'fixa' || isPaidForMonth(item.data as SaidaFixa, item.instanceMonth || yearMonth))
+    const pending  = unifiedList.filter(item => {
+      if (item.type === 'fixa') return !isPaidForMonth(item.data, item.instanceMonth || yearMonth)
+      if (item.type === 'variavel') return item.data.status === 'pending'
+      return false
+    })
+    const realized = unifiedList.filter(item => {
+      if (item.type === 'fixa') return isPaidForMonth(item.data, item.instanceMonth || yearMonth)
+      if (item.type === 'variavel') return item.data.status !== 'pending'
+      return item.type === 'entrada'
+    })
 
     return (
       <>
@@ -407,16 +453,29 @@ export default function Fluxo() {
               {!pendingCollapsed && (
                 <motion.div key="pending-section" initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }} style={{ overflow: 'hidden' }}>
                   {pending.map((item, i) => {
-                    const sfItem = item as Extract<FluxoItem, { type: 'fixa' }>
-                    return (
-                      <FixaItem 
-                        key={`${sfItem.data.id}-${sfItem.instanceMonth}`} 
-                        sf={sfItem.data} 
-                        yearMonth={sfItem.instanceMonth || yearMonth} 
-                        isLast={i === pending.length - 1 && realized.length === 0} 
-                        onPress={setActionSf} 
-                      />
-                    )
+                    const isLast = i === pending.length - 1 && realized.length === 0
+                    if (item.type === 'fixa') {
+                      return (
+                        <FixaItem 
+                          key={`${item.data.id}-${item.instanceMonth}`} 
+                          sf={item.data} 
+                          yearMonth={item.instanceMonth || yearMonth} 
+                          isLast={isLast} 
+                          onPress={setActionSf} 
+                        />
+                      )
+                    }
+                    if (item.type === 'variavel') {
+                      return (
+                        <VariavelItem 
+                          key={`v-${item.data.id}`} 
+                          sv={item.data as SaidaVariavel} 
+                          isLast={isLast} 
+                          onPress={setActionSv} 
+                        />
+                      )
+                    }
+                    return null
                   })}
                 </motion.div>
               )}
@@ -449,9 +508,12 @@ export default function Fluxo() {
                       )
                     }
                     if (item.type === 'variavel') {
-                      return <VariavelItem key={`v-${item.data.id}`} sv={item.data} isLast={isLast} onPress={setActionSv} />
+                      return <VariavelItem key={`v-${item.data.id}`} sv={item.data as SaidaVariavel} isLast={isLast} onPress={setActionSv} />
                     }
-                    return <EntradaItem key={`e-${item.data.id}`} e={item.data} isLast={isLast} onPress={setActionEntrada} />
+                    if (item.type === 'entrada') {
+                      return <EntradaItem key={`e-${item.data.id}`} e={item.data as Entrada} isLast={isLast} onPress={setActionEntrada} />
+                    }
+                    return null
                   })}
                 </motion.div>
               )}
@@ -692,6 +754,9 @@ export default function Fluxo() {
         title={actionSv?.description ?? ''}
         subtitle={actionSv ? `-${formatCurrency(actionSv.amount)} · ${new Date(actionSv.date + 'T12:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })}` : ''}
         actions={actionSv ? [
+          ...(actionSv.status === 'pending' ? [
+            { label: 'Confirmar pagamento', icon: CheckCircle2, color: 'var(--color-success)', onClick: () => { setConfirmPaySv(actionSv); setActionSv(null) } }
+          ] : []),
           { label: 'Editar lançamento', icon: Pencil, color: 'var(--color-accent-primary)', onClick: () => {
             setSelectedSv(actionSv)
             setEditSvOpen(true)
@@ -711,12 +776,22 @@ export default function Fluxo() {
         saidaVariavel={selectedSv}
       />
 
+      <ConfirmPaymentModal
+        open={!!confirmPaySv}
+        onClose={() => setConfirmPaySv(null)}
+        costName={confirmPaySv?.description}
+        onConfirm={(date) => { if (confirmPaySv) useAppStore.getState().confirmSaidaVariavel(confirmPaySv.id, date); setConfirmPaySv(null) }}
+      />
+
       <ConfirmDialog
         open={confirmDeleteSv}
         onClose={() => setConfirmDeleteSv(false)}
         onConfirm={() => { if (selectedSv) { deleteSaidaVariavel(selectedSv.id); setSelectedSv(null) } }}
         title="Excluir lançamento?"
-        description={`Isso removerá "${selectedSv?.description}" e estornará R$\u00a0${selectedSv ? selectedSv.amount.toFixed(2).replace('.', ',') : ''} no saldo da divisão.`}
+        description={selectedSv?.status === 'pending' 
+          ? `Isso removerá o agendamento "${selectedSv?.description}".`
+          : `Isso removerá "${selectedSv?.description}" e estornará R$\u00a0${selectedSv ? selectedSv.amount.toFixed(2).replace('.', ',') : ''} no saldo da divisão.`
+        }
         confirmLabel="Excluir"
         variant="danger"
       />

@@ -46,6 +46,9 @@ npm install && npm run dev
 - **T-AD-25** — Fluxo: Recurso 'Pular este mês' (ignora custo sem deletar template)
 - **T-AD-26** — Fluxo: Mês por extenso na Navbar (long format)
 - **T-AD-27** — Fluxo: Padronização de espaçamentos (Choice/Busca/Lista)
+- **T-AD-28** ✅ FluxoChart: Gráfico de projeção dinâmica (Recharts) com saldo real vs projetado
+- **T-AD-29** ✅ Agendamento de Variáveis: Sistema de "Confirmar Pagamento" para despesas manuais futuras
+- **T-AD-30** ✅ Home: Integração de despesas variáveis agendadas na lista de "Próximos Dias"
 
 ## Arquitetura de Arquivos
 ```
@@ -61,9 +64,11 @@ src/
     layout/AppLayout.tsx  # Shell com BottomNav
     features/
       LancarEntradaModal.tsx  # Modal core
+      FluxoChart.tsx      # Componente de visualização financeira Recharts
   hooks/
     useAuth.ts            # Firebase Anonymous Auth
     useFirebaseSync.tsx   # Bidirectional Zustand ↔ Firestore sync
+    useFluxoProjection.ts # Lógica de projeção diária saldo real vs projetado
     useImageUpload.ts     # Client-side image compression → base64
     useIsMobile.ts        # Responsive breakpoint hook
     usePWAInstall.ts      # PWA install prompt
@@ -83,13 +88,13 @@ src/
 - RN02: Mesma fonte pode ser lançada múltiplas vezes no mês
 - RN05: Reserva atingiu meta → sugerir redirecionar para Objetivos
 - RN08: Dízimo sempre primeiro no preview de distribuição
+- RN09: Despesas variáveis com data futura não abatem saldo imediatamente (Agendamento)
 
 ## O Que Falta (Próximas fases)
 - Auth real com email/senha (substituir anonymous)
 - Modo Casal real (parceiro conectado via código de convite)
 - Página de Histórico completo
 - Notificações push (PWA)
-- Gráficos de evolução (recharts)
 - Lançamento iOS/Android via PWA
 - Firebase Storage (quando migrar para Blaze plan)
 
@@ -108,6 +113,8 @@ src/
 | 2026-05-08 | Instâncias Mensais de Custos Fixos (Overrides) | Permitir edição de valor pontual no Fluxo sem alterar o template base do custo |
 | 2026-05-08 | Carry-Over Financeiro Histórico (v15) | Rastrear pagamentos por mês (Record) para garantir que contas atrasadas acumulem no fluxo até serem pagas. |
 | 2026-05-08 | Refinamento de UI/UX Fluxo | Substituição de confirmações nativas por ConfirmDialog, correção de duplicados e ajuste de ordenação (mais recentes primeiro). |
+| 2026-05-08 | FluxoChart & Visão Projetada | Implementação de gráfico de área para visualização de tendência de saldo, ajudando na antecipação de custos. |
+| 2026-05-08 | Variáveis Agendadas (Status Realized/Pending) | Mudança no modelo de despesa variável para suportar agendamentos futuros sem impacto imediato no saldo, permitindo confirmação manual. |
 
 ## Bloqueios
 Nenhum.
