@@ -484,3 +484,42 @@
 **Critérios:**
 - [x] Padronizar espaçamentos entre Choice, Busca e Lista para 16px
 **Status:** ? Concluído
+
+---
+
+#### T-AD-31: Onboarding — Step de Codigo de Convite
+**Tipo:** Feature
+**Arquivo:** src/pages/Onboarding.tsx
+**Criterios:**
+- [x] Novo Step entre nome e "compartilhar seu codigo" que pergunta se o usuario foi convidado
+- [x] Campo para inserir codigo do parceiro com busca no Firestore (colecao users)
+- [x] Feedback visual: encontrado (nome do parceiro) / nao encontrado / erro de conexao
+- [x] Link bilateral automatico no handleFinish (escreve partner em ambos os docs)
+- [x] Copy alinhada com identidade do app de casal
+- [x] Build sem erros (tsc + vite)
+**Status:** Concluido | Commits: e0cac61, 2c936b0
+
+---
+
+#### T-AD-32: Fix — InviteAccept colecao Firestore
+**Tipo:** Bug Fix
+**Arquivo:** src/pages/InviteAccept.tsx
+**Criterios:**
+- [x] Corrigir colecao de somus_states para users em todos os setDoc/getDocs
+- [x] Build sem erros
+**Status:** Concluido | Commit: 9a84c3e
+
+---
+
+#### T-AD-33: Casal — Vincular Parceiro pelo Codigo (ja onboarded)
+**Tipo:** Feature
+**Arquivo:** src/pages/Casal.tsx
+**Criterios:**
+- [x] Campo "Ja tem o codigo do seu par?" na InviteCodeCard
+- [x] Busca no Firestore por partnerCode
+- [x] Link bilateral (escreve partner em ambos os docs via setDoc merge)
+- [x] Atualiza Zustand local imediatamente apos link
+- [x] Estados visuais: idle / loading / found / not_found / error / done
+- [x] Fix Security Rules Firestore para permitir leitura autenticada de outros users
+- [x] Build sem erros
+**Status:** Concluido | Commits: cc133c8, 609779c
