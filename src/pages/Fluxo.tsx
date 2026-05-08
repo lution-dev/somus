@@ -541,7 +541,18 @@ export default function Fluxo() {
           }
         />
       ) : (
-        <div style={{ paddingTop: 32, marginBottom: 24 }}>
+        <>
+          {/* Desktop Radial Glow */}
+          <div style={{
+            position: 'absolute',
+            top: 0, left: 0, right: 0, height: 500,
+            background: 'radial-gradient(circle at 50% -50px, var(--color-lucas) 0%, transparent 70%)',
+            opacity: 0.12,
+            pointerEvents: 'none',
+            zIndex: 0,
+          }} />
+
+          <div style={{ paddingTop: 32, marginBottom: 24, position: 'relative', zIndex: 1 }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
             <h1 style={{ fontSize: 24, fontWeight: 700, color: 'var(--color-text-primary)', margin: 0 }}>Fluxo de Caixa</h1>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -554,7 +565,8 @@ export default function Fluxo() {
             </div>
           </div>
           <p style={{ fontSize: 13, color: 'var(--color-text-secondary)', textTransform: 'capitalize', margin: 0 }}>{currentMonthLabel}</p>
-        </div>
+          </div>
+        </>
       )}
 
       {/* Gradient hero bleed — mobile only */}

@@ -258,6 +258,7 @@ export function AppLayout({ children }: AppLayoutProps) {
           flexDirection: 'column',
           alignItems: 'center',
           background: 'var(--color-bg-primary)',
+          position: 'relative',
         }}>
           <div style={{ width: '100%', maxWidth: 960, padding: '0 40px', flex: 1 }}>
             {children}

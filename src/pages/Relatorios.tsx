@@ -181,9 +181,20 @@ export default function Relatorios() {
           </div>
         </>
       ) : (
-        /* Desktop: título + segmented + monthnav em 1 linha */
-        <div style={{ paddingTop: 32, marginBottom: 24, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
-          <div style={{ flexShrink: 0 }}>
+        <>
+          {/* Desktop Radial Glow */}
+          <div style={{
+            position: 'absolute',
+            top: 0, left: 0, right: 0, height: 500,
+            background: `radial-gradient(circle at 50% -50px, ${headerBg} 0%, transparent 70%)`,
+            opacity: 0.12,
+            pointerEvents: 'none',
+            zIndex: 0,
+          }} />
+
+          {/* Desktop: título + segmented + monthnav em 1 linha */}
+          <div style={{ paddingTop: 32, marginBottom: 24, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, position: 'relative', zIndex: 1 }}>
+            <div style={{ flexShrink: 0 }}>
             <h1 style={{ fontSize: 24, fontWeight: 600, color: 'var(--color-text-primary)', margin: 0 }}>Relatórios</h1>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
@@ -191,6 +202,7 @@ export default function Relatorios() {
             <SegmentedCtrl options={ctxOptions} value={reportCtx} onChange={(v) => setReportCtx(v as 'me' | 'partner' | 'couple')} />
           </div>
         </div>
+        </>
       )}
 
       {/* ── Empty state ────────────────────────────────────────────────────── */}

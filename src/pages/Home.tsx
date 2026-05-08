@@ -687,8 +687,18 @@ export default function Home() {
         </>
       ) : (
         <>
+          {/* Desktop Radial Glow */}
+          <div style={{
+            position: 'absolute',
+            top: 0, left: 0, right: 0, height: 500,
+            background: 'radial-gradient(circle at 50% -50px, var(--color-lucas) 0%, transparent 70%)',
+            opacity: 0.12,
+            pointerEvents: 'none',
+            zIndex: 0,
+          }} />
+
           {/* Desktop: 2-column dashboard header */}
-          <div style={{ paddingTop: 32, paddingBottom: 4 }}>
+          <div style={{ paddingTop: 32, paddingBottom: 4, position: 'relative', zIndex: 1 }}>
             <div style={{ minWidth: 0 }}>
               <p style={{ fontSize: 13, color: 'var(--color-text-secondary)', fontWeight: 500, margin: 0 }}>{greeting}</p>
               <h1 style={{ fontSize: 26, fontWeight: 700, color: 'var(--color-text-primary)', lineHeight: 1.2, margin: 0 }}>{firstName}</h1>
@@ -701,6 +711,7 @@ export default function Home() {
             gap: 20,
             marginTop: 8,
             alignItems: 'start',
+            position: 'relative', zIndex: 1,
           }}>
             {/* Left: Balance card with inline actions */}
             <BalanceCard

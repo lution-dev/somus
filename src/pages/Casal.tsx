@@ -229,12 +229,24 @@ export default function Casal() {
           </div>
         </>
       ) : (
-        <div style={{ paddingTop: 32, marginBottom: 20 }}>
-          <h1 style={{ fontSize: 24, fontWeight: 600, color: 'var(--color-text-primary)', margin: 0 }}>
-            Casal
-          </h1>
-          <p style={{ fontSize: 14, color: 'var(--color-text-secondary)', margin: '4px 0 0' }}>Visão consolidada</p>
-        </div>
+        <>
+          {/* Desktop Radial Glow */}
+          <div style={{
+            position: 'absolute',
+            top: 0, left: 0, right: 0, height: 500,
+            background: 'radial-gradient(circle at 50% -50px, var(--color-accent-couple) 0%, transparent 70%)',
+            opacity: 0.12,
+            pointerEvents: 'none',
+            zIndex: 0,
+          }} />
+
+          <div style={{ paddingTop: 32, marginBottom: 20, position: 'relative', zIndex: 1 }}>
+            <h1 style={{ fontSize: 24, fontWeight: 600, color: 'var(--color-text-primary)', margin: 0 }}>
+              Casal
+            </h1>
+            <p style={{ fontSize: 14, color: 'var(--color-text-secondary)', margin: '4px 0 0' }}>Visão consolidada</p>
+          </div>
+        </>
       )}
 
       {/* ── Modals ── */}
@@ -268,6 +280,7 @@ export default function Casal() {
         flexDirection: 'column',
         gap: 20,
         padding: isMobile ? '0 16px' : 0,
+        position: 'relative', zIndex: 1,
       }}>
         {/* Desktop: PatrimonioCard at top */}
         {!isMobile && <PatrimonioCard />}
