@@ -16,6 +16,7 @@ import { useIsMobile } from '../hooks/useIsMobile'
 import { useAuth } from '../hooks/useAuth'
 import UserMenu from '../components/ui/UserMenu'
 import LancarEntradaModal from '../components/features/LancarEntradaModal'
+import ConfirmPaymentModal from '../components/features/ConfirmPaymentModal'
 import {
   Plus,
   TrendingUp,
@@ -283,10 +284,10 @@ function ProximosDias({ onEntradaClick, onDespesaClick, isDesktop }: {
           </div>
         ) : (
           <div style={{
-            borderRadius: 12, overflow: 'hidden',
+            borderRadius: 12,
             border: '1px solid var(--color-border)',
-            /* Limit to ~4 items (~57px each) then scroll */
             maxHeight: 232,
+            overflowX: 'hidden',
             overflowY: upcoming.length > 4 ? 'auto' : 'hidden',
           }}>
             {upcoming.map(renderItem)}
@@ -588,10 +589,12 @@ export default function Home() {
   const [lancarOpen, setLancarOpen] = useState(false)
   const [historicoOpen, setHistoricoOpen] = useState(false)
   const [prefill, setPrefill] = useState<{ sourceName: string; amount: number } | undefined>()
+  const [confirmPayId, setConfirmPayId] = useState<string | null>(null)
   const isMobile = useIsMobile()
   const { displayName } = useAuth()
 
   const markSaidaFixaPaid = useAppStore(s => s.markSaidaFixaPaid)
+  const saidasFixasAll    = useAppStore(useShallow(s => s.saidasFixas))
 
   const divisoes      = useAppStore(useShallow(selectCurrentDivisoes))
   const entradas       = useAppStore(useShallow(selectCurrentEntradas))
@@ -616,8 +619,7 @@ export default function Home() {
   }
 
   function handleDespesaClick(sfId: string) {
-    const today = new Date().toISOString().slice(0, 10)
-    markSaidaFixaPaid(sfId, today)
+    setConfirmPayId(sfId)
   }
 
   function handleCloseModal() {
@@ -666,6 +668,7 @@ export default function Home() {
             gridTemplateColumns: '1fr 1fr',
             gap: 20,
             marginTop: 8,
+            alignItems: 'start',
           }}>
             {/* Left: Balance card with inline actions */}
             <BalanceCard
@@ -702,6 +705,15 @@ export default function Home() {
       </div>
       <LancarEntradaModal open={lancarOpen} onClose={handleCloseModal} prefill={prefill} />
       <HistoricoDialog open={historicoOpen} onClose={() => setHistoricoOpen(false)} />
+      <ConfirmPaymentModal
+        open={!!confirmPayId}
+        onClose={() => setConfirmPayId(null)}
+        costName={confirmPayId ? (saidasFixasAll.find(s => s.id === confirmPayId)?.name ?? '') : ''}
+        onConfirm={(date) => {
+          if (confirmPayId) markSaidaFixaPaid(confirmPayId, date)
+          setConfirmPayId(null)
+        }}
+      />
     </div>
   )
 }
