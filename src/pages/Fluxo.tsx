@@ -502,26 +502,22 @@ export default function Fluxo() {
           totalPagoNoMes={totalPagoNoMes} 
         />
 
-        {/* Search */}
-        <div style={{ marginBottom: 12 }}>
-          <SearchBar value={fluxoSearch} onChange={setFluxoSearch} placeholder="Procurar no fluxo..." />
-        </div>
-
         {/* List header with contextual title + filter chips */}
         <div style={{
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          marginBottom: 8, paddingLeft: 4,
+          marginBottom: 10, paddingLeft: 2,
         }}>
           <p style={{
-            fontSize: 13, fontWeight: 700,
-            color: 'var(--color-text-secondary)',
+            fontSize: 11, fontWeight: 700,
+            color: 'var(--color-text-tertiary)',
+            textTransform: 'uppercase',
+            letterSpacing: '0.08em',
             margin: 0,
-            transition: 'all 200ms ease',
+            transition: 'color 200ms ease',
           }}>
-            {filterType === 'saidas' ? 'Saídas' : filterType === 'entradas' ? 'Entradas' : 'Todos os lançamentos'}
+            {filterType === 'saidas' ? 'Saídas' : filterType === 'entradas' ? 'Entradas' : 'Lançamentos'}
           </p>
           <div style={{ display: 'flex', gap: 6 }}>
-            {/* Chip Saídas */}
             <button
               onClick={() => setFilterType(f => f === 'saidas' ? 'all' : 'saidas')}
               style={{
@@ -539,7 +535,6 @@ export default function Fluxo() {
               <ArrowDownLeft size={11} strokeWidth={2.5} />
               Saídas
             </button>
-            {/* Chip Entradas */}
             <button
               onClick={() => setFilterType(f => f === 'entradas' ? 'all' : 'entradas')}
               style={{
@@ -558,6 +553,11 @@ export default function Fluxo() {
               Entradas
             </button>
           </div>
+        </div>
+
+        {/* Search */}
+        <div style={{ marginBottom: 12 }}>
+          <SearchBar value={fluxoSearch} onChange={setFluxoSearch} placeholder="Procurar no fluxo..." />
         </div>
 
         {/* List */}
