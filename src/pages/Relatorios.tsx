@@ -98,7 +98,7 @@ export default function Relatorios() {
   const TODAY        = currentYM()
   const [month, setMonth]         = useState(TODAY)
   const [reportCtx, setReportCtx] = useState<'me' | 'partner' | 'couple'>('couple')
-  const headerBg = reportCtx === 'couple' ? '#150D27' : '#001442'
+  const headerBg = reportCtx === 'couple' ? '#150D27' : reportCtx === 'partner' ? '#2D0A1A' : '#0A1628'
 
   const myName      = currentUser?.name?.split(' ')[0] ?? 'Meu'
   const partnerName = partner?.name?.split(' ')[0] ?? 'Parceiro(a)'
@@ -384,7 +384,11 @@ function SegmentedCtrl({
     <div style={{ display: 'inline-flex', background: 'var(--color-bg-secondary)', border: '1px solid var(--color-border)', borderRadius: 999, padding: 3, gap: 2 }}>
       {options.map(({ key, label }) => {
         const isActive = value === key
-        const activeBg = key === 'couple' ? 'var(--color-accent-couple)' : 'var(--color-accent-primary)'
+        const activeBg = key === 'couple'
+          ? 'var(--color-accent-couple)'
+          : key === 'partner'
+          ? 'var(--color-mirian)'
+          : 'var(--color-lucas)'
         return (
           <button key={key} onClick={() => onChange(key)} style={{ padding: '6px 14px', borderRadius: 999, border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: isActive ? 600 : 500, fontFamily: 'var(--font-sans)', background: isActive ? activeBg : 'transparent', color: isActive ? 'white' : 'var(--color-text-secondary)', transition: 'background 150ms ease, color 150ms ease', whiteSpace: 'nowrap' }}>
             {label}
