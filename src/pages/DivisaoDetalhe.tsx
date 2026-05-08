@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react'
+﻿import React, { useState, useMemo } from 'react'
 import { useParams, useLocation } from 'wouter'
 import { useAppStore, selectCurrentSaidasFixas, selectCurrentEntradas } from '../stores/useAppStore'
 import { useShallow } from 'zustand/react/shallow'
@@ -594,22 +594,22 @@ export default function DivisaoDetalhe() {
                 </div>
               ))
             )}
-          </div>
         </div>
       )}
 
       {/* Tab: Lançamentos */}
       {activeTab === 'lancamentos' && (
-        <div>
-          <div style={{ marginBottom: 12 }}>
-            <SearchBar value={mvSearchQuery} onChange={setMvSearchQuery} />
+        <div style={{
+          borderRadius: 'var(--radius-card)',
+          overflow: 'hidden',
+          background: 'var(--color-bg-secondary)',
+          border: '1px solid var(--color-border)',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '0 12px', borderBottom: '1px solid var(--color-border)' }}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--color-text-tertiary)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+            <input type="text" placeholder="Procurar" value={mvSearchQuery} onChange={e => setMvSearchQuery(e.target.value)} style={{ flex: 1, padding: '12px 0', fontSize: 14, background: 'none', border: 'none', outline: 'none', color: 'var(--color-text-primary)', fontFamily: 'var(--font-sans)' }} />
           </div>
-          <div style={{
-            borderRadius: 'var(--radius-card)',
-            overflow: 'hidden',
-            background: 'var(--color-bg-secondary)',
-            border: '1px solid var(--color-border)',
-          }}>
+          <div>
             {allMovements.length === 0 ? (
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '48px 0', gap: 8 }}>
                 <Info size={24} color="var(--color-text-tertiary)" />
@@ -657,7 +657,6 @@ export default function DivisaoDetalhe() {
                 </React.Fragment>
               ))
             )}
-          </div>
         </div>
       )}
 
