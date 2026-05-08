@@ -304,7 +304,6 @@ export default function AddObjetivoModal({ open, onClose, defaultIsCouple = fals
       </div>
 
       <DialogFooter>
-        <Button variant="ghost" size="md" fullWidth onClick={onClose}>Cancelar</Button>
         <Button
           variant="primary" size="md" fullWidth disabled={!isValid}
           onClick={handleConfirm}
@@ -312,6 +311,7 @@ export default function AddObjetivoModal({ open, onClose, defaultIsCouple = fals
         >
           {confirmBtn}
         </Button>
+        <Button variant="ghost" size="md" fullWidth onClick={onClose}>Cancelar</Button>
       </DialogFooter>
     </Dialog>
   )

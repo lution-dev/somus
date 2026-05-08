@@ -4,12 +4,14 @@ import { useAppStore, selectCurrentSaidasFixas, selectCurrentEntradas } from '..
 import { useShallow } from 'zustand/react/shallow'
 import { formatCurrency, isPaidThisMonth, getDueDayLabel, getDaysUntil } from '../lib/calculations'
 import LancarEntradaModal from '../components/features/LancarEntradaModal'
+import LancarDespesaModal from '../components/features/LancarDespesaModal'
 import EditSaidaFixaModal from '../components/features/EditSaidaFixaModal'
 import ConfirmPaymentModal from '../components/features/ConfirmPaymentModal'
 import ItemActionSheet from '../components/ui/ItemActionSheet'
 import { PageHeader, SearchBar, groupByMonth, MonthHeader, Dialog } from '../components/ui'
 import { useIsMobile } from '../hooks/useIsMobile'
-import { Check, RefreshCw, Plus, Inbox, ArrowUpRight, CheckCircle2, Pencil, Trash2, XCircle, TrendingUp, AlertCircle } from 'lucide-react'
+import { getDivisaoIcon } from '../lib/icons'
+import { Check, RefreshCw, Plus, X, Inbox, ArrowUpRight, ArrowDownLeft, CheckCircle2, Pencil, Trash2, XCircle, TrendingUp, AlertCircle } from 'lucide-react'
 import type { SaidaFixa } from '../types'
 
 // ─── Item de Saída ────────────────────────────────────────────────────────────
@@ -226,17 +228,21 @@ function SaidaItem({ sf, isLast, onPress }: {
 export default function Fluxo() {
   const [tab, setTab]         = useState<'saidas' | 'entradas'>('saidas')
   const [lancarOpen, setLancarOpen] = useState(false)
+  const [despesaModal, setDespesaModal] = useState<{ divisaoId: string; divisaoName: string } | null>(null)
+  const [divisaoPicker, setDivisaoPicker] = useState(false)
+  const [fabOpen, setFabOpen] = useState(false)
   const [fluxoSearch, setFluxoSearch] = useState('')
   const [actionSf, setActionSf] = useState<SaidaFixa | null>(null)
   const [editSf, setEditSf] = useState<SaidaFixa | null>(null)
   const [confirmPaySf, setConfirmPaySf] = useState<SaidaFixa | null>(null)
   const isMobile = useIsMobile()
 
-  const saidasFixas = useAppStore(useShallow(selectCurrentSaidasFixas))
-  const entradas    = useAppStore(useShallow(selectCurrentEntradas))
-  const markPaid    = useAppStore(s => s.markSaidaFixaPaid)
-  const markUnpaid  = useAppStore(s => s.markSaidaFixaUnpaid)
-  const editSaidaFixa = useAppStore(s => s.editSaidaFixa)
+  const saidasFixas   = useAppStore(useShallow(selectCurrentSaidasFixas))
+  const entradas      = useAppStore(useShallow(selectCurrentEntradas))
+  const divisoes      = useAppStore(useShallow(s => s.divisoes))
+  const markPaid      = useAppStore(s => s.markSaidaFixaPaid)
+  const markUnpaid    = useAppStore(s => s.markSaidaFixaUnpaid)
+  const editSaidaFixa   = useAppStore(s => s.editSaidaFixa)
   const deleteSaidaFixa = useAppStore(s => s.deleteSaidaFixa)
 
   const { pending, paid } = useMemo(() => {
@@ -384,6 +390,23 @@ export default function Fluxo() {
         <div style={{ paddingTop: 32, marginBottom: 24 }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
             <h1 style={{ fontSize: 24, fontWeight: 700, color: 'var(--color-text-primary)', margin: 0 }}>Fluxo</h1>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <button
+              onClick={() => setDivisaoPicker(true)}
+              style={{
+                height: 36, padding: '0 14px', fontSize: 13, fontWeight: 600,
+                background: 'rgba(239,68,68,0.1)', color: 'var(--color-danger)',
+                border: '1px solid rgba(239,68,68,0.25)', borderRadius: 10, cursor: 'pointer',
+                display: 'flex', alignItems: 'center', gap: 6,
+                fontFamily: 'var(--font-sans)',
+                transition: 'background 150ms ease',
+              }}
+              onMouseEnter={e => (e.currentTarget.style.background = 'rgba(239,68,68,0.18)')}
+              onMouseLeave={e => (e.currentTarget.style.background = 'rgba(239,68,68,0.1)')}
+            >
+              <ArrowDownLeft size={15} strokeWidth={2.5} />
+              Lançar saída
+            </button>
             <button
               onClick={() => setLancarOpen(true)}
               style={{
@@ -397,9 +420,10 @@ export default function Fluxo() {
               onMouseEnter={e => (e.currentTarget.style.background = '#2563EB')}
               onMouseLeave={e => (e.currentTarget.style.background = 'var(--color-accent-primary)')}
             >
-              <Plus size={15} strokeWidth={2.5} />
+              <ArrowUpRight size={15} strokeWidth={2.5} />
               Lançar entrada
             </button>
+          </div>
           </div>
           <p style={{ fontSize: 13, color: 'var(--color-text-secondary)', textTransform: 'capitalize', margin: 0 }}>{currentMonth}</p>
         </div>
@@ -554,32 +578,179 @@ export default function Fluxo() {
 
       </div>
 
-      {/* Mobile: Floating Action Buttons */}
+      {/* Mobile: Speed-Dial FAB */}
       {isMobile && (
-        <div style={{
-          position: 'fixed',
-          bottom: 'calc(80px + env(safe-area-inset-bottom, 0px))',
-          right: 20,
-          display: 'flex', flexDirection: 'column', gap: 12,
-          zIndex: 35,
-        }}>
-          <button
-            onClick={() => setLancarOpen(true)}
-            style={{
-              width: 52, height: 52, borderRadius: 16,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              background: 'var(--color-success)',
-              border: 'none', cursor: 'pointer',
-              color: 'white',
-            }}
-            aria-label="Lançar entrada"
-          >
-            <Plus size={22} strokeWidth={2.5} />
-          </button>
-        </div>
+        <>
+          {/* Backdrop para fechar o speed-dial */}
+          {fabOpen && (
+            <div
+              onClick={() => setFabOpen(false)}
+              style={{
+                position: 'fixed', inset: 0,
+                zIndex: 34,
+                background: 'rgba(0,0,0,0.3)',
+                backdropFilter: 'blur(2px)',
+              }}
+            />
+          )}
+
+          <div style={{
+            position: 'fixed',
+            bottom: 'calc(80px + env(safe-area-inset-bottom, 0px))',
+            right: 20,
+            display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 12,
+            zIndex: 35,
+          }}>
+
+            {/* Opção: Saída */}
+            <AnimatePresence>
+              {fabOpen && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10, scale: 0.8 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 10, scale: 0.8 }}
+                  transition={{ duration: 0.15, delay: 0.05 }}
+                  style={{ display: 'flex', alignItems: 'center', gap: 10 }}
+                >
+                  <span style={{
+                    fontSize: 12, fontWeight: 600, color: 'white',
+                    background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(8px)',
+                    padding: '5px 10px', borderRadius: 8,
+                    fontFamily: 'var(--font-sans)',
+                    whiteSpace: 'nowrap',
+                  }}>Lançar saída</span>
+                  <button
+                    onClick={() => { setFabOpen(false); setDivisaoPicker(true) }}
+                    style={{
+                      width: 46, height: 46, borderRadius: 14,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      background: 'var(--color-danger)',
+                      border: 'none', cursor: 'pointer', color: 'white',
+                      boxShadow: '0 4px 16px rgba(239,68,68,0.4)',
+                    }}
+                    aria-label="Lançar saída"
+                  >
+                    <ArrowDownLeft size={20} strokeWidth={2.5} />
+                  </button>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* Opção: Entrada */}
+            <AnimatePresence>
+              {fabOpen && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10, scale: 0.8 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 10, scale: 0.8 }}
+                  transition={{ duration: 0.15 }}
+                  style={{ display: 'flex', alignItems: 'center', gap: 10 }}
+                >
+                  <span style={{
+                    fontSize: 12, fontWeight: 600, color: 'white',
+                    background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(8px)',
+                    padding: '5px 10px', borderRadius: 8,
+                    fontFamily: 'var(--font-sans)',
+                    whiteSpace: 'nowrap',
+                  }}>Lançar entrada</span>
+                  <button
+                    onClick={() => { setFabOpen(false); setLancarOpen(true) }}
+                    style={{
+                      width: 46, height: 46, borderRadius: 14,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      background: 'var(--color-success)',
+                      border: 'none', cursor: 'pointer', color: 'white',
+                      boxShadow: '0 4px 16px rgba(16,185,129,0.4)',
+                    }}
+                    aria-label="Lançar entrada"
+                  >
+                    <ArrowUpRight size={20} strokeWidth={2.5} />
+                  </button>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* FAB Principal */}
+            <motion.button
+              onClick={() => setFabOpen(v => !v)}
+              animate={{ rotate: fabOpen ? 45 : 0 }}
+              transition={{ duration: 0.2 }}
+              style={{
+                width: 52, height: 52, borderRadius: 16,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                background: fabOpen ? 'var(--color-bg-tertiary)' : 'var(--color-accent-primary)',
+                border: fabOpen ? '1px solid var(--color-border)' : 'none',
+                cursor: 'pointer', color: 'white',
+                boxShadow: fabOpen ? 'none' : '0 4px 20px rgba(59,130,246,0.5)',
+                transition: 'background 200ms ease, box-shadow 200ms ease',
+              }}
+              aria-label={fabOpen ? 'Fechar' : 'Novo lançamento'}
+            >
+              <Plus size={22} strokeWidth={2.5} color="white" />
+            </motion.button>
+          </div>
+        </>
       )}
 
+      {/* Picker de Divisão — shared mobile + desktop */}
+      <Dialog
+        open={divisaoPicker}
+        onClose={() => setDivisaoPicker(false)}
+        title="Qual divisão?"
+        size="sm"
+      >
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {divisoes.map(cx => {
+            const { Icon, color } = getDivisaoIcon(cx.id)
+            return (
+              <button
+                key={cx.id}
+                onClick={() => {
+                  setDivisaoPicker(false)
+                  setDespesaModal({ divisaoId: cx.id, divisaoName: cx.name })
+                }}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 12,
+                  padding: '12px 14px',
+                  background: 'var(--color-bg-tertiary)',
+                  border: '1px solid var(--color-border)',
+                  borderRadius: 12, cursor: 'pointer',
+                  fontFamily: 'var(--font-sans)', textAlign: 'left',
+                  transition: 'background 150ms ease',
+                }}
+                onMouseEnter={e => (e.currentTarget.style.background = `${color}10`)}
+                onMouseLeave={e => (e.currentTarget.style.background = 'var(--color-bg-tertiary)')}
+              >
+                <div style={{
+                  width: 36, height: 36, borderRadius: 10, flexShrink: 0,
+                  background: `${color}15`,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                }}>
+                  <Icon size={18} style={{ color }} />
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-text-primary)', margin: 0 }}>{cx.name}</p>
+                  <p style={{ fontSize: 12, color: 'var(--color-text-tertiary)', margin: 0 }}>{cx.percentage}%</p>
+                </div>
+                <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--color-text-secondary)' }}>
+                  {formatCurrency(cx.balance)}
+                </span>
+              </button>
+            )
+          })}
+        </div>
+      </Dialog>
       <LancarEntradaModal open={lancarOpen} onClose={() => setLancarOpen(false)} />
+
+      {/* Modal de Despesa (saída variável) */}
+      {despesaModal && (
+        <LancarDespesaModal
+          open={!!despesaModal}
+          onClose={() => setDespesaModal(null)}
+          divisaoId={despesaModal.divisaoId}
+          divisaoName={despesaModal.divisaoName}
+        />
+      )}
 
       {/* Action Sheet for saída fixa */}
       <ItemActionSheet

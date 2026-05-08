@@ -424,10 +424,10 @@ function DivisoesSection() {
         const essencial = divisoes.find(cx => cx.id === 'cx-essencial')
         const others = divisoes.filter(cx => cx.id !== 'cx-essencial')
 
-        // Helper to calc % used
+        // Helper to calc % used: expenses are stored as negative amounts, so use Math.abs
         const calcPct = (cx: typeof divisoes[0]) => {
           const totalIn  = cx.movements.filter(m => m.type === 'income').reduce((s, m) => s + m.amount, 0)
-          const totalOut = cx.movements.filter(m => m.type === 'expense').reduce((s, m) => s + m.amount, 0)
+          const totalOut = cx.movements.filter(m => m.type === 'expense').reduce((s, m) => s + Math.abs(m.amount), 0)
           return totalIn > 0 ? Math.min(100, (totalOut / totalIn) * 100) : 0
         }
 
