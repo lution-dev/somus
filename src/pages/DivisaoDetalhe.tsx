@@ -601,7 +601,9 @@ export default function DivisaoDetalhe() {
       {/* Tab: Lançamentos */}
       {activeTab === 'lancamentos' && (
         <div>
-          <SearchBar value={mvSearchQuery} onChange={setMvSearchQuery} />
+          <div style={{ marginBottom: 12 }}>
+            <SearchBar value={mvSearchQuery} onChange={setMvSearchQuery} />
+          </div>
           <div style={{
             borderRadius: 'var(--radius-card)',
             overflow: 'hidden',
