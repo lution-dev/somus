@@ -264,6 +264,15 @@ export default function Casal() {
         confirmLabel="Excluir permanentemente" variant="danger"
       />
 
+      {/* Gradient hero bleed — mobile only */}
+      {isMobile && (
+        <div style={{
+          marginTop: -20, height: 80,
+          background: `linear-gradient(to bottom, ${HERO_BG}CC 0%, transparent 100%)`,
+          pointerEvents: 'none',
+        }} />
+      )}
+
       {/* ── Content ── */}
       <div style={{
         display: 'flex',

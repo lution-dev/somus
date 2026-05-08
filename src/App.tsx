@@ -135,8 +135,8 @@ export default function App() {
             <Switch>
               <Route path="/home" component={Home} />
               <Route path="/fluxo" component={Fluxo} />
-              <Route path="/divisoes/:id" component={DivisaoDetalhe} />
-              <Route path="/divisoes" component={Relatorios} />
+              <Route path="/relatorios/:id" component={DivisaoDetalhe} />
+              <Route path="/relatorios" component={Relatorios} />
               <Route path="/casal/objetivo/:id" component={ObjetivoDetalhe} />
               <Route path="/casal" component={Casal} />
               <Route path="/perfil" component={Perfil} />

@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback } from 'react'
+﻿import React, { useState, useMemo, useCallback } from 'react'
 import { useLocation } from 'wouter'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
@@ -489,7 +489,7 @@ function DivisoesSection({ balanceHidden = false }: { balanceHidden?: boolean })
               const totalIn = essencial.movements.filter(m => m.type === 'income').reduce((s, m) => s + m.amount, 0)
               return (
                 <button
-                  onClick={() => navigate(`/divisoes/${essencial.id}`)}
+                  onClick={() => navigate(`/relatorios/${essencial.id}`)}
                   className="card card-interactive"
                   style={{
                     display: 'flex', alignItems: 'center', gap: 14,
@@ -556,7 +556,7 @@ function DivisoesSection({ balanceHidden = false }: { balanceHidden?: boolean })
                 return (
                   <button
                     key={cx.id}
-                    onClick={() => navigate(`/divisoes/${cx.id}`)}
+                    onClick={() => navigate(`/relatorios/${cx.id}`)}
                     className="card card-interactive home-divisoes-grid-item"
                     style={{
                       textAlign: 'left', cursor: 'pointer',
@@ -725,6 +725,14 @@ export default function Home() {
         </>
       )}
 
+      {/* Gradient bleed below hero — mobile only */}
+      {isMobile && (
+        <div style={{
+          marginTop: -20, height: 80,
+          background: 'linear-gradient(to bottom, #001442CC 0%, transparent 100%)',
+          pointerEvents: 'none',
+        }} />
+      )}
       <div style={{ padding: isMobile ? '0 16px' : 0 }}>
 
       {/* Próximos dias — mobile only */}

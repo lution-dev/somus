@@ -1,4 +1,4 @@
-﻿import React, { useState, useMemo } from 'react'
+import React, { useState, useMemo } from 'react'
 import { useParams, useLocation } from 'wouter'
 import { useAppStore, selectCurrentSaidasFixas, selectCurrentEntradas } from '../stores/useAppStore'
 import { useShallow } from 'zustand/react/shallow'
@@ -265,7 +265,7 @@ export default function DivisaoDetalhe() {
       ) : (
         <div style={{ paddingTop: 28, marginBottom: 20 }}>
           <Breadcrumb items={[
-            { label: 'Divisões', href: '/divisoes' },
+            { label: 'Relatórios', href: '/relatorios' },
             {
               label: divisao.name,
               icon: (
