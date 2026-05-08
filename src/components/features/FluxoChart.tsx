@@ -15,7 +15,11 @@ import { formatCurrency, formatCurrencyCompact } from '../../lib/calculations'
 import { useIsMobile } from '../../hooks/useIsMobile'
 import { TrendingUp, AlertCircle, Info } from 'lucide-react'
 
-export function FluxoChart() {
+export function FluxoChart({ paidPct, totalFixasPending, totalPagoNoMes }: { 
+  paidPct?: number; 
+  totalFixasPending?: number; 
+  totalPagoNoMes?: number;
+}) {
   const { days, todayDay, currentTotalBalance, saldoProjetadoFim } = useFluxoProjection()
   const isMobile = useIsMobile()
 
@@ -169,7 +173,7 @@ export function FluxoChart() {
         marginTop: 20, 
         padding: isMobile ? '0 16px' : 0,
         display: 'grid', 
-        gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(3, 1fr)', 
+        gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(auto-fit, minmax(140px, 1fr))', 
         gap: 12 
       }}>
         <SummaryCard 
@@ -179,22 +183,42 @@ export function FluxoChart() {
           icon={<TrendingUp size={14} />}
         />
         <SummaryCard 
-          label="Projeção Fim do Mês" 
+          label="Projeção Fim" 
           value={saldoProjetadoFim} 
           color="var(--color-warning)"
           icon={<AlertCircle size={14} />}
           isProjected
         />
-        {!isMobile && (
+        {totalFixasPending !== undefined && (
           <SummaryCard 
-            label="Total a Pagar" 
-            value={currentTotalBalance - saldoProjetadoFim} 
+            label="A Pagar (Fixas)" 
+            value={totalFixasPending} 
             color="var(--color-danger)"
             icon={<Info size={14} />}
             isNegative
           />
         )}
+        {totalPagoNoMes !== undefined && (
+          <SummaryCard 
+            label="Pago no Mês" 
+            value={totalPagoNoMes} 
+            color="var(--color-success)"
+            icon={<TrendingUp size={14} />}
+          />
+        )}
       </div>
+
+      {paidPct !== undefined && (
+        <div style={{ marginTop: 20, padding: isMobile ? '0 16px' : 0 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+            <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--color-text-tertiary)', textTransform: 'uppercase' }}>Progresso das Contas</span>
+            <span style={{ fontSize: 10, fontWeight: 800, color: 'var(--color-success)' }}>{paidPct}%</span>
+          </div>
+          <div style={{ height: 4, background: 'rgba(255,255,255,0.05)', borderRadius: 2, overflow: 'hidden' }}>
+            <div style={{ height: '100%', width: `${paidPct}%`, background: 'var(--color-success)', borderRadius: 2, transition: 'width 1s ease-out' }} />
+          </div>
+        </div>
+      )}
     </div>
   )
 }

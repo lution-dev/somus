@@ -496,36 +496,11 @@ export default function Fluxo() {
       )}
 
       <div style={{ padding: isMobile ? '12px 16px 0' : 0 }}>
-        <FluxoChart />
-
-        {/* Summary Card */}
-        <div style={{ 
-          background: 'var(--color-bg-secondary)', borderRadius: 16, padding: 20,
-          border: '1px solid rgba(255, 255, 255, 0.08)', marginBottom: 16,
-        }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
-            <p className="section-label" style={{ margin: 0 }}>Progresso do mês</p>
-            <span style={{ fontSize: 13, fontWeight: 700, color: paidPct > 0 ? 'var(--color-success)' : 'var(--color-text-tertiary)' }}>
-              {paidPct}% das contas pagas
-            </span>
-          </div>
-
-          <div style={{ height: 8, background: 'rgba(255,255,255,0.1)', borderRadius: 9999, overflow: 'hidden', marginBottom: 16 }}>
-            <motion.div initial={{ width: 0 }} animate={{ width: `${paidPct}%` }} transition={{ duration: 0.6, ease: 'easeOut' }}
-              style={{ height: '100%', background: 'var(--color-success)', borderRadius: 9999 }} />
-          </div>
-
-          <div style={{ display: 'flex', gap: 16 }}>
-            <div style={{ flex: 1, padding: '12px 14px', borderRadius: 12, background: 'rgba(239,68,68,0.06)', border: '1px solid rgba(239,68,68,0.15)' }}>
-              <p style={{ fontSize: 11, fontWeight: 600, color: 'var(--color-danger)', margin: '0 0 4px', textTransform: 'uppercase' }}>A pagar (fixas)</p>
-              <p style={{ fontSize: 18, fontWeight: 700, color: 'var(--color-text-primary)', margin: 0 }}>{formatCurrency(totalFixasPending)}</p>
-            </div>
-            <div style={{ flex: 1, padding: '12px 14px', borderRadius: 12, background: 'rgba(16,185,129,0.06)', border: '1px solid rgba(16,185,129,0.15)' }}>
-              <p style={{ fontSize: 11, fontWeight: 600, color: 'var(--color-success)', margin: '0 0 4px', textTransform: 'uppercase' }}>Pago este mês</p>
-              <p style={{ fontSize: 18, fontWeight: 700, color: 'var(--color-text-primary)', margin: 0 }}>{formatCurrency(totalPagoNoMes)}</p>
-            </div>
-          </div>
-        </div>
+        <FluxoChart 
+          paidPct={paidPct} 
+          totalFixasPending={totalFixasPending} 
+          totalPagoNoMes={totalPagoNoMes} 
+        />
 
         {/* Filters */}
         <div style={{ marginBottom: 16 }}>
