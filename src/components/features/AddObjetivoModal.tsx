@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+﻿import { useState, useEffect, useRef } from 'react'
 import { useAppStore } from '../../stores/useAppStore'
 import { Dialog, DialogFooter, Button, Input } from '../ui'
 import { formatCurrency } from '../../lib/calculations'
@@ -104,7 +104,7 @@ export default function AddObjetivoModal({ open, onClose, defaultIsCouple = fals
 
   const accentColor = isCouple ? ACCENT_COUPLE : ACCENT_BLUE
   const modalTitle  = isEditMode ? 'Editar Objetivo' : 'Novo Objetivo'
-  const confirmBtn  = isEditMode ? 'Salvar alterações' : 'Enviar'
+  const confirmBtn  = isEditMode ? 'Salvar alterações' : 'Adicionar'
 
   return (
     <Dialog open={open} onClose={onClose} title={modalTitle} size="md">

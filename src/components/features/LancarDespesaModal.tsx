@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+﻿import { useState, useEffect } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useAppStore } from '../../stores/useAppStore'
 import { formatCurrency } from '../../lib/calculations'
@@ -222,7 +222,7 @@ export default function LancarDespesaModal({ open, onClose, divisaoId, divisaoNa
                 disabled={!isValid}
                 onClick={handleConfirm}
               >
-                Enviar — {numAmount > 0 ? formatCurrency(numAmount) : 'R$ 0,00'}
+                Adicionar — {numAmount > 0 ? formatCurrency(numAmount) : 'R$ 0,00'}
               </Button>
               <Button variant="ghost" size="md" fullWidth onClick={onClose}>Cancelar</Button>
             </DialogFooter>

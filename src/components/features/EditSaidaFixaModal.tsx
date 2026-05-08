@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+﻿import { useState, useEffect } from 'react'
 import { Dialog, DialogFooter, Button, Input } from '../ui'
 import { formatCurrency } from '../../lib/calculations'
 import { getDivisaoIcon } from '../../lib/icons'
@@ -203,7 +203,6 @@ export default function EditSaidaFixaModal({ open, onClose, onSave, saidaFixa }:
       </div>
 
       <DialogFooter>
-        <Button variant="ghost" size="md" fullWidth onClick={onClose}>Cancelar</Button>
         <Button
           variant="primary"
           size="md"
@@ -216,6 +215,7 @@ export default function EditSaidaFixaModal({ open, onClose, onSave, saidaFixa }:
             ? `Salvar — ${formatCurrency(monthlyAmount)}/mês`
             : 'Salvar'}
         </Button>
+        <Button variant="ghost" size="md" fullWidth onClick={onClose}>Cancelar</Button>
       </DialogFooter>
     </Dialog>
   )

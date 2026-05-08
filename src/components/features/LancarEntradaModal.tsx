@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react'
+﻿import { useState, useMemo, useEffect } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useAppStore, selectCurrentDivisoes, selectCurrentIncomeSources, calculateDistribution } from '../../stores/useAppStore'
 import { useShallow } from 'zustand/react/shallow'
