@@ -86,6 +86,7 @@ export interface SaidaFixa {
   isVariable?: boolean   // valor não contabiliza no total
   billingCycle?: BillingCycle  // 'month' | 'year' — UI only, amount already normalized to monthly
   monthlyAmountOverrides?: Record<string, number>  // key: 'YYYY-MM', value: override amount for that month
+  skippedMonths?: string[]                        // list of 'YYYY-MM' to ignore this cost
 }
 
 // ─── Saídas Variáveis ───────────────────────────────────────────────────────

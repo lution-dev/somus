@@ -453,3 +453,16 @@
 - [x] Normalização de horário para cálculos de dias inteiros precisos
 - [x] Suporte a dias negativos para exibição de atrasos (Atrasado há Xd)
 **Status:** ? Concluído
+
+---
+
+#### T-AD-25: Fluxo: Recurso 'Pular Mês' para Custos Fixos
+**Tipo:** UX / Feature
+**Arquivo:** src/pages/Fluxo.tsx + src/stores/useAppStore.ts
+**Critérios:**
+- [x] Adicionar skippedMonths à interface SaidaFixa
+- [x] Action skipSaidaFixaForMonth na store
+- [x] Opção 'Pular este mês' no ItemActionSheet do Fluxo
+- [x] Filtrar itens pulados na Home e no Fluxo (lista e totais)
+- [x] Renomear 'Excluir' para 'Excluir permanentemente' para clareza
+**Status:** ? Concluído

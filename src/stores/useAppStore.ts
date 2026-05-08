@@ -43,6 +43,8 @@ interface AppActions {
   addSaidaFixa: (sf: Omit<SaidaFixa, 'id'>) => void
   editSaidaFixa: (id: string, updates: Partial<SaidaFixa>) => void
   editSaidaFixaForMonth: (id: string, yearMonth: string, amount: number) => void
+  skipSaidaFixaForMonth: (id: string, yearMonth: string) => void
+  unskipSaidaFixaForMonth: (id: string, yearMonth: string) => void
   deleteSaidaFixa: (id: string) => void
 
   // Saídas Variáveis
@@ -350,6 +352,26 @@ export const useAppStore = create<AppState & AppActions>()(
           ),
         })),
 
+      skipSaidaFixaForMonth: (id, yearMonth) =>
+        set((state) => ({
+          saidasFixas: state.saidasFixas.map(sf =>
+            sf.id !== id ? sf : {
+              ...sf,
+              skippedMonths: [...(sf.skippedMonths ?? []), yearMonth],
+            }
+          ),
+        })),
+
+      unskipSaidaFixaForMonth: (id, yearMonth) =>
+        set((state) => ({
+          saidasFixas: state.saidasFixas.map(sf =>
+            sf.id !== id ? sf : {
+              ...sf,
+              skippedMonths: (sf.skippedMonths ?? []).filter(m => m !== yearMonth),
+            }
+          ),
+        })),
+
       deleteSaidaFixa: (id) =>
         set((state) => ({
           saidasFixas: state.saidasFixas.filter(sf => sf.id !== id),
@@ -406,7 +428,7 @@ export const useAppStore = create<AppState & AppActions>()(
     }),
     {
       name: 'somus-state',
-      version: 13,
+      version: 14,
       migrate: (_persisted: unknown, version: number) => {
         const state = _persisted as Record<string, unknown>
 

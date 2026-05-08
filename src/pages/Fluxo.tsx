@@ -69,19 +69,7 @@ function FixaItem({ sf, isLast, onPress, yearMonth }: {
         {paid ? (
           <CheckCircle2 size={18} color="var(--color-success)" />
         ) : (
-          <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <AlertCircle size={18} color={isOverdue ? 'var(--color-danger)' : sf.color || 'var(--color-accent-primary)'} />
-            {!paid && (
-              <motion.div
-                animate={{ scale: [1, 1.2, 1], opacity: [0.5, 0.2, 0.5] }}
-                transition={{ duration: 2, repeat: Infinity }}
-                style={{
-                  position: 'absolute', width: 24, height: 24, borderRadius: '50%',
-                  background: isOverdue ? 'var(--color-danger)' : sf.color || 'var(--color-accent-primary)',
-                }}
-              />
-            )}
-          </div>
+          <AlertCircle size={18} color={isOverdue ? 'var(--color-danger)' : sf.color || 'var(--color-accent-primary)'} />
         )}
       </div>
 
@@ -271,6 +259,7 @@ export default function Fluxo() {
   const markUnpaid       = useAppStore(s => s.markSaidaFixaUnpaid)
   const editSaidaFixa    = useAppStore(s => s.editSaidaFixa)
   const editMonthly      = useAppStore(s => s.editSaidaFixaForMonth)
+  const skipMonthly      = useAppStore(s => s.skipSaidaFixaForMonth)
   const deleteSaidaFixa  = useAppStore(s => s.deleteSaidaFixa)
 
   // Filtra saídas variáveis e entradas do mês atual
@@ -283,7 +272,10 @@ export default function Fluxo() {
     let items: FluxoItem[] = []
 
     if (filterType === 'all' || filterType === 'saidas') {
-      saidasFixas.forEach(sf => items.push({ type: 'fixa', data: sf }))
+      saidasFixas.forEach(sf => {
+        const isSkipped = sf.skippedMonths?.includes(yearMonth)
+        if (!isSkipped) items.push({ type: 'fixa', data: sf })
+      })
       currentMonthVariaveis.forEach(sv => items.push({ type: 'variavel', data: sv }))
     }
     if (filterType === 'all' || filterType === 'entradas') {
@@ -316,8 +308,9 @@ export default function Fluxo() {
   }, [saidasFixas, currentMonthVariaveis, currentMonthEntradas, filterType, fluxoSearch])
 
   // Cálculos de resumo
-  const totalFixasPending = saidasFixas.filter(sf => !isPaidThisMonth(sf.paidDates)).reduce((s, sf) => s + getEffectiveAmount(sf, yearMonth), 0)
-  const totalFixasPaid = saidasFixas.filter(sf => isPaidThisMonth(sf.paidDates)).reduce((s, sf) => s + getEffectiveAmount(sf, yearMonth), 0)
+  const nonSkippedFixas = saidasFixas.filter(sf => !sf.skippedMonths?.includes(yearMonth))
+  const totalFixasPending = nonSkippedFixas.filter(sf => !isPaidThisMonth(sf.paidDates)).reduce((s, sf) => s + getEffectiveAmount(sf, yearMonth), 0)
+  const totalFixasPaid = nonSkippedFixas.filter(sf => isPaidThisMonth(sf.paidDates)).reduce((s, sf) => s + getEffectiveAmount(sf, yearMonth), 0)
   const totalVariaveis = currentMonthVariaveis.reduce((s, sv) => s + sv.amount, 0)
   
   const totalPagoNoMes = totalFixasPaid + totalVariaveis
@@ -472,7 +465,7 @@ export default function Fluxo() {
               )
             })}
           </div>
-          <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ width: '100%' }}>
             <SearchBar value={fluxoSearch} onChange={setFluxoSearch} placeholder="Procurar no fluxo..." />
           </div>
         </div>
@@ -493,20 +486,20 @@ export default function Fluxo() {
                 <>
                   <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                     <span style={{ fontSize: 12, fontWeight: 600, color: 'white', background: 'rgba(0,0,0,0.7)', padding: '5px 10px', borderRadius: 8 }}>Lançar saída</span>
-                    <button onClick={() => { setFabOpen(false); setDivisaoPicker(true) }} style={{ width: 46, height: 46, borderRadius: 14, background: 'var(--color-danger)', border: 'none', color: 'white' }}>
+                    <button onClick={() => { setFabOpen(false); setDivisaoPicker(true) }} style={{ width: 46, height: 46, borderRadius: 14, background: 'var(--color-danger)', border: 'none', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}>
                       <ArrowDownLeft size={20} strokeWidth={2.5} />
                     </button>
                   </motion.div>
                   <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                     <span style={{ fontSize: 12, fontWeight: 600, color: 'white', background: 'rgba(0,0,0,0.7)', padding: '5px 10px', borderRadius: 8 }}>Lançar entrada</span>
-                    <button onClick={() => { setFabOpen(false); setLancarOpen(true) }} style={{ width: 46, height: 46, borderRadius: 14, background: 'var(--color-success)', border: 'none', color: 'white' }}>
+                    <button onClick={() => { setFabOpen(false); setLancarOpen(true) }} style={{ width: 46, height: 46, borderRadius: 14, background: 'var(--color-success)', border: 'none', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}>
                       <ArrowUpRight size={20} strokeWidth={2.5} />
                     </button>
                   </motion.div>
                 </>
               )}
             </AnimatePresence>
-            <motion.button onClick={() => setFabOpen(v => !v)} animate={{ rotate: fabOpen ? 45 : 0 }} style={{ width: 52, height: 52, borderRadius: 16, background: fabOpen ? 'var(--color-bg-tertiary)' : 'var(--color-accent-primary)', border: 'none', color: 'white', boxShadow: '0 4px 20px rgba(59,130,246,0.5)' }}>
+            <motion.button onClick={() => setFabOpen(v => !v)} animate={{ rotate: fabOpen ? 45 : 0 }} style={{ width: 52, height: 52, borderRadius: 16, background: fabOpen ? 'var(--color-bg-tertiary)' : 'var(--color-accent-primary)', border: 'none', color: 'white', boxShadow: '0 4px 20px rgba(59,130,246,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
               <Plus size={22} strokeWidth={2.5} />
             </motion.button>
           </div>
@@ -545,11 +538,14 @@ export default function Fluxo() {
         actions={actionSf ? [
           ...(isPaidThisMonth(actionSf.paidDates)
             ? [{ label: 'Desmarcar pagamento', icon: XCircle, color: 'var(--color-warning)', onClick: () => { markUnpaid(actionSf.id, new Date().toISOString().slice(0, 10)) } }]
-            : [{ label: 'Marcar como pago', icon: CheckCircle2, color: 'var(--color-success)', onClick: () => { setConfirmPaySf(actionSf) } }]
+            : [
+                { label: 'Marcar como pago', icon: CheckCircle2, color: 'var(--color-success)', onClick: () => { setConfirmPaySf(actionSf) } },
+                { label: 'Pular este mês', icon: XCircle, color: 'var(--color-warning)', onClick: () => { if (confirm('Pular o pagamento de ' + actionSf.name + ' este mês?')) skipMonthly(actionSf.id, yearMonth); setActionSf(null) } }
+              ]
           ),
           { label: 'Editar valor deste mês', icon: TrendingUp, color: 'var(--color-accent-blue-light)', onClick: () => setEditMonthlySf(actionSf) },
           { label: 'Editar custo fixo base', icon: Pencil, color: 'var(--color-accent-primary)', onClick: () => setEditSf(actionSf) },
-          { label: 'Excluir custo fixo', icon: Trash2, color: 'var(--color-danger)', onClick: () => { if (confirm('Excluir ' + actionSf.name + '?')) deleteSaidaFixa(actionSf.id) } },
+          { label: 'Excluir permanentemente', icon: Trash2, color: 'var(--color-danger)', onClick: () => { if (confirm('Excluir ' + actionSf.name + ' de TODOS os meses?')) deleteSaidaFixa(actionSf.id) } },
         ] : []}
       />
 

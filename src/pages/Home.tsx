@@ -167,8 +167,9 @@ function ProximosDias({ onEntradaClick, onDespesaClick, isDesktop }: {
   ))
 
   const upcoming = useMemo(() => {
+    const todayStr = new Date().toISOString().slice(0, 7) // 'YYYY-MM'
     const despesas = saidasFixas
-      .filter(sf => !isPaidThisMonth(sf.paidDates))
+      .filter(sf => !isPaidThisMonth(sf.paidDates) && !sf.skippedMonths?.includes(todayStr))
       .map(sf => ({
         id: sf.id, name: sf.name, amount: getEffectiveAmount(sf),
         days: getDaysUntil(sf.dueDay), type: 'despesa' as const,

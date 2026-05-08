@@ -43,6 +43,7 @@ npm install && npm run dev
 - **T-AD-22** — Fluxo/Home: Refinamento de ícones e pendências (Glow, status icons, section labels)
 - **T-AD-23** — Home: Exibição de pendências atrasadas (Atrasado há Xd) e expansão da janela para 15 dias
 - **T-AD-24** — Fix: Cálculo de dias para atrasados (correção do salto de mês em getDaysUntil)
+- **T-AD-25** — Fluxo: Recurso 'Pular este mês' (ignora custo sem deletar template)
 
 ## Arquitetura de Arquivos
 ```
