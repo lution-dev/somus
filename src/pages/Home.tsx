@@ -280,11 +280,14 @@ function ProximosDias({ onEntradaClick, onDespesaClick, isDesktop }: {
             </p>
           </div>
         ) : (
-          /* Scrollable wrapper with max height */
+          /* Scrollable wrapper with background/border like mobile expanded view */
           <div style={{
             maxHeight: 280,
             overflowY: 'auto',
             overflowX: 'hidden',
+            background: 'var(--color-bg-secondary)',
+            border: '1px solid var(--color-border)',
+            borderRadius: 'var(--radius-card)',
           }}>
             {upcoming.map(renderItem)}
           </div>
@@ -410,16 +413,6 @@ function DivisoesSection() {
           <Wallet size={13} />
           Divisões
         </p>
-        <button
-          onClick={() => navigate('/divisoes')}
-          style={{
-            display: 'flex', alignItems: 'center', gap: 2,
-            fontSize: 12, fontWeight: 600, color: 'var(--color-accent-primary)',
-            cursor: 'pointer', background: 'none', border: 'none', fontFamily: 'var(--font-sans)',
-          }}
-        >
-          Ver todas <ChevronRight size={13} />
-        </button>
       </div>
 
       {divisoes.length === 0 ? (

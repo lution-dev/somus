@@ -307,7 +307,8 @@ export default function Fluxo() {
   const nonSkippedFixas = saidasFixas.filter(sf => !sf.skippedMonths?.includes(yearMonth))
   const totalFixasPending = nonSkippedFixas.filter(sf => !isPaidForMonth(sf, yearMonth)).reduce((s, sf) => s + getEffectiveAmount(sf, yearMonth), 0)
   const totalFixasPaid = nonSkippedFixas.filter(sf => isPaidForMonth(sf, yearMonth)).reduce((s, sf) => s + getEffectiveAmount(sf, yearMonth), 0)
-  const totalVariaveis = currentMonthVariaveis.reduce((s, sv) => s + sv.amount, 0)
+  // Exclui sv-fixed- para evitar double-counting: custos fixos pagos já estão em totalFixasPaid
+  const totalVariaveis = currentMonthVariaveis.filter(sv => !sv.id.startsWith('sv-fixed-')).reduce((s, sv) => s + sv.amount, 0)
   
   const totalPagoNoMes = totalFixasPaid + totalVariaveis
   const paidPct = Math.round((saidasFixas.filter(sf => isPaidForMonth(sf, yearMonth)).length / (saidasFixas.length || 1)) * 100)
