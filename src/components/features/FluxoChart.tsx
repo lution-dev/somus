@@ -63,6 +63,17 @@ export function FluxoChart({ paidPct, totalFixasPending, totalPagoNoMes }: {
     return null
   }
 
+  const [showChart, setShowChart] = React.useState(() => {
+    const saved = localStorage.getItem('somus:fluxo:showChart')
+    return saved === null ? true : saved === 'true'
+  })
+
+  const toggleChart = () => {
+    const next = !showChart
+    setShowChart(next)
+    localStorage.setItem('somus:fluxo:showChart', String(next))
+  }
+
   return (
     <div style={{
       background: 'var(--color-bg-secondary)',
@@ -72,109 +83,38 @@ export function FluxoChart({ paidPct, totalFixasPending, totalPagoNoMes }: {
       marginBottom: 20,
       overflow: 'hidden',
     }}>
-      <div style={{ padding: isMobile ? '0 16px' : 0, marginBottom: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+      {/* Header & KPIs at the TOP now */}
+      <div style={{ padding: isMobile ? '0 16px' : 0, marginBottom: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
           <h3 style={{ fontSize: 13, fontWeight: 700, color: 'var(--color-text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.05em', margin: '0 0 4px' }}>
-            Projeção de Saldo
+            Resumo do Fluxo
           </h3>
           <p style={{ fontSize: 11, color: 'var(--color-text-tertiary)', margin: 0 }}>
             Maio 2026
           </p>
         </div>
-        {!isMobile && (
-          <div style={{ display: 'flex', gap: 16 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--color-accent-primary)' }} />
-              <span style={{ fontSize: 11, color: 'var(--color-text-secondary)' }}>Realizado</span>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              <div style={{ width: 8, height: 8, borderRadius: '50%', border: '1px dashed var(--color-warning)', background: 'transparent' }} />
-              <span style={{ fontSize: 11, color: 'var(--color-text-secondary)' }}>Projetado</span>
-            </div>
-          </div>
-        )}
-      </div>
-
-      <div style={{ width: '100%', height: chartHeight }}>
-        <ResponsiveContainer width="100%" height="100%">
-          <AreaChart data={days} margin={{ top: 10, right: isMobile ? 10 : 30, left: isMobile ? -20 : 0, bottom: 0 }}>
-            <defs>
-              <linearGradient id="colorReal" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="var(--color-accent-primary)" stopOpacity={0.3}/>
-                <stop offset="95%" stopColor="var(--color-accent-primary)" stopOpacity={0}/>
-              </linearGradient>
-              <linearGradient id="colorProj" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="var(--color-warning)" stopOpacity={0.15}/>
-                <stop offset="95%" stopColor="var(--color-warning)" stopOpacity={0}/>
-              </linearGradient>
-            </defs>
-            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.05)" />
-            <XAxis 
-              dataKey="day" 
-              axisLine={false} 
-              tickLine={false} 
-              tick={{ fontSize: 10, fill: 'var(--color-text-tertiary)' }}
-              interval={isMobile ? 4 : 2}
-            />
-            <YAxis 
-              axisLine={false} 
-              tickLine={false} 
-              tick={{ fontSize: 10, fill: 'var(--color-text-tertiary)' }}
-              tickFormatter={(v) => formatCurrencyCompact(v).replace('R$', '')}
-              width={isMobile ? 0 : 60}
-              hide={isMobile}
-            />
-            <Tooltip content={<CustomTooltip />} />
-            
-            {/* Real Area */}
-            <Area
-              type="monotone"
-              dataKey="saldoReal"
-              stroke="var(--color-accent-primary)"
-              strokeWidth={3}
-              fillOpacity={1}
-              fill="url(#colorReal)"
-              connectNulls={false}
-              animationDuration={1000}
-            />
-
-            {/* Projected Area */}
-            <Area
-              type="monotone"
-              dataKey="saldoProj"
-              stroke="var(--color-warning)"
-              strokeWidth={2}
-              strokeDasharray="6 4"
-              fillOpacity={1}
-              fill="url(#colorProj)"
-              connectNulls={true}
-              animationDuration={1000}
-              animationBegin={500}
-            />
-
-            {/* Reference Line for Today */}
-            <ReferenceLine 
-              x={todayDay} 
-              stroke="rgba(255,255,255,0.2)" 
-              strokeDasharray="3 3"
-              label={{ 
-                position: 'top', 
-                value: 'HOJE', 
-                fill: 'var(--color-text-tertiary)', 
-                fontSize: 9, 
-                fontWeight: 700 
-              }} 
-            />
-          </AreaChart>
-        </ResponsiveContainer>
+        <button
+          onClick={toggleChart}
+          style={{
+            display: 'flex', alignItems: 'center', gap: 6,
+            background: 'rgba(255,255,255,0.05)', border: 'none', borderRadius: 8,
+            padding: '6px 12px', cursor: 'pointer',
+            fontSize: 11, fontWeight: 700, color: 'var(--color-text-secondary)',
+            fontFamily: 'var(--font-sans)',
+            transition: 'all 200ms ease',
+          }}
+        >
+          {showChart ? 'Ocultar Gráfico' : 'Ver Gráfico'}
+          <ChevronDown size={14} style={{ transform: showChart ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 300ms ease' }} />
+        </button>
       </div>
 
       <div style={{ 
-        marginTop: 20, 
         padding: isMobile ? '0 16px' : 0,
         display: 'grid', 
         gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(auto-fit, minmax(140px, 1fr))', 
-        gap: 12 
+        gap: 12,
+        marginBottom: showChart ? 20 : 0
       }}>
         <SummaryCard 
           label="Saldo Atual" 
@@ -207,6 +147,93 @@ export function FluxoChart({ paidPct, totalFixasPending, totalPagoNoMes }: {
           />
         )}
       </div>
+
+      <AnimatePresence initial={false}>
+        {showChart && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.3, ease: 'easeInOut' }}
+            style={{ overflow: 'hidden' }}
+          >
+            <div style={{ padding: isMobile ? '0 16px' : 0, marginBottom: 12, display: 'flex', justifyContent: 'flex-end', gap: 16 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--color-accent-primary)' }} />
+                <span style={{ fontSize: 10, color: 'var(--color-text-tertiary)', textTransform: 'uppercase', fontWeight: 600 }}>Real</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <div style={{ width: 8, height: 8, borderRadius: '50%', border: '1px dashed var(--color-warning)', background: 'transparent' }} />
+                <span style={{ fontSize: 10, color: 'var(--color-text-tertiary)', textTransform: 'uppercase', fontWeight: 600 }}>Projetado</span>
+              </div>
+            </div>
+            
+            <div style={{ width: '100%', height: chartHeight }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={days} margin={{ top: 10, right: isMobile ? 10 : 30, left: isMobile ? -20 : 0, bottom: 0 }}>
+                  <defs>
+                    <linearGradient id="colorReal" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="var(--color-accent-primary)" stopOpacity={0.3}/>
+                      <stop offset="95%" stopColor="var(--color-accent-primary)" stopOpacity={0}/>
+                    </linearGradient>
+                    <linearGradient id="colorProj" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="var(--color-warning)" stopOpacity={0.15}/>
+                      <stop offset="95%" stopColor="var(--color-warning)" stopOpacity={0}/>
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.05)" />
+                  <XAxis 
+                    dataKey="day" 
+                    axisLine={false} 
+                    tickLine={false} 
+                    tick={{ fontSize: 10, fill: 'var(--color-text-tertiary)' }}
+                    interval={isMobile ? 4 : 2}
+                  />
+                  <YAxis 
+                    axisLine={false} 
+                    tickLine={false} 
+                    tick={{ fontSize: 10, fill: 'var(--color-text-tertiary)' }}
+                    tickFormatter={(v) => formatCurrencyCompact(v).replace('R$', '')}
+                    width={isMobile ? 0 : 60}
+                    hide={isMobile}
+                  />
+                  <Tooltip content={<CustomTooltip />} />
+                  
+                  <Area
+                    type="monotone"
+                    dataKey="saldoReal"
+                    stroke="var(--color-accent-primary)"
+                    strokeWidth={3}
+                    fillOpacity={1}
+                    fill="url(#colorReal)"
+                    connectNulls={false}
+                    animationDuration={1000}
+                  />
+
+                  <Area
+                    type="monotone"
+                    dataKey="saldoProj"
+                    stroke="var(--color-warning)"
+                    strokeWidth={2}
+                    strokeDasharray="6 4"
+                    fillOpacity={1}
+                    fill="url(#colorProj)"
+                    connectNulls={true}
+                    animationDuration={1000}
+                    animationBegin={500}
+                  />
+
+                  <ReferenceLine 
+                    x={todayDay} 
+                    stroke="rgba(255,255,255,0.2)" 
+                    strokeDasharray="3 3"
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {paidPct !== undefined && (
         <div style={{ marginTop: 20, padding: isMobile ? '0 16px' : 0 }}>
