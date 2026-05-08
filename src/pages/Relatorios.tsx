@@ -98,7 +98,7 @@ export default function Relatorios() {
   const TODAY        = currentYM()
   const [month, setMonth]         = useState(TODAY)
   const [reportCtx, setReportCtx] = useState<'me' | 'partner' | 'couple'>('couple')
-  const headerBg = reportCtx === 'couple' ? '#150D27' : reportCtx === 'partner' ? '#2D0A1A' : '#0A1628'
+  const headerBg = reportCtx === 'couple' ? '#150D27' : reportCtx === 'partner' ? '#2D0A1A' : '#0A0A0A'
 
   const myName      = currentUser?.name?.split(' ')[0] ?? 'Meu'
   const partnerName = partner?.name?.split(' ')[0] ?? 'Parceiro(a)'
