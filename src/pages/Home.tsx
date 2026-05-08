@@ -1,4 +1,4 @@
-﻿import React, { useState, useMemo, useCallback } from 'react'
+import React, { useState, useMemo, useCallback } from 'react'
 import { useLocation } from 'wouter'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
@@ -671,9 +671,7 @@ export default function Home() {
           />
           <div style={{
             background: HERO_BG,
-            borderRadius: '0 0 24px 24px',
             padding: '12px 16px 20px',
-            marginBottom: 20,
             overflow: 'hidden',
           }}>
             <BalanceCard
@@ -686,6 +684,13 @@ export default function Home() {
               onToggleHidden={toggleBalanceHidden}
             />
           </div>
+          {/* Gradient hero bleed */}
+          <div style={{
+            height: 80,
+            marginBottom: 20,
+            background: `linear-gradient(to bottom, ${HERO_BG}CC 0%, transparent 100%)`,
+            pointerEvents: 'none',
+          }} />
         </>
       ) : (
         <>
@@ -725,14 +730,6 @@ export default function Home() {
         </>
       )}
 
-      {/* Gradient bleed below hero — mobile only */}
-      {isMobile && (
-        <div style={{
-          marginTop: -20, height: 80,
-          background: 'linear-gradient(to bottom, #001442CC 0%, transparent 100%)',
-          pointerEvents: 'none',
-        }} />
-      )}
       <div style={{ padding: isMobile ? '0 16px' : 0 }}>
 
       {/* Próximos dias — mobile only */}
