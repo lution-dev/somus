@@ -1,4 +1,4 @@
-﻿import React, { useMemo, useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAppStore, selectCurrentSaidasFixas, selectCurrentEntradas } from '../stores/useAppStore'
 import { useShallow } from 'zustand/react/shallow'
@@ -560,21 +560,15 @@ export default function Fluxo() {
       {/* Gradient hero bleed — mobile only */}
       {isMobile && (
         <div style={{
-          height: 80,
-          marginTop: -1,
-          background: 'linear-gradient(to bottom, #001442CC 0%, transparent 100%)',
+          position: 'absolute',
+          left: 0, right: 0,
+          height: 120,
+          background: 'linear-gradient(to bottom, #001442 0%, transparent 100%)',
           pointerEvents: 'none',
+          zIndex: 0,
         }} />
       )}
-      {/* Gradient hero bleed — mobile only */}
-      {isMobile && (
-        <div style={{
-          height: 80, marginTop: -1,
-          background: 'linear-gradient(to bottom, #001442CC 0%, transparent 100%)',
-          pointerEvents: 'none',
-        }} />
-      )}
-      <div style={{ padding: isMobile ? '12px 16px 0' : 0 }}>
+      <div style={{ padding: isMobile ? '12px 16px 0' : 0, position: 'relative', zIndex: 1 }}>
         <FluxoChart 
           paidPct={paidPct} 
           totalFixasPending={totalFixasPending} 

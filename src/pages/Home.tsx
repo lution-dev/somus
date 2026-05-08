@@ -670,8 +670,9 @@ export default function Home() {
             rightAction={<UserMenu variant="hero" />}
           />
           <div style={{
-            background: HERO_BG,
+            background: `linear-gradient(to bottom, ${HERO_BG} 0%, transparent 100%)`,
             padding: '12px 16px 20px',
+            marginBottom: 20,
             overflow: 'hidden',
           }}>
             <BalanceCard
@@ -684,13 +685,6 @@ export default function Home() {
               onToggleHidden={toggleBalanceHidden}
             />
           </div>
-          {/* Gradient hero bleed */}
-          <div style={{
-            height: 80,
-            marginBottom: 20,
-            background: `linear-gradient(to bottom, ${HERO_BG}CC 0%, transparent 100%)`,
-            pointerEvents: 'none',
-          }} />
         </>
       ) : (
         <>

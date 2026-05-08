@@ -222,18 +222,12 @@ export default function Casal() {
         <>
           <PageHeader title="Casal" bg={HERO_BG} />
           <div style={{
-            background: HERO_BG,
+            background: `linear-gradient(to bottom, ${HERO_BG} 0%, transparent 100%)`,
             padding: '12px 16px 20px',
+            marginBottom: 20,
           }}>
             <PatrimonioCard isHero />
           </div>
-          {/* Gradient hero bleed */}
-          <div style={{
-            height: 80,
-            marginBottom: 20,
-            background: `linear-gradient(to bottom, ${HERO_BG}CC 0%, transparent 100%)`,
-            pointerEvents: 'none',
-          }} />
         </>
       ) : (
         <div style={{ paddingTop: 32, marginBottom: 20 }}>
