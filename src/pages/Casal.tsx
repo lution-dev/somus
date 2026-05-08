@@ -276,87 +276,78 @@ export default function Casal() {
 
       {/* ── Content ── */}
       <div style={{
-        display: 'grid',
-        gridTemplateColumns: isMobile ? '1fr' : '3fr 2fr',
+        display: 'flex',
+        flexDirection: 'column',
         gap: 24,
         alignItems: 'start',
         padding: isMobile ? '0 16px' : 0,
+        maxWidth: isMobile ? undefined : 680,
       }}>
 
-        {/* Left Column — Objectives */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-          {/* Desktop: Patrimônio goes here (top of left column) */}
-          {!isMobile && <PatrimonioCard />}
+        {/* Desktop: Patrimônio */}
+        {!isMobile && <PatrimonioCard />}
 
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-              <p className="section-label" style={{ display: 'flex', alignItems: 'center', gap: 6, margin: 0 }}>
-                <Target size={13} />Objetivos do casal
-              </p>
-              <button
-                id="btn-add-objetivo-inline"
-                onClick={() => setAddObjetivoOpen(true)}
-                style={{
-                  display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 600,
-                  padding: '7px 14px', borderRadius: 10, cursor: 'pointer',
-                  background: 'rgba(139,92,246,0.1)', color: 'var(--color-accent-couple)',
-                  border: '1.5px solid rgba(139,92,246,0.25)', fontFamily: 'var(--font-sans)',
-                  transition: 'all 150ms ease',
-                }}
-              >
-                <Plus size={13} strokeWidth={2.5} />Novo
-              </button>
-            </div>
-
-            {sortedObjetivos.length === 0 ? (
-              <div style={{
-                background: 'var(--color-bg-secondary)',
-                border: '1.5px dashed rgba(139,92,246,0.3)',
-                borderRadius: 16, padding: 32,
-                display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: 12,
-              }}>
-                <div style={{ width: 52, height: 52, borderRadius: 16, background: 'rgba(139,92,246,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <Target size={24} color="var(--color-accent-couple)" strokeWidth={1.5} />
-                </div>
-                <div>
-                  <p style={{ fontSize: 15, fontWeight: 700, color: 'var(--color-text-primary)', margin: '0 0 4px' }}>Nenhum objetivo ainda</p>
-                  <p style={{ fontSize: 13, color: 'var(--color-text-tertiary)', margin: 0, lineHeight: 1.5 }}>Defina aonde vocês querem chegar juntos</p>
-                </div>
-              </div>
-            ) : (
-              <div style={{
-                display: 'grid',
-                gridTemplateColumns: sortedObjetivos.length === 1 ? '1fr' : '1fr 1fr',
-                gap: 16,
-                alignItems: 'stretch',
-              }}>
-                {sortedObjetivos.map(obj => (
-                  <ObjetivoCard
-                    key={obj.id}
-                    obj={obj}
-                    onNavigate={(id) => navigate(`/casal/objetivo/${id}`)}
-                    onAction={setObjetivoActionTarget}
-                  />
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Right Column — Invite code (desktop only, only when no partner) */}
-        {!isMobile && !hasPartner && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-            <InviteCodeCard copied={copied} setCopied={setCopied} partnerCode={partnerCode} />
-          </div>
+        {/* Invite card — when no partner (both mobile and desktop) */}
+        {!hasPartner && (
+          <InviteCodeCard copied={copied} setCopied={setCopied} partnerCode={partnerCode} />
         )}
+
+        <div>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+            <p className="section-label" style={{ display: 'flex', alignItems: 'center', gap: 6, margin: 0 }}>
+              <Target size={13} />Objetivos do casal
+            </p>
+            <button
+              id="btn-add-objetivo-inline"
+              onClick={() => setAddObjetivoOpen(true)}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 600,
+                padding: '7px 14px', borderRadius: 10, cursor: 'pointer',
+                background: 'rgba(139,92,246,0.1)', color: 'var(--color-accent-couple)',
+                border: '1.5px solid rgba(139,92,246,0.25)', fontFamily: 'var(--font-sans)',
+                transition: 'all 150ms ease',
+              }}
+            >
+              <Plus size={13} strokeWidth={2.5} />Novo
+            </button>
+          </div>
+
+          {sortedObjetivos.length === 0 ? (
+            <div style={{
+              background: 'var(--color-bg-secondary)',
+              border: '1.5px dashed rgba(139,92,246,0.3)',
+              borderRadius: 16, padding: 32,
+              display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: 12,
+            }}>
+              <div style={{ width: 52, height: 52, borderRadius: 16, background: 'rgba(139,92,246,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Target size={24} color="var(--color-accent-couple)" strokeWidth={1.5} />
+              </div>
+              <div>
+                <p style={{ fontSize: 15, fontWeight: 700, color: 'var(--color-text-primary)', margin: '0 0 4px' }}>Nenhum objetivo ainda</p>
+                <p style={{ fontSize: 13, color: 'var(--color-text-tertiary)', margin: 0, lineHeight: 1.5 }}>Defina aonde vocês querem chegar juntos</p>
+              </div>
+            </div>
+          ) : (
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: sortedObjetivos.length === 1 ? '1fr' : '1fr 1fr',
+              gap: 16,
+              alignItems: 'stretch',
+            }}>
+              {sortedObjetivos.map(obj => (
+                <ObjetivoCard
+                  key={obj.id}
+                  obj={obj}
+                  onNavigate={(id) => navigate(`/casal/objetivo/${id}`)}
+                  onAction={setObjetivoActionTarget}
+                />
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
-      {/* Mobile-only invite code at the bottom — only while no partner */}
-      {isMobile && !hasPartner && (
-        <div style={{ padding: '0 16px', marginTop: 24 }}>
-          <InviteCodeCard copied={copied} setCopied={setCopied} partnerCode={partnerCode} />
-        </div>
-      )}
+
     </div>
   )
 }
