@@ -26,6 +26,7 @@ import {
   ChevronDown,
   Wallet,
   History,
+  AlertCircle,
 } from 'lucide-react'
 
 // ─── Pill button style ──────────────────────────────────────────────────────
@@ -169,7 +170,7 @@ function ProximosDias({ onEntradaClick, onDespesaClick, isDesktop }: {
     const despesas = saidasFixas
       .filter(sf => !isPaidThisMonth(sf.paidDates))
       .map(sf => ({
-        id: sf.id, name: sf.name, amount: sf.amount,
+        id: sf.id, name: sf.name, amount: getEffectiveAmount(sf),
         days: getDaysUntil(sf.dueDay), type: 'despesa' as const,
       }))
       .filter(d => d.days >= 0 && d.days <= 10)
@@ -220,7 +221,7 @@ function ProximosDias({ onEntradaClick, onDespesaClick, isDesktop }: {
       }}>
         {item.type === 'entrada'
           ? <ArrowUpRight size={14} color="var(--color-success)" />
-          : <ArrowDownRight size={14} color={item.days <= 2 ? 'var(--color-danger)' : 'var(--color-accent-primary)'} />
+          : <AlertCircle size={14} color={item.days <= 2 ? 'var(--color-danger)' : 'var(--color-warning)'} />
         }
       </div>
       <div style={{ flex: 1, minWidth: 0 }}>

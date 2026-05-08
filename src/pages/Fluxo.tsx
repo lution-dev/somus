@@ -12,7 +12,7 @@ import ItemActionSheet from '../components/ui/ItemActionSheet'
 import { PageHeader, SearchBar, Dialog, Button } from '../components/ui'
 import { useIsMobile } from '../hooks/useIsMobile'
 import { getDivisaoIcon } from '../lib/icons'
-import { Check, RefreshCw, Plus, Inbox, ArrowUpRight, ArrowDownLeft, CheckCircle2, Pencil, Trash2, XCircle, TrendingUp, AlertCircle } from 'lucide-react'
+import { Check, RefreshCw, Plus, Inbox, ArrowUpRight, ArrowDownLeft, CheckCircle2, Pencil, Trash2, XCircle, TrendingUp, AlertCircle, Clock } from 'lucide-react'
 import type { SaidaFixa, SaidaVariavel, Entrada } from '../types'
 
 // ─── Tipos Locais ─────────────────────────────────────────────────────────────
@@ -62,15 +62,27 @@ function FixaItem({ sf, isLast, onPress, yearMonth }: {
     >
       <div style={{ 
         width: 32, height: 32, borderRadius: 10, flexShrink: 0, 
-        background: paid ? 'rgba(255,255,255,0.05)' : `${sf.color || 'var(--color-accent-primary)'}15`,
+        background: paid ? 'rgba(16,185,129,0.1)' : `${sf.color || 'var(--color-accent-primary)'}15`,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         border: `1px solid ${paid ? 'transparent' : `${sf.color || 'var(--color-accent-primary)'}30`}`
       }}>
-        <div style={{ 
-          width: 8, height: 8, borderRadius: '50%', 
-          background: sf.color || 'var(--color-accent-primary)',
-          boxShadow: paid ? 'none' : `0 0 10px ${sf.color || 'var(--color-accent-primary)'}`
-        }} />
+        {paid ? (
+          <CheckCircle2 size={18} color="var(--color-success)" />
+        ) : (
+          <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <AlertCircle size={18} color={isOverdue ? 'var(--color-danger)' : sf.color || 'var(--color-accent-primary)'} />
+            {!paid && (
+              <motion.div
+                animate={{ scale: [1, 1.2, 1], opacity: [0.5, 0.2, 0.5] }}
+                transition={{ duration: 2, repeat: Infinity }}
+                style={{
+                  position: 'absolute', width: 24, height: 24, borderRadius: '50%',
+                  background: isOverdue ? 'var(--color-danger)' : sf.color || 'var(--color-accent-primary)',
+                }}
+              />
+            )}
+          </div>
+        )}
       </div>
 
       <div style={{ flex: 1, minWidth: 0 }}>
@@ -313,24 +325,45 @@ export default function Fluxo() {
 
   const currentMonthLabel = new Date().toLocaleString('pt-BR', { month: 'long', year: 'numeric' })
 
-  const renderUnifiedList = () => (
-    <>
-      {unifiedList.length === 0 ? (
+  const renderUnifiedList = () => {
+    if (unifiedList.length === 0) {
+      return (
         <EmptyState 
           icon={<Inbox size={24} />}
           label="Nenhum lançamento encontrado" 
           desc="Tente mudar os filtros ou adicione novos lançamentos." 
         />
-      ) : (
-        unifiedList.map((item, i) => {
-          const isLast = i === unifiedList.length - 1
-          if (item.type === 'fixa') return <FixaItem key={`f-${item.data.id}`} sf={item.data} isLast={isLast} onPress={setActionSf} yearMonth={yearMonth} />
-          if (item.type === 'variavel') return <VariavelItem key={`v-${item.data.id}`} sv={item.data} isLast={isLast} />
-          return <EntradaItem key={`e-${item.data.id}`} e={item.data} isLast={isLast} />
-        })
-      )}
-    </>
-  )
+      )
+    }
+
+    const pending = unifiedList.filter(item => item.type === 'fixa' && !isPaidThisMonth(item.data.paidDates))
+    const realized = unifiedList.filter(item => item.type !== 'fixa' || isPaidThisMonth(item.data.paidDates))
+
+    return (
+      <>
+        {pending.length > 0 && (
+          <>
+            <SectionLabel icon={<Clock size={12} />} count={pending.length}>Pendentes</SectionLabel>
+            {pending.map((item, i) => (
+              <FixaItem key={`f-${item.data.id}`} sf={item.data} isLast={i === pending.length - 1 && realized.length === 0} onPress={setActionSf} yearMonth={yearMonth} />
+            ))}
+          </>
+        )}
+        
+        {realized.length > 0 && (
+          <>
+            <SectionLabel icon={<TrendingUp size={12} />} count={realized.length}>Lançamentos do mês</SectionLabel>
+            {realized.map((item, i) => {
+              const isLast = i === realized.length - 1
+              if (item.type === 'fixa') return <FixaItem key={`f-${item.data.id}`} sf={item.data} isLast={isLast} onPress={setActionSf} yearMonth={yearMonth} />
+              if (item.type === 'variavel') return <VariavelItem key={`v-${item.data.id}`} sv={item.data} isLast={isLast} />
+              return <EntradaItem key={`e-${item.data.id}`} e={item.data} isLast={isLast} />
+            })}
+          </>
+        )}
+      </>
+    )
+  }
 
   return (
     <div style={{ minHeight: '100%', paddingBottom: isMobile ? 120 : 24 }}>
@@ -403,9 +436,9 @@ export default function Fluxo() {
             display: 'inline-flex',
             height: 44,
             padding: 4,
-            background: 'rgba(59,130,246,0.08)',
+            background: 'var(--color-bg-secondary)',
             borderRadius: 12,
-            border: '1px solid rgba(59,130,246,0.18)',
+            border: '1px solid var(--color-border)',
             alignItems: 'center',
             flexShrink: 0,
             alignSelf: 'flex-start',
@@ -426,10 +459,10 @@ export default function Fluxo() {
                     fontFamily: 'var(--font-sans)',
                     whiteSpace: 'nowrap',
                     transition: 'all 150ms ease',
-                    border: isActive ? '1px solid var(--color-border)' : '1px solid transparent',
-                    background: isActive ? 'var(--color-bg-primary)' : 'transparent',
-                    color: isActive ? 'var(--color-text-primary)' : 'var(--color-text-tertiary)',
-                    boxShadow: isActive ? '0 1px 4px rgba(0,0,0,0.3)' : 'none',
+                    border: isActive ? '1px solid rgba(59,130,246,0.4)' : '1px solid transparent',
+                    background: isActive ? 'var(--color-accent-primary)' : 'transparent',
+                    color: isActive ? 'white' : 'var(--color-text-tertiary)',
+                    boxShadow: isActive ? '0 2px 8px rgba(59,130,246,0.35)' : 'none',
                   }}
                   onMouseEnter={e => { if (!isActive) e.currentTarget.style.color = 'var(--color-text-secondary)'; if (!isActive) e.currentTarget.style.background = 'rgba(255,255,255,0.04)' }}
                   onMouseLeave={e => { if (!isActive) e.currentTarget.style.color = 'var(--color-text-tertiary)'; if (!isActive) e.currentTarget.style.background = 'transparent' }}
@@ -549,10 +582,43 @@ export default function Fluxo() {
   )
 }
 
+function SectionLabel({ children, count, icon }: { children: React.ReactNode; count?: number; icon?: React.ReactNode }) {
+  return (
+    <div
+      style={{ 
+        padding: '12px 16px', 
+        margin: 0, 
+        borderBottom: '1px solid var(--color-border)',
+        display: 'flex',
+        alignItems: 'center',
+        gap: 8,
+        background: 'rgba(255,255,255,0.02)'
+      }}
+    >
+      {icon && <span style={{ color: 'var(--color-text-tertiary)', display: 'flex' }}>{icon}</span>}
+      <p className="section-label" style={{ margin: 0, flex: 1 }}>
+        {children}
+      </p>
+      {count !== undefined && (
+        <span style={{
+          fontSize: 10,
+          fontWeight: 700,
+          background: 'rgba(255,255,255,0.05)',
+          color: 'var(--color-text-tertiary)',
+          padding: '2px 6px',
+          borderRadius: 6,
+        }}>
+          {count}
+        </span>
+      )}
+    </div>
+  )
+}
+
 function EmptyState({ icon, label, desc }: { icon?: React.ReactNode; label: string; desc?: string }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '60px 20px', gap: 12 }}>
-      {icon && <div style={{ width: 56, height: 56, borderRadius: 18, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(59,130,246,0.08)', color: 'var(--color-text-tertiary)' }}>{icon}</div>}
+      {icon && <div style={{ width: 56, height: 56, borderRadius: 18, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--color-bg-secondary)', color: 'var(--color-text-tertiary)' }}>{icon}</div>}
       <div style={{ textAlign: 'center' }}>
         <p style={{ fontSize: 16, fontWeight: 700, color: 'var(--color-text-primary)', margin: '0 0 4px' }}>{label}</p>
         {desc && <p style={{ fontSize: 13, color: 'var(--color-text-tertiary)', margin: 0, lineHeight: 1.5, maxWidth: 260 }}>{desc}</p>}
