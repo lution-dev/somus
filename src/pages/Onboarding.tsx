@@ -8,6 +8,8 @@ import SomusLogo from '../components/ui/SomusLogo'
 import type { User } from '../types'
 import { DIVISAO_INFO, DIVISAO_ORDER } from '../lib/divisoes'
 import { getDivisaoIcon } from '../lib/icons'
+import { collection, query, where, getDocs, doc, setDoc } from 'firebase/firestore'
+import { db } from '../lib/firebase'
 import {
   Users,
   Wallet,
@@ -21,6 +23,9 @@ import {
   Pencil,
   Trash2,
   X,
+  Heart,
+  Loader2,
+  Link2,
 } from 'lucide-react'
 
 const center: React.CSSProperties = { display: 'flex', flexDirection: 'column', alignItems: 'center' }
@@ -46,6 +51,135 @@ function Step1({ name, setName, onNext }: { name: string; setName: (v: string) =
       <Input label="Seu nome" placeholder="Ex: Lucas Pires" value={name} onChange={e => setName(e.target.value)} />
       <Button variant="primary" fullWidth disabled={!name.trim()} type="submit">Continuar</Button>
     </form>
+  )
+}
+
+// ─── Passo 1b: Tem código de quem te convidou? ───────────────────────────────
+
+type InviteResult = { inviterUid: string; inviterName: string; code: string } | null
+
+function StepInviteIn({
+  onNext,
+  setInviteResult,
+}: {
+  onNext: () => void
+  setInviteResult: (r: InviteResult) => void
+}) {
+  const [code, setCode] = useState('')
+  const [status, setStatus] = useState<'idle' | 'loading' | 'found' | 'not_found' | 'error'>('idle')
+  const [inviterName, setInviterName] = useState('')
+  const { uid } = useAuth()
+
+  const normalised = code.trim().toUpperCase()
+
+  async function handleSearch() {
+    if (!normalised) return
+    setStatus('loading')
+    try {
+      const q = query(
+        collection(db, 'users'),
+        where('currentUser.partnerCode', '==', normalised),
+      )
+      const snap = await getDocs(q)
+      if (snap.empty) { setStatus('not_found'); return }
+      const inviterDoc = snap.docs[0]
+      if (inviterDoc.id === uid) { setStatus('not_found'); return } // próprio código
+      const name = inviterDoc.data()?.currentUser?.name ?? 'Alguém'
+      setInviterName(name)
+      setInviteResult({ inviterUid: inviterDoc.id, inviterName: name, code: normalised })
+      setStatus('found')
+    } catch {
+      setStatus('error')
+    }
+  }
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+      <div style={center}>
+        <div style={iconCircle('rgba(139,92,246,0.12)')}>
+          <Link2 size={28} color="var(--color-accent-couple)" />
+        </div>
+        <h2 style={heading}>Você foi convidado?</h2>
+        <p style={sub}>Se alguém te enviou um código, insira aqui para conectar as finanças do casal.</p>
+      </div>
+
+      <div style={{ display: 'flex', gap: 8 }}>
+        <div style={{ flex: 1 }}>
+          <Input
+            label="Código de convite"
+            placeholder="Ex: AB3F"
+            value={code}
+            onChange={e => { setCode(e.target.value.toUpperCase()); setStatus('idle') }}
+            style={{ fontFamily: 'monospace', letterSpacing: '0.12em', textTransform: 'uppercase' }}
+          />
+        </div>
+        <button
+          type="button"
+          onClick={handleSearch}
+          disabled={!normalised || status === 'loading'}
+          style={{
+            marginTop: 22, padding: '0 16px', borderRadius: 'var(--radius-button)',
+            background: normalised ? 'var(--color-accent-couple)' : 'var(--color-bg-tertiary)',
+            color: normalised ? 'white' : 'var(--color-text-tertiary)',
+            border: 'none', cursor: normalised ? 'pointer' : 'default',
+            fontFamily: 'var(--font-sans)', fontSize: 13, fontWeight: 600,
+            display: 'flex', alignItems: 'center', gap: 6,
+            transition: 'all 200ms ease', flexShrink: 0,
+          }}
+        >
+          {status === 'loading' ? <Loader2 size={14} style={{ animation: 'onb-spin 0.8s linear infinite' }} /> : 'Buscar'}
+        </button>
+      </div>
+
+      {/* Feedback */}
+      {status === 'found' && (
+        <motion.div
+          initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
+          style={{
+            background: 'rgba(139,92,246,0.08)', border: '1px solid rgba(139,92,246,0.25)',
+            borderRadius: 12, padding: '14px 16px',
+            display: 'flex', alignItems: 'center', gap: 12,
+          }}
+        >
+          <Heart size={20} color="var(--color-accent-couple)" fill="var(--color-accent-couple)" />
+          <div>
+            <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-text-primary)', margin: 0 }}>
+              {inviterName} te convidou!
+            </p>
+            <p style={{ fontSize: 12, color: 'var(--color-text-tertiary)', margin: 0 }}>
+              Vocês serão vinculados ao finalizar o cadastro.
+            </p>
+          </div>
+        </motion.div>
+      )}
+
+      {status === 'not_found' && (
+        <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+          style={{ fontSize: 13, color: 'var(--color-danger)', textAlign: 'center', margin: 0 }}
+        >
+          Código não encontrado. Verifique com quem te enviou.
+        </motion.p>
+      )}
+
+      {status === 'error' && (
+        <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+          style={{ fontSize: 13, color: 'var(--color-danger)', textAlign: 'center', margin: 0 }}
+        >
+          Erro ao buscar código. Tente novamente.
+        </motion.p>
+      )}
+
+      <Button
+        variant={status === 'found' ? 'couple' : 'primary'}
+        fullWidth
+        type="button"
+        onClick={onNext}
+      >
+        {status === 'found' ? `Continuar com ${inviterName} 💜` : 'Continuar sem código'}
+      </Button>
+
+      <style>{`@keyframes onb-spin { to { transform: rotate(360deg); } }`}</style>
+    </div>
   )
 }
 
@@ -448,6 +582,9 @@ function Step6({ goals, setGoals, onFinish }: { goals: GoalItem[]; setGoals: Rea
 export default function Onboarding() {
   const [step, setStep] = useState(0)
   const [name, setName] = useState('')
+  // Invite code entered by this user (they were invited by someone)
+  const [inviteResult, setInviteResult] = useState<InviteResult>(null)
+
   // Lifted state — survives step navigation
   const [sources, setSources] = useState<SourceItem[]>([
     { id: '1', name: 'Salário CLT', amount: '3000' },
@@ -465,10 +602,11 @@ export default function Onboarding() {
 
   const [, navigate]       = useLocation()
   const completeOnboarding = useAppStore(s => s.completeOnboarding)
+  const setPartner         = useAppStore(s => s.setPartner)
   const dirRef = useRef<1 | -1>(1)
   const { uid, displayName, email, photoURL } = useAuth()
 
-  const totalSteps = 6
+  const totalSteps = 7
   function goNext() { dirRef.current = 1; setStep(s => s + 1) }
   function goBack() { dirRef.current = -1; setStep(s => s - 1) }
 
@@ -512,7 +650,23 @@ export default function Onboarding() {
       }))
     completeOnboarding(user, { incomeSources, saidasFixas, objetivos })
 
-    // Save to Firestore IMMEDIATELY — do not rely on the 3s debounce.
+    // If user entered an invite code, link both users bilaterally in Firestore
+    if (uid && inviteResult) {
+      const { inviterUid, inviterName, code } = inviteResult
+      // Update local Zustand partner immediately (UI responds right away)
+      setPartner({ id: inviterUid, name: inviterName, partnerCode: code })
+
+      // Write bilateral link to Firestore (fire-and-forget, debounce will retry)
+      setDoc(doc(db, 'users', uid), {
+        partner: { id: inviterUid, name: inviterName, partnerCode: code },
+      }, { merge: true }).catch(() => {})
+
+      setDoc(doc(db, 'users', inviterUid), {
+        partner: { id: uid, name: user.name, partnerCode: user.partnerCode },
+      }, { merge: true }).catch(() => {})
+    }
+
+    // Save to Firestore IMMEDIATELY — do not rely on the 1.5s debounce.
     // If the page reloads before debounce fires, the migration would find
     // Firestore empty and trigger a false reset (double onboarding bug).
     if (uid) {
@@ -531,11 +685,14 @@ export default function Onboarding() {
 
   const steps = [
     <Step1 key={0} name={name} setName={setName} onNext={goNext} />,
-    <Step2 key={1} onNext={goNext} onSkip={goNext} />,
-    <Step3 key={2} sources={sources} setSources={setSources} onNext={goNext} />,
-    <Step4 key={3} onNext={goNext} />,
-    <Step5 key={4} contas={contas} setContas={setContas} onNext={goNext} />,
-    <Step6 key={5} goals={goals} setGoals={setGoals} onFinish={handleFinish} />,
+    // NEW: ask if they have an invite code from their partner
+    <StepInviteIn key={1} onNext={goNext} setInviteResult={setInviteResult} />,
+    // Existing steps shifted +1
+    <Step2 key={2} onNext={goNext} onSkip={goNext} />,
+    <Step3 key={3} sources={sources} setSources={setSources} onNext={goNext} />,
+    <Step4 key={4} onNext={goNext} />,
+    <Step5 key={5} contas={contas} setContas={setContas} onNext={goNext} />,
+    <Step6 key={6} goals={goals} setGoals={setGoals} onFinish={handleFinish} />,
   ]
 
   return (
