@@ -594,6 +594,7 @@ export default function DivisaoDetalhe() {
                 </div>
               ))
             )}
+          </div>
         </div>
       )}
 
@@ -657,6 +658,7 @@ export default function DivisaoDetalhe() {
                 </React.Fragment>
               ))
             )}
+          </div>
         </div>
       )}
 

@@ -390,7 +390,8 @@ function InviteCodeCard({
       setFoundName(found.data()?.currentUser?.name ?? 'Parceiro(a)')
       setFoundUid(found.id)
       setLinkStatus('found')
-    } catch {
+    } catch (err) {
+      console.warn('[Somus] handleSearch error:', err)
       setLinkStatus('error')
     }
   }
@@ -410,7 +411,8 @@ function InviteCodeCard({
       // Update local Zustand immediately
       setPartner({ id: foundUid, name: foundName, partnerCode: normalised })
       setLinkStatus('done')
-    } catch {
+    } catch (err) {
+      console.warn('[Somus] handleLink error:', err)
       setLinkStatus('error')
     }
   }
