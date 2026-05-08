@@ -1,6 +1,6 @@
-﻿import { useState, useMemo, useEffect } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { useAppStore, selectCurrentDivisoes, selectCurrentIncomeSources, calculateDistribution } from '../../stores/useAppStore'
+import { useAppStore, selectCurrentDivisoes, selectCurrentIncomeSources, selectCurrentEntradas, calculateDistribution } from '../../stores/useAppStore'
 import { useShallow } from 'zustand/react/shallow'
 import { formatCurrency } from '../../lib/calculations'
 import { Dialog, DialogFooter, Button, Input } from '../ui'
@@ -23,13 +23,26 @@ export default function LancarEntradaModal({ open, onClose, prefill }: Props) {
   const [submitted, setSubmitted] = useState(false)
 
   const incomeSources = useAppStore(useShallow(selectCurrentIncomeSources))
+  const entradas      = useAppStore(useShallow(selectCurrentEntradas))
   const divisoes     = useAppStore(useShallow(selectCurrentDivisoes))
   const currentUser   = useAppStore(s => s.currentUser)
   const addEntrada    = useAppStore(s => s.addEntrada)
 
-  const firstSource = useAppStore(s =>
-    s.incomeSources.find(src => src.userId === (s.currentUser?.id ?? ''))
-  )
+  const suggestedSources = useMemo(() => {
+    const usedNames = Array.from(new Set(entradas.map(e => e.sourceName)))
+    if (usedNames.length === 0) return incomeSources
+    
+    return usedNames.map(name => {
+      const match = incomeSources.find(s => s.name.toLowerCase() === name.toLowerCase())
+      return {
+        id: match?.id ?? `used-${name}`,
+        name,
+        color: match?.color
+      }
+    })
+  }, [entradas, incomeSources])
+
+  const firstSource = suggestedSources[0] as { id: string; name: string } | undefined
 
   // Reset ao abrir
   useEffect(() => {
@@ -49,14 +62,14 @@ export default function LancarEntradaModal({ open, onClose, prefill }: Props) {
       setSubmitted(false)
       setSourceFocused(false)
     }
-  }, [open, firstSource?.id, firstSource?.name, prefill])
+  }, [open, firstSource?.id, firstSource?.name, prefill, incomeSources])
 
   // Filtered suggestions
   const filteredSources = useMemo(() => {
-    if (!sourceText.trim()) return incomeSources
+    if (!sourceText.trim()) return suggestedSources
     const q = sourceText.toLowerCase()
-    return incomeSources.filter(src => src.name.toLowerCase().includes(q))
-  }, [sourceText, incomeSources])
+    return suggestedSources.filter(src => src.name.toLowerCase().includes(q))
+  }, [sourceText, suggestedSources])
 
   function selectSource(src: { id: string; name: string }) {
     setSourceId(src.id)
@@ -69,7 +82,7 @@ export default function LancarEntradaModal({ open, onClose, prefill }: Props) {
     setSourceId('')  // clear selection when typing freely
     setSourceFocused(true)
     // Auto-match if exact
-    const exact = incomeSources.find(s => s.name.toLowerCase() === text.toLowerCase())
+    const exact = suggestedSources.find(s => s.name.toLowerCase() === text.toLowerCase())
     if (exact) setSourceId(exact.id)
   }
 
@@ -86,7 +99,7 @@ export default function LancarEntradaModal({ open, onClose, prefill }: Props) {
 
   function handleConfirm() {
     if (!isValid || !currentUser) return
-    const src = incomeSources.find(s => s.id === sourceId)
+    const src = suggestedSources.find(s => s.id === sourceId)
     addEntrada({
       userId:      currentUser.id,
       sourceId:    sourceId || `src-custom-${Date.now()}`,
