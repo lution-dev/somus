@@ -502,49 +502,62 @@ export default function Fluxo() {
           totalPagoNoMes={totalPagoNoMes} 
         />
 
-        {/* Filters */}
-        <div style={{ marginBottom: 16 }}>
-          <div style={{
-            display: 'inline-flex',
-            height: 44,
-            padding: 4,
-            background: 'var(--color-bg-secondary)',
-            borderRadius: 12,
-            border: '1px solid var(--color-border)',
-            alignItems: 'center',
-          }}>
-            {(['all', 'saidas', 'entradas'] as const).map(f => {
-              const isActive = filterType === f
-              return (
-                <button
-                  key={f}
-                  onClick={() => setFilterType(f)}
-                  style={{
-                    height: '100%',
-                    padding: '0 16px',
-                    fontSize: 13,
-                    fontWeight: 600,
-                    borderRadius: 8,
-                    cursor: 'pointer',
-                    fontFamily: 'var(--font-sans)',
-                    whiteSpace: 'nowrap',
-                    transition: 'all 150ms ease',
-                    border: isActive ? '1px solid rgba(59,130,246,0.4)' : '1px solid transparent',
-                    background: isActive ? 'var(--color-accent-primary)' : 'transparent',
-                    color: isActive ? 'white' : 'var(--color-text-tertiary)',
-                    boxShadow: isActive ? '0 2px 8px rgba(59,130,246,0.35)' : 'none',
-                  }}
-                >
-                  {f === 'all' ? 'Tudo' : f === 'saidas' ? 'Saídas' : 'Entradas'}
-                </button>
-              )
-            })}
-          </div>
+        {/* Search */}
+        <div style={{ marginBottom: 12 }}>
+          <SearchBar value={fluxoSearch} onChange={setFluxoSearch} placeholder="Procurar no fluxo..." />
         </div>
 
-        {/* Search */}
-        <div style={{ marginBottom: 16 }}>
-          <SearchBar value={fluxoSearch} onChange={setFluxoSearch} placeholder="Procurar no fluxo..." />
+        {/* List header with contextual title + filter chips */}
+        <div style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          marginBottom: 8, paddingLeft: 4,
+        }}>
+          <p style={{
+            fontSize: 13, fontWeight: 700,
+            color: 'var(--color-text-secondary)',
+            margin: 0,
+            transition: 'all 200ms ease',
+          }}>
+            {filterType === 'saidas' ? 'Saídas' : filterType === 'entradas' ? 'Entradas' : 'Todos os lançamentos'}
+          </p>
+          <div style={{ display: 'flex', gap: 6 }}>
+            {/* Chip Saídas */}
+            <button
+              onClick={() => setFilterType(f => f === 'saidas' ? 'all' : 'saidas')}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 4,
+                padding: '4px 10px', borderRadius: 8,
+                fontSize: 11, fontWeight: 700,
+                fontFamily: 'var(--font-sans)',
+                cursor: 'pointer',
+                transition: 'all 150ms ease',
+                border: filterType === 'saidas' ? '1px solid rgba(239,68,68,0.4)' : '1px solid var(--color-border)',
+                background: filterType === 'saidas' ? 'rgba(239,68,68,0.12)' : 'var(--color-bg-secondary)',
+                color: filterType === 'saidas' ? 'var(--color-danger)' : 'var(--color-text-tertiary)',
+              }}
+            >
+              <ArrowDownLeft size={11} strokeWidth={2.5} />
+              Saídas
+            </button>
+            {/* Chip Entradas */}
+            <button
+              onClick={() => setFilterType(f => f === 'entradas' ? 'all' : 'entradas')}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 4,
+                padding: '4px 10px', borderRadius: 8,
+                fontSize: 11, fontWeight: 700,
+                fontFamily: 'var(--font-sans)',
+                cursor: 'pointer',
+                transition: 'all 150ms ease',
+                border: filterType === 'entradas' ? '1px solid rgba(16,185,129,0.4)' : '1px solid var(--color-border)',
+                background: filterType === 'entradas' ? 'rgba(16,185,129,0.1)' : 'var(--color-bg-secondary)',
+                color: filterType === 'entradas' ? 'var(--color-success)' : 'var(--color-text-tertiary)',
+              }}
+            >
+              <ArrowUpRight size={11} strokeWidth={2.5} />
+              Entradas
+            </button>
+          </div>
         </div>
 
         {/* List */}
