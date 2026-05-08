@@ -16,6 +16,7 @@ import { useIsMobile } from '../hooks/useIsMobile'
 import { getDivisaoIcon } from '../lib/icons'
 import { Check, RefreshCw, Plus, Inbox, ArrowUpRight, ArrowDownLeft, CheckCircle2, Pencil, Trash2, XCircle, TrendingUp, AlertCircle, Clock, ChevronDown } from 'lucide-react'
 import type { SaidaFixa, SaidaVariavel, Entrada } from '../types'
+import { FluxoChart } from '../components/features/FluxoChart'
 
 // ─── Tipos Locais ─────────────────────────────────────────────────────────────
 
@@ -495,6 +496,7 @@ export default function Fluxo() {
       )}
 
       <div style={{ padding: isMobile ? '12px 16px 0' : 0 }}>
+        <FluxoChart />
 
         {/* Summary Card */}
         <div style={{ 

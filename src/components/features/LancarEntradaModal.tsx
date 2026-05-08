@@ -54,8 +54,8 @@ export default function LancarEntradaModal({ open, onClose, prefill }: Props) {
         setSourceId(match?.id ?? '')
       } else {
         amountInput.reset()
-        setSourceId(firstSource?.id ?? '')
-        setSourceText(firstSource?.name ?? '')
+        setSourceId('')
+        setSourceText('')
       }
       setDate(new Date().toISOString().slice(0, 10))
       setNote('')
