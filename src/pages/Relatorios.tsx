@@ -99,6 +99,7 @@ export default function Relatorios() {
   const [month, setMonth]         = useState(TODAY)
   const [reportCtx, setReportCtx] = useState<'me' | 'partner' | 'couple'>('couple')
   const headerBg = reportCtx === 'couple' ? '#150D27' : reportCtx === 'partner' ? '#2D0A1A' : '#001442'
+  const accentColor = reportCtx === 'couple' ? '#8B5CF6' : reportCtx === 'partner' ? '#EC4899' : '#3B82F6'
 
   const myName      = currentUser?.name?.split(' ')[0] ?? 'Meu'
   const partnerName = partner?.name?.split(' ')[0] ?? 'Parceiro(a)'
@@ -156,10 +157,11 @@ export default function Relatorios() {
               <MonthNav month={month} today={TODAY} onChange={setMonth} showLabel />
             }
           />
-          {/* Toggle abaixo da navbar */}
+          {/* Toggle abaixo da navbar — gradient hero */}
           <div style={{
+            background: `linear-gradient(to bottom, ${headerBg}CC 0%, transparent 100%)`,
+            padding: '10px 16px 20px',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            padding: '10px 16px 12px',
           }}>
             <SegmentedCtrl
               options={ctxOptions}
@@ -231,7 +233,7 @@ export default function Relatorios() {
               value={`${Math.round(usagePct)}%`}
               delta={null}
               positiveIsGood={false}
-              accentColor={usagePct >= 100 ? 'var(--color-danger)' : usagePct >= 80 ? 'var(--color-warning)' : 'var(--color-accent-primary)'}
+              accentColor={usagePct >= 100 ? 'var(--color-danger)' : usagePct >= 80 ? 'var(--color-warning)' : accentColor}
               Icon={usagePct >= 80 ? AlertTriangle : CheckCircle2}
               progressPct={usagePct}
             />
@@ -239,7 +241,7 @@ export default function Relatorios() {
 
           {/* -- Score de Aderencia ao Metodo */}
           {hasData && (
-            <AdherenceScoreCard score={adherenceScore} />
+            <AdherenceScoreCard score={adherenceScore} accentColor={accentColor} />
           )}
 
           {/* -- Historico Mensal */}
@@ -248,7 +250,7 @@ export default function Relatorios() {
               <p className='section-label' style={{ margin: 0 }}>Historico Mensal</p>
               <span style={{ fontSize: 11, color: 'var(--color-text-tertiary)' }}>Ultimos 6 meses</span>
             </div>
-            <MonthlyHistoryChart data={monthlyHistory} currentMonth={month} />
+            <MonthlyHistoryChart data={monthlyHistory} currentMonth={month} accentColor={accentColor} />
           </div>
 
 
@@ -471,7 +473,7 @@ function KpiCard({ label, value, delta, positiveIsGood, accentColor, Icon, progr
 
 // -- AdherenceScoreCard -------------------------------------------------------
 
-function AdherenceScoreCard({ score }: { score: number }) {
+function AdherenceScoreCard({ score, accentColor }: { score: number; accentColor: string }) {
   const [showInfo, setShowInfo] = useState(false)
   const color = score >= 80 ? 'var(--color-success)' : score >= 50 ? 'var(--color-warning)' : 'var(--color-danger)'
   const label = score >= 80 ? 'Excelente' : score >= 60 ? 'Bom' : score >= 40 ? 'Regular' : 'Precisa melhorar'
@@ -544,12 +546,12 @@ function AdherenceScoreCard({ score }: { score: number }) {
         <div style={{
           marginTop: 14,
           padding: '12px 14px',
-          background: 'rgba(59,130,246,0.06)',
-          border: '1px solid rgba(59,130,246,0.15)',
+          background: `rgba(0,0,0,0)`,
+          border: `1px solid rgba(255,255,255,0.08)`,
           borderRadius: 10,
           display: 'flex', flexDirection: 'column', gap: 8,
         }}>
-          <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--color-accent-primary)', margin: 0 }}>
+          <p style={{ fontSize: 12, fontWeight: 600, color: accentColor, margin: 0 }}>
             O que este score mede?
           </p>
           <p style={{ fontSize: 12, color: 'var(--color-text-secondary)', margin: 0, lineHeight: 1.6 }}>
@@ -569,7 +571,7 @@ function AdherenceScoreCard({ score }: { score: number }) {
 
 // -- MonthlyHistoryChart ------------------------------------------------------
 
-function MonthlyHistoryChart({ data, currentMonth }: { data: Array<{ ym: string, label: string, totalIn: number, totalOut: number, balance: number }>, currentMonth: string }) {
+function MonthlyHistoryChart({ data, currentMonth, accentColor }: { data: Array<{ ym: string, label: string, totalIn: number, totalOut: number, balance: number }>, currentMonth: string, accentColor: string }) {
   const maxVal = Math.max(...data.map(d => Math.max(d.totalIn, d.totalOut)), 1)
   const [active, setActive] = useState<string | null>(null)
   const activeItem = active ? data.find(d => d.ym === active) ?? null : null
@@ -619,7 +621,7 @@ function MonthlyHistoryChart({ data, currentMonth }: { data: Array<{ ym: string,
                 <div style={{ width: "clamp(6px, 35%, 18px)", height: inH, background: "var(--color-success)", borderRadius: "3px 3px 0 0", opacity: !active || isActive ? 1 : 0.2, transition: "opacity 150ms ease", boxShadow: isCurrent ? "0 0 8px var(--color-success)" : "none" }} />
                 {outH > 0 && <div style={{ width: "clamp(6px, 35%, 18px)", height: outH, background: "var(--color-danger)", borderRadius: "3px 3px 0 0", opacity: !active || isActive ? 1 : 0.2, transition: "opacity 150ms ease" }} />}
               </div>
-              <span style={{ fontSize: 10, lineHeight: '1', color: isCurrent ? "var(--color-accent-primary)" : isActive ? "var(--color-text-primary)" : "var(--color-text-tertiary)", fontWeight: isCurrent || isActive ? 700 : 400, transition: "color 150ms ease", whiteSpace: "nowrap" }}>
+              <span style={{ fontSize: 10, lineHeight: '1', color: isCurrent ? accentColor : isActive ? "var(--color-text-primary)" : "var(--color-text-tertiary)", fontWeight: isCurrent || isActive ? 700 : 400, transition: "color 150ms ease", whiteSpace: "nowrap" }}>
                 {d.label}
               </span>
             </div>
