@@ -43,13 +43,14 @@ function Sidebar() {
   return (
     <aside style={{
       width: 220, minWidth: 220,
-      background: 'rgba(10, 10, 10, 0.55)',
-      backdropFilter: 'blur(20px) saturate(180%)',
-      WebkitBackdropFilter: 'blur(20px) saturate(180%)',
-      borderRight: '1px solid rgba(255,255,255,0.06)',
+      background: 'rgba(10, 10, 10, 0.6)',
+      backdropFilter: 'blur(28px) saturate(180%)',
+      WebkitBackdropFilter: 'blur(28px) saturate(180%)',
+      borderRight: '1px solid rgba(255, 255, 255, 0.08)',
       display: 'flex', flexDirection: 'column',
       height: '100dvh', position: 'sticky', top: 0, flexShrink: 0,
       zIndex: 10,
+      boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.05)',
     }}>
       {/* Logo */}
       <div style={{ padding: '28px 20px 20px', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>

@@ -39,8 +39,12 @@ export function PageHeader({ title, back, backTo, rightAction, bg, height }: Pag
           left: 0,
           right: 0,
           zIndex: 50,
-          background: bg || 'var(--color-bg-primary)',
+          background: bg ? `${bg}B3` : 'rgba(10, 10, 10, 0.75)',
+          backdropFilter: 'blur(24px) saturate(180%)',
+          WebkitBackdropFilter: 'blur(24px) saturate(180%)',
           paddingTop: 'env(safe-area-inset-top, 0px)',
+          borderBottom: bg ? 'none' : '1px solid rgba(255, 255, 255, 0.08)',
+          boxShadow: 'inset 0 -1px 0 rgba(255, 255, 255, 0.05)',
         }}
       >
         <div
@@ -61,8 +65,11 @@ export function PageHeader({ title, back, backTo, rightAction, bg, height }: Pag
               style={{
                 width: 36, height: 36, borderRadius: 12,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                background: 'rgba(255,255,255,0.06)',
-                border: 'none', cursor: 'pointer', color: 'var(--color-text-primary)',
+                background: 'rgba(255, 255, 255, 0.08)',
+                backdropFilter: 'blur(10px)',
+                WebkitBackdropFilter: 'blur(10px)',
+                border: '1px solid rgba(255, 255, 255, 0.12)',
+                cursor: 'pointer', color: 'var(--color-text-primary)',
                 flexShrink: 0,
               }}
             >
@@ -91,7 +98,7 @@ export function PageHeader({ title, back, backTo, rightAction, bg, height }: Pag
         </div>
 
         {/* Bottom border */}
-        {!bg && <div style={{ height: 1, background: 'var(--color-border)', opacity: 0.5 }} />}
+        {/* Bottom border - managed by header style now */}
       </header>
     </>
   )

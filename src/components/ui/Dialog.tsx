@@ -85,11 +85,13 @@ export function Dialog({
               maxHeight: isMobile ? '90dvh' : '80dvh',
               display: 'flex',
               flexDirection: 'column',
-              background: 'var(--color-bg-secondary)',
-              border: '1px solid var(--color-border)',
-              borderRadius: isMobile ? '20px 20px 0 0' : 16,
+              background: 'rgba(20, 20, 20, 0.7)',
+              backdropFilter: 'blur(28px) saturate(200%)',
+              WebkitBackdropFilter: 'blur(28px) saturate(200%)',
+              border: '1px solid rgba(255, 255, 255, 0.12)',
+              borderRadius: isMobile ? '28px 28px 0 0' : 24,
               overflow: 'hidden',
-              boxShadow: isMobile ? 'none' : '0 16px 48px rgba(0,0,0,0.4)',
+              boxShadow: isMobile ? '0 -8px 32px rgba(0,0,0,0.35)' : 'inset 0 1px 0 rgba(255,255,255,0.1), 0 24px 64px rgba(0,0,0,0.5)',
             }}
           >
             {/* Drag handle (mobile only) */}
@@ -105,7 +107,7 @@ export function Dialog({
                 display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between',
                 padding: isMobile ? '16px 20px 12px' : '20px 24px 12px',
                 flexShrink: 0,
-                borderBottom: title ? '1px solid var(--color-border)' : 'none',
+                borderBottom: title ? '1px solid rgba(255, 255, 255, 0.08)' : 'none',
               }}>
                 <div>
                   {title && (

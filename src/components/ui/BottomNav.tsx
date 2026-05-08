@@ -30,10 +30,10 @@ export function BottomNav({ items }: BottomNavProps) {
         borderRadius: 22,
         border: '1px solid rgba(255,255,255,0.08)',
         /* Glassmorphism */
-        background: 'rgba(23,23,23,0.88)',
-        backdropFilter: 'blur(20px)',
-        WebkitBackdropFilter: 'blur(20px)',
-        boxShadow: '0 4px 24px rgba(0,0,0,0.4)',
+        background: 'rgba(15, 15, 15, 0.65)',
+        backdropFilter: 'blur(28px) saturate(180%)',
+        WebkitBackdropFilter: 'blur(28px) saturate(180%)',
+        boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 4px 24px rgba(0, 0, 0, 0.4)',
       }}
     >
       {/* Nav buttons */}
