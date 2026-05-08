@@ -508,10 +508,10 @@ export default function Fluxo() {
           marginBottom: 10, paddingLeft: 2,
         }}>
           <p style={{
-            fontSize: 11, fontWeight: 700,
+            fontSize: 13, fontWeight: 700,
             color: 'var(--color-text-tertiary)',
             textTransform: 'uppercase',
-            letterSpacing: '0.08em',
+            letterSpacing: '0.06em',
             margin: 0,
             transition: 'color 200ms ease',
           }}>
