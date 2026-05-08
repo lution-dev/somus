@@ -224,7 +224,6 @@ export default function Casal() {
           <div style={{
             background: `linear-gradient(to bottom, ${HERO_BG} 0%, transparent 100%)`,
             padding: '12px 16px 20px',
-            marginBottom: 20,
           }}>
             <PatrimonioCard isHero />
           </div>
