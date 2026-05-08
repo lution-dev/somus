@@ -195,7 +195,7 @@ export default function Relatorios() {
 
       {/* ── Empty state ────────────────────────────────────────────────────── */}
       {!hasData ? (
-        <div style={{ ...CARD, display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', padding: '48px 20px', margin: isMobile ? '0 16px' : 0 }}>
+        <div style={{ ...CARD, display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', padding: '48px 20px', margin: isMobile ? '0 16px' : 0, position: 'relative', zIndex: 1 }}>
           <div style={{ width: 52, height: 52, borderRadius: 16, background: 'rgba(59,130,246,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 14 }}>
             <Calendar size={24} color="var(--color-accent-primary)" strokeWidth={1.5} />
           </div>
@@ -206,7 +206,7 @@ export default function Relatorios() {
         </div>
 
       ) : (
-        <div style={{ padding: isMobile ? '0 16px' : 0, maxWidth: 1200, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: isMobile ? 12 : 20 }}>
+        <div style={{ padding: isMobile ? '0 16px' : 0, maxWidth: 1200, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: isMobile ? 12 : 20, position: 'relative', zIndex: 1 }}>
 
           {/* ── KPI Strip ───────────────────────────────────────────────────── */}
           <div style={{
