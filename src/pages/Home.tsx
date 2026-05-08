@@ -14,6 +14,7 @@ import { getDivisaoIcon } from '../lib/icons'
 import { ProgressBar, PageHeader, Dialog, groupByMonth, MonthHeader } from '../components/ui'
 import { useIsMobile } from '../hooks/useIsMobile'
 import { useAuth } from '../hooks/useAuth'
+import { useBalanceHidden } from '../hooks/useBalanceHidden'
 import UserMenu from '../components/ui/UserMenu'
 import LancarEntradaModal from '../components/features/LancarEntradaModal'
 import ConfirmPaymentModal from '../components/features/ConfirmPaymentModal'
@@ -619,7 +620,6 @@ export default function Home() {
   const [historicoOpen, setHistoricoOpen] = useState(false)
   const [prefill, setPrefill] = useState<{ sourceName: string; amount: number } | undefined>()
   const [confirmPayId, setConfirmPayId] = useState<string | null>(null)
-  const [balanceHidden, setBalanceHidden] = useState(() => localStorage.getItem('somus:balanceHidden') === 'true')
   const isMobile = useIsMobile()
   const { displayName } = useAuth()
 
@@ -657,13 +657,7 @@ export default function Home() {
     setPrefill(undefined)
   }
 
-  function toggleBalanceHidden() {
-    setBalanceHidden(prev => {
-      const next = !prev
-      localStorage.setItem('somus:balanceHidden', String(next))
-      return next
-    })
-  }
+  const { hidden: balanceHidden, toggle: toggleBalanceHidden } = useBalanceHidden()
 
   return (
     <div style={{ minHeight: '100%' }}>

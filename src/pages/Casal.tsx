@@ -7,7 +7,8 @@ import { PageHeader, ConfirmDialog } from '../components/ui'
 import ItemActionSheet from '../components/ui/ItemActionSheet'
 import { useIsMobile } from '../hooks/useIsMobile'
 import { useAuth } from '../hooks/useAuth'
-import { Share2, Copy, CheckCircle2, Send, UserPlus, Plus, Pencil, Trash2, Target } from 'lucide-react'
+import { Share2, Copy, CheckCircle2, Send, UserPlus, Plus, Pencil, Trash2, Target, Eye, EyeOff } from 'lucide-react'
+import { useBalanceHidden } from '../hooks/useBalanceHidden'
 import type { Objetivo } from '../types'
 import AddObjetivoModal from '../components/features/AddObjetivoModal'
 import ObjetivoCard from '../components/features/ObjetivoCard'
@@ -57,6 +58,8 @@ export default function Casal() {
   const HERO_BG = '#001442'
   const rawCode = currentUser?.partnerCode ?? '0001'
   const partnerCode = rawCode.startsWith('SOMUS-') ? rawCode.replace('SOMUS-', '').slice(-4).toUpperCase() : rawCode
+  const { hidden: balanceHidden, toggle: toggleBalanceHidden } = useBalanceHidden()
+  const mask = '•••••'
 
   // ── PatrimonioCard — all-in-one, profiles inside ──────────────────────
   const PatrimonioCard = ({ isHero = false }: { isHero?: boolean }) => {
@@ -71,18 +74,30 @@ export default function Casal() {
       }}>
         {/* ── Top section: label + total ── */}
         <div style={{ padding: '18px 20px 0' }}>
-          <p className="section-label" style={{
-            marginBottom: 4,
-            color: isHero ? 'rgba(255,255,255,0.45)' : 'var(--color-text-tertiary)'
-          }}>
-            Patrimônio do casal
-          </p>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
+            <p className="section-label" style={{
+              margin: 0,
+              color: isHero ? 'rgba(255,255,255,0.45)' : 'var(--color-text-tertiary)'
+            }}>
+              Patrimônio do casal
+            </p>
+            <button
+              onClick={toggleBalanceHidden}
+              style={{
+                background: 'none', border: 'none', cursor: 'pointer', padding: 4,
+                color: isHero ? 'rgba(255,255,255,0.4)' : 'var(--color-text-tertiary)',
+                display: 'flex', alignItems: 'center', transition: 'color 150ms ease',
+              }}
+            >
+              {balanceHidden ? <Eye size={16} /> : <EyeOff size={16} />}
+            </button>
+          </div>
           <p style={{
             fontSize: 32, fontWeight: 700,
             color: 'var(--color-text-primary)',
             margin: '0 0 14px', lineHeight: 1,
           }}>
-            {formatCurrency(totalCouple)}
+            {balanceHidden ? <span style={{ letterSpacing: 4 }}>{mask}</span> : formatCurrency(totalCouple)}
           </p>
 
           {/* Split bar */}
@@ -119,7 +134,7 @@ export default function Casal() {
               </p>
             </div>
             <p style={{ fontSize: 18, fontWeight: 700, color: 'var(--color-lucas)', margin: '0 0 3px' }}>
-              {formatCurrency(currentUserBalance)}
+              {balanceHidden ? <span style={{ letterSpacing: 2 }}>{mask}</span> : formatCurrency(currentUserBalance)}
             </p>
             <p style={{ fontSize: 11, color: 'var(--color-text-tertiary)', margin: 0 }}>
               {currentUserEntradas.length > 0
@@ -140,7 +155,7 @@ export default function Casal() {
                 </p>
               </div>
               <p style={{ fontSize: 18, fontWeight: 700, color: 'var(--color-mirian)', margin: '0 0 3px' }}>
-                {formatCurrency(partnerBalance)}
+                {balanceHidden ? <span style={{ letterSpacing: 2 }}>{mask}</span> : formatCurrency(partnerBalance)}
               </p>
               <p style={{ fontSize: 11, color: 'var(--color-text-tertiary)', margin: 0 }}>Parceiro(a)</p>
             </div>
