@@ -14,7 +14,7 @@ import ItemActionSheet from '../components/ui/ItemActionSheet'
 import { PageHeader, SearchBar, Dialog, Button, ConfirmDialog } from '../components/ui'
 import { useIsMobile } from '../hooks/useIsMobile'
 import { getDivisaoIcon } from '../lib/icons'
-import { RefreshCw, Plus, Inbox, ArrowUpRight, ArrowDownLeft, CheckCircle2, Pencil, Trash2, XCircle, TrendingUp, AlertCircle, Clock, ChevronDown } from 'lucide-react'
+import { Check, RefreshCw, Plus, Inbox, ArrowUpRight, ArrowDownLeft, CheckCircle2, Pencil, Trash2, XCircle, TrendingUp, AlertCircle, Clock, ChevronDown } from 'lucide-react'
 import type { SaidaFixa, SaidaVariavel, Entrada } from '../types'
 
 // ─── Tipos Locais ─────────────────────────────────────────────────────────────
@@ -38,6 +38,7 @@ function FixaItem({ sf, isLast, onPress, yearMonth }: {
   const isUrgent   = !paid && !isPastMonth && daysUntil <= 3 && daysUntil >= 0
   const isOverdue  = !paid && (isPastMonth || daysUntil < 0)
   const [dateDialogOpen, setDateDialogOpen] = useState(false)
+  const isMobile = useIsMobile()
   
   const effectiveAmount = getEffectiveAmount(sf, yearMonth)
   const hasOverride = sf.monthlyAmountOverrides?.[yearMonth] !== undefined
@@ -115,28 +116,51 @@ function FixaItem({ sf, isLast, onPress, yearMonth }: {
       </div>
 
       {!sf.autoDebit && (
-        <button
-          onClick={(e) => {
-            e.stopPropagation()
-            if (paid) {
-              useAppStore.getState().markSaidaFixaUnpaid(sf.id, yearMonth)
-            } else {
-              setDateDialogOpen(true)
-            }
-          }}
-          style={{
-            padding: '6px 12px',
-            borderRadius: 8,
-            fontSize: 12,
-            fontWeight: 600,
-            background: paid ? 'rgba(16,185,129,0.1)' : 'var(--color-bg-primary)',
-            color: paid ? 'var(--color-success)' : 'var(--color-text-secondary)',
-            border: paid ? '1px solid rgba(16,185,129,0.2)' : '1px solid var(--color-border)',
-            cursor: 'pointer',
-          }}
-        >
-          {paid ? 'Pago' : 'Marcar pago'}
-        </button>
+        isMobile ? (
+          <button
+            onClick={(e) => {
+              e.stopPropagation()
+              if (paid) {
+                useAppStore.getState().markSaidaFixaUnpaid(sf.id, yearMonth)
+              } else {
+                setDateDialogOpen(true)
+              }
+            }}
+            style={{
+              width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center',
+              cursor: 'pointer', flexShrink: 0,
+              background: paid ? 'var(--color-success)' : 'transparent',
+              border: `2px solid ${paid ? 'var(--color-success)' : 'var(--color-border)'}`,
+              borderRadius: 10, padding: 0,
+              transition: 'all 200ms cubic-bezier(0.4, 0, 0.2, 1)',
+            }}
+          >
+            <Check size={16} strokeWidth={3} color={paid ? 'white' : 'var(--color-text-tertiary)'} />
+          </button>
+        ) : (
+          <button
+            onClick={(e) => {
+              e.stopPropagation()
+              if (paid) {
+                useAppStore.getState().markSaidaFixaUnpaid(sf.id, yearMonth)
+              } else {
+                setDateDialogOpen(true)
+              }
+            }}
+            style={{
+              padding: '6px 12px',
+              borderRadius: 8,
+              fontSize: 12,
+              fontWeight: 600,
+              background: paid ? 'rgba(16,185,129,0.1)' : 'var(--color-bg-primary)',
+              color: paid ? 'var(--color-success)' : 'var(--color-text-secondary)',
+              border: paid ? '1px solid rgba(16,185,129,0.2)' : '1px solid var(--color-border)',
+              cursor: 'pointer',
+            }}
+          >
+            {paid ? 'Pago' : 'Marcar pago'}
+          </button>
+        )
       )}
 
       <ConfirmPaymentModal
