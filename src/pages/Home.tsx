@@ -182,8 +182,12 @@ function ProximosDias({ onEntradaClick, onDespesaClick, isDesktop }: {
       }))
       .filter(e => e.days > 0 && e.days <= 10)
 
-    return [...despesas, ...entradas].sort((a, b) => a.days - b.days).slice(0, 10) // Aumentado para 10 itens no total
+    return [...despesas, ...entradas].sort((a, b) => a.days - b.days).slice(0, 10)
   }, [saidasFixas, incomeSources])
+
+  // Status counts for mobile header badges
+  const overdueCount  = upcoming.filter(i => i.type === 'despesa' && i.days < 0).length
+  const pendingCount  = upcoming.filter(i => i.type === 'despesa' && i.days >= 0).length
 
   const [collapsed, setCollapsed] = useState(() => localStorage.getItem('somus:proxDias') === 'collapsed')
 
@@ -242,7 +246,7 @@ function ProximosDias({ onEntradaClick, onDespesaClick, isDesktop }: {
   )
 
   // ══════════════════════════════════════════════
-  //  DESKTOP: card-style that matches BalanceCard
+  //  DESKTOP: card-style, scrollable list (max 4 visible)
   // ══════════════════════════════════════════════
   if (isDesktop) {
     return (
@@ -251,11 +255,11 @@ function ProximosDias({ onEntradaClick, onDespesaClick, isDesktop }: {
         border: '1px solid var(--color-border)',
         borderRadius: 'var(--radius-card)',
         padding: 20,
-        height: '100%',
         display: 'flex',
         flexDirection: 'column',
+        minHeight: 0,
       }}>
-        {/* Header — matches BalanceCard's section-label style */}
+        {/* Header */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 16 }}>
           <Calendar size={13} color="var(--color-text-tertiary)" />
           <p className="section-label" style={{ marginBottom: 0, flex: 1 }}>Próximos dias</p>
@@ -268,10 +272,9 @@ function ProximosDias({ onEntradaClick, onDespesaClick, isDesktop }: {
         </div>
 
         {upcoming.length === 0 ? (
-          /* Empty state — centered, fills remaining space */
           <div style={{
             flex: 1, display: 'flex', flexDirection: 'column',
-            alignItems: 'center', justifyContent: 'center', gap: 8,
+            alignItems: 'center', justifyContent: 'center', gap: 8, padding: '20px 0',
           }}>
             <Calendar size={28} color="var(--color-text-tertiary)" strokeWidth={1.25} />
             <p style={{ fontSize: 13, color: 'var(--color-text-tertiary)', margin: 0, textAlign: 'center' }}>
@@ -279,10 +282,12 @@ function ProximosDias({ onEntradaClick, onDespesaClick, isDesktop }: {
             </p>
           </div>
         ) : (
-          /* Items list — fills remaining space */
           <div style={{
-            flex: 1, borderRadius: 12, overflow: 'hidden',
+            borderRadius: 12, overflow: 'hidden',
             border: '1px solid var(--color-border)',
+            /* Limit to ~4 items (~57px each) then scroll */
+            maxHeight: 232,
+            overflowY: upcoming.length > 4 ? 'auto' : 'hidden',
           }}>
             {upcoming.map(renderItem)}
           </div>
@@ -292,32 +297,66 @@ function ProximosDias({ onEntradaClick, onDespesaClick, isDesktop }: {
   }
 
   // ══════════════════════════════════════════════
-  //  MOBILE: collapsible section (unchanged)
+  //  MOBILE: collapsible section with status badges
   // ══════════════════════════════════════════════
+
+  // Mobile header: shared button element
+  const mobileHeader = (
+    <button
+      onClick={toggle}
+      style={{
+        display: 'flex', alignItems: 'center', gap: 6, width: '100%',
+        background: 'none', border: 'none', cursor: 'pointer', padding: 0,
+        fontFamily: 'var(--font-sans)',
+      }}
+    >
+      <Calendar size={13} color="var(--color-text-tertiary)" />
+      <span className="section-label" style={{ marginBottom: 0, flex: 1, textAlign: 'left' }}>
+        Próximos dias
+      </span>
+      {/* Status badges — shown when collapsed and there are items */}
+      {collapsed && upcoming.length > 0 && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginRight: 4 }}>
+          {overdueCount > 0 && (
+            <span style={{
+              fontSize: 10, fontWeight: 700,
+              background: 'rgba(239,68,68,0.15)', color: 'var(--color-danger)',
+              padding: '2px 7px', borderRadius: 8,
+            }}>
+              {overdueCount} atrasad{overdueCount === 1 ? 'o' : 'os'}
+            </span>
+          )}
+          {pendingCount > 0 && (
+            <span style={{
+              fontSize: 10, fontWeight: 700,
+              background: 'rgba(245,158,11,0.15)', color: 'var(--color-warning)',
+              padding: '2px 7px', borderRadius: 8,
+            }}>
+              {pendingCount} pendente{pendingCount === 1 ? '' : 's'}
+            </span>
+          )}
+        </div>
+      )}
+      {/* Plain count when open */}
+      {!collapsed && upcoming.length > 0 && (
+        <span style={{ fontSize: 11, color: 'var(--color-text-tertiary)', marginRight: 2 }}>
+          {upcoming.length}
+        </span>
+      )}
+      <ChevronDown
+        size={14}
+        color="var(--color-text-tertiary)"
+        style={{
+          transition: 'transform 200ms ease',
+          transform: collapsed ? 'rotate(-90deg)' : 'rotate(0deg)',
+        }}
+      />
+    </button>
+  )
 
   if (upcoming.length === 0) return (
     <div style={{ marginTop: 20 }}>
-      <button
-        onClick={toggle}
-        style={{
-          display: 'flex', alignItems: 'center', gap: 6, width: '100%',
-          background: 'none', border: 'none', cursor: 'pointer', padding: 0,
-          fontFamily: 'var(--font-sans)',
-        }}
-      >
-        <Calendar size={13} color="var(--color-text-tertiary)" />
-        <span className="section-label" style={{ marginBottom: 0, flex: 1, textAlign: 'left' }}>
-          Próximos dias
-        </span>
-        <ChevronDown
-          size={14}
-          color="var(--color-text-tertiary)"
-          style={{
-            transition: 'transform 200ms ease',
-            transform: collapsed ? 'rotate(-90deg)' : 'rotate(0deg)',
-          }}
-        />
-      </button>
+      {mobileHeader}
       {!collapsed && (
         <div style={{
           display: 'flex', flexDirection: 'column', alignItems: 'center',
@@ -334,42 +373,7 @@ function ProximosDias({ onEntradaClick, onDespesaClick, isDesktop }: {
 
   return (
     <div style={{ marginTop: 20 }}>
-      <button
-        onClick={toggle}
-        style={{
-          display: 'flex', alignItems: 'center', gap: 6, width: '100%',
-          background: 'none', border: 'none', cursor: 'pointer', padding: 0,
-          fontFamily: 'var(--font-sans)',
-        }}
-      >
-        <Calendar size={13} color="var(--color-text-tertiary)" />
-        <span className="section-label" style={{ marginBottom: 0, flex: 1, textAlign: 'left' }}>
-          Próximos dias
-        </span>
-        <span style={(() => {
-            const hasOverdue = upcoming.some(i => i.days < 0)
-            const hasUrgent  = upcoming.some(i => i.days >= 0 && i.days <= 3)
-            const bg    = hasOverdue ? 'rgba(239,68,68,0.15)'    : hasUrgent ? 'rgba(245,158,11,0.15)' : 'rgba(255,255,255,0.06)'
-            const color = hasOverdue ? 'var(--color-danger)'      : hasUrgent ? 'var(--color-warning)'  : 'var(--color-text-tertiary)'
-            const border= hasOverdue ? 'rgba(239,68,68,0.3)'     : hasUrgent ? 'rgba(245,158,11,0.3)'  : 'var(--color-border)'
-            return {
-              fontSize: 11, fontWeight: 700, lineHeight: 1,
-              padding: '3px 7px', borderRadius: 20,
-              background: bg, color, border: `1px solid ${border}`,
-              marginRight: 2,
-            }
-          })()}>
-          {upcoming.length}
-        </span>
-        <ChevronDown
-          size={14}
-          color="var(--color-text-tertiary)"
-          style={{
-            transition: 'transform 200ms ease',
-            transform: collapsed ? 'rotate(-90deg)' : 'rotate(0deg)',
-          }}
-        />
-      </button>
+      {mobileHeader}
 
       <AnimatePresence initial={false}>
         {!collapsed && (
@@ -394,6 +398,7 @@ function ProximosDias({ onEntradaClick, onDespesaClick, isDesktop }: {
     </div>
   )
 }
+
 
 // ─── Divisoes Grid (Home) ────────────────────────────────────────────────
 
