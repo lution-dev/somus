@@ -12,7 +12,7 @@ import ItemActionSheet from '../components/ui/ItemActionSheet'
 import { PageHeader, SearchBar, Dialog, Button } from '../components/ui'
 import { useIsMobile } from '../hooks/useIsMobile'
 import { getDivisaoIcon } from '../lib/icons'
-import { Check, RefreshCw, Plus, Inbox, ArrowUpRight, ArrowDownLeft, CheckCircle2, Pencil, Trash2, XCircle, TrendingUp, AlertCircle, Clock } from 'lucide-react'
+import { Check, RefreshCw, Plus, Inbox, ArrowUpRight, ArrowDownLeft, CheckCircle2, Pencil, Trash2, XCircle, TrendingUp, AlertCircle, Clock, ChevronDown } from 'lucide-react'
 import type { SaidaFixa, SaidaVariavel, Entrada } from '../types'
 
 // ─── Tipos Locais ─────────────────────────────────────────────────────────────
@@ -434,7 +434,7 @@ export default function Fluxo() {
         {/* Summary Card */}
         <div style={{ 
           background: 'var(--color-bg-secondary)', borderRadius: 16, padding: 20,
-          border: '1px solid rgba(255, 255, 255, 0.08)', marginBottom: 20,
+          border: '1px solid rgba(255, 255, 255, 0.08)', marginBottom: 12,
         }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
             <p className="section-label" style={{ margin: 0 }}>Progresso do mês</p>
@@ -461,7 +461,7 @@ export default function Fluxo() {
         </div>
 
         {/* Filters and Search */}
-        <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: 16, marginBottom: 16, alignItems: isMobile ? 'flex-start' : 'center' }}>
+        <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: 12, marginBottom: 12, alignItems: isMobile ? 'flex-start' : 'center' }}>
           {/* Segmented control tab bar */}
           <div style={{
             display: 'inline-flex',
