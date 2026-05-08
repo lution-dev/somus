@@ -403,3 +403,17 @@
 - [ ] Botao Lancar Pagamento proeminente no topo do detalhe
 - [ ] Mobile FAB + desktop button ambos abrem o modal
 **Status:** Em andamento
+
+---
+
+#### T-AD-21: Fluxo: Instâncias Mensais + Override de Valor por Mês
+**Tipo:** Redesign / Feature
+**Arquivo:** src/pages/Fluxo.tsx + src/stores/useAppStore.ts
+**Critérios:**
+- [x] Redesign da página Fluxo: lista unificada (fixas, variáveis, entradas)
+- [x] Filtros por tipo: Tudo, Saídas, Entradas
+- [x] monthlyAmountOverrides no tipo SaidaFixa (store v13)
+- [x] Novo EditMonthlyAmountModal para editar valor apenas no mês corrente
+- [x] Integração de saídas variáveis no fluxo do mês atual
+- [x] Action sheet com atalho rápido Editar valor deste mês
+**Status:** ? Concluído

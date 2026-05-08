@@ -42,6 +42,7 @@ interface AppActions {
   markSaidaFixaUnpaid: (id: string, date: string) => void
   addSaidaFixa: (sf: Omit<SaidaFixa, 'id'>) => void
   editSaidaFixa: (id: string, updates: Partial<SaidaFixa>) => void
+  editSaidaFixaForMonth: (id: string, yearMonth: string, amount: number) => void
   deleteSaidaFixa: (id: string) => void
 
   // Saídas Variáveis
@@ -336,6 +337,19 @@ export const useAppStore = create<AppState & AppActions>()(
           ),
         })),
 
+      editSaidaFixaForMonth: (id, yearMonth, amount) =>
+        set((state) => ({
+          saidasFixas: state.saidasFixas.map(sf =>
+            sf.id !== id ? sf : {
+              ...sf,
+              monthlyAmountOverrides: {
+                ...(sf.monthlyAmountOverrides ?? {}),
+                [yearMonth]: amount,
+              },
+            }
+          ),
+        })),
+
       deleteSaidaFixa: (id) =>
         set((state) => ({
           saidasFixas: state.saidasFixas.filter(sf => sf.id !== id),
@@ -392,7 +406,7 @@ export const useAppStore = create<AppState & AppActions>()(
     }),
     {
       name: 'somus-state',
-      version: 12,
+      version: 13,
       migrate: (_persisted: unknown, version: number) => {
         const state = _persisted as Record<string, unknown>
 
@@ -564,6 +578,10 @@ export const useAppStore = create<AppState & AppActions>()(
             }
           }
         }
+
+        // v13: add monthlyAmountOverrides to SaidaFixa — no-op, field is optional
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        if (version < 13) { /* no migration needed */ }
 
         return state as unknown as AppState & AppActions
       },

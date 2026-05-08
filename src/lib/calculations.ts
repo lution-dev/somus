@@ -104,6 +104,16 @@ export function isPaidThisMonth(paidDates: string[]): boolean {
   return paidDates.some(d => d.startsWith(currentMonth))
 }
 
+/**
+ * Retorna o valor efetivo de uma SaidaFixa para um dado mês (YYYY-MM).
+ * Se o usuário sobrescreveu o valor para aquele mês, usa o override.
+ * Caso contrário, usa o valor base (sf.amount).
+ */
+export function getEffectiveAmount(sf: SaidaFixa, yearMonth?: string): number {
+  const ym = yearMonth ?? new Date().toISOString().slice(0, 7)
+  return sf.monthlyAmountOverrides?.[ym] ?? sf.amount
+}
+
 export function getDueDayLabel(dueDay: number): string {
   const days = getDaysUntil(dueDay)
   if (days === 0) return 'Vence hoje'

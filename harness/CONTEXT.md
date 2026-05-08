@@ -38,7 +38,8 @@ npm install && npm run dev
 - **T-S01-07** ✅ Saídas Fixas (checklist, débito auto, alertas de vencimento)
 - **T-S01-08** ✅ Lançar Entrada CORE (distribuição automática, editável, RN01/02/08)
 - **T-S01-09** ✅ Dashboard Home (balance card, timeline 7 dias, grid divisoes, toggle)
-- **T-S01-10** ✅ Redesign Fluxo 10/10 (progress bar, desktop 2-column, tab badges, urgency)
+- **T-S01-10** — Redesign Fluxo 10/10 (progress bar, desktop 2-column, tab badges, urgency)
+- **T-AD-21** — Fluxo Redesign (lista unificada, monthly instances, overrides de valor, filtros)
 
 ## Arquitetura de Arquivos
 ```
@@ -98,6 +99,7 @@ src/
 | 2026-05-01 | Base64 para imagens em vez de Firebase Storage | Storage requer Blaze plan (cartão) |
 | 2026-05-01 | Auth anônimo em vez de email/senha | UX mais simples pro MVP, migra depois |
 | 2026-05-01 | Single-document per user no Firestore | Volume pequeno, minimiza reads no free tier |
+| 2026-05-08 | Instâncias Mensais de Custos Fixos (Overrides) | Permitir edição de valor pontual no Fluxo sem alterar o template base do custo |
 
 ## Bloqueios
 Nenhum.
