@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useAppStore } from '../../stores/useAppStore'
 import { formatCurrency } from '../../lib/calculations'
@@ -40,7 +40,7 @@ export default function LancarDespesaModal({ open, onClose, divisaoId, divisaoNa
   // Reset on open
   useEffect(() => {
     if (open) {
-      setDescription(divisaoName)
+      setDescription('')
       amountInput.reset()
       setPaymentMethod('')
       setDate(new Date().toISOString().slice(0, 10))
@@ -48,7 +48,7 @@ export default function LancarDespesaModal({ open, onClose, divisaoId, divisaoNa
       setSubmitted(false)
       setPmOpen(false)
     }
-  }, [open, divisaoName])
+  }, [open])
 
   const numAmount = amountInput.numericValue
   const isValid = numAmount > 0 && description.trim() && paymentMethod
