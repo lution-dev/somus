@@ -397,17 +397,18 @@ export default function Fluxo() {
         </div>
 
         {/* Filters and Search */}
-        <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: 12, marginBottom: 16, alignItems: isMobile ? 'stretch' : 'center' }}>
+        <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: 12, marginBottom: 16, alignItems: isMobile ? 'flex-start' : 'center' }}>
           {/* Segmented control tab bar */}
           <div style={{
             display: 'inline-flex',
             height: 44,
             padding: 4,
-            background: 'var(--color-bg-secondary)',
+            background: 'rgba(59,130,246,0.08)',
             borderRadius: 12,
-            border: '1px solid var(--color-border)',
+            border: '1px solid rgba(59,130,246,0.18)',
             alignItems: 'center',
             flexShrink: 0,
+            alignSelf: 'flex-start',
           }}>
             {(['all', 'saidas', 'entradas'] as const).map(f => {
               const isActive = filterType === f
