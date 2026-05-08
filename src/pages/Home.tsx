@@ -283,14 +283,19 @@ function ProximosDias({ onEntradaClick, onDespesaClick, isDesktop }: {
             </p>
           </div>
         ) : (
+          /* Outer: clips to border-radius. Inner: scrolls. */
           <div style={{
             borderRadius: 12,
             border: '1px solid var(--color-border)',
-            maxHeight: 232,
-            overflowX: 'hidden',
-            overflowY: upcoming.length > 4 ? 'auto' : 'hidden',
+            overflow: 'hidden',
           }}>
-            {upcoming.map(renderItem)}
+            <div style={{
+              maxHeight: 232,
+              overflowY: 'auto',
+              overflowX: 'hidden',
+            }}>
+              {upcoming.map(renderItem)}
+            </div>
           </div>
         )}
       </div>
