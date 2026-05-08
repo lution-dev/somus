@@ -49,6 +49,8 @@ interface AppActions {
 
   // Saídas Variáveis
   addSaidaVariavel: (saida: Omit<SaidaVariavel, 'id'>) => void
+  editSaidaVariavel: (id: string, updates: { amount?: number; description?: string; date?: string; category?: string }) => void
+  deleteSaidaVariavel: (id: string) => void
 
   // Income Sources
   addIncomeSource: (source: Omit<IncomeSource, 'id'>) => void
@@ -266,6 +268,45 @@ export const useAppStore = create<AppState & AppActions>()(
                     type: 'expense' as const,
                   },
                 ],
+              }
+            ),
+          }
+        }),
+
+      editSaidaVariavel: (id, updates) =>
+        set((state) => {
+          const sv = state.saidasVariaveis.find(s => s.id === id)
+          if (!sv) return state
+          const amountDiff = (updates.amount ?? sv.amount) - sv.amount
+          return {
+            saidasVariaveis: state.saidasVariaveis.map(s =>
+              s.id !== id ? s : { ...s, ...updates }
+            ),
+            divisoes: amountDiff !== 0
+              ? state.divisoes.map(cx =>
+                  cx.id !== sv.divisaoId ? cx : {
+                    ...cx,
+                    balance: cx.balance - amountDiff,
+                    movements: (cx.movements ?? []).map(mv =>
+                      mv.id !== `mv-sv-${id}` ? mv : { ...mv, amount: -(updates.amount ?? sv.amount) }
+                    ),
+                  }
+                )
+              : state.divisoes,
+          }
+        }),
+
+      deleteSaidaVariavel: (id) =>
+        set((state) => {
+          const sv = state.saidasVariaveis.find(s => s.id === id)
+          if (!sv) return state
+          return {
+            saidasVariaveis: state.saidasVariaveis.filter(s => s.id !== id),
+            divisoes: state.divisoes.map(cx =>
+              cx.id !== sv.divisaoId ? cx : {
+                ...cx,
+                balance: cx.balance + sv.amount,
+                movements: (cx.movements ?? []).filter(mv => mv.id !== `mv-${id}-sv`),
               }
             ),
           }

@@ -22,6 +22,7 @@ import {
   TrendingUp,
   Calendar,
   ArrowUpRight,
+  ChevronRight,
   ChevronDown,
   Wallet,
   History,
@@ -217,7 +218,7 @@ function ProximosDias({ onEntradaClick, onDespesaClick, isDesktop }: {
       }}
     >
       <div style={{
-        width: 32, height: 32, borderRadius: '50%',
+        width: 32, height: 32, borderRadius: 10,
         display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
         background: item.type === 'entrada'
           ? 'rgba(16,185,129,0.12)'
@@ -246,17 +247,22 @@ function ProximosDias({ onEntradaClick, onDespesaClick, isDesktop }: {
     </div>
   )
 
-  //  DESKTOP: clean list, no card background
+  // ══════════════════════════════════════════════
+  //  DESKTOP: card-style, scrollable list (max 4 visible)
   // ══════════════════════════════════════════════
   if (isDesktop) {
     return (
       <div style={{
+        background: 'var(--color-bg-secondary)',
+        border: '1px solid var(--color-border)',
+        borderRadius: 'var(--radius-card)',
+        padding: 20,
         display: 'flex',
         flexDirection: 'column',
         minHeight: 0,
       }}>
         {/* Header */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 16 }}>
           <Calendar size={13} color="var(--color-text-tertiary)" />
           <p className="section-label" style={{ marginBottom: 0, flex: 1 }}>Próximos dias</p>
           {upcoming.length > 0 && (
@@ -270,8 +276,7 @@ function ProximosDias({ onEntradaClick, onDespesaClick, isDesktop }: {
         {upcoming.length === 0 ? (
           <div style={{
             flex: 1, display: 'flex', flexDirection: 'column',
-            alignItems: 'center', justifyContent: 'center', gap: 8, padding: '40px 0',
-            background: 'var(--color-bg-secondary)', borderRadius: 16, border: '1px solid var(--color-border)'
+            alignItems: 'center', justifyContent: 'center', gap: 8, padding: '20px 0',
           }}>
             <Calendar size={28} color="var(--color-text-tertiary)" strokeWidth={1.25} />
             <p style={{ fontSize: 13, color: 'var(--color-text-tertiary)', margin: 0, textAlign: 'center' }}>
@@ -279,16 +284,20 @@ function ProximosDias({ onEntradaClick, onDespesaClick, isDesktop }: {
             </p>
           </div>
         ) : (
-          /* Scrollable wrapper with background/border like mobile expanded view */
+          /* Outer: clips to border-radius. Inner: scrolls. */
           <div style={{
-            maxHeight: 280,
-            overflowY: 'auto',
-            overflowX: 'hidden',
-            background: 'var(--color-bg-secondary)',
+            borderRadius: 12,
             border: '1px solid var(--color-border)',
-            borderRadius: 'var(--radius-card)',
+            overflow: 'hidden',
+            background: 'var(--color-bg-tertiary)', // Darker background to distinguish from outer card
           }}>
-            {upcoming.map(renderItem)}
+            <div style={{
+              maxHeight: 232,
+              overflowY: 'auto',
+              overflowX: 'hidden',
+            }}>
+              {upcoming.map(renderItem)}
+            </div>
           </div>
         )}
       </div>
