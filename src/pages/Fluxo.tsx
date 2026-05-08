@@ -343,6 +343,36 @@ export default function Fluxo() {
               count={pending.length}
               collapsed={pendingCollapsed}
               onClick={() => setPendingCollapsed(v => !v)}
+              extra={pendingCollapsed && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                  {(() => {
+                    const ov = pending.filter(item => getDaysUntil((item.data as SaidaFixa).dueDay) < 0).length
+                    const pd = pending.length - ov
+                    return (
+                      <>
+                        {ov > 0 && (
+                          <span style={{
+                            fontSize: 10, fontWeight: 700,
+                            background: 'rgba(239,68,68,0.15)', color: 'var(--color-danger)',
+                            padding: '2px 7px', borderRadius: 8,
+                          }}>
+                            {ov} atrasad{ov === 1 ? 'o' : 'os'}
+                          </span>
+                        )}
+                        {pd > 0 && (
+                          <span style={{
+                            fontSize: 10, fontWeight: 700,
+                            background: 'rgba(245,158,11,0.15)', color: 'var(--color-warning)',
+                            padding: '2px 7px', borderRadius: 8,
+                          }}>
+                            {pd} pendente{pd === 1 ? '' : 's'}
+                          </span>
+                        )}
+                      </>
+                    )
+                  })()}
+                </div>
+              )}
             >Pendentes</SectionLabel>
             <AnimatePresence initial={false}>
               {!pendingCollapsed && (
@@ -434,7 +464,7 @@ export default function Fluxo() {
         {/* Summary Card */}
         <div style={{ 
           background: 'var(--color-bg-secondary)', borderRadius: 16, padding: 20,
-          border: '1px solid rgba(255, 255, 255, 0.08)', marginBottom: 12,
+          border: '1px solid rgba(255, 255, 255, 0.08)', marginBottom: 16,
         }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
             <p className="section-label" style={{ margin: 0 }}>Progresso do mês</p>
@@ -460,9 +490,8 @@ export default function Fluxo() {
           </div>
         </div>
 
-        {/* Filters and Search */}
-        <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: 12, marginBottom: 12, alignItems: isMobile ? 'flex-start' : 'center' }}>
-          {/* Segmented control tab bar */}
+        {/* Filters */}
+        <div style={{ marginBottom: 16 }}>
           <div style={{
             display: 'inline-flex',
             height: 44,
@@ -471,8 +500,6 @@ export default function Fluxo() {
             borderRadius: 12,
             border: '1px solid var(--color-border)',
             alignItems: 'center',
-            flexShrink: 0,
-            alignSelf: 'flex-start',
           }}>
             {(['all', 'saidas', 'entradas'] as const).map(f => {
               const isActive = filterType === f
@@ -495,17 +522,17 @@ export default function Fluxo() {
                     color: isActive ? 'white' : 'var(--color-text-tertiary)',
                     boxShadow: isActive ? '0 2px 8px rgba(59,130,246,0.35)' : 'none',
                   }}
-                  onMouseEnter={e => { if (!isActive) e.currentTarget.style.color = 'var(--color-text-secondary)'; if (!isActive) e.currentTarget.style.background = 'rgba(255,255,255,0.04)' }}
-                  onMouseLeave={e => { if (!isActive) e.currentTarget.style.color = 'var(--color-text-tertiary)'; if (!isActive) e.currentTarget.style.background = 'transparent' }}
                 >
                   {f === 'all' ? 'Tudo' : f === 'saidas' ? 'Saídas' : 'Entradas'}
                 </button>
               )
             })}
           </div>
-          <div style={{ width: '100%' }}>
-            <SearchBar value={fluxoSearch} onChange={setFluxoSearch} placeholder="Procurar no fluxo..." />
-          </div>
+        </div>
+
+        {/* Search */}
+        <div style={{ marginBottom: 16 }}>
+          <SearchBar value={fluxoSearch} onChange={setFluxoSearch} placeholder="Procurar no fluxo..." />
         </div>
 
         {/* List */}
@@ -616,12 +643,13 @@ export default function Fluxo() {
   )
 }
 
-function SectionLabel({ children, count, icon, onClick, collapsed }: {
+function SectionLabel({ children, count, icon, onClick, collapsed, extra }: {
   children: React.ReactNode
   count?: number
   icon?: React.ReactNode
   onClick?: () => void
   collapsed?: boolean
+  extra?: React.ReactNode
 }) {
   return (
     <div
@@ -642,7 +670,8 @@ function SectionLabel({ children, count, icon, onClick, collapsed }: {
       <p className="section-label" style={{ margin: 0, flex: 1 }}>
         {children}
       </p>
-      {count !== undefined && (
+      {extra}
+      {(count !== undefined && !extra) && (
         <span style={{
           fontSize: 10,
           fontWeight: 700,
