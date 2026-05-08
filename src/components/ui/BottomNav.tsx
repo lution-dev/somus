@@ -45,6 +45,9 @@ export function BottomNav({ items }: BottomNavProps) {
             location === item.path ||
             (!claimedByActiveFor && location.startsWith(item.path + '/')) ||
             (item.activeFor?.some(prefix => location.startsWith(prefix)) ?? false)
+          const activeColor = item.path === '/casal'
+            ? 'var(--color-accent-couple)'
+            : 'var(--color-accent-primary)'
           return (
             <button
               key={item.path}
@@ -55,7 +58,7 @@ export function BottomNav({ items }: BottomNavProps) {
                 display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
                 gap: 3, flex: 1, height: '100%', cursor: 'pointer',
                 background: 'none', border: 'none', fontFamily: 'var(--font-sans)',
-                color: isActive ? 'var(--color-accent-primary)' : 'var(--color-text-tertiary)',
+                color: isActive ? activeColor : 'var(--color-text-tertiary)',
                 transition: 'color 150ms ease',
               }}
             >
@@ -64,7 +67,7 @@ export function BottomNav({ items }: BottomNavProps) {
               </span>
               <span style={{
                 fontSize: 10, fontWeight: isActive ? 600 : 500,
-                color: isActive ? 'var(--color-accent-primary)' : 'var(--color-text-tertiary)',
+                color: isActive ? activeColor : 'var(--color-text-tertiary)',
               }}>
                 {item.label}
               </span>
