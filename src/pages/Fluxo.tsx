@@ -11,7 +11,7 @@ import ItemActionSheet from '../components/ui/ItemActionSheet'
 import { PageHeader, SearchBar, groupByMonth, MonthHeader, Dialog } from '../components/ui'
 import { useIsMobile } from '../hooks/useIsMobile'
 import { getDivisaoIcon } from '../lib/icons'
-import { Check, RefreshCw, Plus, X, Inbox, ArrowUpRight, ArrowDownLeft, CheckCircle2, Pencil, Trash2, XCircle, TrendingUp, AlertCircle } from 'lucide-react'
+import { Check, RefreshCw, Plus, Inbox, ArrowUpRight, ArrowDownLeft, CheckCircle2, Pencil, Trash2, XCircle, TrendingUp, AlertCircle } from 'lucide-react'
 import type { SaidaFixa } from '../types'
 
 // ─── Item de Saída ────────────────────────────────────────────────────────────
