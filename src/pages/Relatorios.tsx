@@ -1,4 +1,4 @@
-﻿import { useState, useMemo } from 'react'
+import { useState, useMemo } from 'react'
 import { useAppStore, selectCurrentDivisoes } from '../stores/useAppStore'
 import { useShallow } from 'zustand/react/shallow'
 import { formatCurrency } from '../lib/calculations'
@@ -149,12 +149,18 @@ export default function Relatorios() {
       {isMobile ? (
         <>
           <PageHeader title="Relatórios" bg="#001442" />
-          {/* Mês + Toggle na mesma linha */}
+          {/* Mês — linha 1 */}
           <div style={{
-            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-            padding: '8px 16px 12px', gap: 12,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            padding: '8px 16px 0',
           }}>
             <MonthNav month={month} today={TODAY} onChange={setMonth} showLabel />
+          </div>
+          {/* Toggle — linha 2 */}
+          <div style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            padding: '8px 16px 12px',
+          }}>
             <SegmentedCtrl
               options={ctxOptions}
               value={reportCtx}
