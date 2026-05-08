@@ -1,4 +1,5 @@
 import React from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import {
   AreaChart,
   Area,
@@ -13,7 +14,7 @@ import { useFluxoProjection } from '../../hooks/useFluxoProjection'
 import type { ProjectionDay } from '../../hooks/useFluxoProjection'
 import { formatCurrency, formatCurrencyCompact } from '../../lib/calculations'
 import { useIsMobile } from '../../hooks/useIsMobile'
-import { TrendingUp, AlertCircle, Info } from 'lucide-react'
+import { TrendingUp, AlertCircle, Info, ChevronDown } from 'lucide-react'
 
 export function FluxoChart({ paidPct, totalFixasPending, totalPagoNoMes }: { 
   paidPct?: number; 
