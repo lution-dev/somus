@@ -99,14 +99,14 @@ function StepInviteIn({
         <div style={iconCircle('rgba(139,92,246,0.12)')}>
           <Link2 size={28} color="var(--color-accent-couple)" />
         </div>
-        <h2 style={heading}>Você foi convidado?</h2>
-        <p style={sub}>Se alguém te enviou um código, insira aqui para conectar as finanças do casal.</p>
+        <h2 style={heading}>Seu par te convidou?</h2>
+        <p style={sub}>Cole aqui o código que seu(sua) parceiro(a) te enviou — juntos é melhor.</p>
       </div>
 
       <div style={{ display: 'flex', gap: 8 }}>
         <div style={{ flex: 1 }}>
           <Input
-            label="Código de convite"
+            label="Código do(a) parceiro(a)"
             placeholder="Ex: AB3F"
             value={code}
             onChange={e => { setCode(e.target.value.toUpperCase()); setStatus('idle') }}
@@ -144,10 +144,10 @@ function StepInviteIn({
           <Heart size={20} color="var(--color-accent-couple)" fill="var(--color-accent-couple)" />
           <div>
             <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-text-primary)', margin: 0 }}>
-              {inviterName} te convidou!
+              {inviterName} quer construir o futuro com você 💜
             </p>
             <p style={{ fontSize: 12, color: 'var(--color-text-tertiary)', margin: 0 }}>
-              Vocês serão vinculados ao finalizar o cadastro.
+              As finanças de vocês serão unidas ao concluir o cadastro.
             </p>
           </div>
         </motion.div>
@@ -157,7 +157,7 @@ function StepInviteIn({
         <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }}
           style={{ fontSize: 13, color: 'var(--color-danger)', textAlign: 'center', margin: 0 }}
         >
-          Código não encontrado. Verifique com quem te enviou.
+          Código não encontrado. Confirme com seu par e tente novamente.
         </motion.p>
       )}
 
@@ -165,7 +165,7 @@ function StepInviteIn({
         <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }}
           style={{ fontSize: 13, color: 'var(--color-danger)', textAlign: 'center', margin: 0 }}
         >
-          Erro ao buscar código. Tente novamente.
+          Erro de conexão. Verifique sua internet e tente de novo.
         </motion.p>
       )}
 
@@ -175,7 +175,7 @@ function StepInviteIn({
         type="button"
         onClick={onNext}
       >
-        {status === 'found' ? `Continuar com ${inviterName} 💜` : 'Continuar sem código'}
+        {status === 'found' ? `Unir finanças com ${inviterName} 💜` : 'Começar solo por enquanto'}
       </Button>
 
       <style>{`@keyframes onb-spin { to { transform: rotate(360deg); } }`}</style>

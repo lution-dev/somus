@@ -8,10 +8,10 @@ import PullToRefresh from '../ui/PullToRefresh'
 import { useAuth } from '../../hooks/useAuth'
 
 export const NAV_ITEMS: NavItem[] = [
-  { path: '/home',      label: 'Home',      icon: <Home size={20} strokeWidth={1.75} />,           activeIcon: <Home size={20} strokeWidth={2} /> },
-  { path: '/fluxo',     label: 'Fluxo',     icon: <ArrowLeftRight size={20} strokeWidth={1.75} />,  activeIcon: <ArrowLeftRight size={20} strokeWidth={2} /> },
-  { path: '/divisoes', label: 'Relatórios', icon: <BarChart3 size={20} strokeWidth={1.75} />, activeIcon: <BarChart3 size={20} strokeWidth={2} /> },
-  { path: '/casal',     label: 'Casal',     icon: <Heart size={20} strokeWidth={1.75} />,           activeIcon: <Heart size={20} strokeWidth={2} /> },
+  { path: '/home',     label: 'Home',       icon: <Home size={20} strokeWidth={1.75} />,          activeIcon: <Home size={20} strokeWidth={2} />,          activeFor: ['/divisoes/'] },
+  { path: '/fluxo',   label: 'Fluxo',      icon: <ArrowLeftRight size={20} strokeWidth={1.75} />, activeIcon: <ArrowLeftRight size={20} strokeWidth={2} /> },
+  { path: '/divisoes', label: 'Relatórios', icon: <BarChart3 size={20} strokeWidth={1.75} />,       activeIcon: <BarChart3 size={20} strokeWidth={2} /> },
+  { path: '/casal',   label: 'Casal',      icon: <Heart size={20} strokeWidth={1.75} />,           activeIcon: <Heart size={20} strokeWidth={2} /> },
 ]
 
 // ─── Sidebar Desktop ──────────────────────────────────────────────────────────
@@ -62,7 +62,10 @@ function Sidebar() {
       {/* Nav */}
       <nav style={{ flex: 1, padding: '12px 10px', display: 'flex', flexDirection: 'column', gap: 2 }}>
         {NAV_ITEMS.map(item => {
-          const active = location === item.path || location.startsWith(item.path + '/')
+          const active =
+            location === item.path ||
+            (location.startsWith(item.path + '/') && !(item.activeFor?.length)) ||
+            (item.activeFor?.some(prefix => location.startsWith(prefix)) ?? false)
           return (
             <button
               key={item.path}

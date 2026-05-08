@@ -5,6 +5,8 @@ interface NavItem {
   label: string
   icon: React.ReactNode
   activeIcon?: React.ReactNode
+  /** Extra path prefixes that count as active for this tab */
+  activeFor?: string[]
 }
 
 interface BottomNavProps {
@@ -37,7 +39,10 @@ export function BottomNav({ items }: BottomNavProps) {
       {/* Nav buttons */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-around', padding: '0 4px', height: 56 }}>
         {items.map((item) => {
-          const isActive = location === item.path || location.startsWith(item.path + '/')
+          const isActive =
+            location === item.path ||
+            location.startsWith(item.path + '/') ||
+            (item.activeFor?.some(prefix => location.startsWith(prefix)) ?? false)
           return (
             <button
               key={item.path}
