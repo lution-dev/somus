@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react'
+ï»¿import React, { useMemo, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAppStore, selectCurrentSaidasFixas, selectCurrentEntradas } from '../stores/useAppStore'
 import { useShallow } from 'zustand/react/shallow'
@@ -641,7 +641,7 @@ export default function Fluxo() {
 
         {/* Search */}
         <div style={{ marginBottom: 12 }}>
-          <SearchBar value={fluxoSearch} onChange={setFluxoSearch} placeholder="Buscar lançamentos..." />
+          <SearchBar value={fluxoSearch} onChange={setFluxoSearch} placeholder="Buscar lanï¿½amentos..." />
         </div>
 
         {/* List */}
