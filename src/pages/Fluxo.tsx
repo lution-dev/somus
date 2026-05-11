@@ -541,7 +541,7 @@ export default function Fluxo() {
 
           <PageHeader 
             title="Fluxo" 
-            bg="transparent" 
+            bg="#001442" 
             rightAction={
               <div style={{ 
                 background: 'rgba(255,255,255,0.08)', padding: '4px 10px', borderRadius: 8,

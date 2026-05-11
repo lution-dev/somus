@@ -676,7 +676,7 @@ export default function Home() {
 
           <PageHeader
             title={`${greeting}, ${firstName}`}
-            bg="transparent"
+            bg={HERO_BG}
             rightAction={<UserMenu variant="hero" />}
           />
 

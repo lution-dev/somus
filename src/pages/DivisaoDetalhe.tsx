@@ -210,7 +210,7 @@ export default function DivisaoDetalhe() {
             pointerEvents: 'none',
           }} />
 
-          <PageHeader title={divisao.name} back bg="transparent" />
+          <PageHeader title={divisao.name} back bg={HERO_BG} />
           
           <div style={{
             position: 'relative',

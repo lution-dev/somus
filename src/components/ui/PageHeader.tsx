@@ -39,12 +39,14 @@ export function PageHeader({ title, back, backTo, rightAction, bg, height }: Pag
           left: 0,
           right: 0,
           zIndex: 50,
-          background: bg ? `${bg}B3` : 'rgba(10, 10, 10, 0.75)',
-          backdropFilter: 'blur(24px) saturate(180%)',
-          WebkitBackdropFilter: 'blur(24px) saturate(180%)',
+          /* When bg is provided: solid exact color to merge with the gradient below.
+             When no bg: Liquid Glass dark overlay. */
+          background: bg || 'rgba(10, 10, 10, 0.82)',
+          backdropFilter: bg ? 'none' : 'blur(24px) saturate(180%)',
+          WebkitBackdropFilter: bg ? 'none' : 'blur(24px) saturate(180%)',
           paddingTop: 'env(safe-area-inset-top, 0px)',
           borderBottom: 'none',
-          boxShadow: bg ? 'none' : 'inset 0 -1px 0 rgba(255, 255, 255, 0.05)',
+          boxShadow: 'none',
         }}
       >
         <div

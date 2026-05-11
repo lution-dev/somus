@@ -116,7 +116,7 @@ export default function ObjetivoDetalhe() {
             pointerEvents: 'none',
           }} />
 
-          <PageHeader title={objetivo.name} back bg="transparent" />
+          <PageHeader title={objetivo.name} back bg={HERO_BG} />
 
           <div style={{
             position: 'relative',

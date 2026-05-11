@@ -162,7 +162,7 @@ export default function Relatorios() {
 
           <PageHeader
             title="Relatórios"
-            bg="transparent"
+            bg={headerBg}
             rightAction={
               <MonthNav month={month} today={TODAY} onChange={setMonth} showLabel />
             }

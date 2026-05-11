@@ -230,7 +230,7 @@ export default function Casal() {
             pointerEvents: 'none',
           }} />
 
-          <PageHeader title="Casal" bg="transparent" />
+          <PageHeader title="Casal" bg={HERO_BG} />
 
           <div style={{
             position: 'relative',
