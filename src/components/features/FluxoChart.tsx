@@ -77,12 +77,15 @@ export function FluxoChart({ paidPct, totalFixasPending, totalPagoNoMes }: {
 
   return (
     <div style={{
-      background: 'var(--color-bg-secondary)',
-      border: '1px solid var(--color-border)',
+      background: 'rgba(14, 22, 42, 0.72)',          /* glass — always visible against dark bg */
+      backdropFilter: 'blur(24px) saturate(140%)',
+      WebkitBackdropFilter: 'blur(24px) saturate(140%)',
+      border: '1px solid rgba(255, 255, 255, 0.10)', /* slightly more visible than surface-border */
       borderRadius: '20px',
       padding: isMobile ? '16px 0' : '20px',
       marginBottom: 20,
       overflow: 'hidden',
+      boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.07), 0 8px 32px rgba(0,0,0,0.35)',
     }}>
       {/* Header & KPIs at the TOP now */}
       <div style={{ padding: isMobile ? '0 16px' : 0, marginBottom: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
