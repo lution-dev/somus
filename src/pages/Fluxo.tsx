@@ -580,7 +580,7 @@ export default function Fluxo() {
           </div>
           <p style={{ fontSize: 13, color: 'var(--color-text-secondary)', textTransform: 'capitalize', margin: 0 }}>{currentMonthLabel}</p>
           </div>
-          
+
           {/* FluxoChart — desktop */}
           <div style={{ marginBottom: 24, position: 'relative', zIndex: 1 }}>
             <FluxoChart
@@ -650,7 +650,7 @@ export default function Fluxo() {
 
         {/* Search */}
         <div style={{ marginBottom: 12 }}>
-          <SearchBar value={fluxoSearch} onChange={setFluxoSearch} placeholder="Buscar lan�amentos..." />
+          <SearchBar value={fluxoSearch} onChange={setFluxoSearch} placeholder="Buscar lançamentos..." />
         </div>
 
         {/* List */}

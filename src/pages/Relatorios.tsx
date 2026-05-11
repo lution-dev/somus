@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+﻿import { useState, useMemo } from 'react'
 import { useAppStore, selectCurrentDivisoes } from '../stores/useAppStore'
 import { useShallow } from 'zustand/react/shallow'
 import { formatCurrency } from '../lib/calculations'
@@ -288,7 +288,7 @@ export default function Relatorios() {
                       <div key={cx.id}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 7 }}>
                           <div style={{ width: 28, height: 28, borderRadius: 8, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: `${color}15` }}>
-                            <Icon size={18} style={{ color }} />
+                            <Icon size={18}} style={{ color }} />
                           </div>
                           <span style={{ flex: 1, fontSize: 13, fontWeight: 500, color: 'var(--color-text-primary)' }}>{cx.name}</span>
                           <div style={{ textAlign: 'right' }}>
@@ -337,7 +337,7 @@ export default function Relatorios() {
                         <div key={cx.id}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
                             <div style={{ width: 28, height: 28, borderRadius: 8, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: `${color}15` }}>
-                              <Icon size={18} style={{ color }} />
+                              <Icon size={18}} style={{ color }} />
                             </div>
                             <span style={{ flex: 1, fontSize: 13, fontWeight: 500, color: 'var(--color-text-primary)' }}>{cx.name}</span>
                             {overshot && (
