@@ -4,27 +4,36 @@ import {
   Target,
   Home,
   BookOpen,
+  TrendingUp,
   type LucideIcon,
 } from 'lucide-react'
 
 /**
- * Maps divisao IDs to their Lucide icon + accent color.
- * Replaces all emoji usage per UI/UX skill anti-pattern rules.
+ * Maps divisao IDs to their icon + accent color.
+ * Colors aligned to Somus App Design System official palette.
  */
 export const DIVISAO_ICONS: Record<string, { icon: LucideIcon; color: string }> = {
-  'cx-dizimo':    { icon: HandHeart, color: '#F59E0B' },
-  'cx-reserva':   { icon: Shield,    color: '#10B981' },
-  'cx-objetivos': { icon: Target,    color: '#8B5CF6' },
-  'cx-essencial': { icon: Home,      color: '#3B82F6' },
-  'cx-educacao':  { icon: BookOpen,  color: '#06B6D4' },
+  'cx-dizimo':    { icon: HandHeart,  color: '#10B981' }, // verde — propósito, generosidade
+  'cx-reserva':   { icon: TrendingUp, color: '#4DE2E2' }, // cyan — liberdade financeira
+  'cx-objetivos': { icon: Target,     color: '#8B5CF6' }, // lilás — direção, foco
+  'cx-essencial': { icon: Home,       color: '#22D3EE' }, // cyan — fundação, estabilidade
+  'cx-educacao':  { icon: BookOpen,   color: '#F59E0B' }, // âmbar — aprendizado, sabedoria
 }
 
 /**
- * Gets the Lucide icon component for a divisao, with fallback.
+ * Gets the icon component + brand color for a divisao ID.
+ * Falls back to neutral when ID is not recognized.
  */
 export function getDivisaoIcon(divisaoId: string): { Icon: LucideIcon; color: string } {
   const match = DIVISAO_ICONS[divisaoId]
   return match
     ? { Icon: match.icon, color: match.color }
     : { Icon: Target, color: '#64748B' }
+}
+
+/**
+ * Gets the brand color for a known divisao ID (for backgrounds, borders, etc.)
+ */
+export function getDivisaoColor(divisaoId: string): string {
+  return DIVISAO_ICONS[divisaoId]?.color ?? '#64748B'
 }

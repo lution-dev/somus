@@ -8,19 +8,34 @@
 
 /* ─── Design Tokens ─── */
 :root {
+  /* ── Official Brand Colors (App Design System) ── */
+  --somus-blue:       #2563EB;
+  --somus-cyan:       #22D3EE;
+  --somus-background: #0B1220;
+  --somus-surface:    #111827;
+
+  /* ── Surface tokens ── */
+  --surface-primary:   rgba(14, 22, 42, 0.58);
+  --surface-secondary: rgba(16, 25, 48, 0.78);
+  --surface-border:    rgba(255,255,255,0.08);
+
+  /* ── Brand Gradient ── */
+  --gradient-brand: linear-gradient(135deg, #2563EB 0%, #22D3EE 100%);
+  --gradient-couple: linear-gradient(135deg, #8B5CF6 0%, #C084FC 100%);
+
   /* ── Backgrounds ── */
   --color-bg-primary:   #0B1220;
   --color-bg-secondary: #0F1A2E;
   --color-bg-tertiary:  #162236;
-  --color-bg-sidebar:   #0D1828;
+  --color-bg-sidebar:   #0D1528; /* App Design System exact */
 
   /* ── Accent ── */
-  --color-accent-primary:  #3B82F6;
-  --color-accent-electric: #60A5FA;
+  --color-accent-primary:  #2563EB;
+  --color-accent-electric: #22D3EE;
   --color-accent-couple:   #8B5CF6;
 
   /* ── Identity ── */
-  --color-lucas:  #3B82F6;
+  --color-lucas:  #2563EB;
   --color-mirian: #EC4899;
 
   /* ── Semantic ── */
@@ -34,18 +49,18 @@
   --color-text-tertiary:  #64748B;
 
   /* ── Borders ── */
-  --color-border: #2A2A2A;
+  --color-border: rgba(255,255,255,0.08); /* blue-tinted, matches surface-border */
 
   /* ── Typography ── */
-  --font-display: 'Satoshi', 'Inter', system-ui, sans-serif;  /* brand headings + big values */
-  --font-sans:    'Inter',   system-ui, -apple-system, sans-serif; /* body text */
+  --font-display: 'Satoshi', 'Inter', system-ui, sans-serif;
+  --font-sans:    'Inter', system-ui, -apple-system, sans-serif;
 
   /* ── Spacing (8px base grid) ── */
   --space-xs:  4px;
   --space-sm:  8px;
-  --space-md:  16px;
-  --space-lg:  24px;
-  --space-xl:  32px;
+  --space-md:  20px; /* App Design System: mobile padding 20px */
+  --space-lg:  24px; /* App Design System: gap 24px */
+  --space-xl:  32px; /* App Design System: desktop padding 32px */
   --space-2xl: 48px;
 
   /* ── Radius ── */
@@ -55,6 +70,14 @@
   --radius-progress: 6px;
   --radius-modal:    28px;
   --radius-input:    14px;
+  --radius-pill:     999px;
+
+  /* ── Transitions (App Design System) ── */
+  --transition-fast:   all 0.15s ease; /* touch feedback */
+  --transition-normal: all 0.28s ease; /* hover, states */
+  --transition-slow:   all 0.45s ease; /* modals, expansions */
+
+  /* ── Safe area ── */
   --safe-bottom: env(safe-area-inset-bottom, 0px);
   --safe-top:    env(safe-area-inset-top, 0px);
 }
@@ -197,8 +220,9 @@ body {
 .badge--mirian  { background: rgba(236,72,153,0.15);  color: var(--color-mirian); }
 
 /* ─── Primary Button ─── */
+/* App Design System: avoid aggressive gradients on buttons — use solid premium blue */
 .btn-primary {
-  background: linear-gradient(135deg, #2563EB 0%, #22D3EE 100%); /* brand gradient */
+  background: var(--somus-blue); /* #2563EB — solid, calm, premium */
   color: #FFFFFF;
   border: none;
   border-radius: var(--radius-button);
@@ -212,11 +236,12 @@ body {
   align-items: center;
   justify-content: center;
   gap: 8px;
-  transition: opacity 150ms ease, transform 100ms ease;
+  transition: var(--transition-fast);
+  box-shadow: 0 2px 12px rgba(37, 99, 235, 0.25);
 }
-.btn-primary:hover  { opacity: 0.92; }
-.btn-primary:active { opacity: 0.85; transform: scale(0.98); }
-.btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+.btn-primary:hover  { background: #1D4ED8; box-shadow: 0 4px 20px rgba(37, 99, 235, 0.35); }
+.btn-primary:active { background: #1E40AF; transform: scale(0.98); }
+.btn-primary:disabled { opacity: 0.4; cursor: not-allowed; box-shadow: none; }
 
 /* ─── Nav Item (sidebar) ─── */
 .nav-item {
@@ -304,7 +329,7 @@ body {
 
   /* Summary cards with subtle glow */
   .summary-card {
-    background: linear-gradient(145deg, var(--color-bg-secondary) 0%, rgba(15,15,15,0.95) 100%);
+    background: linear-gradient(145deg, var(--color-bg-secondary) 0%, rgba(14,22,42,0.95) 100%);
     border: 1px solid rgba(255,255,255,0.06);
   }
 
@@ -321,6 +346,14 @@ body {
   }
   ::-webkit-scrollbar-thumb:hover {
     background: rgba(255,255,255,0.18);
+  }
+
+  /* App Design System: desktop bg deeper than mobile */
+  html, body {
+    background: #070F1F;
+  }
+  body {
+    background: #070F1F;
   }
 }
 
