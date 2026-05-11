@@ -108,10 +108,11 @@ export default function ObjetivoDetalhe() {
         <>
           <PageHeader title={objetivo.name} back bg={HERO_BG} />
           <div style={{
-            background: HERO_BG,
+            background: `linear-gradient(to bottom, ${HERO_BG} 0%, transparent 100%)`,
             borderRadius: '0 0 24px 24px',
             marginBottom: 20,
             overflow: 'hidden',
+            position: 'relative',
           }}>
             {/* Banner hero — click para trocar */}
             <div
@@ -201,7 +202,18 @@ export default function ObjetivoDetalhe() {
           </div>
         </>
       ) : (
-        <div style={{ paddingTop: 28, marginBottom: 24 }}>
+        <>
+          {/* Desktop Radial Glow */}
+          <div style={{
+            position: 'absolute',
+            top: 0, left: 0, right: 0, height: 500,
+            background: 'radial-gradient(circle at 50% -50px, #001442 0%, transparent 70%)',
+            opacity: 0.12,
+            pointerEvents: 'none',
+            zIndex: 0,
+          }} />
+
+          <div style={{ paddingTop: 28, marginBottom: 24, position: 'relative', zIndex: 1 }}>
           <Breadcrumb items={[
             { label: 'Casal', href: '/casal' },
             { label: objetivo.name },
@@ -266,7 +278,8 @@ export default function ObjetivoDetalhe() {
             </h1>
           )}
         </div>
-      )}
+      </>
+    )}
 
       <div style={{ padding: isMobile ? '0 16px' : 0 }}>
 

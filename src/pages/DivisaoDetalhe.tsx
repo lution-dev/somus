@@ -202,11 +202,12 @@ export default function DivisaoDetalhe() {
         <>
           <PageHeader title={divisao.name} back bg={HERO_BG} />
           <div style={{
-            background: HERO_BG,
+            background: `linear-gradient(to bottom, ${HERO_BG} 0%, transparent 100%)`,
             borderRadius: '0 0 24px 24px',
             padding: '0 16px 24px',
             marginBottom: 20,
             overflow: 'hidden',
+            position: 'relative',
           }}>
             {/* Icon */}
             <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 12 }}>
@@ -263,7 +264,18 @@ export default function DivisaoDetalhe() {
           </div>
         </>
       ) : (
-        <div style={{ paddingTop: 28, marginBottom: 20 }}>
+        <>
+          {/* Desktop Radial Glow */}
+          <div style={{
+            position: 'absolute',
+            top: 0, left: 0, right: 0, height: 500,
+            background: 'radial-gradient(circle at 50% -50px, #001442 0%, transparent 70%)',
+            opacity: 0.12,
+            pointerEvents: 'none',
+            zIndex: 0,
+          }} />
+
+          <div style={{ paddingTop: 28, marginBottom: 20, position: 'relative', zIndex: 1 }}>
           <Breadcrumb items={[
             { label: 'Relatórios', href: '/relatorios' },
             {
@@ -282,7 +294,8 @@ export default function DivisaoDetalhe() {
           <p style={{ fontSize: 12, color: 'var(--color-text-secondary)', margin: '4px 0 0 4px' }}>
             {divisao.percentage}% da renda esperada
           </p>
-        </div>
+          </div>
+        </>
       )}
 
       <div style={{ padding: isMobile ? '0 16px' : 0 }}>
