@@ -1,4 +1,5 @@
 ﻿import { useLocation } from 'wouter'
+import { motion } from 'framer-motion'
 
 interface NavItem {
   path: string
@@ -49,11 +50,13 @@ export function BottomNav({ items }: BottomNavProps) {
             ? 'var(--color-accent-couple)'
             : 'var(--color-accent-primary)'
           return (
-            <button
+            <motion.button
               key={item.path}
               onClick={() => navigate(item.path, { replace: true })}
               aria-label={item.label}
               aria-current={isActive ? 'page' : undefined}
+              whileTap={{ scale: 0.82 }}
+              transition={{ duration: 0.12, ease: [0.4, 0, 0.2, 1] }}
               style={{
                 display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
                 gap: 3, flex: 1, height: '100%', cursor: 'pointer',
@@ -72,7 +75,7 @@ export function BottomNav({ items }: BottomNavProps) {
               }}>
                 {item.label}
               </span>
-            </button>
+            </motion.button>
           )
         })}
       </div>

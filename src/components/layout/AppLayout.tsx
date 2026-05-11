@@ -1,4 +1,5 @@
-import { useState, useRef, useEffect, type ReactNode } from 'react'
+﻿import { useState, useRef, useEffect, type ReactNode } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import { useLocation } from 'wouter'
 import { Home, ArrowLeftRight, BarChart3, Heart, MoreVertical, User, LogOut } from 'lucide-react'
 import { BottomNav } from '../ui'
@@ -227,6 +228,25 @@ function Sidebar() {
   )
 }
 
+
+// ─── Page Transition ────────────────────────────────────────────────────────
+function PageTransition({ children }: { children: ReactNode }) {
+  const [location] = useLocation()
+  return (
+    <AnimatePresence mode="wait" initial={false}>
+      <motion.div
+        key={location}
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -4 }}
+        transition={{ duration: 0.22, ease: [0.4, 0, 0.2, 1] }}
+        style={{ width: '100%' }}
+      >
+        {children}
+      </motion.div>
+    </AnimatePresence>
+  )
+}
 // ─── App Layout ───────────────────────────────────────────────────────────────
 interface AppLayoutProps { children: ReactNode }
 
@@ -277,7 +297,7 @@ export function AppLayout({ children }: AppLayoutProps) {
           zIndex: 1,
         }}>
           <div style={{ width: '100%', maxWidth: 960, padding: '0 40px', flex: 1 }}>
-            {children}
+            <PageTransition>{children}</PageTransition>
           </div>
         </main>
       </div>
@@ -306,7 +326,7 @@ export function AppLayout({ children }: AppLayoutProps) {
           }}
         >
           <PullToRefresh scrollRef={mainRef}>
-            {children}
+            <PageTransition>{children}</PageTransition>
           </PullToRefresh>
         </main>
         <BottomNav items={NAV_ITEMS} />
