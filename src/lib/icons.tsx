@@ -12,12 +12,15 @@ interface BrandIconProps {
   className?: string
 }
 
-// Essencial — triângulo: fundação, estabilidade, estrutura
-function EssencialIcon({ size = 24, color = '#22D3EE', style, className }: BrandIconProps) {
+// Essencial — camadas horizontais: fundação, estabilidade, estrutura
+function EssencialIcon({ size = 24, color = '#2384FF', style, className }: BrandIconProps) {
   const c = style?.color ?? color
   return (
     <svg width={size} height={size} viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" style={style} className={className}>
-      <path d="M18 46L32 20L46 46" stroke={c} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M18 42H46" stroke={c} strokeWidth="2.5" strokeLinecap="round"/>
+      <path d="M22 34H42" stroke={c} strokeWidth="2.5" strokeLinecap="round" opacity="0.7"/>
+      <path d="M26 26H38" stroke={c} strokeWidth="2.5" strokeLinecap="round" opacity="0.4"/>
+      <rect x="16" y="16" width="32" height="32" rx="10" stroke={c} strokeWidth="2.5"/>
     </svg>
   )
 }
@@ -33,35 +36,42 @@ function LiberdadeIcon({ size = 24, color = '#4DE2E2', style, className }: Brand
   )
 }
 
-// Objetivos — círculos concêntricos: direção, foco
-function ObjetivosIcon({ size = 24, color = '#8B5CF6', style, className }: BrandIconProps) {
+// Objetivos — alvo com linha: direção, foco
+function ObjetivosIcon({ size = 24, color = '#9B6BFF', style, className }: BrandIconProps) {
   const c = style?.color ?? color
   return (
     <svg width={size} height={size} viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" style={style} className={className}>
-      <circle cx="32" cy="32" r="16" stroke={c} strokeWidth="2.5"/>
-      <circle cx="32" cy="32" r="7"  stroke={c} strokeWidth="2.5"/>
+      <circle cx="32" cy="32" r="18" stroke={c} strokeWidth="2.5"/>
+      <circle cx="32" cy="32" r="8"  stroke={c} strokeWidth="2.5" opacity="0.6"/>
+      <path d="M32 32L46 18" stroke={c} strokeWidth="2.5" strokeLinecap="round"/>
     </svg>
   )
 }
 
-// Educação — livro aberto: aprendizado, sabedoria
-function EducacaoIcon({ size = 24, color = '#F59E0B', style, className }: BrandIconProps) {
+// Educação — livro aberto estilizado: aprendizado, sabedoria
+function EducacaoIcon({ size = 24, color = '#3ED6B7', style, className }: BrandIconProps) {
   const c = style?.color ?? color
   return (
     <svg width={size} height={size} viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" style={style} className={className}>
-      <path d="M18 22C18 20.9 18.9 20 20 20H30C33.3 20 36 22.7 36 26V44H24C20.7 44 18 41.3 18 38V22Z" stroke={c} strokeWidth="2.5" strokeLinejoin="round"/>
-      <path d="M46 22C46 20.9 45.1 20 44 20H34C30.7 20 28 22.7 28 26V44H40C43.3 44 46 41.3 46 38V22Z" stroke={c} strokeWidth="2.5" strokeLinejoin="round"/>
+      <path d="M18 22C22 20 27 20 32 24C37 20 42 20 46 22"
+            stroke={c} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M18 22V42C22 40 27 40 32 44C37 40 42 40 46 42V22"
+            stroke={c} strokeWidth="2.5" strokeLinejoin="round"/>
+      <path d="M32 24V44"
+            stroke={c} strokeWidth="2.5" opacity="0.45" strokeLinecap="round"/>
     </svg>
   )
 }
 
-// Dízimo — cruz minimalista: propósito, generosidade
-function DizimoIcon({ size = 24, color = '#10B981', style, className }: BrandIconProps) {
+// Dízimo — coração/gota: propósito, generosidade, espiritualidade
+function DizimoIcon({ size = 24, color = '#E5B85C', style, className }: BrandIconProps) {
   const c = style?.color ?? color
   return (
     <svg width={size} height={size} viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" style={style} className={className}>
-      <path d="M32 16V48" stroke={c} strokeWidth="2.5" strokeLinecap="round"/>
-      <path d="M20 28H44" stroke={c} strokeWidth="2.5" strokeLinecap="round"/>
+      <path d="M32 14C40 14 46 20 46 28C46 40 32 50 32 50C32 50 18 40 18 28C18 20 24 14 32 14Z"
+            stroke={c} strokeWidth="2.5" strokeLinejoin="round"/>
+      <path d="M24 38C27 34 29 32 32 32C35 32 37 34 40 38"
+            stroke={c} strokeWidth="2.5" strokeLinecap="round"/>
     </svg>
   )
 }
@@ -84,11 +94,11 @@ type BrandIcon = (props: BrandIconProps) => JSX.Element
  * Drop-in replacement for Lucide icons: <Icon size={22} style={{ color }} />
  */
 export const DIVISAO_ICONS: Record<string, { icon: BrandIcon; color: string }> = {
-  'cx-essencial': { icon: EssencialIcon,  color: '#22D3EE' }, // cyan — fundação
+  'cx-essencial': { icon: EssencialIcon,  color: '#2384FF' }, // azul — camadas, fundação
   'cx-reserva':   { icon: LiberdadeIcon,  color: '#4DE2E2' }, // cyan — liberdade financeira
-  'cx-objetivos': { icon: ObjetivosIcon,  color: '#8B5CF6' }, // lilás — foco
-  'cx-educacao':  { icon: EducacaoIcon,   color: '#F59E0B' }, // âmbar — aprendizado
-  'cx-dizimo':    { icon: DizimoIcon,     color: '#10B981' }, // verde — propósito
+  'cx-objetivos': { icon: ObjetivosIcon,  color: '#9B6BFF' }, // lilás — alvo, foco
+  'cx-educacao':  { icon: EducacaoIcon,   color: '#3ED6B7' }, // verde-azulado — sabedoria
+  'cx-dizimo':    { icon: DizimoIcon,     color: '#E5B85C' }, // dourado — propósito
 }
 
 /**
