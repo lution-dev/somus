@@ -40,6 +40,7 @@ function FixaItem({ sf, isLast, onPress, yearMonth }: {
   const isOverdue  = !paid && (isPastMonth || daysUntil < 0)
   const [dateDialogOpen, setDateDialogOpen] = useState(false)
   const isMobile = useIsMobile()
+  const HERO_BG = '#081120' // Fluxo: racional, profundo, mais frio
   
   const effectiveAmount = getEffectiveAmount(sf, yearMonth)
   const hasOverride = sf.monthlyAmountOverrides?.[yearMonth] !== undefined
@@ -185,6 +186,7 @@ function FixaItem({ sf, isLast, onPress, yearMonth }: {
 function VariavelItem({ sv, isLast, onPress }: { sv: SaidaVariavel; isLast: boolean; onPress: (sv: SaidaVariavel) => void }) {
   const isPending = sv.status === 'pending'
   const isMobile = useIsMobile()
+  const HERO_BG = '#081120' // Fluxo: racional, profundo, mais frio
 
   return (
     <motion.div
@@ -306,6 +308,7 @@ export default function Fluxo() {
   const [editEntradaOpen, setEditEntradaOpen]           = useState(false)
   const [confirmDeleteEntrada, setConfirmDeleteEntrada] = useState(false)
   const isMobile = useIsMobile()
+  const HERO_BG = '#081120' // Fluxo: racional, profundo, mais frio
 
   const yearMonth = useMemo(() => new Date().toISOString().slice(0, 7), [])
 
@@ -531,7 +534,7 @@ export default function Fluxo() {
         <>
           <PageHeader 
             title="Fluxo" 
-            bg="#091223" 
+            bg={HERO_BG} 
             rightAction={
               <div style={{ 
                 background: 'rgba(255,255,255,0.08)', padding: '4px 10px', borderRadius: 8,
@@ -543,7 +546,7 @@ export default function Fluxo() {
           />
           {/* Gradient wrapping FluxoChart — same structure as Home wraps BalanceCard */}
           <div style={{
-            background: 'radial-gradient(circle at 50% 0%, rgba(59,130,246,0.24) 0%, transparent 48%), linear-gradient(180deg, #081120 0%, #050816 100%)',
+            background: `linear-gradient(to bottom, ${HERO_BG} 0%, transparent 100%)`,
             padding: '12px 16px 20px',
             overflow: 'hidden',
           }}>

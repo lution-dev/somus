@@ -98,7 +98,7 @@ export default function Relatorios() {
   const TODAY        = currentYM()
   const [month, setMonth]         = useState(TODAY)
   const [reportCtx, setReportCtx] = useState<'me' | 'partner' | 'couple'>('couple')
-  const headerBg = reportCtx === 'couple' ? '#091223' : reportCtx === 'partner' ? '#091223' : '#091223'
+  const headerBg = reportCtx === 'couple' ? '#0B0A1E' : reportCtx === 'partner' ? '#0D0920' : '#091223'
   const accentColor = reportCtx === 'couple' ? '#8B5CF6' : reportCtx === 'partner' ? '#A78BFA' : '#3B82F6'
 
   const myName      = currentUser?.name?.split(' ')[0] ?? 'Meu'
@@ -159,7 +159,7 @@ export default function Relatorios() {
           />
           {/* Toggle abaixo da navbar — gradient hero estendido */}
           <div style={{
-            background: `radial-gradient(circle at 50% 0%, rgba(139,92,246,0.18) 0%, transparent 46%), linear-gradient(180deg, ${headerBg} 0%, #050816 100%)`,
+            background: `linear-gradient(to bottom, ${headerBg} 0%, transparent 100%)`,
             padding: '10px 16px 20px',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}>

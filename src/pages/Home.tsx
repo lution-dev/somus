@@ -641,7 +641,7 @@ export default function Home() {
   const hour = new Date().getHours()
   const greeting = hour < 12 ? 'Bom dia' : hour < 18 ? 'Boa tarde' : 'Boa noite'
 
-  const HERO_BG = '#091223' // atmospheric midnight
+  const HERO_BG = '#091223'
 
   function handleEntradaClick(name: string, amount: number) {
     setPrefill({ sourceName: name, amount })
@@ -670,7 +670,7 @@ export default function Home() {
             rightAction={<UserMenu variant="hero" />}
           />
           <div style={{
-            background: `radial-gradient(circle at 50% 0%, rgba(37,99,235,0.30) 0%, transparent 46%), linear-gradient(180deg, ${HERO_BG} 0%, #050816 100%)`,
+            background: `linear-gradient(to bottom, ${HERO_BG} 0%, transparent 100%)`,
             padding: '12px 16px 20px',
             overflow: 'hidden',
           }}>
