@@ -541,8 +541,18 @@ export default function Fluxo() {
               </div>
             }
           />
-          {/* Gradient bleed — same pattern as Home */}
-          <div style={{ height: 16, background: 'linear-gradient(to bottom, #001442 0%, transparent 100%)' }} />
+          {/* Gradient wrapping FluxoChart — same structure as Home wraps BalanceCard */}
+          <div style={{
+            background: 'linear-gradient(to bottom, #001442 0%, transparent 100%)',
+            padding: '12px 16px 20px',
+            overflow: 'hidden',
+          }}>
+            <FluxoChart 
+              paidPct={paidPct} 
+              totalFixasPending={totalFixasPending} 
+              totalPagoNoMes={totalPagoNoMes} 
+            />
+          </div>
         </>
       ) : (
         <>
@@ -575,11 +585,6 @@ export default function Fluxo() {
 
 
       <div style={{ padding: isMobile ? '0 16px 0' : 0, position: 'relative', zIndex: 1 }}>
-        <FluxoChart 
-          paidPct={paidPct} 
-          totalFixasPending={totalFixasPending} 
-          totalPagoNoMes={totalPagoNoMes} 
-        />
 
         {/* List header with contextual title + filter chips */}
         <div style={{
