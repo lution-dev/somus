@@ -30,9 +30,9 @@ export function BottomNav({ items }: BottomNavProps) {
         borderRadius: 22,
         border: '1px solid rgba(255,255,255,0.08)',
         /* Glassmorphism */
-        background: 'rgba(15, 15, 15, 0.65)',
-        backdropFilter: 'blur(28px) saturate(180%)',
-        WebkitBackdropFilter: 'blur(28px) saturate(180%)',
+        background: 'rgba(11, 18, 32, 0.72)',
+        backdropFilter: 'blur(28px) saturate(140%)',
+        WebkitBackdropFilter: 'blur(28px) saturate(140%)',
         boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 4px 24px rgba(0, 0, 0, 0.4)',
       }}
     >
@@ -62,12 +62,26 @@ export function BottomNav({ items }: BottomNavProps) {
                 transition: 'color 150ms ease',
               }}
             >
-              <span style={{ display: 'flex', position: 'relative' }}>
+            <span style={{ display: 'flex', position: 'relative', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
                 {(isActive && item.activeIcon) ? item.activeIcon : item.icon}
+                {/* Brand gradient active indicator dot */}
+                {isActive && (
+                  <span style={{
+                    width: 16, height: 3, borderRadius: 99,
+                    background: item.path === '/casal'
+                      ? 'linear-gradient(90deg, #8B5CF6 0%, #C084FC 100%)'
+                      : 'linear-gradient(90deg, #2563EB 0%, #22D3EE 100%)',
+                    display: 'block',
+                    position: 'absolute',
+                    bottom: -6,
+                  }} />
+                )}
               </span>
               <span style={{
                 fontSize: 10, fontWeight: isActive ? 600 : 500,
                 color: isActive ? activeColor : 'var(--color-text-tertiary)',
+                marginTop: isActive ? 6 : 0,
+                transition: 'margin 150ms ease',
               }}>
                 {item.label}
               </span>
