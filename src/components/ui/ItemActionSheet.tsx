@@ -81,7 +81,7 @@ export default function ItemActionSheet({ open, onClose, onEdit, onDelete, title
               border: '1px solid var(--color-border)',
               ...(isMobile ? {
                 bottom: 0, left: 0, right: 0,
-                borderRadius: '20px 20px 0 0',
+                borderRadius: '28px 28px 0 0',
                 paddingBottom: 'calc(16px + env(safe-area-inset-bottom, 0px))',
               } : {
                 top: '50%', left: '50%',

@@ -641,7 +641,7 @@ export default function Fluxo() {
 
         {/* Search */}
         <div style={{ marginBottom: 12 }}>
-          <SearchBar value={fluxoSearch} onChange={setFluxoSearch} placeholder="Procurar no fluxo..." />
+          <SearchBar value={fluxoSearch} onChange={setFluxoSearch} placeholder="Buscar lançamentos..." />
         </div>
 
         {/* List */}
