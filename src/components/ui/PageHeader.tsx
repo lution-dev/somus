@@ -41,7 +41,7 @@ export function PageHeader({ title, back, backTo, rightAction, bg, height }: Pag
           zIndex: 50,
           /* When bg is provided: solid exact color to merge with the gradient below.
              When no bg: Liquid Glass dark overlay. */
-          background: bg || 'rgba(10, 10, 10, 0.82)',
+          background: bg || 'rgba(11, 18, 32, 0.82)',
           backdropFilter: bg ? 'none' : 'blur(24px) saturate(180%)',
           WebkitBackdropFilter: bg ? 'none' : 'blur(24px) saturate(180%)',
           paddingTop: 'env(safe-area-inset-top, 0px)',

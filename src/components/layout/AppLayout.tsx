@@ -43,7 +43,7 @@ function Sidebar() {
   return (
     <aside style={{
       width: 220, minWidth: 220,
-      background: 'rgba(10, 10, 10, 0.6)',
+      background: 'rgba(11, 18, 32, 0.6)',
       backdropFilter: 'blur(28px) saturate(180%)',
       WebkitBackdropFilter: 'blur(28px) saturate(180%)',
       borderRight: '1px solid rgba(255, 255, 255, 0.08)',

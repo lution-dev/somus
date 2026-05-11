@@ -6,10 +6,10 @@
 /* ─── Design Tokens ─── */
 :root {
   /* ── Backgrounds ── */
-  --color-bg-primary:   #0A0A0A;
-  --color-bg-secondary: #171717;
-  --color-bg-tertiary:  #1E1E1E;
-  --color-bg-sidebar:   #111111;
+  --color-bg-primary:   #0B1220;
+  --color-bg-secondary: #0F1A2E;
+  --color-bg-tertiary:  #162236;
+  --color-bg-sidebar:   #0D1828;
 
   /* ── Accent ── */
   --color-accent-primary:  #3B82F6;
@@ -116,7 +116,7 @@ body {
 
 /* ─── Card Base ─── */
 .card {
-  background: rgba(23, 23, 23, 0.65);
+  background: rgba(14, 22, 42, 0.58);
   backdrop-filter: blur(12px) saturate(180%);
   -webkit-backdrop-filter: blur(12px) saturate(180%);
   border: 1px solid rgba(255, 255, 255, 0.08);

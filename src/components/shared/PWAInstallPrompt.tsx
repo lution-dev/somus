@@ -51,7 +51,7 @@ export function PWAInstallPrompt() {
           overflow: 'hidden',
           borderRadius: 16,
           border: '1px solid rgba(255, 255, 255, 0.08)',
-          background: 'rgba(23, 23, 23, 0.95)',
+          background: 'rgba(14, 22, 42, 0.97)',
           backdropFilter: 'blur(20px)',
           WebkitBackdropFilter: 'blur(20px)',
           boxShadow: '0 20px 60px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255,255,255,0.04)',
