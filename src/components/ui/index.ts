@@ -34,4 +34,3 @@ export { default as ConfirmDialog } from './ConfirmDialog'
 export { Breadcrumb } from './Breadcrumb'
 export type { BreadcrumbItem } from './Breadcrumb'
 
-export { DivisaoIcon } from './DivisaoIcon'
