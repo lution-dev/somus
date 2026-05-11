@@ -37,12 +37,13 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         className={className}
         style={{
           display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-          fontWeight: 600, fontFamily: 'var(--font-sans)',
+          fontWeight: 600,
+          fontFamily: variant === 'primary' ? 'var(--font-display)' : 'var(--font-sans)',
           cursor: disabled || loading ? 'not-allowed' : 'pointer',
           border: 'none',
           opacity: disabled || loading ? 0.5 : 1,
           width: fullWidth ? '100%' : undefined,
-          transition: 'background 150ms ease',
+          transition: 'background 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease',
           ...VARIANT_STYLES[variant],
           ...SIZE_STYLES[size],
           ...style,

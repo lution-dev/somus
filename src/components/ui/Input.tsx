@@ -47,19 +47,25 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
             autoComplete="off"
             style={{
               width: '100%', height: 44,
-              background: 'var(--color-bg-tertiary)',
-              border: `1px solid ${error ? 'var(--color-danger)' : 'var(--color-border)'}`,
-              borderRadius: 'var(--radius-card)',
+              background: 'rgba(14, 22, 42, 0.72)', /* glass surface — App Design System */
+              border: `1px solid ${error ? 'var(--color-danger)' : 'var(--surface-border)'}`,
+              borderRadius: 'var(--radius-input)',    /* 14px — App Design System */
               fontSize: 16, color: 'var(--color-text-primary)',
               fontFamily: 'var(--font-sans)',
               paddingLeft: leftIcon || prefix ? 40 : 16,
               paddingRight: rightIcon ? 40 : 16,
               outline: 'none',
-              transition: 'border-color 150ms ease',
+              transition: 'border-color 0.15s ease, box-shadow 0.15s ease',
               ...style,
             }}
-            onFocus={e => { e.currentTarget.style.borderColor = 'var(--color-accent-primary)' }}
-            onBlur={e => { e.currentTarget.style.borderColor = error ? 'var(--color-danger)' : 'var(--color-border)' }}
+            onFocus={e => {
+              e.currentTarget.style.borderColor = 'var(--somus-blue)'
+              e.currentTarget.style.boxShadow = '0 0 0 3px rgba(37,99,235,0.15)'
+            }}
+            onBlur={e => {
+              e.currentTarget.style.borderColor = error ? 'var(--color-danger)' : 'var(--surface-border)'
+              e.currentTarget.style.boxShadow = 'none'
+            }}
             {...props}
           />
           {rightIcon && (

@@ -169,15 +169,15 @@ body {
 
 .card-interactive {
   cursor: pointer;
-  transition: border-color 150ms ease, background 150ms ease, transform 150ms ease;
+  transition: var(--transition-normal);
 }
 .card-interactive:hover {
-  border-color: rgba(59, 130, 246, 0.3);
-  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(37, 99, 235, 0.3); /* --somus-blue */
+  background: rgba(255, 255, 255, 0.05);
 }
 .card-interactive:active {
   transform: scale(0.985);
-  transition-duration: 80ms;
+  transition: var(--transition-fast);
 }
 
 /* ─── Progress Bar ─── */
@@ -247,7 +247,7 @@ body {
 .nav-item {
   color: var(--color-text-secondary);
   padding: 10px 14px;
-  border-radius: 10px;
+  border-radius: var(--radius-button); /* 14px — App Design System */
   border: none;
   background: transparent;
   font-family: var(--font-sans);
@@ -259,7 +259,7 @@ body {
   gap: 10px;
   width: 100%;
   text-align: left;
-  transition: background 160ms ease, color 160ms ease, box-shadow 160ms ease;
+  transition: var(--transition-fast);
   position: relative;
 }
 .nav-item:hover {
@@ -267,10 +267,10 @@ body {
   color: var(--color-text-primary);
 }
 .nav-item--active {
-  background: rgba(59, 130, 246, 0.1);
-  color: var(--color-accent-primary);
+  background: rgba(37, 99, 235, 0.12); /* --somus-blue */
+  color: var(--somus-blue);
   font-weight: 600;
-  box-shadow: inset 0 0 0 1px rgba(59,130,246,0.18);
+  box-shadow: inset 0 0 0 1px rgba(37,99,235,0.20);
 }
 
 /* ─── Prefers reduced motion ─── */
@@ -295,12 +295,12 @@ body {
   .desktop-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 20px;
+    gap: var(--space-lg); /* 24px — App Design System */
   }
   .desktop-grid--3 {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 20px;
+    gap: var(--space-lg); /* 24px — App Design System */
   }
   .desktop-span-full {
     grid-column: 1 / -1;
@@ -313,10 +313,10 @@ body {
 
   /* Card hover polish for desktop */
   .card {
-    transition: border-color 200ms ease, box-shadow 200ms ease;
+    transition: var(--transition-normal);
   }
   .card:hover {
-    border-color: rgba(59, 130, 246, 0.15);
+    border-color: rgba(37, 99, 235, 0.15); /* --somus-blue */
   }
   .card-interactive:hover {
     box-shadow: 0 4px 24px rgba(0, 0, 0, 0.25);
