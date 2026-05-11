@@ -205,6 +205,7 @@ export default function DivisaoDetalhe() {
             background: `linear-gradient(to bottom, ${HERO_BG} 0%, transparent 100%)`,
             padding: '12px 16px 24px',
             marginBottom: 20,
+            overflow: 'hidden',
           }}>
             {/* Icon */}
             <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 12 }}>
@@ -217,7 +218,7 @@ export default function DivisaoDetalhe() {
               </div>
             </div>
 
-            {/* Meta */}
+            {/* Meta (title is already in navbar) */}
             <div style={{ textAlign: 'center', marginBottom: 16 }}>
               <p style={{ fontSize: 13, color: 'var(--color-text-secondary)', margin: 0 }}>
                 Meta: {formatCurrency(expectedBal)} · {divisao.percentage}% do total

@@ -107,9 +107,11 @@ export default function ObjetivoDetalhe() {
       {isMobile ? (
         <>
           <PageHeader title={objetivo.name} back bg={HERO_BG} />
+
           <div style={{
             background: `linear-gradient(to bottom, ${HERO_BG} 0%, transparent 100%)`,
             marginBottom: 20,
+            overflow: 'hidden',
           }}>
             {/* Banner hero — click para trocar */}
             <div

@@ -663,26 +663,14 @@ export default function Home() {
     <div style={{ minHeight: '100%' }}>
       {/* ── Hero Header Section ── */}
       {isMobile ? (
-        <div style={{ position: 'relative' }}>
-          {/* Mobile Hero Gradient Background (behind everything) */}
-          <div style={{
-            position: 'absolute',
-            top: 0, left: 0, right: 0,
-            height: 300,
-            background: `linear-gradient(to bottom, ${HERO_BG} 0%, transparent 100%)`,
-            zIndex: 0,
-            pointerEvents: 'none',
-          }} />
-
+        <>
           <PageHeader
             title={`${greeting}, ${firstName}`}
             bg={HERO_BG}
             rightAction={<UserMenu variant="hero" />}
           />
-
           <div style={{
-            position: 'relative',
-            zIndex: 1,
+            background: `linear-gradient(to bottom, ${HERO_BG} 0%, transparent 100%)`,
             padding: '12px 16px 20px',
             overflow: 'hidden',
           }}>
@@ -696,7 +684,7 @@ export default function Home() {
               onToggleHidden={toggleBalanceHidden}
             />
           </div>
-        </div>
+        </>
       ) : (
         <>
           {/* Desktop Radial Glow */}

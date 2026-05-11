@@ -157,10 +157,10 @@ export default function Relatorios() {
               <MonthNav month={month} today={TODAY} onChange={setMonth} showLabel />
             }
           />
-          {/* Toggle abaixo da navbar */}
+          {/* Toggle abaixo da navbar — gradient hero estendido */}
           <div style={{
             background: `linear-gradient(to bottom, ${headerBg} 0%, transparent 100%)`,
-            padding: '0 16px 20px',
+            padding: '10px 16px 20px',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}>
             <SegmentedCtrl
