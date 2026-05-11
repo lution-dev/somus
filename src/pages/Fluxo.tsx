@@ -1,4 +1,4 @@
-﻿import React, { useMemo, useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAppStore, selectCurrentSaidasFixas, selectCurrentEntradas } from '../stores/useAppStore'
 import { useShallow } from 'zustand/react/shallow'
@@ -40,7 +40,6 @@ function FixaItem({ sf, isLast, onPress, yearMonth }: {
   const isOverdue  = !paid && (isPastMonth || daysUntil < 0)
   const [dateDialogOpen, setDateDialogOpen] = useState(false)
   const isMobile = useIsMobile()
-  const HERO_BG = '#112A5F' // Fluxo: racional, profundo, mais frio
   
   const effectiveAmount = getEffectiveAmount(sf, yearMonth)
   const hasOverride = sf.monthlyAmountOverrides?.[yearMonth] !== undefined
@@ -186,7 +185,6 @@ function FixaItem({ sf, isLast, onPress, yearMonth }: {
 function VariavelItem({ sv, isLast, onPress }: { sv: SaidaVariavel; isLast: boolean; onPress: (sv: SaidaVariavel) => void }) {
   const isPending = sv.status === 'pending'
   const isMobile = useIsMobile()
-  const HERO_BG = '#112A5F' // Fluxo: racional, profundo, mais frio
 
   return (
     <motion.div
