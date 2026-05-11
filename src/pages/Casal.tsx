@@ -55,7 +55,7 @@ export default function Casal() {
   })
 
   const isMobile = useIsMobile()
-  const HERO_BG = '#150D27'
+  const HERO_BG = '#091223'
   const rawCode = currentUser?.partnerCode ?? '0001'
   const partnerCode = rawCode.startsWith('SOMUS-') ? rawCode.replace('SOMUS-', '').slice(-4).toUpperCase() : rawCode
   const { hidden: balanceHidden, toggle: toggleBalanceHidden } = useBalanceHidden()
@@ -92,7 +92,7 @@ export default function Casal() {
             </button>
           </div>
           <p style={{
-            fontSize: 32, fontWeight: 700,
+            fontSize: 32, fontWeight: 600, letterSpacing: 'var(--tracking-financial)',
             color: 'var(--color-text-primary)',
             margin: '0 0 14px', lineHeight: 1,
           }}>
@@ -125,7 +125,7 @@ export default function Casal() {
                 {currentUserName.split(' ')[0]}
               </p>
             </div>
-            <p style={{ fontSize: 18, fontWeight: 700, color: 'var(--color-lucas)', margin: '0 0 3px' }}>
+            <p style={{ fontSize: 18, fontWeight: 600, letterSpacing: 'var(--tracking-financial)', color: 'var(--color-lucas)', margin: '0 0 3px' }}>
               {balanceHidden ? <span style={{ letterSpacing: 2 }}>{mask}</span> : formatCurrency(currentUserBalance)}
             </p>
             <p style={{ fontSize: 11, color: 'var(--color-text-tertiary)', margin: 0 }}>
@@ -146,7 +146,7 @@ export default function Casal() {
                   {partner.name.split(' ')[0]}
                 </p>
               </div>
-              <p style={{ fontSize: 18, fontWeight: 700, color: 'var(--color-mirian)', margin: '0 0 3px' }}>
+              <p style={{ fontSize: 18, fontWeight: 600, letterSpacing: 'var(--tracking-financial)', color: 'var(--color-mirian)', margin: '0 0 3px' }}>
                 {balanceHidden ? <span style={{ letterSpacing: 2 }}>{mask}</span> : formatCurrency(partnerBalance)}
               </p>
               <p style={{ fontSize: 11, color: 'var(--color-text-tertiary)', margin: 0 }}>Parceiro(a)</p>
@@ -221,11 +221,28 @@ export default function Casal() {
       {isMobile ? (
         <>
           <PageHeader title="Casal" bg={HERO_BG} />
-          <div style={{
-            background: `linear-gradient(to bottom, ${HERO_BG} 0%, transparent 100%)`,
-            padding: '12px 16px 20px',
-          }}>
-            <PatrimonioCard isHero />
+          <div style={{ position: 'relative', overflow: 'hidden' }}>
+            {/* Cinematic ambient layer 1 — couple blue glow */}
+            <div style={{
+              position: 'absolute', inset: 0,
+              background: 'radial-gradient(ellipse at 30% 0%, rgba(37,99,235,0.22) 0%, transparent 60%)',
+              pointerEvents: 'none', zIndex: 0,
+            }} />
+            {/* Cinematic ambient layer 2 — violet glow */}
+            <div style={{
+              position: 'absolute', inset: 0,
+              background: 'radial-gradient(ellipse at 80% 20%, rgba(143,109,245,0.16) 0%, transparent 55%)',
+              pointerEvents: 'none', zIndex: 0,
+            }} />
+            {/* Gradient fade */}
+            <div style={{
+              position: 'absolute', inset: 0,
+              background: `linear-gradient(to bottom, ${HERO_BG} 0%, transparent 100%)`,
+              pointerEvents: 'none', zIndex: 0,
+            }} />
+            <div style={{ position: 'relative', zIndex: 1, padding: '12px 16px 20px' }}>
+              <PatrimonioCard isHero />
+            </div>
           </div>
         </>
       ) : (
@@ -235,7 +252,7 @@ export default function Casal() {
             position: 'absolute',
             top: 0, left: 0, right: 0, height: 500,
             background: 'radial-gradient(circle at 50% -50px, var(--color-accent-couple) 0%, transparent 70%)',
-            opacity: 0.12,
+            opacity: 0.18,
             pointerEvents: 'none',
             zIndex: 0,
           }} />
