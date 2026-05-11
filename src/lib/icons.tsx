@@ -4,6 +4,7 @@
  * Refined geometry: Somus curves, precise proportions, atmospheric stroke weight.
  * Each icon accepts `size` and `color` props — drop-in for Lucide icons.
  */
+import React from 'react'
 
 interface BrandIconProps {
   size?: number
@@ -120,7 +121,7 @@ function DefaultDivisaoIcon({ size = 24, color = '#2563EB', style, className }: 
 }
 
 // ─── Type compatible with Lucide icon usage ────────────────────────────────
-type BrandIcon = (props: BrandIconProps) => JSX.Element
+type BrandIcon = (props: BrandIconProps) => React.JSX.Element
 
 /**
  * Maps divisao IDs → official brand icon component + brand color.

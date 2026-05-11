@@ -1,4 +1,4 @@
-/* ─── Fontshare — Satoshi (brand display font) ─── */
+﻿/* ─── Fontshare — Satoshi (brand display font) ─── */
 @import url('https://api.fontshare.com/v2/css?f[]=satoshi@700,600,500&display=swap');
 
 /* ─── Google Fonts — Inter (body) ─── */
@@ -114,12 +114,12 @@ body {
   background:
     radial-gradient(
       circle at top,
-      rgba(37, 99, 235, 0.18),
-      transparent 38%
+      rgba(37, 99, 235, 0.30),
+      transparent 46%
     ),
     radial-gradient(
       circle at bottom right,
-      rgba(34, 211, 238, 0.06),
+      rgba(34, 211, 238, 0.05),
       transparent 30%
     ),
     linear-gradient(
@@ -395,12 +395,12 @@ body::before {
     background:
       radial-gradient(
         circle at top,
-        rgba(37, 99, 235, 0.18),
-        transparent 38%
+        rgba(37, 99, 235, 0.30),
+        transparent 46%
       ),
       radial-gradient(
         circle at bottom right,
-        rgba(34, 211, 238, 0.06),
+        rgba(34, 211, 238, 0.05),
         transparent 30%
       ),
       linear-gradient(

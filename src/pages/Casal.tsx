@@ -225,7 +225,7 @@ export default function Casal() {
             {/* Cinematic ambient layer 1 — couple blue glow */}
             <div style={{
               position: 'absolute', inset: 0,
-              background: 'radial-gradient(ellipse at 30% 0%, rgba(37,99,235,0.22) 0%, transparent 60%)',
+              background: 'radial-gradient(ellipse at 30% 0%, rgba(37,99,235,0.18) 0%, transparent 60%)',
               pointerEvents: 'none', zIndex: 0,
             }} />
             {/* Cinematic ambient layer 2 — violet glow */}

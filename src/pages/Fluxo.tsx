@@ -543,7 +543,7 @@ export default function Fluxo() {
           />
           {/* Gradient wrapping FluxoChart — same structure as Home wraps BalanceCard */}
           <div style={{
-            background: 'linear-gradient(to bottom, #091223 0%, transparent 100%)',
+            background: 'radial-gradient(circle at 50% 0%, rgba(59,130,246,0.24) 0%, transparent 48%), linear-gradient(180deg, #081120 0%, #050816 100%)',
             padding: '12px 16px 20px',
             overflow: 'hidden',
           }}>
