@@ -105,24 +105,11 @@ export default function ObjetivoDetalhe() {
 
       {/* Header */}
       {isMobile ? (
-        <div style={{ position: 'relative' }}>
-          {/* Mobile Hero Gradient Background (behind everything) */}
-          <div style={{
-            position: 'absolute',
-            top: 0, left: 0, right: 0,
-            height: 340,
-            background: `linear-gradient(to bottom, ${HERO_BG} 0%, transparent 100%)`,
-            zIndex: 0,
-            pointerEvents: 'none',
-          }} />
-
+        <>
           <PageHeader title={objetivo.name} back bg={HERO_BG} />
-
           <div style={{
-            position: 'relative',
-            zIndex: 1,
+            background: `linear-gradient(to bottom, ${HERO_BG} 0%, transparent 100%)`,
             marginBottom: 20,
-            overflow: 'hidden',
           }}>
             {/* Banner hero — click para trocar */}
             <div
@@ -210,7 +197,7 @@ export default function ObjetivoDetalhe() {
               </div>
             </div>
           </div>
-        </div>
+        </>
       ) : (
         <>
           {/* Desktop Radial Glow */}

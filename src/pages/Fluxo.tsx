@@ -528,30 +528,18 @@ export default function Fluxo() {
     <div style={{ minHeight: '100%', paddingBottom: isMobile ? 120 : 24 }}>
       {/* Header */}
       {isMobile ? (
-        <div style={{ position: 'relative' }}>
-          {/* Mobile Hero Gradient Background (behind everything) */}
-          <div style={{
-            position: 'absolute',
-            top: 0, left: 0, right: 0,
-            height: 200,
-            background: 'linear-gradient(to bottom, #001442 0%, transparent 100%)',
-            zIndex: 0,
-            pointerEvents: 'none',
-          }} />
-
-          <PageHeader 
-            title="Fluxo" 
-            bg="#001442" 
-            rightAction={
-              <div style={{ 
-                background: 'rgba(255,255,255,0.08)', padding: '4px 10px', borderRadius: 8,
-                fontSize: 12, fontWeight: 600, color: 'var(--color-text-secondary)', textTransform: 'capitalize'
-              }}>
-                {new Date().toLocaleString('pt-BR', { month: 'long' })}
-              </div>
-            }
-          />
-        </div>
+        <PageHeader 
+          title="Fluxo" 
+          bg="#001442" 
+          rightAction={
+            <div style={{ 
+              background: 'rgba(255,255,255,0.08)', padding: '4px 10px', borderRadius: 8,
+              fontSize: 12, fontWeight: 600, color: 'var(--color-text-secondary)', textTransform: 'capitalize'
+            }}>
+              {new Date().toLocaleString('pt-BR', { month: 'long' })}
+            </div>
+          }
+        />
       ) : (
         <>
           {/* Desktop Radial Glow */}

@@ -149,17 +149,7 @@ export default function Relatorios() {
 
       {/* ── Header ─────────────────────────────────────────────────────────── */}
       {isMobile ? (
-        <div style={{ position: 'relative' }}>
-          {/* Mobile Hero Gradient Background (behind everything) */}
-          <div style={{
-            position: 'absolute',
-            top: 0, left: 0, right: 0,
-            height: 200,
-            background: `linear-gradient(to bottom, ${headerBg} 0%, transparent 100%)`,
-            zIndex: 0,
-            pointerEvents: 'none',
-          }} />
-
+        <>
           <PageHeader
             title="Relatórios"
             bg={headerBg}
@@ -167,21 +157,19 @@ export default function Relatorios() {
               <MonthNav month={month} today={TODAY} onChange={setMonth} showLabel />
             }
           />
-          {/* Toggle abaixo da navbar — gradient hero estendido */}
-          <div style={{ position: 'relative', zIndex: 1 }}>
-            <div style={{
-              position: 'relative', zIndex: 1,
-              padding: '10px 16px 20px',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-            }}>
-              <SegmentedCtrl
-                options={ctxOptions}
-                value={reportCtx}
-                onChange={(v) => setReportCtx(v as 'me' | 'partner' | 'couple')}
-              />
-            </div>
+          {/* Toggle abaixo da navbar */}
+          <div style={{
+            background: `linear-gradient(to bottom, ${headerBg} 0%, transparent 100%)`,
+            padding: '0 16px 20px',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}>
+            <SegmentedCtrl
+              options={ctxOptions}
+              value={reportCtx}
+              onChange={(v) => setReportCtx(v as 'me' | 'partner' | 'couple')}
+            />
           </div>
-        </div>
+        </>
       ) : (
         <>
           {/* Desktop Radial Glow */}
