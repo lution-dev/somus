@@ -199,15 +199,25 @@ export default function DivisaoDetalhe() {
     <div style={{ minHeight: '100%', paddingBottom: 24 }}>
       {/* Header */}
       {isMobile ? (
-        <>
-          <PageHeader title={divisao.name} back bg={HERO_BG} />
+        <div style={{ position: 'relative' }}>
+          {/* Mobile Hero Gradient Background (behind everything) */}
           <div style={{
+            position: 'absolute',
+            top: 0, left: 0, right: 0,
+            height: 300,
             background: `linear-gradient(to bottom, ${HERO_BG} 0%, transparent 100%)`,
-            borderRadius: '0 0 24px 24px',
-            padding: '0 16px 24px',
+            zIndex: 0,
+            pointerEvents: 'none',
+          }} />
+
+          <PageHeader title={divisao.name} back bg="transparent" />
+          
+          <div style={{
+            position: 'relative',
+            zIndex: 1,
+            padding: '12px 16px 24px',
             marginBottom: 20,
             overflow: 'hidden',
-            position: 'relative',
           }}>
             {/* Icon */}
             <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 12 }}>
@@ -262,7 +272,7 @@ export default function DivisaoDetalhe() {
               </div>
             )}
           </div>
-        </>
+        </div>
       ) : (
         <>
           {/* Desktop Radial Glow */}

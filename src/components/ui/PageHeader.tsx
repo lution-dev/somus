@@ -43,8 +43,8 @@ export function PageHeader({ title, back, backTo, rightAction, bg, height }: Pag
           backdropFilter: 'blur(24px) saturate(180%)',
           WebkitBackdropFilter: 'blur(24px) saturate(180%)',
           paddingTop: 'env(safe-area-inset-top, 0px)',
-          borderBottom: bg ? 'none' : '1px solid rgba(255, 255, 255, 0.08)',
-          boxShadow: 'inset 0 -1px 0 rgba(255, 255, 255, 0.05)',
+          borderBottom: 'none',
+          boxShadow: bg ? 'none' : 'inset 0 -1px 0 rgba(255, 255, 255, 0.05)',
         }}
       >
         <div

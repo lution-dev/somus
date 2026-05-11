@@ -219,15 +219,27 @@ export default function Casal() {
 
       {/* ── Header ── */}
       {isMobile ? (
-        <>
-          <PageHeader title="Casal" bg={HERO_BG} />
+        <div style={{ position: 'relative' }}>
+          {/* Mobile Hero Gradient Background (behind everything) */}
           <div style={{
+            position: 'absolute',
+            top: 0, left: 0, right: 0,
+            height: 200,
             background: `linear-gradient(to bottom, ${HERO_BG} 0%, transparent 100%)`,
+            zIndex: 0,
+            pointerEvents: 'none',
+          }} />
+
+          <PageHeader title="Casal" bg="transparent" />
+
+          <div style={{
+            position: 'relative',
+            zIndex: 1,
             padding: '12px 16px 20px',
           }}>
             <PatrimonioCard isHero />
           </div>
-        </>
+        </div>
       ) : (
         <>
           {/* Desktop Radial Glow */}
