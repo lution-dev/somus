@@ -1,5 +1,7 @@
 # Design System — Somus
-**Versão 1.0 · Abril 2026**
+**Versão 2.0 · Maio 2026**
+
+> **v2.0 — Liquid Glass & Atmospheric Hero:** Atualização premium adicionando sistema visual de vidro líquido (estilo iOS 26) e padrão de hero gradient seamless em todas as telas mobile.
 
 ---
 
@@ -8,7 +10,8 @@
 - **Dark mode only** — sem modo claro
 - **Mobile-first** — cada tela funciona no celular primeiro
 - **Clareza financeira** — valores legíveis, hierarquia visual clara
-- **Premium sem exagero** — glassmorphism sutil, sem distrações
+- **Liquid Glass** — glassmorphism real com `backdrop-filter`, reflexos especulares e integração com o gradiente de fundo
+- **Atmospheric Depth** — cores de contexto (azul/lilás/rosa) emanam do fundo e sangram através dos elementos de vidro
 
 ---
 
@@ -81,13 +84,30 @@
 - Ícone inativo: text-tertiary
 - Safe area insets para iPhone
 
-### 4.2 Cards
+### 4.2 Cards (Liquid Glass)
+
+Todos os cards usam o sistema **Liquid Glass** — fundo semitransparente com blur que permite que o gradiente de fundo sangre.
+
 ```css
-background: var(--color-bg-secondary);
-border-radius: 16px;
+/* Classe base .card */
+background: rgba(23, 23, 23, 0.65);
+backdrop-filter: blur(12px) saturate(180%);
+-webkit-backdrop-filter: blur(12px) saturate(180%);
 border: 1px solid rgba(255, 255, 255, 0.08);
-padding: 16px;
+border-radius: var(--radius-card); /* 16px */
+padding: var(--space-md);          /* 16px */
+box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+
+/* Classe .glass-card — hero cards e modais */
+background: rgba(255, 255, 255, 0.04);
+backdrop-filter: blur(24px) saturate(180%);
+border: 1px solid rgba(255, 255, 255, 0.10);
+box-shadow:
+  inset 0 1px 0 rgba(255, 255, 255, 0.08),
+  0 8px 32px rgba(0, 0, 0, 0.28);
 ```
+
+**Regra:** nunca usar fundo sólido opaco em cards — sempre glass.
 
 ### 4.3 Barras de Progresso
 - Caixinhas: barra horizontal com % e valor
@@ -139,6 +159,117 @@ Design flat: **sem glow, sem boxShadow colorida**. Renderizar apenas no mobile (
 
 ---
 
+## 4.9 Liquid Glass — Componentes Fixos
+
+Componentes sticky/fixed usam **Liquid Glass premium** com blur maior:
+
+### BottomNav (Mobile)
+```css
+background: rgba(15, 15, 15, 0.65);
+backdrop-filter: blur(28px) saturate(180%);
+border: 1px solid rgba(255, 255, 255, 0.12);
+box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 4px 24px rgba(0, 0, 0, 0.4);
+border-radius: 22px; /* floating pill */
+```
+
+### Sidebar (Desktop)
+```css
+background: rgba(10, 10, 10, 0.60);
+backdrop-filter: blur(28px) saturate(180%);
+border-right: 1px solid rgba(255, 255, 255, 0.08);
+box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+```
+
+### Modais / Bottom Sheets
+```css
+background: rgba(20, 20, 20, 0.70);
+backdrop-filter: blur(28px) saturate(200%);
+border: 1px solid rgba(255, 255, 255, 0.12);
+/* Mobile: */  border-radius: 28px 28px 0 0;
+/* Desktop: */ border-radius: 24px;
+box-shadow: 0 -8px 32px rgba(0,0,0,0.35);
+```
+
+---
+
+## 4.10 Hero Gradient — Padrão Seamless
+
+Este é o **padrão obrigatório** para todas as telas com hero/contexto de cor. Garante **zero divisão visual** entre navbar e conteúdo.
+
+### Estrutura JSX
+
+```tsx
+// ✅ CORRETO — in-flow gradient, junção pixelicamente perfeita
+<>
+  <PageHeader bg={HERO_BG} />   {/* sólido, mesma cor exata */}
+  <div style={{
+    background: `linear-gradient(to bottom, ${HERO_BG} 0%, transparent 100%)`,
+    padding: '12px 16px 20px',
+  }}>
+    <HeroCard />  {/* BalanceCard, FluxoChart, PatrimonioCard, etc. */}
+  </div>
+</>
+
+// ❌ ERRADO — gradient absoluto por trás gera diferença de composição de alpha
+<div style={{ position: 'relative' }}>
+  <div style={{ position: 'absolute', background: gradient, zIndex: 0 }} />
+  <PageHeader bg="transparent" />  {/* ← blur/alpha cria divisão visível */}
+  <div style={{ zIndex: 1 }}> ... </div>
+</div>
+```
+
+### Por que funciona
+
+`PageHeader` tem `bg={HERO_BG}` como cor **sólida sem blur**. O `div` adjacente abaixo inicia o `linear-gradient` na **mesma cor exata** em 0%. Como são adjacentes no fluxo normal e o valor na borda é idêntico, não há diferença matemática de composição — **zero seam**.
+
+### Cores Hero por Contexto
+
+| Tela | HERO_BG | Comentário |
+|---|---|---|
+| Home | `#001442` | Azul Lucas |
+| Fluxo | `#001442` | Azul Lucas |
+| Casal | `#150D27` | Roxo casal |
+| Relatórios | dinâmico | `#001442` / `#150D27` / `#2D0A1A` conforme `reportCtx` |
+| DivisaoDetalhe | `#001442` | Azul padrão |
+| ObjetivoDetalhe | `#001442` | Azul padrão |
+
+### PageHeader — Regras quando hero (`bg` fornecido)
+
+```tsx
+background: bg          // sólido exato, sem alpha (ex: "#001442")
+backdropFilter: 'none'
+WebkitBackdropFilter: 'none'
+borderBottom: 'none'
+boxShadow: 'none'
+
+// Sem bg → Liquid Glass padrão:
+background: 'rgba(10, 10, 10, 0.82)'
+backdropFilter: 'blur(24px) saturate(180%)'
+```
+
+### Desktop — Atmospheric Glow (Radial)
+
+No desktop, usar **radial spotlight** no topo em vez de linear:
+
+```tsx
+<div style={{
+  position: 'absolute',
+  top: 0, left: 0, right: 0, height: 500,
+  background: 'radial-gradient(circle at 50% -50px, COR 0%, transparent 70%)',
+  opacity: 0.12,
+  pointerEvents: 'none',
+  zIndex: 0,
+}} />
+```
+
+| Tela | Cor do radial |
+|---|---|
+| Home / Fluxo | `var(--color-lucas)` (`#3B82F6`) |
+| Casal | `var(--color-accent-couple)` (`#8B5CF6`) |
+| DivisaoDetalhe / ObjetivoDetalhe | `#001442` |
+
+---
+
 ## 5. Navegação
 
 ### 5.1 Mobile — Tab Bar
@@ -182,11 +313,15 @@ Design flat: **sem glow, sem boxShadow colorida**. Renderizar apenas no mobile (
 
 ## 7. Regras de Ouro
 
-1. **Nunca usar cores hardcoded** — sempre via tokens
+1. **Nunca usar cores hardcoded** — sempre via tokens CSS
 2. **Valores monetários sempre formatados** — `R$ 1.234,56`
 3. **Estimados sempre com `~`** — `~R$ 200,00` em âmbar
 4. **Touch targets ≥ 44px** no mobile
-5. **Glassmorphism sutil** — blur(12px) max, opacity baixa
-6. **Hierarquia via opacidade** — não via tamanho excessivo
-7. **Inter é a única fonte** — sem serif, sem monospace
-8. **Contexto visual claro** — azul=Lucas, rosa=Mírian, lilás=Casal
+5. **Liquid Glass obrigatório** — cards, modais, sidebar e BottomNav SEMPRE com `backdrop-filter`
+6. **Hero gradient obrigatório** — telas com contexto de cor SEMPRE usam o padrão in-flow (PageHeader + gradient div)
+7. **Nunca gradient absoluto atrás do header** — cria diferença de composição visual imperceptível mas presente
+8. **Hierarquia via opacidade** — não via tamanho excessivo
+9. **Inter é a única fonte** — sem serif, sem monospace
+10. **Contexto visual claro** — azul=Lucas, rosa=Mírian, lilás=Casal
+11. **PageHeader com bg: sempre sólido** — nunca aplicar alpha ou blur quando bg é fornecido
+12. **Desktop usa radial glow** — não linear-gradient; apenas mobile usa linear hero
