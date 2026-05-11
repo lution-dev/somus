@@ -641,7 +641,7 @@ export default function Home() {
   const hour = new Date().getHours()
   const greeting = hour < 12 ? 'Bom dia' : hour < 18 ? 'Boa tarde' : 'Boa noite'
 
-  const HERO_BG = '#091223'
+  const HERO_BG = '#112A5F'
 
   function handleEntradaClick(name: string, amount: number) {
     setPrefill({ sourceName: name, amount })

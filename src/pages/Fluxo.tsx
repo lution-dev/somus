@@ -40,7 +40,7 @@ function FixaItem({ sf, isLast, onPress, yearMonth }: {
   const isOverdue  = !paid && (isPastMonth || daysUntil < 0)
   const [dateDialogOpen, setDateDialogOpen] = useState(false)
   const isMobile = useIsMobile()
-  const HERO_BG = '#081120' // Fluxo: racional, profundo, mais frio
+  const HERO_BG = '#0F2350' // Fluxo: racional, profundo, mais frio
   
   const effectiveAmount = getEffectiveAmount(sf, yearMonth)
   const hasOverride = sf.monthlyAmountOverrides?.[yearMonth] !== undefined
@@ -186,7 +186,7 @@ function FixaItem({ sf, isLast, onPress, yearMonth }: {
 function VariavelItem({ sv, isLast, onPress }: { sv: SaidaVariavel; isLast: boolean; onPress: (sv: SaidaVariavel) => void }) {
   const isPending = sv.status === 'pending'
   const isMobile = useIsMobile()
-  const HERO_BG = '#081120' // Fluxo: racional, profundo, mais frio
+  const HERO_BG = '#0F2350' // Fluxo: racional, profundo, mais frio
 
   return (
     <motion.div
@@ -308,7 +308,7 @@ export default function Fluxo() {
   const [editEntradaOpen, setEditEntradaOpen]           = useState(false)
   const [confirmDeleteEntrada, setConfirmDeleteEntrada] = useState(false)
   const isMobile = useIsMobile()
-  const HERO_BG = '#081120' // Fluxo: racional, profundo, mais frio
+  const HERO_BG = '#0F2350' // Fluxo: racional, profundo, mais frio
 
   const yearMonth = useMemo(() => new Date().toISOString().slice(0, 7), [])
 
