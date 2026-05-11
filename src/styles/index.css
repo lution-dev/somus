@@ -11,32 +11,37 @@
   /* ── Official Brand Colors (App Design System) ── */
   --somus-blue:       #2563EB;
   --somus-cyan:       #22D3EE;
-  --somus-background: #0B1220;
-  --somus-surface:    #111827;
+  --somus-background: #091223; /* Premium: Midnight Atmospheric Blue */
+  --somus-surface:    #0F1A2E;
 
-  /* ── Surface tokens ── */
+  /* ── Surface tokens (Glass Evolution) ── */
   --surface-primary:   rgba(14, 22, 42, 0.58);
-  --surface-secondary: rgba(16, 25, 48, 0.78);
-  --surface-border:    rgba(255,255,255,0.08);
+  --surface-secondary: rgba(16, 25, 48, 0.72);
+  --surface-border:    rgba(255,255,255,0.06); /* Premium: more subtle edge */
+  --shadow-card:       inset 0 1px 0 rgba(255,255,255,0.08), 0 10px 40px rgba(0,0,0,0.35);
+  --shadow-float:      inset 0 1px 0 rgba(255,255,255,0.10), 0 20px 60px rgba(0,0,0,0.45);
 
   /* ── Brand Gradient ── */
-  --gradient-brand: linear-gradient(135deg, #2563EB 0%, #22D3EE 100%);
-  --gradient-couple: linear-gradient(135deg, #8B5CF6 0%, #C084FC 100%);
+  --gradient-brand:      linear-gradient(135deg, #2563EB 0%, #22D3EE 100%);
+  --gradient-couple:     linear-gradient(90deg, #2563EB 0%, #22D3EE 50%, #8F6DF5 100%); /* fusão emocional */
+  --gradient-atmospheric:
+    radial-gradient(circle at top, rgba(37,99,235,0.22), transparent 42%),
+    linear-gradient(180deg, #091223 0%, #050816 100%);
 
   /* ── Backgrounds ── */
-  --color-bg-primary:   #0B1220;
+  --color-bg-primary:   #091223; /* Premium: Atmospheric Midnight */
   --color-bg-secondary: #0F1A2E;
   --color-bg-tertiary:  #162236;
-  --color-bg-sidebar:   #0D1528; /* App Design System exact */
+  --color-bg-sidebar:   #0A1525; /* slightly elevated from primary */
 
   /* ── Accent ── */
   --color-accent-primary:  #2563EB;
   --color-accent-electric: #22D3EE;
-  --color-accent-couple:   #8B5CF6;
+  --color-accent-couple:   #8F6DF5; /* refined violet */
 
-  /* ── Identity ── */
-  --color-lucas:  #2563EB;
-  --color-mirian: #EC4899;
+  /* ── Identity — Emotional Colors ── */
+  --color-lucas:  #2563EB;          /* direcao, estabilidade, clareza */
+  --color-mirian: #A78BFA;          /* soft atmospheric violet — sofisticado, humano */
 
   /* ── Semantic ── */
   --color-success: #10B981;
@@ -49,19 +54,23 @@
   --color-text-tertiary:  #64748B;
 
   /* ── Borders ── */
-  --color-border: rgba(255,255,255,0.08); /* blue-tinted, matches surface-border */
+  --color-border: rgba(255,255,255,0.06); /* Premium: more atmospheric */
 
   /* ── Typography ── */
-  --font-display: 'Satoshi', 'Inter', system-ui, sans-serif;
-  --font-sans:    'Inter', system-ui, -apple-system, sans-serif;
+  --font-display:      'Satoshi', 'Inter', system-ui, sans-serif;
+  --font-sans:         'Inter', system-ui, -apple-system, sans-serif;
+  --tracking-tight:    -0.02em; /* headings */
+  --tracking-financial:-0.04em; /* monetary values — elegante, maduro */
 
-  /* ── Spacing (8px base grid) ── */
+  /* ── Spacing — Breathing System ── */
   --space-xs:  4px;
   --space-sm:  8px;
-  --space-md:  20px; /* App Design System: mobile padding 20px */
-  --space-lg:  24px; /* App Design System: gap 24px */
-  --space-xl:  32px; /* App Design System: desktop padding 32px */
+  --space-md:  20px; /* mobile padding */
+  --space-lg:  24px; /* gap between cards */
+  --space-xl:  32px; /* desktop padding */
   --space-2xl: 48px;
+  --space-section: 28px; /* breathing between sections +4~8px */
+  --space-block:   16px; /* breathing between blocks */
 
   /* ── Radius ── */
   --radius-card:     20px;
@@ -72,10 +81,11 @@
   --radius-input:    14px;
   --radius-pill:     999px;
 
-  /* ── Transitions (App Design System) ── */
-  --transition-fast:   all 0.15s ease; /* touch feedback */
-  --transition-normal: all 0.28s ease; /* hover, states */
-  --transition-slow:   all 0.45s ease; /* modals, expansions */
+  /* ── Motion System — Premium ── */
+  --transition-fast:   all 0.15s cubic-bezier(0.4, 0, 0.2, 1); /* touch feedback */
+  --transition-normal: all 0.28s cubic-bezier(0.4, 0, 0.2, 1); /* hover, states */
+  --transition-slow:   all 0.45s cubic-bezier(0.4, 0, 0.2, 1); /* modals, expansions */
+  --transition-float:  transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1); /* subtle float */
 
   /* ── Safe area ── */
   --safe-bottom: env(safe-area-inset-bottom, 0px);
@@ -100,7 +110,24 @@ input, select, textarea {
 }
 
 body {
-  background: var(--color-bg-primary);
+  /* Atmospheric Background Depth — layered radial + linear */
+  background:
+    radial-gradient(
+      circle at top,
+      rgba(37, 99, 235, 0.18),
+      transparent 38%
+    ),
+    radial-gradient(
+      circle at bottom right,
+      rgba(34, 211, 238, 0.06),
+      transparent 30%
+    ),
+    linear-gradient(
+      180deg,
+      #091223 0%,
+      #050816 100%
+    );
+  background-attachment: fixed;
   color: var(--color-text-primary);
   line-height: 1.5;
   font-size: 14px;
@@ -108,6 +135,21 @@ body {
   height: 100vh;
   margin: 0;
   padding: 0;
+  position: relative;
+}
+
+/* Noise Layer — textura subconsciente, reduz sensação flat */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.025;
+  mix-blend-mode: soft-light;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 200px 200px;
 }
 
 #root {
@@ -141,30 +183,30 @@ body {
   margin-bottom: var(--space-sm);
 }
 
-/* ─── Card Base ─── */
+/* ─── Card Base — Glass Evolution ─── */
 .card {
-  /* Brand Book: rgba(14,22,42,0.58) + blur(24px) saturate(140%) */
+  /* Atmospheric Glass: material vivo com edge lighting */
   background: rgba(14, 22, 42, 0.58);
   backdrop-filter: blur(24px) saturate(140%);
   -webkit-backdrop-filter: blur(24px) saturate(140%);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.06); /* mais sutil */
   border-radius: var(--radius-card);
   padding: var(--space-md);
   width: 100%;
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08), /* edge highlight */
     0 10px 40px rgba(0, 0, 0, 0.35);
 }
 
 .glass-card {
-  /* Brand Book: rgba(16,25,48,0.78) — glass-strong */
-  background: rgba(16, 25, 48, 0.78);
-  backdrop-filter: blur(24px) saturate(140%);
-  -webkit-backdrop-filter: blur(24px) saturate(140%);
-  border: 1px solid rgba(255, 255, 255, 0.10);
+  /* Glass Strong: profundidade contextual */
+  background: rgba(16, 25, 48, 0.72);
+  backdrop-filter: blur(28px) saturate(150%);
+  -webkit-backdrop-filter: blur(28px) saturate(150%);
+  border: 1px solid rgba(255, 255, 255, 0.07);
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.08),
-    0 8px 32px rgba(0, 0, 0, 0.28);
+    inset 0 1px 0 rgba(255, 255, 255, 0.10), /* inset highlight — depth layering */
+    0 20px 60px rgba(0, 0, 0, 0.40);
 }
 
 .card-interactive {
@@ -215,9 +257,9 @@ body {
 .badge--paid    { background: rgba(16,185,129,0.15);  color: var(--color-success); }
 .badge--pending { background: rgba(245,158,11,0.15);  color: var(--color-warning); }
 .badge--danger  { background: rgba(239,68,68,0.15);   color: var(--color-danger); }
-.badge--couple  { background: rgba(139,92,246,0.15);  color: var(--color-accent-couple); }
-.badge--lucas   { background: rgba(59,130,246,0.15);  color: var(--color-lucas); }
-.badge--mirian  { background: rgba(236,72,153,0.15);  color: var(--color-mirian); }
+.badge--couple  { background: rgba(143,109,245,0.15); color: var(--color-accent-couple); }
+.badge--lucas   { background: rgba(37,99,235,0.15);   color: var(--color-lucas); }
+.badge--mirian  { background: rgba(167,139,250,0.15); color: var(--color-mirian); } /* violet */
 
 /* ─── Primary Button ─── */
 /* App Design System: avoid aggressive gradients on buttons — use solid premium blue */
@@ -348,12 +390,25 @@ body {
     background: rgba(255,255,255,0.18);
   }
 
-  /* App Design System: desktop bg deeper than mobile */
+  /* Desktop: full atmospheric gradient, deeper than mobile */
   html, body {
-    background: #070F1F;
-  }
-  body {
-    background: #070F1F;
+    background:
+      radial-gradient(
+        circle at top,
+        rgba(37, 99, 235, 0.18),
+        transparent 38%
+      ),
+      radial-gradient(
+        circle at bottom right,
+        rgba(34, 211, 238, 0.06),
+        transparent 30%
+      ),
+      linear-gradient(
+        180deg,
+        #091223 0%,
+        #050816 100%
+      );
+    background-attachment: fixed;
   }
 }
 

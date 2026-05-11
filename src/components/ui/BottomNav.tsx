@@ -28,11 +28,11 @@ export function BottomNav({ items }: BottomNavProps) {
         /* Floating pill: margin lifts it above the home indicator */
         margin: '0 16px calc(env(safe-area-inset-bottom, 0px) / 2 + 4px)',
         borderRadius: 22,
-        border: '1px solid rgba(255,255,255,0.08)',
+        border: '1px solid rgba(255,255,255,0.06)',
         /* Glassmorphism */
-        background: 'rgba(11, 18, 32, 0.72)',
-        backdropFilter: 'blur(28px) saturate(140%)',
-        WebkitBackdropFilter: 'blur(28px) saturate(140%)',
+        background: 'rgba(8, 14, 28, 0.55)',
+        backdropFilter: 'blur(32px) saturate(160%)',
+        WebkitBackdropFilter: 'blur(32px) saturate(160%)',
         boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 4px 24px rgba(0, 0, 0, 0.4)',
       }}
     >

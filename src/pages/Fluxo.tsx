@@ -531,7 +531,7 @@ export default function Fluxo() {
         <>
           <PageHeader 
             title="Fluxo" 
-            bg="#001442" 
+            bg="#091223" 
             rightAction={
               <div style={{ 
                 background: 'rgba(255,255,255,0.08)', padding: '4px 10px', borderRadius: 8,
@@ -543,7 +543,7 @@ export default function Fluxo() {
           />
           {/* Gradient wrapping FluxoChart — same structure as Home wraps BalanceCard */}
           <div style={{
-            background: 'linear-gradient(to bottom, #001442 0%, transparent 100%)',
+            background: 'linear-gradient(to bottom, #091223 0%, transparent 100%)',
             padding: '12px 16px 20px',
             overflow: 'hidden',
           }}>

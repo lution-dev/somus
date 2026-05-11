@@ -1,4 +1,4 @@
-import React from 'react'
+﻿import React from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   AreaChart,
@@ -185,7 +185,7 @@ export function FluxoChart({ paidPct, totalFixasPending, totalPagoNoMes }: {
                       <stop offset="95%" stopColor="var(--color-warning)" stopOpacity={0}/>
                     </linearGradient>
                   </defs>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.05)" />
+                  <CartesianGrid strokeDasharray="1 6" vertical={false} stroke="rgba(255,255,255,0.04)" />
                   <XAxis 
                     dataKey="day" 
                     axisLine={false} 
@@ -207,23 +207,24 @@ export function FluxoChart({ paidPct, totalFixasPending, totalPagoNoMes }: {
                     type="monotone"
                     dataKey="saldoReal"
                     stroke="var(--color-accent-primary)"
-                    strokeWidth={3}
+                    strokeWidth={2.5}
+                    filter="drop-shadow(0 0 6px rgba(37,99,235,0.45))"
                     fillOpacity={1}
                     fill="url(#colorReal)"
                     connectNulls={false}
-                    animationDuration={1000}
+                    animationDuration={1200}
                   />
 
                   <Area
                     type="monotone"
                     dataKey="saldoProj"
                     stroke="var(--color-warning)"
-                    strokeWidth={2}
+                    strokeWidth={1.5}
                     strokeDasharray="6 4"
                     fillOpacity={1}
                     fill="url(#colorProj)"
                     connectNulls={true}
-                    animationDuration={1000}
+                    animationDuration={1200}
                     animationBegin={500}
                   />
 

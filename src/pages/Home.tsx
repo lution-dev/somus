@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback } from 'react'
+﻿import React, { useState, useMemo, useCallback } from 'react'
 import { useLocation } from 'wouter'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
@@ -641,7 +641,7 @@ export default function Home() {
   const hour = new Date().getHours()
   const greeting = hour < 12 ? 'Bom dia' : hour < 18 ? 'Boa tarde' : 'Boa noite'
 
-  const HERO_BG = '#001442'
+  const HERO_BG = '#091223'
 
   function handleEntradaClick(name: string, amount: number) {
     setPrefill({ sourceName: name, amount })
