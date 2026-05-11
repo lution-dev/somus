@@ -1,4 +1,7 @@
-/* ─── Google Fonts — Inter ─── */
+/* ─── Fontshare — Satoshi (brand display font) ─── */
+@import url('https://api.fontshare.com/v2/css?f[]=satoshi@700,600,500&display=swap');
+
+/* ─── Google Fonts — Inter (body) ─── */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
 @import "tailwindcss";
@@ -34,7 +37,8 @@
   --color-border: #2A2A2A;
 
   /* ── Typography ── */
-  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-display: 'Satoshi', 'Inter', system-ui, sans-serif;  /* brand headings + big values */
+  --font-sans:    'Inter',   system-ui, -apple-system, sans-serif; /* body text */
 
   /* ── Spacing (8px base grid) ── */
   --space-xs:  4px;

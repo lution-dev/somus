@@ -80,7 +80,7 @@ function BalanceCard({
       </div>
 
       {/* Valor principal */}
-      <p style={{ fontSize: 36, fontWeight: 700, color: 'var(--color-text-primary)', lineHeight: 1, marginBottom: 12 }}>
+      <p style={{ fontSize: 36, fontWeight: 700, fontFamily: 'var(--font-display)', color: 'var(--color-text-primary)', lineHeight: 1, marginBottom: 12 }}>
         {balanceHidden ? <span style={{ letterSpacing: 4 }}>{mask}</span> : formatCurrency(total)}
       </p>
 

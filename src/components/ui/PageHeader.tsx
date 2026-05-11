@@ -83,6 +83,7 @@ export function PageHeader({ title, back, backTo, rightAction, bg, height }: Pag
           <div style={{ flex: 1, textAlign: back ? 'center' : 'left', minWidth: 0 }}>
             <p style={{
               fontSize: 18, fontWeight: 600,
+              fontFamily: 'var(--font-display)',
               color: 'var(--color-text-primary)',
               margin: 0, lineHeight: 1.2,
               overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
