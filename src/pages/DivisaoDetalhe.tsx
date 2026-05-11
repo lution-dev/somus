@@ -214,7 +214,7 @@ export default function DivisaoDetalhe() {
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 background: hexToRgba(color, 0.12), border: `2px solid ${hexToRgba(color, 0.25)}`,
               }}>
-                <Icon size={28} style={{ color }} />
+                <Icon size={40} style={{ color }} />
               </div>
             </div>
 

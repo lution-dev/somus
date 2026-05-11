@@ -13,10 +13,10 @@ interface BrandIconProps {
 }
 
 // Essencial — camadas horizontais: fundação, estabilidade, estrutura
-function EssencialIcon({ size = 24, color = '#2384FF', style, className }: BrandIconProps) {
+function EssencialIcon({ size = 32, color = '#2384FF', style, className }: BrandIconProps) {
   const c = style?.color ?? color
   return (
-    <svg width={size} height={size} viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" style={style} className={className}>
+    <svg width={size} height={size} viewBox="14 14 36 36" fill="none" xmlns="http://www.w3.org/2000/svg" style={style} className={className}>
       <path d="M18 42H46" stroke={c} strokeWidth="2.5" strokeLinecap="round"/>
       <path d="M22 34H42" stroke={c} strokeWidth="2.5" strokeLinecap="round" opacity="0.7"/>
       <path d="M26 26H38" stroke={c} strokeWidth="2.5" strokeLinecap="round" opacity="0.4"/>
@@ -26,10 +26,10 @@ function EssencialIcon({ size = 24, color = '#2384FF', style, className }: Brand
 }
 
 // Liberdade Financeira — curva ascendente: crescimento, evolução
-function LiberdadeIcon({ size = 24, color = '#4DE2E2', style, className }: BrandIconProps) {
+function LiberdadeIcon({ size = 32, color = '#4DE2E2', style, className }: BrandIconProps) {
   const c = style?.color ?? color
   return (
-    <svg width={size} height={size} viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" style={style} className={className}>
+    <svg width={size} height={size} viewBox="10 18 48 38" fill="none" xmlns="http://www.w3.org/2000/svg" style={style} className={className}>
       <path d="M14 40C20 28 28 28 32 40C36 52 44 52 50 24" stroke={c} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
       <path d="M46 28L50 24L54 28" stroke={c} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
     </svg>
@@ -37,10 +37,10 @@ function LiberdadeIcon({ size = 24, color = '#4DE2E2', style, className }: Brand
 }
 
 // Objetivos — alvo com linha: direção, foco
-function ObjetivosIcon({ size = 24, color = '#9B6BFF', style, className }: BrandIconProps) {
+function ObjetivosIcon({ size = 32, color = '#9B6BFF', style, className }: BrandIconProps) {
   const c = style?.color ?? color
   return (
-    <svg width={size} height={size} viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" style={style} className={className}>
+    <svg width={size} height={size} viewBox="12 12 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" style={style} className={className}>
       <circle cx="32" cy="32" r="18" stroke={c} strokeWidth="2.5"/>
       <circle cx="32" cy="32" r="8"  stroke={c} strokeWidth="2.5" opacity="0.6"/>
       <path d="M32 32L46 18" stroke={c} strokeWidth="2.5" strokeLinecap="round"/>
@@ -49,10 +49,10 @@ function ObjetivosIcon({ size = 24, color = '#9B6BFF', style, className }: Brand
 }
 
 // Educação — livro aberto estilizado: aprendizado, sabedoria
-function EducacaoIcon({ size = 24, color = '#3ED6B7', style, className }: BrandIconProps) {
+function EducacaoIcon({ size = 32, color = '#3ED6B7', style, className }: BrandIconProps) {
   const c = style?.color ?? color
   return (
-    <svg width={size} height={size} viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" style={style} className={className}>
+    <svg width={size} height={size} viewBox="15 18 34 30" fill="none" xmlns="http://www.w3.org/2000/svg" style={style} className={className}>
       <path d="M18 22C22 20 27 20 32 24C37 20 42 20 46 22"
             stroke={c} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
       <path d="M18 22V42C22 40 27 40 32 44C37 40 42 40 46 42V22"
@@ -64,10 +64,10 @@ function EducacaoIcon({ size = 24, color = '#3ED6B7', style, className }: BrandI
 }
 
 // Dízimo — coração/gota: propósito, generosidade, espiritualidade
-function DizimoIcon({ size = 24, color = '#E5B85C', style, className }: BrandIconProps) {
+function DizimoIcon({ size = 32, color = '#E5B85C', style, className }: BrandIconProps) {
   const c = style?.color ?? color
   return (
-    <svg width={size} height={size} viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" style={style} className={className}>
+    <svg width={size} height={size} viewBox="15 12 34 40" fill="none" xmlns="http://www.w3.org/2000/svg" style={style} className={className}>
       <path d="M32 14C40 14 46 20 46 28C46 40 32 50 32 50C32 50 18 40 18 28C18 20 24 14 32 14Z"
             stroke={c} strokeWidth="2.5" strokeLinejoin="round"/>
       <path d="M24 38C27 34 29 32 32 32C35 32 37 34 40 38"

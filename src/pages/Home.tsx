@@ -508,7 +508,7 @@ function DivisoesSection({ balanceHidden = false }: { balanceHidden?: boolean })
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     background: `${color}15`,
                   }}>
-                    <Icon size={22} style={{ color }} />
+                    <Icon size={30} style={{ color }} />
                   </div>
 
                   {/* Info */}
@@ -574,7 +574,7 @@ function DivisoesSection({ balanceHidden = false }: { balanceHidden?: boolean })
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
                       background: `${color}15`, marginBottom: 10,
                     }}>
-                      <Icon size={18} style={{ color }} />
+                      <Icon size={24} style={{ color }} />
                     </div>
 
                     {/* Nome + % alocação */}

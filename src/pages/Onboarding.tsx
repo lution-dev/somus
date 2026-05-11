@@ -393,7 +393,7 @@ function Step4({ onNext }: { onNext: () => void }) {
                   display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
                   background: `${color}15`,
                 }}>
-                  <Icon size={18} style={{ color }} />
+                  <Icon size={24} style={{ color }} />
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text-primary)', margin: 0 }}>{info.name}</p>

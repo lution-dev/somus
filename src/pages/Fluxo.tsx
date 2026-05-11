@@ -689,7 +689,7 @@ export default function Fluxo() {
               <button key={cx.id} onClick={() => { setDivisaoPicker(false); setDespesaModal({ divisaoId: cx.id, divisaoName: cx.name }) }}
                 style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 14px', background: 'var(--color-bg-tertiary)', border: '1px solid var(--color-border)', borderRadius: 12, textAlign: 'left' }}>
                 <div style={{ width: 36, height: 36, borderRadius: 10, background: `${color}15`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <Icon size={18} style={{ color }} />
+                  <Icon size={24} style={{ color }} />
                 </div>
                 <div style={{ flex: 1 }}>
                   <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-text-primary)', margin: 0 }}>{cx.name}</p>
