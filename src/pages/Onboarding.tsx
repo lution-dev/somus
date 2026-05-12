@@ -436,7 +436,7 @@ function Step4({ onNext }: { onNext: () => void }) {
 
 // ─── Step 5: Conexão Compartilhada (3 sub-telas) ─────────────────────────────
 
-function Step5({ partnerCode, onFinish }: { partnerCode: string; onFinish: () => void }) {
+function Step5({ partnerCode, onFinish, onBack }: { partnerCode: string; onFinish: () => void; onBack: () => void }) {
   const [subStep, setSubStep] = useState<0 | 1 | 2>(0)
   const [copied, setCopied] = useState(false)
   const [showQR, setShowQR] = useState(false)
@@ -524,7 +524,8 @@ function Step5({ partnerCode, onFinish }: { partnerCode: string; onFinish: () =>
       <button onClick={() => { setShowQR(false); setSubStep(2) }} style={coupleBtn()}>
         Feito
       </button>
-      <button onClick={() => setShowQR(false)} style={ghostBtn}>← Voltar</button>
+      <button onClick={() => setShowQR(false)} style={{ ...ghostBtn, marginTop: 4 }}>← Voltar
+      </button>
     </motion.div>
   )
 
@@ -601,6 +602,7 @@ function Step5({ partnerCode, onFinish }: { partnerCode: string; onFinish: () =>
         </button>
       </div>
       <button onClick={handleLater} style={ghostBtn}>Fazer isso depois</button>
+      <button onClick={() => setSubStep(0)} style={{ ...ghostBtn, fontSize: 13, color: 'rgba(255,255,255,0.2)' }}>← Voltar</button>
     </motion.div>
   )
 
@@ -707,7 +709,7 @@ export default function Onboarding() {
     <Step2 key={1} name={name} setName={setName} avatar={avatar} setAvatar={setAvatar} onNext={goNext} />,
     <Step3 key={2} goal={goal} setGoal={setGoal} onNext={goNext} />,
     <Step4 key={3} onNext={goNext} />,
-    <Step5 key={4} partnerCode={partnerCode} onFinish={handleFinish} />,
+    <Step5 key={4} partnerCode={partnerCode} onFinish={handleFinish} onBack={goBack} />,
   ]
 
   return (
@@ -772,8 +774,8 @@ export default function Onboarding() {
         </AnimatePresence>
       </div>
 
-      {/* Back button */}
-      {step > 0 && (
+      {/* Back button — hidden on step 4 (Step5 manages its own back) */}
+      {step > 0 && step < 4 && (
         <button
           onClick={goBack}
           style={{ ...ghostBtn, marginTop: 20, fontSize: 14 }}
