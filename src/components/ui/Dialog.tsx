@@ -1,4 +1,4 @@
-import { useEffect, useCallback } from 'react'
+﻿import { useEffect, useCallback } from 'react'
 import { createPortal } from 'react-dom'
 import type { HTMLAttributes, ReactNode } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -75,10 +75,10 @@ export function Dialog({
 
           {/* Panel — flex column so header stays fixed and content scrolls */}
           <motion.div
-            initial={isMobile ? { opacity: 0, y: 60 } : { opacity: 0, scale: 0.95 }}
-            animate={isMobile ? { opacity: 1, y: 0 } : { opacity: 1, scale: 1 }}
-            exit={isMobile ? { opacity: 0, y: 40 } : { opacity: 0, scale: 0.95 }}
-            transition={{ duration: 0.25, ease: [0.25, 0.46, 0.45, 0.94] }}
+            initial={isMobile ? { opacity: 0, y: 32 } : { opacity: 0, scale: 0.97, y: 8 }}
+            animate={isMobile ? { opacity: 1, y: 0 } : { opacity: 1, scale: 1, y: 0 }}
+            exit={isMobile ? { opacity: 0, y: 20 } : { opacity: 0, scale: 0.97 }}
+            transition={{ duration: 0.35, ease: 'easeOut' }} }}
             style={{
               position: 'relative', zIndex: 10, width: '100%',
               maxWidth: SIZE_WIDTHS[size],

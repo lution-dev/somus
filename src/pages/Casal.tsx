@@ -291,7 +291,7 @@ export default function Casal() {
         confirmLabel="Excluir permanentemente" variant="danger"
       />
 
-      {/* ── Content ── */}
+      <div className='somus-stagger' style={{
       <div style={{
         display: 'flex',
         flexDirection: 'column',

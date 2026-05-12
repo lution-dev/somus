@@ -734,7 +734,7 @@ export default function Home() {
         </>
       )}
 
-      <div style={{ padding: isMobile ? '0 16px' : 0 }}>
+      <div className='somus-stagger' style={{ padding: isMobile ? '0 16px' : 0, display: 'flex', flexDirection: 'column', gap: 0 }}>
 
       {/* Próximos dias — mobile only */}
       {isMobile && (

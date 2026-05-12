@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+﻿import { useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import { AnimatePresence, motion } from 'framer-motion'
 import { Pencil, Trash2, X } from 'lucide-react'
@@ -67,11 +67,10 @@ export default function ItemActionSheet({ open, onClose, onEdit, onDelete, title
           {/* Sheet / Dialog */}
           <motion.div
             key="sheet"
-            initial={isMobile ? { y: '100%' } : { opacity: 0, scale: 0.95 }}
-            animate={isMobile ? { y: 0 } : { opacity: 1, scale: 1 }}
-            exit={isMobile ? { y: '100%' } : { opacity: 0, scale: 0.95 }}
-            transition={isMobile
-              ? { type: 'spring', damping: 28, stiffness: 300 }
+            initial={isMobile ? { y: '100%', opacity: 0.6 } : { opacity: 0, scale: 0.97, y: 8 }}
+            animate={isMobile ? { y: 0, opacity: 1 } : { opacity: 1, scale: 1, y: 0 }}
+            exit={isMobile ? { y: '100%', opacity: 0 } : { opacity: 0, scale: 0.97 }}
+            transition={{ duration: 0.35, ease: 'easeOut' }}300 }
               : { duration: 0.2, ease: [0.25, 0.46, 0.45, 0.94] }
             }
             style={{

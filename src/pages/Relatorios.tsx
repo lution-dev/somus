@@ -208,7 +208,7 @@ export default function Relatorios() {
         </div>
 
       ) : (
-        <div style={{ padding: isMobile ? '0 16px' : 0, maxWidth: 1200, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: isMobile ? 12 : 20, position: 'relative', zIndex: 1 }}>
+        <div className='somus-stagger' style={{ padding: isMobile ? '0 16px' : 0, maxWidth: 1200, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: isMobile ? 12 : 20, position: 'relative', zIndex: 1 }}>
 
           {/* ── KPI Strip ───────────────────────────────────────────────────── */}
           <div style={{

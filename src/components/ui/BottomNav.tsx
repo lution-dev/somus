@@ -55,7 +55,7 @@ export function BottomNav({ items }: BottomNavProps) {
               onClick={() => navigate(item.path, { replace: true })}
               aria-label={item.label}
               aria-current={isActive ? 'page' : undefined}
-              whileTap={{ scale: 0.82 }}
+              whileTap={{ scale: 0.91 }}
               transition={{ duration: 0.12, ease: [0.4, 0, 0.2, 1] }}
               style={{
                 display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
