@@ -294,6 +294,7 @@ const DIVISOES_SHOW = [
   { id: 'cx-essencial', pct: 55 },
   { id: 'cx-objetivos', pct: 20 },
   { id: 'cx-reserva',   pct: 10 },
+  { id: 'cx-dizimo',    pct: 10 },
   { id: 'cx-educacao',  pct: 5  },
 ]
 
@@ -313,6 +314,7 @@ function Step4({ onNext }: { onNext: () => void }) {
             'cx-essencial': 'Essencial',
             'cx-objetivos': 'Objetivos',
             'cx-reserva':   'Liberdade Financeira',
+            'cx-dizimo':    'Dízimo',
             'cx-educacao':  'Educação',
           }
           return (
