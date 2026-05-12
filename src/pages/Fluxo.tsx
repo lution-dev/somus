@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react'
+import React, { useMemo, useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAppStore, selectCurrentSaidasFixas, selectCurrentEntradas } from '../stores/useAppStore'
 import { useShallow } from 'zustand/react/shallow'
@@ -306,7 +306,19 @@ export default function Fluxo() {
   const [editEntradaOpen, setEditEntradaOpen]           = useState(false)
   const [confirmDeleteEntrada, setConfirmDeleteEntrada] = useState(false)
   const isMobile = useIsMobile()
-  const HERO_BG = '#112A5F' // Fluxo: racional, profundo, mais frio
+  const HERO_BG = '#112A5F'
+  const [newFixaPrefill, setNewFixaPrefill] = useState(null)
+
+  useEffect(() => {
+    const p = new URLSearchParams(window.location.search).get('prefill')
+    if (p) {
+      const url = new URL(window.location.href)
+      url.searchParams.delete('prefill')
+      window.history.replaceState({}, '', url.toString())
+      setNewFixaPrefill(p)
+    }
+  }, [])
+
 
   const yearMonth = useMemo(() => new Date().toISOString().slice(0, 7), [])
 

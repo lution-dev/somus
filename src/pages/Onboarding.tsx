@@ -5,6 +5,7 @@ import { useAppStore } from '../stores/useAppStore'
 import { useAuth } from '../hooks/useAuth'
 import { useImageUpload } from '../hooks/useImageUpload'
 import SomusLogo from '../components/ui/SomusLogo'
+import { QRCodeSVG } from 'qrcode.react'
 import type { User } from '../types'
 import { getDivisaoIcon } from '../lib/icons'
 import {
@@ -71,6 +72,15 @@ function Step1({ onNext }: { onNext: () => void }) {
           animation: 'onb-breathe 6s ease-in-out infinite 1.2s',
         }} />
       </div>
+
+      {/* R-08: Atmospheric blur depth layer */}
+      <div style={{
+        position: 'absolute', inset: 0, pointerEvents: 'none',
+        backdropFilter: 'blur(40px)', WebkitBackdropFilter: 'blur(40px)',
+        background: 'rgba(8,17,32,0.25)',
+        maskImage: 'radial-gradient(ellipse 80% 60% at 50% 30%, transparent 40%, black 80%)',
+        WebkitMaskImage: 'radial-gradient(ellipse 80% 60% at 50% 30%, transparent 40%, black 80%)',
+      }} />
 
       <motion.div
         initial={{ opacity: 0, scale: 0.9 }}
@@ -284,16 +294,27 @@ function Step3({ goal, setGoal, onNext }: { goal: string; setGoal: (v: string) =
                 justifyContent: 'center', gap: 10,
                 padding: '18px 12px', borderRadius: 16, cursor: 'pointer',
                 fontFamily: 'var(--font-sans)', fontSize: 13, fontWeight: 600,
-                color: active ? 'var(--color-text-primary)' : 'var(--color-text-secondary)',
-                background: active ? 'rgba(59,130,246,0.08)' : 'var(--color-bg-secondary)',
-                border: `1.5px solid ${active ? 'var(--color-accent-primary)' : 'var(--color-border)'}`,
-                boxShadow: active ? '0 0 0 3px rgba(59,130,246,0.15)' : 'none',
-                transform: active ? 'scale(1.02)' : 'scale(1)',
-                transition: 'all 200ms ease',
+                color: active ? 'rgba(255,255,255,0.95)' : 'rgba(255,255,255,0.5)',
+                background: active
+                  ? 'radial-gradient(ellipse at 50% 0%, rgba(59,130,246,0.14) 0%, rgba(59,130,246,0.04) 100%)'
+                  : 'rgba(255,255,255,0.04)',
+                border: `1.5px solid ${active ? 'rgba(59,130,246,0.65)' : 'rgba(255,255,255,0.08)'}`,
+                boxShadow: active
+                  ? '0 0 0 4px rgba(59,130,246,0.1), inset 0 0 24px rgba(59,130,246,0.05)'
+                  : 'none',
+                transform: active ? 'scale(1.03)' : 'scale(1)',
+                transition: 'all 220ms cubic-bezier(0.34,1.2,0.64,1)',
                 textAlign: 'center',
               }}
             >
-              <Icon size={22} color={active ? 'var(--color-accent-primary)' : 'var(--color-text-tertiary)'} />
+              <Icon
+                size={22}
+                style={{
+                  color: active ? '#60A5FA' : 'rgba(255,255,255,0.3)',
+                  transform: active ? 'scale(1.15)' : 'scale(1)',
+                  transition: 'all 220ms cubic-bezier(0.34,1.2,0.64,1)',
+                }}
+              />
               {label}
             </motion.button>
           )
@@ -375,12 +396,15 @@ function Step4({ onNext }: { onNext: () => void }) {
                     {descs[id]}
                   </span>
                 </div>
-                <span style={{
-                  fontSize: 15, fontWeight: 700, color,
-                  background: `${color}18`, padding: '2px 10px', borderRadius: 8, flexShrink: 0,
-                }}>
+                <motion.span
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.6 + i * 0.14, duration: 0.5 }}
+                  style={{ fontSize: 15, fontWeight: 700, color,
+                    background: `${color}18`, padding: '2px 10px', borderRadius: 8, flexShrink: 0 }}
+                >
                   {pct}%
-                </span>
+                </motion.span>
               </div>
               {/* Animated bar with glow */}
               <div style={{ height: 5, borderRadius: 99, background: 'rgba(255,255,255,0.07)', overflow: 'hidden' }}>
@@ -410,85 +434,218 @@ function Step4({ onNext }: { onNext: () => void }) {
   )
 }
 
-// ─── Step 5: Conexão Compartilhada ────────────────────────────────────────────
+// ─── Step 5: Conexão Compartilhada (3 sub-telas) ─────────────────────────────
 
 function Step5({ partnerCode, onFinish }: { partnerCode: string; onFinish: () => void }) {
+  const [subStep, setSubStep] = useState<0 | 1 | 2>(0)
   const [copied, setCopied] = useState(false)
+  const [showQR, setShowQR] = useState(false)
+  const [laterMsg, setLaterMsg] = useState(false)
+
+  const inviteLink = `https://somus.vercel.app/convite/${partnerCode}`
+  const inviteText = `Vem construir comigo no Somus!\n${inviteLink}`
 
   function handleShare() {
-    const text = `Vem construir comigo no Somus!\nhttps://somus.vercel.app/convite/${partnerCode}`
     if (navigator.share) {
-      navigator.share({ title: 'Somus', text }).catch(() => {})
+      navigator.share({ title: 'Somus', text: inviteText }).catch(() => {})
     } else {
-      navigator.clipboard.writeText(text).then(() => {
+      navigator.clipboard.writeText(inviteText).then(() => {
         setCopied(true)
         setTimeout(() => setCopied(false), 2000)
       })
     }
+    setTimeout(() => setSubStep(2), 600)
   }
 
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 32, alignItems: 'center' }}>
-      {/* Dual glow visual — violet atmosférico */}
-      <div style={{ position: 'relative', width: 140, height: 80 }}>
-        {/* Violet outer ambient */}
-        <div style={{
-          position: 'absolute', top: -20, left: '50%', transform: 'translateX(-50%)',
-          width: 180, height: 120, borderRadius: '50%',
-          background: 'radial-gradient(ellipse, rgba(109,40,217,0.18) 0%, transparent 70%)',
-          pointerEvents: 'none',
-        }} />
-        <div style={{
-          position: 'absolute', top: 0, left: 0,
-          width: 72, height: 72, borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(37,99,235,0.45) 0%, transparent 70%)',
-          animation: 'onb-dual-approach 3.5s ease-in-out infinite',
-        }} />
-        <div style={{
-          position: 'absolute', top: 0, right: 0,
-          width: 72, height: 72, borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(109,40,217,0.45) 0%, transparent 70%)',
-          animation: 'onb-dual-approach-r 3.5s ease-in-out infinite',
-        }} />
-        {/* Connection line + heart */}
-        <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }} viewBox="0 0 140 80">
-          <path d="M 36 40 Q 70 18 104 40" stroke="rgba(139,92,246,0.18)" strokeWidth="1" fill="none" strokeDasharray="5 4" />
-        </svg>
-        <motion.div
-          initial={{ opacity: 0, scale: 0.5 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.6, duration: 0.5, type: 'spring' }}
-          style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }}
-        >
-          <Heart size={16} color="#A78BFA" fill="#A78BFA" />
-        </motion.div>
-      </div>
+  function handleCopy() {
+    navigator.clipboard.writeText(inviteText).then(() => {
+      setCopied(true)
+      setTimeout(() => { setCopied(false); setSubStep(2) }, 1800)
+    })
+  }
 
+  function handleLater() {
+    setLaterMsg(true)
+    setTimeout(onFinish, 1900)
+  }
+
+  // ── Dual glow visual ──────────────────────────────────────────────────────
+  const DualGlow = () => (
+    <div style={{ position: 'relative', width: 140, height: 80, flexShrink: 0 }}>
+      <div style={{
+        position: 'absolute', top: -20, left: '50%', transform: 'translateX(-50%)',
+        width: 180, height: 120, borderRadius: '50%',
+        background: 'radial-gradient(ellipse, rgba(109,40,217,0.18) 0%, transparent 70%)',
+        pointerEvents: 'none',
+      }} />
+      <div style={{
+        position: 'absolute', top: 0, left: 0, width: 72, height: 72, borderRadius: '50%',
+        background: 'radial-gradient(circle, rgba(37,99,235,0.45) 0%, transparent 70%)',
+        animation: 'onb-dual-approach 3.5s ease-in-out infinite',
+      }} />
+      <div style={{
+        position: 'absolute', top: 0, right: 0, width: 72, height: 72, borderRadius: '50%',
+        background: 'radial-gradient(circle, rgba(109,40,217,0.45) 0%, transparent 70%)',
+        animation: 'onb-dual-approach-r 3.5s ease-in-out infinite',
+      }} />
+      <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }} viewBox="0 0 140 80">
+        <path d="M 36 40 Q 70 18 104 40" stroke="rgba(139,92,246,0.18)" strokeWidth="1" fill="none" strokeDasharray="5 4" />
+      </svg>
+      <motion.div
+        initial={{ opacity: 0, scale: 0.5 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ delay: 0.5, duration: 0.5, type: 'spring' }}
+        style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }}
+      >
+        <Heart size={16} color="#A78BFA" fill="#A78BFA" />
+      </motion.div>
+    </div>
+  )
+
+  // ── QR Code modal overlay ─────────────────────────────────────────────────
+  if (showQR) return (
+    <motion.div
+      initial={{ opacity: 0, scale: 0.9 }}
+      animate={{ opacity: 1, scale: 1 }}
+      style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 24 }}
+    >
+      <h2 style={{ fontSize: 20, fontWeight: 700, color: 'rgba(255,255,255,0.9)', margin: 0, textAlign: 'center' }}>
+        Escaneie para construir junto
+      </h2>
+      <div style={{
+        background: '#fff', borderRadius: 16, padding: 20,
+        boxShadow: '0 0 40px rgba(109,40,217,0.2)',
+      }}>
+        <QRCodeSVG value={inviteLink} size={180} />
+      </div>
+      <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.3)', margin: 0, textAlign: 'center' }}>
+        {inviteLink}
+      </p>
+      <button onClick={() => { setShowQR(false); setSubStep(2) }} style={coupleBtn()}>
+        Feito
+      </button>
+      <button onClick={() => setShowQR(false)} style={ghostBtn}>← Voltar</button>
+    </motion.div>
+  )
+
+  // ── Sub-tela 5C — Confirmação ─────────────────────────────────────────────
+  if (subStep === 2) return (
+    <motion.div
+      key="step5c"
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4 }}
+      style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 28 }}
+    >
+      <DualGlow />
       <div style={{ textAlign: 'center' }}>
-        <h2 style={{ fontSize: 22, fontWeight: 700, color: 'var(--color-text-primary)', margin: '0 0 12px', lineHeight: 1.3 }}>
-          E se tudo isso pudesse ser<br />construído junto com alguém?
-        </h2>
-        <p style={{ fontSize: 14, color: 'var(--color-text-secondary)', margin: 0, lineHeight: 1.6 }}>
-          Cada pessoa mantém seu próprio espaço,<br />
-          mas vocês também podem compartilhar objetivos,<br />
-          planejamento e construção financeira.
-        </p>
+        <motion.h2
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.2 }}
+          style={{ fontSize: 22, fontWeight: 700, color: 'rgba(255,255,255,0.95)', margin: '0 0 12px', lineHeight: 1.3 }}
+        >
+          Seu espaço compartilhado<br />está pronto para começar.
+        </motion.h2>
       </div>
+      <button onClick={onFinish} style={coupleBtn()}>Entrar na Somus</button>
+    </motion.div>
+  )
 
-      <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 12 }}>
+  // ── Sub-tela 5B — Compartilhar ────────────────────────────────────────────
+  if (subStep === 1) return (
+    <motion.div
+      key="step5b"
+      initial={{ opacity: 0, x: 32 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ duration: 0.32 }}
+      style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 24 }}
+    >
+      <motion.div
+        animate={{ scale: [1, 1.06, 1] }}
+        transition={{ duration: 0.5, delay: 0.1 }}
+      >
+        <DualGlow />
+      </motion.div>
+      <div style={{ textAlign: 'center' }}>
+        <h2 style={{ fontSize: 20, fontWeight: 700, color: 'rgba(255,255,255,0.9)', margin: '0 0 6px', lineHeight: 1.3 }}>
+          Convide alguém para construir<br />junto com você.
+        </h2>
+      </div>
+      <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 10 }}>
         <button onClick={handleShare} style={coupleBtn()}>
           <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
-            {copied ? <Check size={16} /> : <Share2 size={16} />}
-            {copied ? 'Link copiado!' : 'Convidar parceiro(a)'}
+            <Share2 size={16} /> Compartilhar link
           </span>
         </button>
-        <button onClick={onFinish} style={ghostBtn}>
-          Fazer isso depois
+        <button onClick={handleCopy} style={{
+          ...coupleBtn(),
+          background: copied ? 'rgba(16,185,129,0.8)' : 'rgba(109,40,217,0.5)',
+          boxShadow: 'none',
+        }}>
+          <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+            {copied ? <><Check size={16} /> Copiado!</> : <><Check size={16} /> Copiar convite</>}
+          </span>
         </button>
+        <button onClick={() => setShowQR(true)} style={{
+          ...ghostBtn,
+          padding: '10px 0',
+          color: 'rgba(167,139,250,0.7)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+        }}>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+            <rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="3" height="3"/>
+          </svg>
+          Ver QR Code
+        </button>
+      </div>
+      <button onClick={handleLater} style={ghostBtn}>Fazer isso depois</button>
+    </motion.div>
+  )
+
+  // ── Sub-tela 5A — Preview ─────────────────────────────────────────────────
+  if (laterMsg) return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16, textAlign: 'center' }}
+    >
+      <p style={{ fontSize: 16, color: 'rgba(255,255,255,0.7)', lineHeight: 1.6, margin: 0 }}>
+        Você poderá fazer isso a qualquer momento.
+      </p>
+      <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.35)', margin: 0 }}>
+        Seu espaço individual já está pronto.
+      </p>
+    </motion.div>
+  )
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 28, alignItems: 'center' }}>
+      <DualGlow />
+      <div style={{ textAlign: 'center' }}>
+        <h2 style={{ fontSize: 22, fontWeight: 700, color: 'var(--color-text-primary)', margin: '0 0 16px', lineHeight: 1.3 }}>
+          E se tudo isso pudesse ser<br />construído junto com alguém?
+        </h2>
+        <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.45)', margin: 0, lineHeight: 1.6 }}>
+          Cada pessoa mantém seu próprio espaço.
+        </p>
+        <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.28)', margin: '8px 0 0', lineHeight: 1.5 }}>
+          Mas vocês podem compartilhar objetivos e construção financeira.
+        </p>
+      </div>
+      <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <button onClick={() => setSubStep(1)} style={coupleBtn()}>
+          <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+            <Heart size={16} /> Convidar parceiro(a)
+          </span>
+        </button>
+        <button onClick={handleLater} style={ghostBtn}>Fazer isso depois</button>
       </div>
     </div>
   )
 }
+
 
 // ─── Orchestrator ─────────────────────────────────────────────────────────────
 
@@ -497,6 +654,7 @@ export default function Onboarding() {
   const [name, setName]   = useState('')
   const [avatar, setAvatar] = useState('')
   const [goal, setGoal]   = useState('')
+  const [exiting, setExiting] = useState(false)
   const dirRef = useRef<1 | -1>(1)
 
   const [, navigate]       = useLocation()
@@ -518,29 +676,28 @@ export default function Onboarding() {
   function goBack() { dirRef.current = -1; setStep(s => Math.max(s - 1, 0)) }
 
   function handleFinish() {
-    const userId = uid ?? `user-${Date.now()}`
-    const partnerCode = Date.now().toString(36).slice(-4).toUpperCase()
-
-    const user: User = {
-      id: userId,
-      name: name || displayName || 'Usuário',
-      email: email ?? '',
-      avatar: avatar || photoURL || undefined,
-      partnerCode,
-      goal: goal || undefined,
-    }
-
-    completeOnboarding(user, { incomeSources: [], saidasFixas: [], objetivos: [] })
-
-    if (uid) {
-      import('../lib/firestoreService').then(({ saveStateToFirestore }) => {
-        saveStateToFirestore(uid, useAppStore.getState() as import('../types').AppState)
-          .then(() => localStorage.setItem('somus-firebase-migrated', uid))
-          .catch(() => {})
-      })
-    }
-
-    navigate('/home')
+    setExiting(true)
+    setTimeout(() => {
+      const userId = uid ?? `user-${Date.now()}`
+      const partnerCode = Date.now().toString(36).slice(-4).toUpperCase()
+      const user: User = {
+        id: userId,
+        name: name || displayName || 'Usuário',
+        email: email ?? '',
+        avatar: avatar || photoURL || undefined,
+        partnerCode,
+        goal: goal || undefined,
+      }
+      completeOnboarding(user, { incomeSources: [], saidasFixas: [], objetivos: [] })
+      if (uid) {
+        import('../lib/firestoreService').then(({ saveStateToFirestore }) => {
+          saveStateToFirestore(uid, useAppStore.getState() as import('../types').AppState)
+            .then(() => localStorage.setItem('somus-firebase-migrated', uid))
+            .catch(() => {})
+        })
+      }
+      navigate('/home')
+    }, 680)
   }
 
   const partnerCode = Date.now().toString(36).slice(-4).toUpperCase()
@@ -554,13 +711,31 @@ export default function Onboarding() {
   ]
 
   return (
-    <div style={{
-      minHeight: '100dvh', display: 'flex', flexDirection: 'column',
-      alignItems: 'center', justifyContent: 'center',
-      padding: '24px 24px 40px',
-      background: 'radial-gradient(circle at 50% 0%, rgba(37,99,235,0.28) 0%, transparent 40%), linear-gradient(180deg, #081120 0%, #050816 100%)',
-      position: 'relative', overflow: 'hidden',
-    }}>
+    <motion.div
+      animate={exiting ? { opacity: 0, filter: 'blur(16px)' } : { opacity: 1, filter: 'blur(0px)' }}
+      transition={{ duration: 0.65, ease: [0.55, 0, 1, 0.45] }}
+      style={{
+        minHeight: '100dvh', display: 'flex', flexDirection: 'column',
+        alignItems: 'center', justifyContent: 'center',
+        padding: '24px 24px 40px',
+        background: 'radial-gradient(circle at 50% 0%, rgba(37,99,235,0.28) 0%, transparent 40%), linear-gradient(180deg, #081120 0%, #050816 100%)',
+        position: 'relative', overflow: 'hidden',
+      }}
+    >
+      {/* Exit glow expansion */}
+      {exiting && (
+        <motion.div
+          initial={{ scale: 1, opacity: 0.5 }}
+          animate={{ scale: 5, opacity: 0 }}
+          transition={{ duration: 0.8 }}
+          style={{
+            position: 'absolute', top: '40%', left: '50%',
+            transform: 'translate(-50%, -50%)',
+            width: 200, height: 200, borderRadius: '50%', pointerEvents: 'none',
+            background: 'radial-gradient(circle, rgba(37,99,235,0.4) 0%, transparent 60%)',
+          }}
+        />
+      )}
       {/* Progress dots — premium */}
       {step > 0 && (
         <div style={{ display: 'flex', gap: 10, marginBottom: 32, alignSelf: 'center' }}>
@@ -606,6 +781,6 @@ export default function Onboarding() {
           ← Voltar
         </button>
       )}
-    </div>
+    </motion.div>
   )
 }

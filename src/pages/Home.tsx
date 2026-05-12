@@ -769,7 +769,7 @@ function ProgressiveOnboardingBanner({ onLancar }: { onLancar: () => void }) {
             {/* Chips */}
             <div style={{ display: 'flex', gap: 8, overflowX: 'auto', paddingBottom: 4, marginBottom: 12 }}>
               {CHIP_SUGGESTIONS.map(chip => (
-                <button key={chip} onClick={() => navigate('/fluxo')} style={{ flexShrink: 0, background: 'rgba(239,68,68,0.08)', color: 'var(--color-danger)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: 20, padding: '5px 14px', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-sans)', whiteSpace: 'nowrap' }}>
+                <button key={chip} onClick={() => navigate(`/fluxo?prefill=${encodeURIComponent(chip)}`)} style={{ flexShrink: 0, background: 'rgba(239,68,68,0.08)', color: 'var(--color-danger)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: 20, padding: '5px 14px', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-sans)', whiteSpace: 'nowrap' }}>
                   {chip}
                 </button>
               ))}

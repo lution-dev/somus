@@ -1,4 +1,5 @@
-import { useEffect } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { motion } from 'framer-motion'
 import { Route, Switch, Redirect } from 'wouter'
 import { useLocation } from 'wouter'
 import { useRegisterSW } from 'virtual:pwa-register/react'
@@ -23,6 +24,34 @@ import Onboarding    from './pages/Onboarding'
 import Perfil        from './pages/Perfil'
 import Login         from './pages/Login'
 import InviteAccept  from './pages/InviteAccept'
+
+// R-06 — Dashboard fade-in após onboarding
+function AnimatedHome({ isOnboarded }: { isOnboarded: boolean }) {
+  const prevRef = useRef(isOnboarded)
+  const [justOnboarded, setJustOnboarded] = useState(false)
+
+  useEffect(() => {
+    if (!prevRef.current && isOnboarded) {
+      setJustOnboarded(true)
+      const t = setTimeout(() => setJustOnboarded(false), 1200)
+      return () => clearTimeout(t)
+    }
+    prevRef.current = isOnboarded
+  }, [isOnboarded])
+
+  if (justOnboarded) {
+    return (
+      <motion.div
+        initial={{ opacity: 0, filter: 'blur(12px)' }}
+        animate={{ opacity: 1, filter: 'blur(0px)' }}
+        transition={{ duration: 0.7, ease: [0.25, 0.46, 0.45, 0.94] }}
+      >
+        <Home />
+      </motion.div>
+    )
+  }
+  return <Home />
+}
 
 export default function App() {
   const isOnboarded   = useAppStore(s => s.isOnboarded)
@@ -133,7 +162,7 @@ export default function App() {
         <Route>
           <AppLayout>
             <Switch>
-              <Route path="/home" component={Home} />
+              <Route path="/home">{() => <AnimatedHome isOnboarded={isOnboarded} />}</Route>
               <Route path="/fluxo" component={Fluxo} />
               <Route path="/relatorios/:id" component={DivisaoDetalhe} />
               <Route path="/relatorios" component={Relatorios} />
