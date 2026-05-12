@@ -70,9 +70,7 @@ export default function ItemActionSheet({ open, onClose, onEdit, onDelete, title
             initial={isMobile ? { y: '100%', opacity: 0.6 } : { opacity: 0, scale: 0.97, y: 8 }}
             animate={isMobile ? { y: 0, opacity: 1 } : { opacity: 1, scale: 1, y: 0 }}
             exit={isMobile ? { y: '100%', opacity: 0 } : { opacity: 0, scale: 0.97 }}
-            transition={{ duration: 0.35, ease: 'easeOut' }}300 }
-              : { duration: 0.2, ease: [0.25, 0.46, 0.45, 0.94] }
-            }
+            transition={{ duration: 0.35, ease: 'easeOut' }}
             style={{
               position: 'fixed',
               zIndex: 9001,
