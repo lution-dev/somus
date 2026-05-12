@@ -19,14 +19,14 @@ function GoogleLogo() {
 
 /* ── Data ───────────────────────────────────────────────────── */
 const FEATURES = [
-  { icon: TrendingUp, label: 'Controle financeiro', desc: 'Gerencie entradas e distribua automaticamente.', color: '#60A5FA', glow: '35,132,255' },
-  { icon: Users, label: 'Feito para casais', desc: 'Planejamento a dois, sempre sincronizado.', color: '#F472B6', glow: '244,114,182' },
-  { icon: Shield, label: 'Seguro na nuvem', desc: 'Seus dados protegidos e acessíveis.', color: '#22D3EE', glow: '34,211,238' },
+  { icon: TrendingUp, label: 'Organize suas divisões', desc: 'Gerencie entradas e distribua com propósito.', color: '#60A5FA', glow: '35,132,255' },
+  { icon: Users, label: 'Construção em conjunto', desc: 'Planejamento a dois, sempre sincronizado.', color: '#F472B6', glow: '244,114,182' },
+  { icon: Shield, label: 'Seus dados, sua base', desc: 'Criptografia de ponta a ponta. Simples assim.', color: '#22D3EE', glow: '34,211,238' },
 ]
 const STATS = [
-  { icon: PiggyBank, value: 'Divisões', label: 'Método Natália Arcuri', color: '#22D3EE' },
-  { icon: Heart, value: 'Casal', label: 'Objetivos juntos', color: '#F472B6' },
-  { icon: BarChart3, value: 'Fluxo', label: 'Controle mensal', color: '#60A5FA' },
+  { icon: PiggyBank, value: 'Divisões', label: 'Cada parte tem um lugar', color: '#22D3EE' },
+  { icon: Heart, value: 'Casal', label: 'Juntos é mais leve', color: '#F472B6' },
+  { icon: BarChart3, value: 'Fluxo', label: 'Mês a mês, com equilíbrio', color: '#60A5FA' },
 ]
 
 /* ── Motion variants (brand: calm, 0.35s ease) ─────────────── */
@@ -267,7 +267,7 @@ export default function Login() {
           <motion.div variants={fadeUp} style={{ textAlign: 'center', marginBottom: 8 }}>
             <h2 style={{ fontSize: 26, fontWeight: 700, color: 'var(--color-text-primary)', margin: 0, lineHeight: 1.25 }}>
               Finanças do casal,<br />
-              <span style={gradientText}>simplificadas.</span>
+              <span style={gradientText}>construídas juntos.</span>
             </h2>
           </motion.div>
 
@@ -275,7 +275,7 @@ export default function Login() {
             fontSize: 14, color: 'var(--color-text-secondary)', textAlign: 'center',
             margin: '0 0 48px', lineHeight: 1.5, maxWidth: 280,
           }}>
-            O controle financeiro que conecta vocês aos seus objetivos.
+            A base pra organizar, equilibrar e construir com mais clareza.
           </motion.p>
 
           {/* Google CTA — dark glass on mobile */}
@@ -393,7 +393,7 @@ export default function Login() {
           <motion.div variants={fadeUp} style={{ marginBottom: 12 }}>
             <h1 style={{ fontSize: 38, fontWeight: 700, color: 'var(--color-text-primary)', margin: 0, lineHeight: 1.2, letterSpacing: '-0.03em' }}>
               Finanças do casal,<br />
-              <span style={gradientText}>simplificadas.</span>
+              <span style={gradientText}>construídas juntos.</span>
             </h1>
           </motion.div>
 
@@ -401,7 +401,7 @@ export default function Login() {
             fontSize: 15, color: 'var(--color-text-secondary)',
             margin: '0 0 40px', lineHeight: 1.6, maxWidth: 340,
           }}>
-            O controle financeiro que conecta vocês aos seus objetivos.
+            A base pra organizar, equilibrar e construir uma vida financeira com mais clareza.
           </motion.p>
 
           {/* Feature Cards */}
@@ -508,10 +508,10 @@ export default function Login() {
           </motion.div>
 
           <h2 style={{ fontSize: 24, fontWeight: 700, color: 'var(--color-text-primary)', margin: '0 0 8px', textAlign: 'center' }}>
-            Bem-vindo ao Somus
+            Sua base começa aqui.
           </h2>
           <p style={{ fontSize: 14, color: 'var(--color-text-secondary)', margin: '0 0 32px', textAlign: 'center', lineHeight: 1.5 }}>
-            Entre com sua conta Google para sincronizar seus dados em todos os dispositivos.
+            Entre com o Google e comece a construir com mais clareza.
           </p>
 
           {/* Google CTA — white on desktop */}
@@ -571,10 +571,10 @@ export default function Login() {
             </div>
             <div style={{ flex: 1, minWidth: 0 }}>
               <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text-primary)', margin: 0 }}>
-                Seus dados estão sempre protegidos
+                Seus dados estão protegidos
               </p>
               <p style={{ fontSize: 11, color: 'var(--color-text-tertiary)', margin: '2px 0 0', lineHeight: 1.4 }}>
-                Utilizamos criptografia de ponta a ponta e não compartilhamos suas informações.
+                Criptografia de ponta a ponta. Simples assim.
               </p>
             </div>
             <CheckCircle2 size={20} color="#22D3EE" strokeWidth={1.5} style={{ flexShrink: 0 }} />
