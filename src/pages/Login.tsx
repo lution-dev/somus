@@ -469,7 +469,7 @@ export default function Login() {
       <div style={{
         display: 'flex', flexDirection: 'column',
         alignItems: 'center', justifyContent: 'center',
-        padding: '60px 56px', position: 'relative',
+        padding: '32px 40px', position: 'relative',
         zIndex: 1,
       }}>
         <motion.div
@@ -477,8 +477,8 @@ export default function Login() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.4 }}
           style={{
-            width: '100%', maxWidth: 400,
-            padding: '48px 40px',
+            width: '100%', maxWidth: 460,
+            padding: '56px 48px',
             background: 'rgba(255,255,255,0.02)',
             border: '1px solid rgba(255,255,255,0.06)',
             borderRadius: 24,
