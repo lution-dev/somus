@@ -470,8 +470,8 @@ export default function Login() {
       {/* ── RIGHT PANEL — Login Form ──────────────────────── */}
       <div style={{
         display: 'flex', flexDirection: 'column',
-        alignItems: 'center',
-        padding: '32px 40px', position: 'relative',
+        alignItems: 'center', justifyContent: 'center',
+        padding: '40px', position: 'relative',
         zIndex: 1,
       }}>
         <motion.div
@@ -479,15 +479,13 @@ export default function Login() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.4 }}
           style={{
-            width: '100%', maxWidth: 460,
-            flex: 1,
-            padding: '56px 48px',
+            width: '100%', maxWidth: 440,
+            padding: '52px 44px',
             background: 'rgba(255,255,255,0.02)',
             border: '1px solid rgba(255,255,255,0.06)',
             borderRadius: 24,
             backdropFilter: 'blur(16px)',
             display: 'flex', flexDirection: 'column', alignItems: 'center',
-            justifyContent: 'center',
           }}
         >
           {/* Logo in glass container */}
