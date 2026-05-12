@@ -18,9 +18,9 @@ function GoogleLogo() {
 
 /* ── Data ───────────────────────────────────────────────────── */
 const FEATURES = [
-  { icon: TrendingUp, label: 'Controle financeiro', desc: 'Gerencie entradas e distribua automaticamente.' },
-  { icon: Users, label: 'Feito para casais', desc: 'Planejamento a dois, sempre sincronizado.' },
-  { icon: Shield, label: 'Seguro na nuvem', desc: 'Seus dados protegidos e acessíveis.' },
+  { icon: TrendingUp, label: 'Controle financeiro', desc: 'Gerencie entradas e distribua automaticamente.', color: '#60A5FA', glow: '35,132,255' },
+  { icon: Users, label: 'Feito para casais', desc: 'Planejamento a dois, sempre sincronizado.', color: '#F472B6', glow: '244,114,182' },
+  { icon: Shield, label: 'Seguro na nuvem', desc: 'Seus dados protegidos e acessíveis.', color: '#22D3EE', glow: '34,211,238' },
 ]
 const STATS = [
   { icon: PiggyBank, value: 'Divisões', label: 'Método Natália Arcuri', color: '#22D3EE' },
@@ -405,7 +405,7 @@ export default function Login() {
 
           {/* Feature Cards */}
           <motion.div variants={stagger} style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 40 }}>
-            {FEATURES.map(({ icon: Icon, label, desc }) => (
+            {FEATURES.map(({ icon: Icon, label, desc, color, glow }) => (
               <motion.div
                 key={label} variants={fadeUp}
                 style={{
@@ -422,11 +422,11 @@ export default function Login() {
                 <div style={{
                   width: 46, height: 46, borderRadius: 14, flexShrink: 0,
                   background: 'linear-gradient(135deg, rgba(10,18,40,0.9), rgba(15,25,50,0.8))',
-                  border: '1px solid rgba(35,132,255,0.20)',
-                  boxShadow: '0 0 12px rgba(35,132,255,0.10), inset 0 1px 0 rgba(255,255,255,0.05)',
+                  border: `1px solid rgba(${glow},0.25)`,
+                  boxShadow: `0 0 16px rgba(${glow},0.15), inset 0 1px 0 rgba(255,255,255,0.05)`,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                 }}>
-                  <Icon size={20} color="#60A5FA" strokeWidth={1.8} />
+                  <Icon size={20} color={color} strokeWidth={1.8} />
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-text-primary)', margin: 0 }}>{label}</p>
@@ -452,6 +452,8 @@ export default function Login() {
                 <div style={{
                   width: 36, height: 36, borderRadius: 10,
                   background: 'rgba(255,255,255,0.04)',
+                  border: '1px solid rgba(255,255,255,0.06)',
+                  boxShadow: `0 0 10px ${color}15`,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   margin: '0 auto 8px',
                 }}>
