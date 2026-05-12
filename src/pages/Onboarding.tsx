@@ -436,7 +436,7 @@ function Step4({ onNext }: { onNext: () => void }) {
 
 // ─── Step 5: Conexão Compartilhada (3 sub-telas) ─────────────────────────────
 
-function Step5({ partnerCode, onFinish, onBack }: { partnerCode: string; onFinish: () => void; onBack: () => void }) {
+function Step5({ partnerCode, onFinish, onBack: _onBack }: { partnerCode: string; onFinish: () => void; onBack: () => void }) {
   const [subStep, setSubStep] = useState<0 | 1 | 2>(0)
   const [copied, setCopied] = useState(false)
   const [showQR, setShowQR] = useState(false)

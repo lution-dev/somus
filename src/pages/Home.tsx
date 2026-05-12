@@ -11,7 +11,7 @@ import {
 import { useShallow } from 'zustand/react/shallow'
 import { formatCurrency, getMonthSummary, getDaysUntil, isPaidThisMonth, getEffectiveAmount } from '../lib/calculations'
 import { getDivisaoIcon } from '../lib/icons'
-import { ProgressBar, PageHeader, Dialog, groupByMonth, MonthHeader } from '../components/ui'
+import { PageHeader, Dialog, groupByMonth, MonthHeader } from '../components/ui'
 import { useIsMobile } from '../hooks/useIsMobile'
 import { useAuth } from '../hooks/useAuth'
 import { useBalanceHidden } from '../hooks/useBalanceHidden'

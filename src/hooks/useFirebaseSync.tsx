@@ -87,6 +87,13 @@ export function FirebaseSyncProvider({ children }: FirebaseSyncProviderProps) {
         return
       }
 
+      // SECURITY: never write state that belongs to a different user
+      const stateUserId = (state as AppState).currentUser?.id
+      if (stateUserId && stateUserId !== uid) {
+        log('⚠️  SECURITY: blocking write — state belongs to', stateUserId, 'but auth is', uid)
+        return
+      }
+
       log('Local change detected → scheduling debounced save')
       debouncedSaveToFirestore(uid, state as AppState)
     })

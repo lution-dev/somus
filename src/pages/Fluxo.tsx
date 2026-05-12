@@ -307,7 +307,7 @@ export default function Fluxo() {
   const [confirmDeleteEntrada, setConfirmDeleteEntrada] = useState(false)
   const isMobile = useIsMobile()
   const HERO_BG = '#112A5F'
-  const [newFixaPrefill, setNewFixaPrefill] = useState(null)
+  const [, setNewFixaPrefill] = useState<string | null>(null)
 
   useEffect(() => {
     const p = new URLSearchParams(window.location.search).get('prefill')

@@ -44,6 +44,20 @@ export async function migrateToFirestore(
       return localState
     }
 
+    // ── SECURITY: verify local state belongs to this user ─────────────────
+    // If localStorage has data from a DIFFERENT user (e.g., previous session
+    // that didn't clear properly), we MUST discard it to prevent data leakage.
+    const localUserId = localState.currentUser?.id
+    if (localUserId && localUserId !== uid) {
+      log('⚠️  SECURITY: local state belongs to different user!',
+        'local:', localUserId, 'auth:', uid, '→ discarding local state')
+      // Nuke stale local state
+      localStorage.removeItem('somus-state')
+      localStorage.removeItem(MIGRATION_KEY)
+      // Treat as if local has no data — will adopt remote or reset
+      localState = getResetState()
+    }
+
     const localWeight = stateWeight(localState)
     log('Migration start for uid:', uid)
     log('Local state — onboarded:', localState.isOnboarded,

@@ -55,10 +55,20 @@ export function useAuth() {
     }
   }, [])
 
-  // Sign out
+  // Sign out — MUST clear all local state to prevent data leakage to next user
   const signOut = useCallback(async () => {
     try {
+      // Clear Zustand persisted state BEFORE signing out of Firebase.
+      // This prevents the next user from seeing the previous user's data.
+      localStorage.removeItem('somus-state')
+      localStorage.removeItem('somus-firebase-migrated')
+
       await firebaseSignOut(auth)
+
+      // Force a full page reload to ensure Zustand rehydrates from scratch
+      // with empty state. Without this, the in-memory Zustand store still
+      // holds the previous user's data until the page reloads.
+      window.location.reload()
     } catch (err) {
       console.warn('Sign out error:', err)
     }
