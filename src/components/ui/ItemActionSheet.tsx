@@ -61,6 +61,7 @@ export default function ItemActionSheet({ open, onClose, onEdit, onDelete, title
               background: 'rgba(0,0,0,0.5)',
               backdropFilter: isMobile ? 'none' : 'blur(4px)',
               touchAction: 'none',
+              willChange: 'opacity',
             }}
           />
 
@@ -88,6 +89,7 @@ export default function ItemActionSheet({ open, onClose, onEdit, onDelete, title
                 maxWidth: 340,
                 boxShadow: '0 16px 48px rgba(0,0,0,0.4)',
               }),
+              willChange: 'transform, opacity',
             }}
           >
             {/* Handle (mobile only) */}

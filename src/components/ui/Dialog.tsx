@@ -69,6 +69,7 @@ export function Dialog({
               background: 'rgba(0,0,0,0.6)',
               backdropFilter: 'blur(4px)',
               touchAction: 'none',
+              willChange: 'opacity',
             }}
             onClick={onClose}
           />
@@ -92,6 +93,7 @@ export function Dialog({
               borderRadius: isMobile ? '28px 28px 0 0' : 24,
               overflow: 'hidden',
               boxShadow: isMobile ? '0 -8px 32px rgba(0,0,0,0.35)' : 'inset 0 1px 0 rgba(255,255,255,0.1), 0 24px 64px rgba(0,0,0,0.5)',
+              willChange: 'transform, opacity',
             }}
           >
             {/* Drag handle (mobile only) */}

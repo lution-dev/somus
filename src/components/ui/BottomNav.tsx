@@ -1,5 +1,6 @@
 ﻿import { useLocation } from 'wouter'
 import { motion } from 'framer-motion'
+import { haptic } from '../../lib/haptic'
 
 interface NavItem {
   path: string
@@ -52,6 +53,7 @@ export function BottomNav({ items }: BottomNavProps) {
           return (
             <motion.button
               key={item.path}
+              onPointerDown={() => haptic.selection()}
               onClick={() => navigate(item.path, { replace: true })}
               aria-label={item.label}
               aria-current={isActive ? 'page' : undefined}

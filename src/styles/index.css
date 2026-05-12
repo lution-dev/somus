@@ -1,4 +1,4 @@
-/* ─── Fontshare — Satoshi (brand display font) ─── */
+﻿/* ─── Fontshare — Satoshi (brand display font) ─── */
 @import url('https://api.fontshare.com/v2/css?f[]=satoshi@700,600,500&display=swap');
 
 /* ─── Google Fonts — Inter (body) ─── */
@@ -267,6 +267,7 @@ body::before {
 
 .card-interactive {
   cursor: pointer;
+  will-change: transform, box-shadow, border-color;
   transition:
     transform 0.20s cubic-bezier(0.4, 0, 0.2, 1),
     box-shadow 0.20s cubic-bezier(0.4, 0, 0.2, 1),
