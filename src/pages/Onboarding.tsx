@@ -193,6 +193,10 @@ function Step2({
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 28 }}>
+      <div>
+        <h2 style={{ fontSize: 22, fontWeight: 700, color: 'var(--color-text-primary)', margin: '0 0 6px', lineHeight: 1.3 }}>Vamos criar seu perfil</h2>
+        <p style={{ fontSize: 13, color: 'var(--color-text-tertiary)', margin: 0 }}>Sua identidade dentro da Somus.</p>
+      </div>
       {/* Avatar */}
       <div style={{ ...col, gap: 12 }}>
         <div
@@ -436,11 +440,18 @@ function Step4({ onNext }: { onNext: () => void }) {
 
 // ─── Step 5: Conexão Compartilhada (3 sub-telas) ─────────────────────────────
 
-function Step5({ partnerCode, onFinish, onBack: _onBack }: { partnerCode: string; onFinish: () => void; onBack: () => void }) {
+function Step5({ partnerCode, onFinish, onBack: _onBack, onSubStepChange }: {
+  partnerCode: string; onFinish: () => void; onBack: () => void
+  onSubStepChange?: (sub: 0|1|2) => void
+}) {
   const [subStep, setSubStep] = useState<0 | 1 | 2>(0)
   const [copied, setCopied] = useState(false)
+  const [shared, setShared] = useState(false)
   const [showQR, setShowQR] = useState(false)
   const [laterMsg, setLaterMsg] = useState(false)
+
+  // Sync sub-step with orchestrator for progress dots
+  useEffect(() => { onSubStepChange?.(subStep) }, [subStep]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const inviteLink = `https://somus.vercel.app/convite/${partnerCode}`
   const inviteText = `Vem construir comigo no Somus!\n${inviteLink}`
@@ -448,12 +459,13 @@ function Step5({ partnerCode, onFinish, onBack: _onBack }: { partnerCode: string
   function handleShare() {
     if (navigator.share) {
       navigator.share({ title: 'Somus', text: inviteText })
-        .then(() => setSubStep(2))   // B2-FIX: só avança se o share foi concluído
-        .catch(() => {})             // cancelou — fica na 5B
+        .then(() => setSubStep(2))
+        .catch(() => {})
     } else {
+      // Desktop: sem native share — copia e mostra feedback
       navigator.clipboard.writeText(inviteText).then(() => {
-        setCopied(true)
-        setTimeout(() => { setCopied(false); setSubStep(2) }, 1800)
+        setShared(true)
+        setTimeout(() => { setShared(false); setSubStep(2) }, 1800)
       })
     }
   }
@@ -575,9 +587,9 @@ function Step5({ partnerCode, onFinish, onBack: _onBack }: { partnerCode: string
         </h2>
       </div>
       <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 10 }}>
-        <button onClick={handleShare} style={coupleBtn()}>
+        <button onClick={handleShare} style={{ ...coupleBtn(), background: shared ? 'rgba(16,185,129,0.8)' : undefined }}>
           <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
-            <Share2 size={16} /> Compartilhar link
+            {shared ? <><Check size={16} /> Copiado!</> : <><Share2 size={16} /> Compartilhar link</>}
           </span>
         </button>
         <button onClick={handleCopy} style={{
@@ -658,6 +670,7 @@ export default function Onboarding() {
   const [avatar, setAvatar] = useState('')
   const [goal, setGoal]   = useState('')
   const [exiting, setExiting] = useState(false)
+  const [step5Sub, setStep5Sub] = useState<0|1|2>(0)
   const dirRef = useRef<1 | -1>(1)
   // B1-FIX: partnerCode estável — gerado uma única vez, nunca muda a cada render
   const partnerCodeRef = useRef(Date.now().toString(36).slice(-4).toUpperCase())
@@ -726,7 +739,7 @@ export default function Onboarding() {
     <Step2 key={1} name={name} setName={setName} avatar={avatar} setAvatar={setAvatar} onNext={goNext} />,
     <Step3 key={2} goal={goal} setGoal={setGoal} onNext={goNext} />,
     <Step4 key={3} onNext={goNext} />,
-    <Step5 key={4} partnerCode={partnerCode} onFinish={handleFinish} onBack={goBack} />,
+    <Step5 key={4} partnerCode={partnerCode} onFinish={handleFinish} onBack={goBack} onSubStepChange={setStep5Sub} />,
   ]
 
   return (
@@ -757,16 +770,31 @@ export default function Onboarding() {
       )}
       {/* Progress dots — premium */}
       {step > 0 && (
-        <div style={{ display: 'flex', gap: 10, marginBottom: 32, alignSelf: 'center' }}>
-          {Array.from({ length: totalSteps }).map((_, i) => (
-            <div key={i} style={{
-              height: 4, borderRadius: 99,
-              width: i === step ? 32 : 6,
-              background: i <= step ? '#2563EB' : 'rgba(255,255,255,0.1)',
-              animation: i === step ? 'onb-dot-breathe 2.5s ease-in-out infinite' : 'none',
-              transition: 'all 350ms cubic-bezier(0.34,1.56,0.64,1)',
-            }} />
-          ))}
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, marginBottom: 32 }}>
+          <div style={{ display: 'flex', gap: 10 }}>
+            {Array.from({ length: totalSteps }).map((_, i) => (
+              <div key={i} style={{
+                height: 4, borderRadius: 99,
+                width: i === step ? 32 : 6,
+                background: i <= step ? '#2563EB' : 'rgba(255,255,255,0.1)',
+                animation: i === step ? 'onb-dot-breathe 2.5s ease-in-out infinite' : 'none',
+                transition: 'all 350ms cubic-bezier(0.34,1.56,0.64,1)',
+              }} />
+            ))}
+          </div>
+          {/* Sub-dots roxos — só no Step5 */}
+          {step === 4 && (
+            <div style={{ display: 'flex', gap: 5 }}>
+              {([0, 1, 2] as const).map(s => (
+                <div key={s} style={{
+                  height: 3, borderRadius: 99,
+                  width: s === step5Sub ? 20 : 5,
+                  background: s <= step5Sub ? 'rgba(139,92,246,0.75)' : 'rgba(255,255,255,0.08)',
+                  transition: 'all 350ms cubic-bezier(0.34,1.56,0.64,1)',
+                }} />
+              ))}
+            </div>
+          )}
         </div>
       )}
 
