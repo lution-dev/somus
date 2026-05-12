@@ -805,10 +805,14 @@ export const useAppStore = create<AppState & AppActions>()(
 
 // ─── Selectors ────────────────────────────────────────────────────────────────
 
-export const selectCurrentDivisoes = (state: AppState) =>
-  state.viewContext === 'couple'
-    ? state.divisoes
-    : state.divisoes.filter(cx => cx.userId === (state.currentUser?.id ?? ''))
+export const selectCurrentDivisoes = (state: AppState) => {
+  if (state.viewContext === 'couple') return state.divisoes
+  const userId = state.currentUser?.id ?? ''
+  const mine = state.divisoes.filter(cx => cx.userId === userId)
+  // Fallback: if no divisions match current userId (e.g. after re-login / uid mismatch)
+  // adopt all existing divisions so they're never invisible
+  return mine.length > 0 ? mine : state.divisoes
+}
 
 export const selectCurrentIncomeSources = (state: AppState) =>
   state.viewContext === 'couple'

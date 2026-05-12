@@ -73,7 +73,7 @@ export default function App() {
     },
   })
 
-  // Runtime data hygiene (divisoes backfill + cx-livre cleanup)
+  // Runtime data hygiene (divisoes backfill + cx-livre cleanup + userId re-adopt)
   useEffect(() => {
     if (!isOnboarded) return
     const userId = currentUser?.id ?? ''
@@ -93,6 +93,15 @@ export default function App() {
       return
     }
 
+    // Re-adopt: if divisions exist but belong to a different userId, reassign silently
+    const allDivisoes = useAppStore.getState().divisoes
+    const hasWrongUserId = userId && allDivisoes.some(cx => cx.userId !== userId && cx.userId !== undefined)
+    const hasNone = userId && allDivisoes.every(cx => cx.userId !== userId)
+    if (hasNone && hasWrongUserId) {
+      useAppStore.setState({ divisoes: allDivisoes.map(cx => ({ ...cx, userId })) })
+      return
+    }
+
     if (hasLivre) {
       const all = useAppStore.getState().divisoes
       const livreBalance = all.find(cx => cx.id === 'cx-livre')?.balance ?? 0
@@ -105,6 +114,7 @@ export default function App() {
       useAppStore.setState({ divisoes: cleaned })
     }
   }, [isOnboarded, divisoesLen, hasLivre, currentUser])
+
 
   // BIDIRECTIONAL routing guard:
   // - Not onboarded + not on /onboarding → send to onboarding
