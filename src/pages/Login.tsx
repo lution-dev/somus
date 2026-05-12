@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion'
+import type { Variants } from 'framer-motion'
 import { useAuth } from '../hooks/useAuth'
 import { TrendingUp, Users, Shield, Loader2, Heart, PiggyBank, BarChart3, ArrowRight, CheckCircle2, Lock } from 'lucide-react'
 import { useIsMobile } from '../hooks/useIsMobile'
@@ -29,17 +30,17 @@ const STATS = [
 ]
 
 /* ── Motion variants (brand: calm, 0.35s ease) ─────────────── */
-const stagger = {
+const stagger: Variants = {
   hidden: {},
   show: { transition: { staggerChildren: 0.12, delayChildren: 0.2 } },
 }
-const fadeUp = {
+const fadeUp: Variants = {
   hidden: { opacity: 0, y: 12 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.45, ease: [0.25, 0.46, 0.45, 0.94] } },
+  show: { opacity: 1, y: 0, transition: { duration: 0.45, ease: [0.25, 0.46, 0.45, 0.94] as [number,number,number,number] } },
 }
-const scaleIn = {
+const scaleIn: Variants = {
   hidden: { opacity: 0, scale: 0.92 },
-  show: { opacity: 1, scale: 1, transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] } },
+  show: { opacity: 1, scale: 1, transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] as [number,number,number,number] } },
 }
 
 /* ── Gradient heading style ────────────────────────────────── */
