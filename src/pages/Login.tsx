@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion'
 import type { Variants } from 'framer-motion'
 import { useAuth } from '../hooks/useAuth'
-import { TrendingUp, Users, Shield, Loader2, Heart, PiggyBank, BarChart3, ArrowRight, CheckCircle2, Lock } from 'lucide-react'
+import { TrendingUp, Users, Shield, Loader2, Heart, PiggyBank, BarChart3, CheckCircle2, Lock } from 'lucide-react'
 import { useIsMobile } from '../hooks/useIsMobile'
 import SomusLogo from '../components/ui/SomusLogo'
 
@@ -433,7 +433,7 @@ export default function Login() {
                   <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-text-primary)', margin: 0 }}>{label}</p>
                   <p style={{ fontSize: 12, color: 'var(--color-text-tertiary)', margin: '2px 0 0', lineHeight: 1.4 }}>{desc}</p>
                 </div>
-                <ArrowRight size={16} color="var(--color-text-tertiary)" strokeWidth={1.5} />
+
               </motion.div>
             ))}
           </motion.div>
