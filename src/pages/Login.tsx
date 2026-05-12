@@ -23,9 +23,9 @@ const FEATURES = [
   { icon: Shield, label: 'Seguro na nuvem', desc: 'Seus dados protegidos e acessíveis.' },
 ]
 const STATS = [
-  { icon: PiggyBank, value: 'Divisões', label: 'Método Natália Arcuri' },
-  { icon: Heart, value: 'Casal', label: 'Objetivos juntos' },
-  { icon: BarChart3, value: 'Fluxo', label: 'Controle mensal' },
+  { icon: PiggyBank, value: 'Divisões', label: 'Método Natália Arcuri', color: '#22D3EE' },
+  { icon: Heart, value: 'Casal', label: 'Objetivos juntos', color: '#F472B6' },
+  { icon: BarChart3, value: 'Fluxo', label: 'Controle mensal', color: '#60A5FA' },
 ]
 
 /* ── Motion variants (brand: calm, 0.35s ease) ─────────────── */
@@ -346,33 +346,37 @@ export default function Login() {
   return (
     <div style={{
       minHeight: '100dvh', display: 'grid',
-      gridTemplateColumns: '1fr 1fr',
+      gridTemplateColumns: '1fr 1.2fr',
       background: 'linear-gradient(180deg, #050816 0%, #0A1020 100%)',
+      position: 'relative', overflow: 'hidden',
     }}>
       <style>{waveCSS}</style>
 
+      {/* Ambient glows — span full width */}
+      <div style={{
+        position: 'absolute', top: -120, left: -80,
+        width: 500, height: 500, borderRadius: '50%',
+        background: 'radial-gradient(circle, rgba(35,132,255,0.10) 0%, transparent 60%)',
+        pointerEvents: 'none', animation: 'glow-pulse 7s ease-in-out infinite',
+      }} />
+      <div style={{
+        position: 'absolute', bottom: -150, right: -50,
+        width: 400, height: 400, borderRadius: '50%',
+        background: 'radial-gradient(circle, rgba(34,211,238,0.06) 0%, transparent 60%)',
+        pointerEvents: 'none', animation: 'glow-pulse 9s ease-in-out infinite reverse',
+      }} />
+
+      {/* Waves span full width behind both panels */}
+      <AtmosphericWaves />
+
       {/* ── LEFT PANEL — Branding ─────────────────────────── */}
       <div style={{
-        position: 'relative', overflow: 'hidden',
+        position: 'relative',
         display: 'flex', flexDirection: 'column',
         justifyContent: 'center',
         padding: '60px 56px',
+        zIndex: 1,
       }}>
-        {/* Ambient glows */}
-        <div style={{
-          position: 'absolute', top: -120, right: -80,
-          width: 500, height: 500, borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(35,132,255,0.10) 0%, transparent 60%)',
-          pointerEvents: 'none', animation: 'glow-pulse 7s ease-in-out infinite',
-        }} />
-        <div style={{
-          position: 'absolute', bottom: -150, left: -50,
-          width: 400, height: 400, borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(34,211,238,0.06) 0%, transparent 60%)',
-          pointerEvents: 'none', animation: 'glow-pulse 9s ease-in-out infinite reverse',
-        }} />
-
-        <AtmosphericWaves />
 
         <motion.div
           variants={stagger} initial="hidden" animate="show"
@@ -417,8 +421,9 @@ export default function Login() {
               >
                 <div style={{
                   width: 46, height: 46, borderRadius: 14, flexShrink: 0,
-                  background: 'linear-gradient(135deg, rgba(35,132,255,0.15), rgba(34,211,238,0.08))',
-                  border: '1px solid rgba(35,132,255,0.10)',
+                  background: 'linear-gradient(135deg, rgba(10,18,40,0.9), rgba(15,25,50,0.8))',
+                  border: '1px solid rgba(35,132,255,0.20)',
+                  boxShadow: '0 0 12px rgba(35,132,255,0.10), inset 0 1px 0 rgba(255,255,255,0.05)',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                 }}>
                   <Icon size={20} color="#60A5FA" strokeWidth={1.8} />
@@ -439,7 +444,7 @@ export default function Login() {
             border: '1px solid rgba(255,255,255,0.06)',
             borderRadius: 16, overflow: 'hidden',
           }}>
-            {STATS.map(({ icon: Icon, value, label }, i) => (
+            {STATS.map(({ icon: Icon, value, label, color }, i) => (
               <div key={value} style={{
                 flex: 1, textAlign: 'center', padding: '16px 12px',
                 borderRight: i < STATS.length - 1 ? '1px solid rgba(255,255,255,0.06)' : 'none',
@@ -450,7 +455,7 @@ export default function Login() {
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   margin: '0 auto 8px',
                 }}>
-                  <Icon size={16} color="var(--color-text-secondary)" strokeWidth={1.5} />
+                  <Icon size={16} color={color} strokeWidth={1.5} />
                 </div>
                 <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text-primary)', margin: 0 }}>{value}</p>
                 <p style={{ fontSize: 10, color: 'var(--color-text-tertiary)', margin: '2px 0 0' }}>{label}</p>
@@ -464,7 +469,8 @@ export default function Login() {
       <div style={{
         display: 'flex', flexDirection: 'column',
         alignItems: 'center', justifyContent: 'center',
-        padding: '60px 48px', position: 'relative',
+        padding: '60px 56px', position: 'relative',
+        zIndex: 1,
       }}>
         <motion.div
           initial={{ opacity: 0, y: 20 }}
