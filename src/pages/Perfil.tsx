@@ -20,7 +20,7 @@ export default function Perfil() {
   return (
     <div style={{ minHeight: '100%', paddingBottom: 32 }}>
       {isMobile && (
-        <PageHeader title="Perfil" back backTo="/home" />
+        <PageHeader title="Sua conta" back backTo="/home" />
       )}
 
       {!isMobile && (

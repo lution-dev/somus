@@ -1,4 +1,4 @@
-﻿import React, { useState, useMemo, useCallback } from 'react'
+import React, { useState, useMemo, useCallback } from 'react'
 import { useLocation } from 'wouter'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
@@ -66,7 +66,7 @@ function BalanceCard({
     }}>
       {/* Label row with eye toggle */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
-        <p className="section-label" style={{ margin: 0 }}>Saldo disponível</p>
+        <p className="section-label" style={{ margin: 0 }}>Disponível agora</p>
         <button
           onClick={onToggleHidden}
           style={{
@@ -296,7 +296,7 @@ function ProximosDias({ onEntradaClick, onDespesaClick, isDesktop }: {
         {/* Header */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 16 }}>
           <Calendar size={13} color="var(--color-text-tertiary)" />
-          <p className="section-label" style={{ marginBottom: 0, flex: 1 }}>Próximos dias</p>
+          <p className="section-label" style={{ marginBottom: 0, flex: 1 }}>O que vem por aí</p>
           {upcoming.length > 0 && (
             <span style={{
               fontSize: 10, fontWeight: 700, color: 'var(--color-accent-primary)',
@@ -312,7 +312,7 @@ function ProximosDias({ onEntradaClick, onDespesaClick, isDesktop }: {
           }}>
             <Calendar size={28} color="var(--color-text-tertiary)" strokeWidth={1.25} />
             <p style={{ fontSize: 13, color: 'var(--color-text-tertiary)', margin: 0, textAlign: 'center' }}>
-              Nenhum compromisso nos próximos dias
+              Tudo em dia por aqui.
             </p>
           </div>
         ) : (
@@ -405,7 +405,7 @@ function ProximosDias({ onEntradaClick, onDespesaClick, isDesktop }: {
           marginTop: 8,
         }}>
           <Calendar size={22} color="var(--color-text-tertiary)" strokeWidth={1.5} style={{ marginBottom: 8 }} />
-          <p style={{ fontSize: 13, color: 'var(--color-text-tertiary)', margin: 0, textAlign: 'center' }}>Nenhum compromisso nos próximos dias</p>
+          <p style={{ fontSize: 13, color: 'var(--color-text-tertiary)', margin: 0, textAlign: 'center' }}>Tudo em dia por aqui.</p>
         </div>
       )}
     </div>
@@ -463,9 +463,9 @@ function DivisoesSection({ balanceHidden = false }: { balanceHidden?: boolean })
           background: 'var(--color-bg-secondary)', border: '1px solid var(--color-border)',
         }}>
           <Wallet size={24} color="var(--color-text-tertiary)" strokeWidth={1.5} style={{ marginBottom: 10 }} />
-          <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-text-primary)', margin: '0 0 4px' }}>Nenhuma divisão criada</p>
+          <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-text-primary)', margin: '0 0 4px' }}>Suas divisões aparecem aqui.</p>
           <p style={{ fontSize: 12, color: 'var(--color-text-tertiary)', margin: 0, textAlign: 'center', maxWidth: 240 }}>
-            Lance sua primeira entrada para criar as divisões automaticamente.
+            Lance sua primeira entrada para organizar o dinheiro automaticamente.
           </p>
         </div>
       ) : (() => {

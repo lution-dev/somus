@@ -1,4 +1,4 @@
-﻿import { useState, useRef } from 'react'
+import { useState, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useLocation } from 'wouter'
 import { useAppStore } from '../stores/useAppStore'
@@ -45,11 +45,11 @@ function Step1({ name, setName, onNext }: { name: string; setName: (v: string) =
         <div style={{ marginBottom: 16 }}>
           <SomusLogo size={56} />
         </div>
-        <h2 style={heading}>Bem-vindo ao Somus</h2>
-        <p style={sub}>Finanças do casal, simplificadas.</p>
+        <h2 style={heading}>Sua base começa aqui.</h2>
+        <p style={sub}>Organize. Equilibre. Construa juntos.</p>
       </div>
-      <Input label="Seu nome" placeholder="Ex: Lucas Pires" value={name} onChange={e => setName(e.target.value)} />
-      <Button variant="primary" fullWidth disabled={!name.trim()} type="submit">Continuar</Button>
+      <Input label="Seu nome" placeholder="Ex: Lucas" value={name} onChange={e => setName(e.target.value)} />
+      <Button variant="primary" fullWidth disabled={!name.trim()} type="submit">Começar</Button>
     </form>
   )
 }
@@ -99,14 +99,14 @@ function StepInviteIn({
         <div style={iconCircle('rgba(139,92,246,0.12)')}>
           <Link2 size={28} color="var(--color-accent-couple)" />
         </div>
-        <h2 style={heading}>Seu par te convidou?</h2>
-        <p style={sub}>Cole aqui o código que seu(sua) parceiro(a) te enviou — juntos é melhor.</p>
+        <h2 style={heading}>Alguém te convidou?</h2>
+        <p style={sub}>Cole o código de convite do seu par. Juntos é mais leve.</p>
       </div>
 
       <div style={{ display: 'flex', gap: 8 }}>
         <div style={{ flex: 1 }}>
           <Input
-            label="Código do(a) parceiro(a)"
+            label="Código do convite"
             placeholder="Ex: AB3F"
             value={code}
             onChange={e => { setCode(e.target.value.toUpperCase()); setStatus('idle') }}
@@ -144,10 +144,10 @@ function StepInviteIn({
           <Heart size={20} color="var(--color-accent-couple)" fill="var(--color-accent-couple)" />
           <div>
             <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-text-primary)', margin: 0 }}>
-              {inviterName} quer construir o futuro com você 💜
+              {inviterName} quer construir com você 💜
             </p>
             <p style={{ fontSize: 12, color: 'var(--color-text-tertiary)', margin: 0 }}>
-              As finanças de vocês serão unidas ao concluir o cadastro.
+              Vocês vão compartilhar a mesma base financeira.
             </p>
           </div>
         </motion.div>
@@ -214,14 +214,14 @@ function Step2({ onNext, onSkip }: { onNext: () => void; onSkip: () => void }) {
         <div style={iconCircle('rgba(139,92,246,0.12)')}>
           <Users size={28} color="var(--color-accent-couple)" />
         </div>
-        <h2 style={heading}>Convidar parceiro(a)</h2>
-        <p style={sub}>Conecte sua conta para uma visão financeira compartilhada.</p>
+        <h2 style={heading}>Construa junto com alguém.</h2>
+        <p style={sub}>Compartilhe seu código e comecem juntos.</p>
       </div>
       <div style={{
         background: 'var(--color-bg-secondary)', border: '1px solid var(--color-border)',
         borderRadius: 'var(--radius-card)', padding: 20, textAlign: 'center',
       }}>
-        <p style={{ fontSize: 12, color: 'var(--color-text-tertiary)', margin: '0 0 6px' }}>Seu código de convite</p>
+        <p style={{ fontSize: 12, color: 'var(--color-text-tertiary)', margin: '0 0 6px' }}>Seu código</p>
         <p style={{ fontSize: 24, fontFamily: 'monospace', fontWeight: 700, color: 'var(--color-accent-couple)', margin: 0, letterSpacing: 2 }}>{code}</p>
         <div style={{ display: 'flex', gap: 8, marginTop: 16 }}>
           <button onClick={handleCopy} style={{
@@ -311,14 +311,14 @@ function Step3({ sources, setSources, onNext }: { sources: SourceItem[]; setSour
         <div style={iconCircle('rgba(16,185,129,0.12)')}>
           <DollarSign size={28} color="var(--color-success)" />
         </div>
-        <h2 style={heading}>Fontes de renda</h2>
-        <p style={sub}>Configure suas fontes de renda</p>
+        <h2 style={heading}>De onde vem o dinheiro?</h2>
+        <p style={sub}>Adicione as entradas que sustentam o mês.</p>
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
         {sources.map(s => (
           editId === s.id ? (
             <div key={s.id} style={{ ...cardStyle, flexDirection: 'column', gap: 8, alignItems: 'stretch' }}>
-              <input style={inlineInput} placeholder="Nome da fonte" value={editName} onChange={e => setEditName(e.target.value)} autoFocus />
+              <input style={inlineInput} placeholder="Ex: Salário, Freelance" value={editName} onChange={e => setEditName(e.target.value)} autoFocus />
               <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                 <span style={{ fontSize: 13, color: 'var(--color-text-secondary)', flexShrink: 0 }}>R$</span>
                 <input style={{ ...inlineInput, width: 100 }} type="number" inputMode="decimal" placeholder="0" value={editAmount} onChange={e => setEditAmount(e.target.value)} />
@@ -364,8 +364,8 @@ function Step4({ onNext }: { onNext: () => void }) {
         <div style={iconCircle('rgba(59,130,246,0.12)')}>
           <Wallet size={28} color="var(--color-accent-primary)" />
         </div>
-        <h2 style={heading}>Suas Divisões</h2>
-        <p style={sub}>Método Natália Arcuri — adaptado para vocês. Toque em qualquer divisão para entender o porquê.</p>
+        <h2 style={heading}>É assim que o dinheiro se organiza.</h2>
+        <p style={sub}>Cada parte do dinheiro tem um lugar. Toque em uma divisão para entender.</p>
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
         {DIVISAO_ORDER.map((id) => {
@@ -414,7 +414,7 @@ function Step4({ onNext }: { onNext: () => void }) {
           )
         })}
       </div>
-      <Button variant="primary" fullWidth onClick={onNext} type="button">Adorei!</Button>
+      <Button variant="primary" fullWidth onClick={onNext} type="button">Entendi, vamos lá!</Button>
     </div>
   )
 }
@@ -451,14 +451,14 @@ function Step5({ contas, setContas, onNext }: { contas: ContaItem[]; setContas: 
         <div style={iconCircle('rgba(239,68,68,0.12)')}>
           <Receipt size={28} color="var(--color-danger)" />
         </div>
-        <h2 style={heading}>Saídas fixas</h2>
-        <p style={sub}>Contas recorrentes do mês</p>
+        <h2 style={heading}>Quais contas chegam todo mês?</h2>
+        <p style={sub}>Adicione as despesas que aparecem todo mês.</p>
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
         {contas.map(c => (
           editId === c.id ? (
             <div key={c.id} style={{ ...cardStyle, flexDirection: 'column', gap: 8, alignItems: 'stretch' }}>
-              <input style={inlineInput} placeholder="Nome da conta" value={editName} onChange={e => setEditName(e.target.value)} autoFocus />
+              <input style={inlineInput} placeholder="Ex: Aluguel, Netflix" value={editName} onChange={e => setEditName(e.target.value)} autoFocus />
               <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                 <span style={{ fontSize: 13, color: 'var(--color-text-secondary)', flexShrink: 0 }}>R$</span>
                 <input style={{ ...inlineInput, width: 80 }} type="number" inputMode="decimal" placeholder="0" value={editAmount} onChange={e => setEditAmount(e.target.value)} />

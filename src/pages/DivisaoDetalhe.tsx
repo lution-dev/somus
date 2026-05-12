@@ -712,7 +712,7 @@ export default function DivisaoDetalhe() {
             style={{ display: 'flex', alignItems: 'center', gap: 8 }}
           >
             <Plus size={18} strokeWidth={2.5} />
-            Lançar despesa
+            Registrar despesa
           </button>
         </div>
       )}
@@ -827,9 +827,9 @@ export default function DivisaoDetalhe() {
           if (!deleteObjetivoTarget) return
           deleteObjetivo(deleteObjetivoTarget.id)
         }}
-        title="Excluir objetivo"
-        description={`"${deleteObjetivoTarget?.name ?? ''}" será excluído permanentemente, incluindo todos os lançamentos e o progresso acumulado. Esta ação não pode ser desfeita.`}
-        confirmLabel="Excluir permanentemente"
+        title="Remover objetivo"
+        description={`"${deleteObjetivoTarget?.name ?? ''}" será removido, incluindo todos os registros e o progresso acumulado. Essa ação não pode ser desfeita.`}
+        confirmLabel="Remover permanentemente"
         variant="danger"
       />
       <ConfirmPaymentModal

@@ -145,7 +145,7 @@ export default function ObjetivoDetalhe() {
                     border: '1px solid rgba(255,255,255,0.15)',
                   }}>
                     <Camera size={13} color="white" />
-                    <span style={{ fontSize: 11, fontWeight: 600, color: 'white' }}>Alterar</span>
+                    <span style={{ fontSize: 11, fontWeight: 600, color: 'white' }}>Alterar foto</span>
                   </div>
                 </div>
               ) : (
@@ -167,7 +167,7 @@ export default function ObjetivoDetalhe() {
                   }}>
                     <Camera size={18} color="var(--color-accent-couple)" />
                   </div>
-                  <span style={{ fontSize: 12, color: 'var(--color-text-tertiary)', fontWeight: 500 }}>Adicionar foto de capa</span>
+                  <span style={{ fontSize: 12, color: 'var(--color-text-tertiary)', fontWeight: 500 }}>Adicionar imagem</span>
                 </div>
               )}
             </div>
@@ -181,18 +181,18 @@ export default function ObjetivoDetalhe() {
                 padding: 20,
               }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 4 }}>
-                  <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-text-primary)', margin: 0 }}>Guardado</p>
+                  <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-text-primary)', margin: 0 }}>Guardado até agora</p>
                   <p style={{ fontSize: 14, fontWeight: 700, color: 'var(--color-accent-couple)', margin: 0 }}>{Math.round(pct)}%</p>
                 </div>
                 <ProgressBar value={pct} variant="couple" size="md" />
 
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 16 }}>
                   <div>
-                    <p style={{ fontSize: 12, color: 'var(--color-text-secondary)', margin: 0 }}>Guardando por</p>
+                    <p style={{ fontSize: 12, color: 'var(--color-text-secondary)', margin: 0 }}>Construindo há</p>
                     <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-text-primary)', margin: 0 }}>{monthsSaving} {monthsSaving === 1 ? 'mês' : 'meses'}</p>
                   </div>
                   <div style={{ textAlign: 'right' }}>
-                    <p style={{ fontSize: 12, color: 'var(--color-text-secondary)', margin: 0 }}>Para atingir</p>
+                    <p style={{ fontSize: 12, color: 'var(--color-text-secondary)', margin: 0 }}>Meta</p>
                     <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-text-primary)', margin: 0 }}>{monthsToGoal} {monthsToGoal === 1 ? 'mês' : 'meses'}</p>
                   </div>
                 </div>
@@ -289,7 +289,7 @@ export default function ObjetivoDetalhe() {
         borderRadius: 'var(--radius-card)',
         padding: 20, marginBottom: 12,
       }}>
-        <p style={{ fontSize: 12, fontWeight: 500, color: 'var(--color-text-secondary)', margin: '0 0 4px' }}>Total Guardado</p>
+        <p style={{ fontSize: 12, fontWeight: 500, color: 'var(--color-text-secondary)', margin: '0 0 4px' }}>Total acumulado</p>
         <p style={{ fontSize: 28, fontWeight: 700, color: 'var(--color-accent-couple)', margin: '0 0 4px', lineHeight: 1 }}>
           {formatCurrency(objetivo.currentAmount)}
         </p>
@@ -316,11 +316,11 @@ export default function ObjetivoDetalhe() {
         }}
       >
         <Plus size={16} strokeWidth={2.5} />
-        Lançar Pagamento
+        Registrar pagamento
       </button>
 
       {/* Lançamentos */}
-      <p className="section-label" style={{ marginBottom: 12 }}>Lançamentos</p>
+      <p className="section-label" style={{ marginBottom: 12 }}>Histórico</p>
       <SearchBar value={searchQuery} onChange={setSearchQuery} />
 
       <div style={{
@@ -332,7 +332,7 @@ export default function ObjetivoDetalhe() {
         {groupedByMonth.length === 0 ? (
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '48px 0', gap: 8 }}>
             <Info size={24} color="var(--color-text-tertiary)" />
-            <p style={{ fontSize: 14, color: 'var(--color-text-secondary)', margin: 0 }}>Nenhum lançamento</p>
+            <p style={{ fontSize: 14, color: 'var(--color-text-secondary)', margin: 0 }}>Nenhum movimento ainda.</p>
           </div>
         ) : (
           groupedByMonth.map(([monthLabel, mvs], gi) => (
@@ -406,7 +406,7 @@ export default function ObjetivoDetalhe() {
               border: 'none', cursor: 'pointer',
               color: 'white',
             }}
-            aria-label="Lançar pagamento"
+            aria-label="Registrar pagamento"
           >
             <Plus size={22} strokeWidth={2.5} />
           </button>
@@ -430,7 +430,7 @@ export default function ObjetivoDetalhe() {
       <EditMovementModal
         open={!!editMv}
         onClose={() => setEditMv(null)}
-        title="Editar Depósito"
+        title="Editar registro"
         initialDescription={editMv?.description ?? ''}
         initialAmount={editMv?.amount ?? 0}
         initialDate={editMv?.date ?? ''}
@@ -444,7 +444,7 @@ export default function ObjetivoDetalhe() {
       <LancarObjetivoModal
         open={addOpen}
         onClose={() => setAddOpen(false)}
-        title="Lançar Pagamento"
+        title="Registrar pagamento"
         onSave={(mv) => {
           addObjetivoMovement(objetivo.id, mv)
         }}

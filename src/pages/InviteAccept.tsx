@@ -107,7 +107,7 @@ export default function InviteAccept() {
         {state === 'loading' && (
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
             <Loader2 size={32} color={ACCENT} style={{ animation: 'spin 1s linear infinite' }} />
-            <p style={{ fontSize: 15, color: 'var(--color-text-secondary)', margin: 0 }}>Verificando convite...</p>
+            <p style={{ fontSize: 15, color: 'var(--color-text-secondary)', margin: 0 }}>Confirmando seu convite…</p>
             <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
           </div>
         )}
@@ -126,7 +126,7 @@ export default function InviteAccept() {
                 {inviterName} te convidou!
               </h1>
               <p style={{ fontSize: 14, color: 'var(--color-text-secondary)', margin: 0, lineHeight: 1.5 }}>
-                Ao aceitar, vocês terão uma visão financeira compartilhada no Somus.
+                Juntos, vocês vão construir uma base financeira compartilhada.
               </p>
             </div>
 
@@ -138,7 +138,7 @@ export default function InviteAccept() {
               padding: '16px 20px',
               display: 'flex', alignItems: 'center', justifyContent: 'space-between',
             }}>
-              <span style={{ fontSize: 13, color: 'var(--color-text-secondary)' }}>Código</span>
+              <span style={{ fontSize: 13, color: 'var(--color-text-secondary)' }}>Código de convite</span>
               <span style={{ fontSize: 16, fontWeight: 700, letterSpacing: '0.12em', color: ACCENT }}>{code}</span>
             </div>
 
@@ -176,7 +176,7 @@ export default function InviteAccept() {
               Vocês estão conectados! 💜
             </h2>
             <p style={{ fontSize: 13, color: 'var(--color-text-secondary)', margin: 0 }}>
-              Redirecionando para o Casal...
+              Levando vocês para o Casal…
             </p>
           </div>
         )}
@@ -213,7 +213,7 @@ export default function InviteAccept() {
               Este é seu próprio código
             </h2>
             <p style={{ fontSize: 13, color: 'var(--color-text-secondary)', margin: 0 }}>
-              Compartilhe o link com seu parceiro(a), não consigo você mesmo.
+              Compartilhe o link com seu par, não com você mesmo.
             </p>
             <button onClick={() => navigate('/casal')} style={{ marginTop: 8, padding: '10px 24px', borderRadius: 10, background: 'var(--color-bg-secondary)', color: 'var(--color-text-primary)', border: '1px solid var(--color-border)', cursor: 'pointer', fontFamily: 'var(--font-sans)', fontSize: 13, fontWeight: 600 }}>
               Voltar

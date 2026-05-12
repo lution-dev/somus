@@ -1,4 +1,4 @@
-﻿import { useState, useMemo } from 'react'
+import { useState, useMemo } from 'react'
 import { useAppStore, selectCurrentDivisoes } from '../stores/useAppStore'
 import { useShallow } from 'zustand/react/shallow'
 import { formatCurrency } from '../lib/calculations'
@@ -259,8 +259,8 @@ export default function Relatorios() {
           {/* -- Historico Mensal */}
           <div style={{ ...CARD }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-              <p className='section-label' style={{ margin: 0 }}>Historico Mensal</p>
-              <span style={{ fontSize: 11, color: 'var(--color-text-tertiary)' }}>Ultimos 6 meses</span>
+              <p className='section-label' style={{ margin: 0 }}>Histórico mensal</p>
+              <span style={{ fontSize: 11, color: 'var(--color-text-tertiary)' }}>Últimos 6 meses</span>
             </div>
             <MonthlyHistoryChart data={monthlyHistory} currentMonth={month} accentColor={accentColor} />
           </div>
@@ -278,7 +278,7 @@ export default function Relatorios() {
               <p className="section-label" style={{ marginBottom: 16 }}>Entradas por divisão</p>
 
               {byActivity.length === 0 ? (
-                <p style={{ fontSize: 13, color: 'var(--color-text-tertiary)', margin: 0 }}>Nenhum movimento registrado este mês.</p>
+                <p style={{ fontSize: 13, color: 'var(--color-text-tertiary)', margin: 0 }}>Ainda sem movimentos este mês.</p>
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
                   {byActivity.map(({ cx, totalIn, totalOut }) => {
@@ -311,12 +311,12 @@ export default function Relatorios() {
             {/* ── Distribuição real vs. esperada ────────────────────────────── */}
             <div style={CARD}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-                <p className="section-label" style={{ margin: 0 }}>Distribuição real vs. esperada</p>
-                <span style={{ fontSize: 11, color: 'var(--color-text-tertiary)' }}>% das entradas</span>
+                <p className="section-label" style={{ margin: 0 }}>Como o dinheiro foi distribuído</p>
+                <span style={{ fontSize: 11, color: 'var(--color-text-tertiary)' }}>% do total</span>
               </div>
 
               {globalIn === 0 ? (
-                <p style={{ fontSize: 13, color: 'var(--color-text-tertiary)', margin: 0 }}>Nenhum movimento registrado este mês.</p>
+                <p style={{ fontSize: 13, color: 'var(--color-text-tertiary)', margin: 0 }}>Ainda sem movimentos este mês.</p>
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                   {data
@@ -371,11 +371,11 @@ export default function Relatorios() {
                   <div style={{ display: 'flex', alignItems: 'center', gap: 16, paddingTop: 4 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                       <div style={{ width: 2, height: 12, background: 'var(--color-text-tertiary)', opacity: 0.5, borderRadius: 1 }} />
-                      <span style={{ fontSize: 11, color: 'var(--color-text-tertiary)' }}>Esperado pelo método</span>
+                      <span style={{ fontSize: 11, color: 'var(--color-text-tertiary)' }}>Meta do método</span>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                       <div style={{ width: 12, height: 4, background: 'var(--color-danger)', borderRadius: 2 }} />
-                      <span style={{ fontSize: 11, color: 'var(--color-text-tertiary)' }}>Acima do esperado</span>
+                      <span style={{ fontSize: 11, color: 'var(--color-text-tertiary)' }}>Acima da meta</span>
                     </div>
                   </div>
                 </div>
@@ -490,10 +490,10 @@ function AdherenceScoreCard({ score, accentColor }: { score: number; accentColor
   const color = score >= 80 ? 'var(--color-success)' : score >= 50 ? 'var(--color-warning)' : 'var(--color-danger)'
   const label = score >= 80 ? 'Excelente' : score >= 60 ? 'Bom' : score >= 40 ? 'Regular' : 'Precisa melhorar'
   const msg   = score >= 80
-    ? 'Voce esta seguindo muito bem o metodo de distribuicao!'
+    ? 'Você está distribuindo muito bem o dinheiro entre as divisões.'
     : score >= 60
-    ? 'Quase la! Pequenos ajustes vao melhorar sua aderencia.'
-    : 'A distribuicao real esta longe do planejado. Revise seus aportes.'
+    ? 'Quase lá! Pequenos ajustes vão melhorar o equilíbrio.'
+    : 'A distribuição real está longe do planejado. Vale revisar os aportes.'
 
   const r = 28
   const circumference = 2 * Math.PI * r
@@ -507,7 +507,7 @@ function AdherenceScoreCard({ score, accentColor }: { score: number; accentColor
       {/* Header row: titulo + info + badge */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 14 }}>
         <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase', color: 'var(--color-text-tertiary)' }}>
-          Aderencia ao metodo
+          Aderência ao método
         </span>
         <button
           onClick={() => setShowInfo(v => !v)}
@@ -516,7 +516,7 @@ function AdherenceScoreCard({ score, accentColor }: { score: number; accentColor
             color: showInfo ? 'var(--color-accent-primary)' : 'var(--color-text-tertiary)',
             display: 'flex', alignItems: 'center', transition: 'color 150ms ease', flexShrink: 0,
           }}
-          aria-label="O que e este score?"
+          aria-label="Como funciona essa nota?"
         >
           <Info size={13} />
         </button>
@@ -567,13 +567,13 @@ function AdherenceScoreCard({ score, accentColor }: { score: number; accentColor
             O que este score mede?
           </p>
           <p style={{ fontSize: 12, color: 'var(--color-text-secondary)', margin: 0, lineHeight: 1.6 }}>
-            Compara a <strong style={{ color: 'var(--color-text-primary)' }}>distribuicao real</strong> das entradas entre suas divisoes com os <strong style={{ color: 'var(--color-text-primary)' }}>percentuais definidos no metodo</strong>.
+            Compara a <strong style={{ color: 'var(--color-text-primary)' }}>distribuição real</strong> das entradas entre suas divisões com os <strong style={{ color: 'var(--color-text-primary)' }}>percentuais definidos no método</strong>.
           </p>
           <p style={{ fontSize: 12, color: 'var(--color-text-secondary)', margin: 0, lineHeight: 1.6 }}>
-            Exemplo: se voce definiu 50% para Essencial e este mes 50% das entradas foram para Essencial &mdash; isso contribui para um score alto.
+            Exemplo: se você definiu 50% para Essencial e este mês 50% das entradas foram para Essencial &mdash; isso contribui para uma nota alta.
           </p>
           <p style={{ fontSize: 11, color: 'var(--color-text-tertiary)', margin: 0, lineHeight: 1.5, borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: 8 }}>
-            <strong>Nota:</strong> o score analisa a alocacao das entradas, nao os gastos dentro de cada divisao.
+            <strong>Nota:</strong> o score analisa a alocação das entradas, não os gastos dentro de cada divisão.
           </p>
         </div>
       )}
@@ -598,13 +598,13 @@ function MonthlyHistoryChart({ data, currentMonth, accentColor }: { data: Array<
             <div style={{ display: "flex", gap: 16 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
                 <div style={{ width: 7, height: 7, borderRadius: 2, background: "var(--color-success)" }} />
-                <span style={{ fontSize: 11, color: "var(--color-text-secondary)" }}>Entrou:</span>
+                <span style={{ fontSize: 11, color: "var(--color-text-secondary)" }}>Entrou</span>
                 <span style={{ fontSize: 12, fontWeight: 700, color: "var(--color-success)" }}>{formatCurrency(activeItem.totalIn)}</span>
               </div>
               {activeItem.totalOut > 0 && (
                 <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
                   <div style={{ width: 7, height: 7, borderRadius: 2, background: "var(--color-danger)" }} />
-                  <span style={{ fontSize: 11, color: "var(--color-text-secondary)" }}>Saiu:</span>
+                  <span style={{ fontSize: 11, color: "var(--color-text-secondary)" }}>Saiu</span>
                   <span style={{ fontSize: 12, fontWeight: 700, color: "var(--color-danger)" }}>{formatCurrency(activeItem.totalOut)}</span>
                 </div>
               )}
