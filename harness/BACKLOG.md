@@ -1,14 +1,45 @@
-﻿# BACKLOG.md — Somus
+# BACKLOG.md — Somus
 
-## Sprint Ativo — Redesign Onboarding (S-ONB)
+## Sprint Concluído — Onboarding v2 Premium (S-ONB)
 
-| ID | Status | Descricao | Arquivo |
+| ID | Status | Descrição | Arquivo |
 |----|--------|-----------|---------|
-| T-ONB-01 | pendente | Etapa 1 — Welcome (atmospheric, logo breathing, headline, CTA) | Onboarding.tsx |
-| T-ONB-02 | pendente | Etapa 2 — Seu Espaco (nome + avatar inicial + glow ao confirmar) | Onboarding.tsx |
-| T-ONB-03 | pendente | Etapa 3 — Objetivo Principal (6 cards seleccionaveis com glow) | Onboarding.tsx |
-| T-ONB-04 | pendente | Etapa 4 — Metodo Somus (divisoes animadas sequencialmente) | Onboarding.tsx |
-| T-ONB-05 | pendente | Etapa 5 — Conexao Compartilhada (dual glow + share CTA) | Onboarding.tsx |
-| T-ONB-06 | pendente | Orchestrator + progress dots + transicoes globais | Onboarding.tsx |
-| T-ONB-07 | pendente | Store: campo goal em currentUser | types/index.ts + useAppStore.ts |
-| T-ONB-08 | pendente | Progressive Onboarding — cards contextuais na Home | Home.tsx |
+| T-ONB-01 | ✅ done | Welcome: atmospheric glow, logo breathing, headline, CTA | Onboarding.tsx |
+| T-ONB-02 | ✅ done | Seu Espaço: header contextual, nome + avatar Google, glow ao confirmar | Onboarding.tsx |
+| T-ONB-03 | ✅ done | Objetivo Principal: 6 cards com inner light, lift e scale no select | Onboarding.tsx |
+| T-ONB-04 | ✅ done | Método Somus: divisões animadas sequencialmente com barra e badge | Onboarding.tsx |
+| T-ONB-05 | ✅ done | Conexão Compartilhada: 3 sub-telas (5A preview / 5B share+QR / 5C confirm) | Onboarding.tsx |
+| T-ONB-06 | ✅ done | Orchestrator: progress dots azuis + sub-dots roxos Step5, transições globais, dissolve cinematic | Onboarding.tsx |
+| T-ONB-07 | ✅ done | Store: campo `goal` em currentUser | types/index.ts + useAppStore.ts |
+| T-ONB-08 | ✅ done | Progressive Onboarding: cards contextuais na Home com chips prefill | Home.tsx |
+
+## Sprint Concluído — Home Empty State Estruturado (S-HOME-ES)
+
+| ID | Status | Descrição | Arquivo |
+|----|--------|-----------|---------|
+| T-HOME-ES-01 | ✅ done | Divisões sempre visíveis em modo dormant (opacity 65%, saturate 55%, taglines filosóficos) | Home.tsx |
+| T-HOME-ES-02 | ✅ done | Barras animam de 0→valor real ao despertar (primeira entrada) | Home.tsx |
+| T-HOME-ES-03 | ✅ done | Badge "aguardando" no header Divisões quando dormant | Home.tsx |
+| T-HOME-ES-04 | ✅ done | Fix: selectCurrentDivisoes fallback quando userId não bate após re-login | useAppStore.ts |
+| T-HOME-ES-05 | ✅ done | Fix: App.tsx re-adota userId correto nas divisões existentes automaticamente | App.tsx |
+
+## Sprint Concluído — Bugfixes Fluxo de Convite (S-INVITE)
+
+| ID | Status | Descrição | Arquivo |
+|----|--------|-----------|---------|
+| T-INVITE-B1 | ✅ done | partnerCode instável (Date.now() a cada render) → useRef estável | Onboarding.tsx |
+| T-INVITE-B2 | ✅ done | handleShare avançava ao cancelar o share dialog → usa .then() | Onboarding.tsx |
+| T-INVITE-B3 | ✅ done | Desktop sem feedback ao "Compartilhar link" → estado shared com Check verde | Onboarding.tsx |
+| T-INVITE-B4 | ✅ done | handleFinish gerava partnerCode novo diferente do compartilhado → usa ref | Onboarding.tsx |
+| T-INVITE-B5 | ✅ done | Link inválido antes de completar onboarding → pré-salva no Firestore ao chegar no Step5 | Onboarding.tsx |
+
+## Próximas fases
+
+| ID | Prioridade | Descrição |
+|----|-----------|-----------|
+| T-NEXT-01 | alta | Auth real com Google/email (substituir Anonymous Auth) |
+| T-NEXT-02 | alta | Modo Casal real: view compartilhada pós-link bilateral |
+| T-NEXT-03 | média | Página de Histórico completo (filtros por mês/divisão) |
+| T-NEXT-04 | média | Notificações push (PWA) para vencimentos |
+| T-NEXT-05 | baixa | Firebase Storage para imagens de objetivos (requer Blaze plan) |
+| T-NEXT-06 | baixa | Lançamento iOS/Android via PWA (manifest + service worker polish) |
