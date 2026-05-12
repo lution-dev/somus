@@ -3,201 +3,382 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useLocation } from 'wouter'
 import { useAppStore } from '../stores/useAppStore'
 import { useAuth } from '../hooks/useAuth'
-import { Button, Input } from '../components/ui'
+import { useImageUpload } from '../hooks/useImageUpload'
 import SomusLogo from '../components/ui/SomusLogo'
 import type { User } from '../types'
-import { DIVISAO_INFO, DIVISAO_ORDER } from '../lib/divisoes'
 import { getDivisaoIcon } from '../lib/icons'
-import { collection, query, where, getDocs, doc, setDoc } from 'firebase/firestore'
-import { db } from '../lib/firebase'
 import {
-  Users,
-  Wallet,
-  Receipt,
-  Plane,
-  DollarSign,
-  Copy,
-  Share2,
-  Check,
-  Plus,
-  Pencil,
-  Trash2,
-  X,
-  Heart,
-  Loader2,
-  Link2,
+  Layout, PiggyBank, Eye, Target, TrendingUp, Leaf,
+  Camera, Heart, Share2, Check, Loader2,
 } from 'lucide-react'
 
-const center: React.CSSProperties = { display: 'flex', flexDirection: 'column', alignItems: 'center' }
-const iconCircle = (bg: string): React.CSSProperties => ({
-  width: 64, height: 64, borderRadius: '50%', background: bg,
-  display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16,
+// ─── Shared styles ────────────────────────────────────────────────────────────
+
+const col: React.CSSProperties = { display: 'flex', flexDirection: 'column', alignItems: 'center' }
+const btn = (bg: string, color = '#fff'): React.CSSProperties => ({
+  width: '100%', padding: '14px 0', borderRadius: 14, border: 'none', cursor: 'pointer',
+  background: bg, color, fontSize: 15, fontWeight: 600, fontFamily: 'var(--font-sans)',
+  transition: 'opacity 150ms ease',
 })
-const heading: React.CSSProperties = { fontSize: 24, fontWeight: 700, textAlign: 'center', color: 'var(--color-text-primary)', margin: 0 }
-const sub: React.CSSProperties = { fontSize: 14, textAlign: 'center', color: 'var(--color-text-secondary)', margin: '8px 0 0' }
-
-// ─── Passo 1: Identidade ──────────────────────────────────────────────────────
-
-function Step1({ name, setName, onNext }: { name: string; setName: (v: string) => void; onNext: () => void }) {
-  return (
-    <form onSubmit={e => { e.preventDefault(); if (name.trim()) onNext() }} style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-      <div style={center}>
-        <div style={{ marginBottom: 16 }}>
-          <SomusLogo size={56} />
-        </div>
-        <h2 style={heading}>Sua base começa aqui.</h2>
-        <p style={sub}>Organize. Equilibre. Construa juntos.</p>
-      </div>
-      <Input label="Seu nome" placeholder="Ex: Lucas" value={name} onChange={e => setName(e.target.value)} />
-      <Button variant="primary" fullWidth disabled={!name.trim()} type="submit">Começar</Button>
-    </form>
-  )
+const ghostBtn: React.CSSProperties = {
+  background: 'none', border: 'none', cursor: 'pointer',
+  fontSize: 14, color: 'var(--color-text-tertiary)', fontFamily: 'var(--font-sans)',
+  padding: '10px 0',
 }
 
-// ─── Passo 1b: Tem código de quem te convidou? ───────────────────────────────
+// ─── Step 1: Welcome ──────────────────────────────────────────────────────────
 
-type InviteResult = { inviterUid: string; inviterName: string; code: string } | null
-
-function StepInviteIn({
-  onNext,
-  setInviteResult,
-}: {
-  onNext: () => void
-  setInviteResult: (r: InviteResult) => void
-}) {
-  const [code, setCode] = useState('')
-  const [status, setStatus] = useState<'idle' | 'loading' | 'found' | 'not_found' | 'error'>('idle')
-  const [inviterName, setInviterName] = useState('')
-  const { uid } = useAuth()
-
-  const normalised = code.trim().toUpperCase()
-
-  async function handleSearch() {
-    if (!normalised) return
-    setStatus('loading')
-    try {
-      const q = query(
-        collection(db, 'users'),
-        where('currentUser.partnerCode', '==', normalised),
-      )
-      const snap = await getDocs(q)
-      if (snap.empty) { setStatus('not_found'); return }
-      const inviterDoc = snap.docs[0]
-      if (inviterDoc.id === uid) { setStatus('not_found'); return } // próprio código
-      const name = inviterDoc.data()?.currentUser?.name ?? 'Alguém'
-      setInviterName(name)
-      setInviteResult({ inviterUid: inviterDoc.id, inviterName: name, code: normalised })
-      setStatus('found')
-    } catch {
-      setStatus('error')
-    }
-  }
-
+function Step1({ onNext }: { onNext: () => void }) {
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-      <div style={center}>
-        <div style={iconCircle('rgba(139,92,246,0.12)')}>
-          <Link2 size={28} color="var(--color-accent-couple)" />
-        </div>
-        <h2 style={heading}>Alguém te convidou?</h2>
-        <p style={sub}>Cole o código de convite do seu par. Juntos é mais leve.</p>
+    <div style={{ ...col, gap: 0, minHeight: '100%', justifyContent: 'center', padding: '40px 0' }}>
+      {/* Atmospheric glow layers */}
+      <div style={{
+        position: 'absolute', inset: 0, pointerEvents: 'none', overflow: 'hidden',
+      }}>
+        <div style={{
+          position: 'absolute', top: '20%', left: '50%', transform: 'translateX(-50%)',
+          width: 320, height: 320, borderRadius: '50%',
+          background: 'radial-gradient(circle, rgba(59,130,246,0.18) 0%, transparent 70%)',
+          animation: 'onb-breathe 4s ease-in-out infinite',
+        }} />
+        <div style={{
+          position: 'absolute', top: '25%', left: '50%', transform: 'translateX(-50%)',
+          width: 180, height: 180, borderRadius: '50%',
+          background: 'radial-gradient(circle, rgba(59,130,246,0.12) 0%, transparent 70%)',
+          animation: 'onb-breathe 3s ease-in-out infinite 0.5s',
+        }} />
       </div>
 
-      <div style={{ display: 'flex', gap: 8 }}>
-        <div style={{ flex: 1 }}>
-          <Input
-            label="Código do convite"
-            placeholder="Ex: AB3F"
-            value={code}
-            onChange={e => { setCode(e.target.value.toUpperCase()); setStatus('idle') }}
-            style={{ fontFamily: 'monospace', letterSpacing: '0.12em', textTransform: 'uppercase' }}
-          />
-        </div>
-        <button
-          type="button"
-          onClick={handleSearch}
-          disabled={!normalised || status === 'loading'}
-          style={{
-            marginTop: 22, padding: '0 16px', borderRadius: 'var(--radius-button)',
-            background: normalised ? 'var(--color-accent-couple)' : 'var(--color-bg-tertiary)',
-            color: normalised ? 'white' : 'var(--color-text-tertiary)',
-            border: 'none', cursor: normalised ? 'pointer' : 'default',
-            fontFamily: 'var(--font-sans)', fontSize: 13, fontWeight: 600,
-            display: 'flex', alignItems: 'center', gap: 6,
-            transition: 'all 200ms ease', flexShrink: 0,
-          }}
-        >
-          {status === 'loading' ? <Loader2 size={14} style={{ animation: 'onb-spin 0.8s linear infinite' }} /> : 'Buscar'}
-        </button>
-      </div>
-
-      {/* Feedback */}
-      {status === 'found' && (
-        <motion.div
-          initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
-          style={{
-            background: 'rgba(139,92,246,0.08)', border: '1px solid rgba(139,92,246,0.25)',
-            borderRadius: 12, padding: '14px 16px',
-            display: 'flex', alignItems: 'center', gap: 12,
-          }}
-        >
-          <Heart size={20} color="var(--color-accent-couple)" fill="var(--color-accent-couple)" />
-          <div>
-            <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-text-primary)', margin: 0 }}>
-              {inviterName} quer construir com você 💜
-            </p>
-            <p style={{ fontSize: 12, color: 'var(--color-text-tertiary)', margin: 0 }}>
-              Vocês vão compartilhar a mesma base financeira.
-            </p>
-          </div>
-        </motion.div>
-      )}
-
-      {status === 'not_found' && (
-        <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-          style={{ fontSize: 13, color: 'var(--color-danger)', textAlign: 'center', margin: 0 }}
-        >
-          Código não encontrado. Confirme com seu par e tente novamente.
-        </motion.p>
-      )}
-
-      {status === 'error' && (
-        <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-          style={{ fontSize: 13, color: 'var(--color-danger)', textAlign: 'center', margin: 0 }}
-        >
-          Erro de conexão. Verifique sua internet e tente de novo.
-        </motion.p>
-      )}
-
-      <Button
-        variant={status === 'found' ? 'couple' : 'primary'}
-        fullWidth
-        type="button"
-        onClick={onNext}
+      <motion.div
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.5 }}
+        style={{ marginBottom: 32, animation: 'onb-logo-breathe 3s ease-in-out infinite', position: 'relative', zIndex: 1 }}
       >
-        {status === 'found' ? `Unir finanças com ${inviterName} 💜` : 'Começar solo por enquanto'}
-      </Button>
+        <SomusLogo size={72} />
+      </motion.div>
 
-      <style>{`@keyframes onb-spin { to { transform: rotate(360deg); } }`}</style>
+      <motion.h1
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.15 }}
+        style={{
+          fontSize: 28, fontWeight: 700, textAlign: 'center', lineHeight: 1.3,
+          color: 'var(--color-text-primary)', margin: '0 0 12px', position: 'relative', zIndex: 1,
+        }}
+      >
+        Sua vida financeira,<br />mais clara e organizada.
+      </motion.h1>
+
+      <motion.p
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.25 }}
+        style={{
+          fontSize: 15, textAlign: 'center', lineHeight: 1.6,
+          color: 'var(--color-text-secondary)', margin: '0 0 48px', position: 'relative', zIndex: 1,
+        }}
+      >
+        A Somus ajuda você a construir<br />uma organização financeira mais leve.
+      </motion.p>
+
+      <motion.div
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.35 }}
+        style={{ width: '100%', position: 'relative', zIndex: 1 }}
+      >
+        <button onClick={onNext} style={btn('var(--color-accent-primary)')}>Começar</button>
+      </motion.div>
+
+      <style>{`
+        @keyframes onb-breathe {
+          0%, 100% { transform: translateX(-50%) scale(1); opacity: 1; }
+          50% { transform: translateX(-50%) scale(1.3); opacity: 0.7; }
+        }
+        @keyframes onb-logo-breathe {
+          0%, 100% { transform: scale(1); }
+          50% { transform: scale(1.04); }
+        }
+        @keyframes onb-spin { to { transform: rotate(360deg); } }
+        @keyframes onb-pulse-glow {
+          0%, 100% { box-shadow: 0 0 0 0 rgba(59,130,246,0.4); }
+          50% { box-shadow: 0 0 0 14px rgba(59,130,246,0); }
+        }
+        @keyframes onb-dual-approach {
+          0%, 100% { transform: translateX(0); }
+          50% { transform: translateX(-12px); }
+        }
+        @keyframes onb-dual-approach-r {
+          0%, 100% { transform: translateX(0); }
+          50% { transform: translateX(12px); }
+        }
+        @keyframes onb-bar-breathe {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.78; }
+        }
+      `}</style>
     </div>
   )
 }
 
-// ─── Passo 2: Parceiro ────────────────────────────────────────────────────────
+// ─── Step 2: Seu Espaço ───────────────────────────────────────────────────────
 
-function Step2({ onNext, onSkip }: { onNext: () => void; onSkip: () => void }) {
-  const [copied, setCopied] = useState(false)
-  const code = useAppStore.getState().currentUser?.partnerCode ?? '0001'
+function Step2({
+  name, setName, avatar, setAvatar, onNext,
+}: {
+  name: string; setName: (v: string) => void
+  avatar: string; setAvatar: (v: string) => void
+  onNext: () => void
+}) {
+  const { upload, isProcessing } = useImageUpload()
+  const [confirmed, setConfirmed] = useState(false)
+  const fileRef = useRef<HTMLInputElement>(null)
 
-  function handleCopy() {
-    navigator.clipboard.writeText(code).then(() => {
-      setCopied(true)
-      setTimeout(() => setCopied(false), 2000)
-    })
+  async function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    const result = await upload(file)
+    if (result) setAvatar(result.dataUrl)
   }
 
+  function handleNext() {
+    setConfirmed(true)
+    setTimeout(onNext, 450)
+  }
+
+  const initials = name.trim().charAt(0).toUpperCase() || '?'
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 28 }}>
+      {/* Avatar */}
+      <div style={{ ...col, gap: 12 }}>
+        <div
+          style={{
+            width: 88, height: 88, borderRadius: '50%',
+            background: avatar ? 'transparent' : 'var(--color-accent-primary)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: 36, fontWeight: 700, color: '#fff', position: 'relative',
+            overflow: 'hidden',
+            animation: confirmed ? 'onb-pulse-glow 0.4s ease-out' : undefined,
+            transition: 'box-shadow 300ms ease',
+          }}
+        >
+          {isProcessing
+            ? <Loader2 size={28} style={{ animation: 'onb-spin 0.8s linear infinite' }} />
+            : avatar
+              ? <img src={avatar} alt="avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              : initials
+          }
+        </div>
+
+        <button
+          type="button"
+          onClick={() => fileRef.current?.click()}
+          style={{ ...ghostBtn, display: 'flex', alignItems: 'center', gap: 6, fontSize: 13 }}
+        >
+          <Camera size={14} />
+          {avatar ? 'Trocar foto' : 'Adicionar foto'}
+        </button>
+        <input ref={fileRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleFile} />
+      </div>
+
+      {/* Input */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+        <label style={{ fontSize: 13, color: 'var(--color-text-secondary)', fontWeight: 500 }}>
+          Como você gostaria de ser chamado(a)?
+        </label>
+        <input
+          autoFocus
+          value={name}
+          onChange={e => setName(e.target.value)}
+          placeholder="Ex: Lucas, Ana, Duda..."
+          onKeyDown={e => { if (e.key === 'Enter' && name.trim()) handleNext() }}
+          style={{
+            background: 'var(--color-bg-tertiary)', border: '1px solid var(--color-border)',
+            borderRadius: 12, padding: '14px 16px', fontSize: 16,
+            color: 'var(--color-text-primary)', fontFamily: 'var(--font-sans)',
+            outline: 'none', width: '100%', boxSizing: 'border-box',
+          }}
+        />
+      </div>
+
+      <button
+        onClick={handleNext}
+        disabled={!name.trim()}
+        style={{
+          ...btn(name.trim() ? 'var(--color-accent-primary)' : 'var(--color-bg-tertiary)',
+            name.trim() ? '#fff' : 'var(--color-text-tertiary)'),
+          cursor: name.trim() ? 'pointer' : 'default',
+        }}
+      >
+        Continuar
+      </button>
+    </div>
+  )
+}
+
+// ─── Step 3: Objetivo Principal ───────────────────────────────────────────────
+
+const GOALS = [
+  { id: 'organizacao',  label: 'Mais organização',     Icon: Layout    },
+  { id: 'economizar',   label: 'Economizar',            Icon: PiggyBank },
+  { id: 'clareza',      label: 'Ter mais clareza',      Icon: Eye       },
+  { id: 'objetivos',    label: 'Planejar objetivos',    Icon: Target    },
+  { id: 'patrimonio',   label: 'Construir patrimônio',  Icon: TrendingUp},
+  { id: 'dividas',      label: 'Sair das dívidas',      Icon: Leaf      },
+]
+
+function Step3({ goal, setGoal, onNext }: { goal: string; setGoal: (v: string) => void; onNext: () => void }) {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+      <div>
+        <h2 style={{ fontSize: 22, fontWeight: 700, color: 'var(--color-text-primary)', margin: '0 0 6px', lineHeight: 1.3 }}>
+          O que você gostaria de<br />construir daqui pra frente?
+        </h2>
+        <p style={{ fontSize: 13, color: 'var(--color-text-tertiary)', margin: 0 }}>
+          Sem compromisso — você pode mudar isso a qualquer hora.
+        </p>
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+        {GOALS.map(({ id, label, Icon }, i) => {
+          const active = goal === id
+          return (
+            <motion.button
+              key={id}
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.05, duration: 0.3 }}
+              onClick={() => setGoal(id)}
+              style={{
+                display: 'flex', flexDirection: 'column', alignItems: 'center',
+                justifyContent: 'center', gap: 10,
+                padding: '18px 12px', borderRadius: 16, cursor: 'pointer',
+                fontFamily: 'var(--font-sans)', fontSize: 13, fontWeight: 600,
+                color: active ? 'var(--color-text-primary)' : 'var(--color-text-secondary)',
+                background: active ? 'rgba(59,130,246,0.08)' : 'var(--color-bg-secondary)',
+                border: `1.5px solid ${active ? 'var(--color-accent-primary)' : 'var(--color-border)'}`,
+                boxShadow: active ? '0 0 0 3px rgba(59,130,246,0.15)' : 'none',
+                transform: active ? 'scale(1.02)' : 'scale(1)',
+                transition: 'all 200ms ease',
+                textAlign: 'center',
+              }}
+            >
+              <Icon size={22} color={active ? 'var(--color-accent-primary)' : 'var(--color-text-tertiary)'} />
+              {label}
+            </motion.button>
+          )
+        })}
+      </div>
+
+      <button
+        onClick={onNext}
+        disabled={!goal}
+        style={{
+          ...btn(goal ? 'var(--color-accent-primary)' : 'var(--color-bg-tertiary)',
+            goal ? '#fff' : 'var(--color-text-tertiary)'),
+          cursor: goal ? 'pointer' : 'default',
+        }}
+      >
+        Continuar
+      </button>
+    </div>
+  )
+}
+
+// ─── Step 4: Método Somus ─────────────────────────────────────────────────────
+
+const DIVISOES_SHOW = [
+  { id: 'cx-essencial', pct: 55 },
+  { id: 'cx-objetivos', pct: 20 },
+  { id: 'cx-reserva',   pct: 10 },
+  { id: 'cx-educacao',  pct: 5  },
+]
+
+function Step4({ onNext }: { onNext: () => void }) {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+      <div>
+        <h2 style={{ fontSize: 22, fontWeight: 700, color: 'var(--color-text-primary)', margin: '0 0 6px', lineHeight: 1.3 }}>
+          Seu dinheiro organizado<br />de forma simples.
+        </h2>
+      </div>
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        {DIVISOES_SHOW.map(({ id, pct }, i) => {
+          const { Icon, color } = getDivisaoIcon(id)
+          const names: Record<string, string> = {
+            'cx-essencial': 'Essencial',
+            'cx-objetivos': 'Objetivos',
+            'cx-reserva':   'Liberdade Financeira',
+            'cx-educacao':  'Educação',
+          }
+          return (
+            <motion.div
+              key={id}
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 + i * 0.12, duration: 0.4 }}
+              style={{
+                background: 'rgba(255,255,255,0.04)',
+                backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
+                border: '1px solid rgba(255,255,255,0.08)',
+                borderRadius: 14, padding: '14px 16px',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 10 }}>
+                <div style={{
+                  width: 36, height: 36, borderRadius: 10, flexShrink: 0,
+                  background: `${color}18`, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                }}>
+                  <Icon size={20} style={{ color }} />
+                </div>
+                <span style={{ flex: 1, fontSize: 14, fontWeight: 600, color: 'var(--color-text-primary)' }}>
+                  {names[id]}
+                </span>
+                <span style={{
+                  fontSize: 16, fontWeight: 700, color,
+                  background: `${color}15`, padding: '2px 10px', borderRadius: 8,
+                }}>
+                  {pct}%
+                </span>
+              </div>
+              {/* Animated bar */}
+              <div style={{ height: 6, borderRadius: 99, background: 'rgba(255,255,255,0.08)', overflow: 'hidden' }}>
+                <motion.div
+                  initial={{ width: 0 }}
+                  animate={{ width: `${pct}%` }}
+                  transition={{ delay: 0.4 + i * 0.12, duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] }}
+                  style={{
+                    height: '100%', borderRadius: 99, background: color,
+                    animation: 'onb-bar-breathe 3s ease-in-out infinite',
+                  }}
+                />
+              </div>
+            </motion.div>
+          )
+        })}
+      </div>
+
+      <p style={{ fontSize: 14, textAlign: 'center', color: 'var(--color-text-secondary)', lineHeight: 1.6, margin: 0 }}>
+        A Somus ajuda você a visualizar,<br />organizar e construir com mais equilíbrio.
+      </p>
+
+      <button onClick={onNext} style={btn('var(--color-accent-primary)')}>
+        Entendi, vamos lá!
+      </button>
+    </div>
+  )
+}
+
+// ─── Step 5: Conexão Compartilhada ────────────────────────────────────────────
+
+function Step5({ partnerCode, onFinish }: { partnerCode: string; onFinish: () => void }) {
+  const [copied, setCopied] = useState(false)
+
   function handleShare() {
-    const text = `💜 Entra comigo no Somus!\n\nhttps://somus.vercel.app/convite/${code}`
+    const text = `Vem construir comigo no Somus!\nhttps://somus.vercel.app/convite/${partnerCode}`
     if (navigator.share) {
       navigator.share({ title: 'Somus', text }).catch(() => {})
     } else {
@@ -209,546 +390,170 @@ function Step2({ onNext, onSkip }: { onNext: () => void; onSkip: () => void }) {
   }
 
   return (
-    <form onSubmit={e => { e.preventDefault(); onNext() }} style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-      <div style={center}>
-        <div style={iconCircle('rgba(139,92,246,0.12)')}>
-          <Users size={28} color="var(--color-accent-couple)" />
-        </div>
-        <h2 style={heading}>Construa junto com alguém.</h2>
-        <p style={sub}>Compartilhe seu código e comecem juntos.</p>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 32, alignItems: 'center' }}>
+      {/* Dual glow visual */}
+      <div style={{ position: 'relative', width: 120, height: 64 }}>
+        <div style={{
+          position: 'absolute', top: 0, left: 0,
+          width: 64, height: 64, borderRadius: '50%',
+          background: 'radial-gradient(circle, rgba(59,130,246,0.35) 0%, transparent 70%)',
+          animation: 'onb-dual-approach 3s ease-in-out infinite',
+        }} />
+        <div style={{
+          position: 'absolute', top: 0, right: 0,
+          width: 64, height: 64, borderRadius: '50%',
+          background: 'radial-gradient(circle, rgba(139,92,246,0.35) 0%, transparent 70%)',
+          animation: 'onb-dual-approach-r 3s ease-in-out infinite',
+        }} />
+        {/* Connection line + heart */}
+        <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }} viewBox="0 0 120 64">
+          <path d="M 32 32 Q 60 16 88 32" stroke="rgba(139,92,246,0.2)" strokeWidth="1.5" fill="none" strokeDasharray="4 4" />
+        </svg>
+        <motion.div
+          initial={{ opacity: 0, scale: 0.5 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.5, duration: 0.4, type: 'spring' }}
+          style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }}
+        >
+          <Heart size={16} color="#8B5CF6" fill="#8B5CF6" />
+        </motion.div>
       </div>
-      <div style={{
-        background: 'var(--color-bg-secondary)', border: '1px solid var(--color-border)',
-        borderRadius: 'var(--radius-card)', padding: 20, textAlign: 'center',
-      }}>
-        <p style={{ fontSize: 12, color: 'var(--color-text-tertiary)', margin: '0 0 6px' }}>Seu código</p>
-        <p style={{ fontSize: 24, fontFamily: 'monospace', fontWeight: 700, color: 'var(--color-accent-couple)', margin: 0, letterSpacing: 2 }}>{code}</p>
-        <div style={{ display: 'flex', gap: 8, marginTop: 16 }}>
-          <button onClick={handleCopy} style={{
-            flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-            padding: '10px 0', fontSize: 13, fontWeight: 600, fontFamily: 'var(--font-sans)',
-            background: copied ? 'rgba(16,185,129,0.15)' : 'rgba(139,92,246,0.12)',
-            color: copied ? 'var(--color-success)' : 'var(--color-accent-couple)',
-            border: 'none', borderRadius: 10, cursor: 'pointer', transition: 'all 200ms',
-          }}>
-            {copied ? <Check size={14} /> : <Copy size={14} />}
-            {copied ? 'Copiado!' : 'Copiar código'}
-          </button>
-          <button onClick={handleShare} style={{
-            flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-            padding: '10px 0', fontSize: 13, fontWeight: 600, fontFamily: 'var(--font-sans)',
-            background: 'rgba(139,92,246,0.12)', color: 'var(--color-accent-couple)',
-            border: 'none', borderRadius: 10, cursor: 'pointer',
-          }}>
-            <Share2 size={14} />
-            Compartilhar
-          </button>
-        </div>
+
+      <div style={{ textAlign: 'center' }}>
+        <h2 style={{ fontSize: 22, fontWeight: 700, color: 'var(--color-text-primary)', margin: '0 0 12px', lineHeight: 1.3 }}>
+          E se tudo isso pudesse ser<br />construído junto com alguém?
+        </h2>
+        <p style={{ fontSize: 14, color: 'var(--color-text-secondary)', margin: 0, lineHeight: 1.6 }}>
+          Cada pessoa mantém seu próprio espaço,<br />
+          mas vocês também podem compartilhar objetivos,<br />
+          planejamento e construção financeira.
+        </p>
       </div>
-      <Button variant="couple" fullWidth type="submit">Continuar</Button>
-      <button onClick={onSkip} type="button" style={{
-        fontSize: 14, color: 'var(--color-text-tertiary)', cursor: 'pointer',
-        textDecoration: 'underline', textAlign: 'center', background: 'none', border: 'none',
-        fontFamily: 'var(--font-sans)',
-      }}>
-        Fazer solo por enquanto
-      </button>
-    </form>
-  )
-}
 
-// ─── Editable list item ───────────────────────────────────────────────────────
-
-const cardStyle: React.CSSProperties = {
-  display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-  background: 'var(--color-bg-secondary)', border: '1px solid var(--color-border)',
-  borderRadius: 'var(--radius-card)', padding: '10px 12px',
-}
-
-const inlineInput: React.CSSProperties = {
-  background: 'var(--color-bg-tertiary)', border: '1px solid var(--color-border)',
-  borderRadius: 8, padding: '6px 10px', fontSize: 13, fontFamily: 'var(--font-sans)',
-  color: 'var(--color-text-primary)', outline: 'none', width: '100%', boxSizing: 'border-box',
-}
-
-const iconBtn = (color: string): React.CSSProperties => ({
-  width: 28, height: 28, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center',
-  background: 'transparent', border: 'none', cursor: 'pointer', color, flexShrink: 0,
-})
-
-// ─── Passo 3: Fontes de renda ─────────────────────────────────────────────────
-
-type SourceItem = { id: string; name: string; amount: string }
-type ContaItem  = { id: string; name: string; amount: string; dia: string }
-type GoalItem   = { id: string; name: string; target: string; deadline: string }
-
-function Step3({ sources, setSources, onNext }: { sources: SourceItem[]; setSources: React.Dispatch<React.SetStateAction<SourceItem[]>>; onNext: () => void }) {
-  const [editId, setEditId] = useState<string | null>(null)
-  const [editName, setEditName] = useState('')
-  const [editAmount, setEditAmount] = useState('')
-
-  function startEdit(src: typeof sources[0]) {
-    setEditId(src.id); setEditName(src.name); setEditAmount(src.amount)
-  }
-  function saveEdit() {
-    if (!editName.trim()) return
-    setSources(s => s.map(x => x.id === editId ? { ...x, name: editName.trim(), amount: editAmount } : x))
-    setEditId(null)
-  }
-  function addNew() {
-    const id = String(Date.now())
-    setSources(s => [...s, { id, name: '', amount: '' }])
-    setEditId(id); setEditName(''); setEditAmount('')
-  }
-  function remove(id: string) {
-    setSources(s => s.filter(x => x.id !== id))
-    if (editId === id) setEditId(null)
-  }
-
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-      <div style={center}>
-        <div style={iconCircle('rgba(16,185,129,0.12)')}>
-          <DollarSign size={28} color="var(--color-success)" />
-        </div>
-        <h2 style={heading}>De onde vem o dinheiro?</h2>
-        <p style={sub}>Adicione as entradas que sustentam o mês.</p>
-      </div>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-        {sources.map(s => (
-          editId === s.id ? (
-            <div key={s.id} style={{ ...cardStyle, flexDirection: 'column', gap: 8, alignItems: 'stretch' }}>
-              <input style={inlineInput} placeholder="Ex: Salário, Freelance" value={editName} onChange={e => setEditName(e.target.value)} autoFocus />
-              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                <span style={{ fontSize: 13, color: 'var(--color-text-secondary)', flexShrink: 0 }}>R$</span>
-                <input style={{ ...inlineInput, width: 100 }} type="number" inputMode="decimal" placeholder="0" value={editAmount} onChange={e => setEditAmount(e.target.value)} />
-                <button onClick={saveEdit} style={iconBtn('var(--color-success)')}><Check size={16} /></button>
-                <button onClick={() => setEditId(null)} style={iconBtn('var(--color-text-tertiary)')}><X size={16} /></button>
-              </div>
-            </div>
-          ) : (
-            <div key={s.id} style={cardStyle}>
-              <div style={{ minWidth: 0, flex: 1 }}>
-                <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-text-primary)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{s.name || '(sem nome)'}</p>
-              </div>
-              <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--color-lucas)', marginRight: 4, flexShrink: 0 }}>
-                ~R$ {Number(s.amount || 0).toLocaleString('pt-BR')}
-              </span>
-              <button onClick={() => startEdit(s)} style={iconBtn('var(--color-accent-primary)')}><Pencil size={14} /></button>
-              <button onClick={() => remove(s.id)} style={iconBtn('var(--color-danger)')}><Trash2 size={14} /></button>
-            </div>
-          )
-        ))}
-        <button onClick={addNew} style={{
-          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-          padding: '10px', fontSize: 13, fontWeight: 600, fontFamily: 'var(--font-sans)',
-          background: 'rgba(16,185,129,0.08)', color: 'var(--color-success)',
-          border: '1px dashed rgba(16,185,129,0.3)', borderRadius: 'var(--radius-card)', cursor: 'pointer',
-        }}>
-          <Plus size={14} /> Adicionar fonte
+      <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <button
+          onClick={handleShare}
+          style={btn('linear-gradient(135deg, #7C3AED, #8B5CF6)')}
+        >
+          <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+            {copied ? <Check size={16} /> : <Share2 size={16} />}
+            {copied ? 'Link copiado!' : 'Convidar parceiro(a)'}
+          </span>
+        </button>
+        <button onClick={onFinish} style={ghostBtn}>
+          Fazer isso depois
         </button>
       </div>
-      <Button variant="primary" fullWidth onClick={onNext} type="button">Continuar</Button>
     </div>
   )
 }
 
-// ─── Passo 4: Divisões ────────────────────────────────────────────────────────
-
-function Step4({ onNext }: { onNext: () => void }) {
-  const [expandedId, setExpandedId] = useState<string | null>(null)
-
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-      <div style={center}>
-        <div style={iconCircle('rgba(59,130,246,0.12)')}>
-          <Wallet size={28} color="var(--color-accent-primary)" />
-        </div>
-        <h2 style={heading}>É assim que o dinheiro se organiza.</h2>
-        <p style={sub}>Cada parte do dinheiro tem um lugar. Toque em uma divisão para entender.</p>
-      </div>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-        {DIVISAO_ORDER.map((id) => {
-          const info = DIVISAO_INFO[id]
-          const { Icon, color } = getDivisaoIcon(id)
-          const isOpen = expandedId === id
-          return (
-            <button
-              key={id}
-              type="button"
-              onClick={() => setExpandedId(isOpen ? null : id)}
-              style={{
-                background: 'var(--color-bg-secondary)',
-                border: `1px solid ${isOpen ? color + '40' : 'var(--color-border)'}`,
-                borderRadius: 'var(--radius-card)', padding: 12,
-                display: 'flex', flexDirection: 'column', gap: isOpen ? 10 : 0,
-                cursor: 'pointer', width: '100%', textAlign: 'left',
-                fontFamily: 'var(--font-sans)',
-                transition: 'border-color 200ms ease',
-              }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10, width: '100%' }}>
-                <div style={{
-                  width: 32, height: 32, borderRadius: 8,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-                  background: `${color}15`,
-                }}>
-                  <Icon size={24} style={{ color }} />
-                </div>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text-primary)', margin: 0 }}>{info.name}</p>
-                  <p style={{ fontSize: 11, color: 'var(--color-text-tertiary)', margin: 0 }}>{info.short}</p>
-                </div>
-                <span style={{ fontSize: 18, fontWeight: 700, color, flexShrink: 0 }}>{info.pct}%</span>
-              </div>
-              {isOpen && (
-                <div style={{
-                  padding: '8px 0 0 42px',
-                  fontSize: 12, lineHeight: 1.5,
-                  color: 'var(--color-text-secondary)',
-                }}>
-                  {info.detail}
-                </div>
-              )}
-            </button>
-          )
-        })}
-      </div>
-      <Button variant="primary" fullWidth onClick={onNext} type="button">Entendi, vamos lá!</Button>
-    </div>
-  )
-}
-
-// ─── Passo 5: Saídas fixas ────────────────────────────────────────────────────
-
-function Step5({ contas, setContas, onNext }: { contas: ContaItem[]; setContas: React.Dispatch<React.SetStateAction<ContaItem[]>>; onNext: () => void }) {
-  const [editId, setEditId] = useState<string | null>(null)
-  const [editName, setEditName] = useState('')
-  const [editAmount, setEditAmount] = useState('')
-  const [editDia, setEditDia] = useState('')
-
-  function startEdit(c: typeof contas[0]) {
-    setEditId(c.id); setEditName(c.name); setEditAmount(c.amount); setEditDia(c.dia)
-  }
-  function saveEdit() {
-    if (!editName.trim()) return
-    setContas(s => s.map(x => x.id === editId ? { ...x, name: editName.trim(), amount: editAmount, dia: editDia } : x))
-    setEditId(null)
-  }
-  function addNew() {
-    const id = String(Date.now())
-    setContas(s => [...s, { id, name: '', amount: '', dia: '' }])
-    setEditId(id); setEditName(''); setEditAmount(''); setEditDia('')
-  }
-  function remove(id: string) {
-    setContas(s => s.filter(x => x.id !== id))
-    if (editId === id) setEditId(null)
-  }
-
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-      <div style={center}>
-        <div style={iconCircle('rgba(239,68,68,0.12)')}>
-          <Receipt size={28} color="var(--color-danger)" />
-        </div>
-        <h2 style={heading}>Quais contas chegam todo mês?</h2>
-        <p style={sub}>Adicione as despesas que aparecem todo mês.</p>
-      </div>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-        {contas.map(c => (
-          editId === c.id ? (
-            <div key={c.id} style={{ ...cardStyle, flexDirection: 'column', gap: 8, alignItems: 'stretch' }}>
-              <input style={inlineInput} placeholder="Ex: Aluguel, Netflix" value={editName} onChange={e => setEditName(e.target.value)} autoFocus />
-              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                <span style={{ fontSize: 13, color: 'var(--color-text-secondary)', flexShrink: 0 }}>R$</span>
-                <input style={{ ...inlineInput, width: 80 }} type="number" inputMode="decimal" placeholder="0" value={editAmount} onChange={e => setEditAmount(e.target.value)} />
-                <span style={{ fontSize: 13, color: 'var(--color-text-secondary)', flexShrink: 0 }}>Dia</span>
-                <input style={{ ...inlineInput, width: 50 }} type="number" inputMode="numeric" placeholder="1" value={editDia} onChange={e => setEditDia(e.target.value)} />
-                <button onClick={saveEdit} style={iconBtn('var(--color-success)')}><Check size={16} /></button>
-                <button onClick={() => setEditId(null)} style={iconBtn('var(--color-text-tertiary)')}><X size={16} /></button>
-              </div>
-            </div>
-          ) : (
-            <div key={c.id} style={cardStyle}>
-              <div style={{ minWidth: 0, flex: 1 }}>
-                <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-text-primary)', margin: 0 }}>{c.name || '(sem nome)'}</p>
-                <p style={{ fontSize: 12, color: 'var(--color-text-tertiary)', margin: 0 }}>Dia {c.dia || '?'}</p>
-              </div>
-              <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--color-danger)', marginRight: 4, flexShrink: 0 }}>
-                R$ {Number(c.amount || 0).toLocaleString('pt-BR')}
-              </span>
-              <button onClick={() => startEdit(c)} style={iconBtn('var(--color-accent-primary)')}><Pencil size={14} /></button>
-              <button onClick={() => remove(c.id)} style={iconBtn('var(--color-danger)')}><Trash2 size={14} /></button>
-            </div>
-          )
-        ))}
-        <button onClick={addNew} style={{
-          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-          padding: '10px', fontSize: 13, fontWeight: 600, fontFamily: 'var(--font-sans)',
-          background: 'rgba(239,68,68,0.06)', color: 'var(--color-danger)',
-          border: '1px dashed rgba(239,68,68,0.25)', borderRadius: 'var(--radius-card)', cursor: 'pointer',
-        }}>
-          <Plus size={14} /> Adicionar conta
-        </button>
-      </div>
-      <Button variant="primary" fullWidth onClick={onNext} type="button">Confirmar</Button>
-    </div>
-  )
-}
-
-// ─── Passo 6: Primeiro objetivo ───────────────────────────────────────────────
-
-function Step6({ goals, setGoals, onFinish }: { goals: GoalItem[]; setGoals: React.Dispatch<React.SetStateAction<GoalItem[]>>; onFinish: () => void }) {
-  const [editId, setEditId] = useState<string | null>(null)
-  const [editName, setEditName] = useState('')
-  const [editTarget, setEditTarget] = useState('')
-  const [editDeadline, setEditDeadline] = useState('')
-
-  function startEdit(g: typeof goals[0]) {
-    setEditId(g.id); setEditName(g.name); setEditTarget(g.target); setEditDeadline(g.deadline)
-  }
-  function saveEdit() {
-    if (!editName.trim()) return
-    setGoals(s => s.map(x => x.id === editId ? { ...x, name: editName.trim(), target: editTarget, deadline: editDeadline } : x))
-    setEditId(null)
-  }
-  function addNew() {
-    const id = String(Date.now())
-    setGoals(s => [...s, { id, name: '', target: '', deadline: '' }])
-    setEditId(id); setEditName(''); setEditTarget(''); setEditDeadline('')
-  }
-  function remove(id: string) {
-    setGoals(s => s.filter(x => x.id !== id))
-    if (editId === id) setEditId(null)
-  }
-
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-      <div style={center}>
-        <div style={iconCircle('rgba(139,92,246,0.12)')}>
-          <Plane size={28} color="var(--color-accent-couple)" />
-        </div>
-        <h2 style={heading}>Seus objetivos</h2>
-        <p style={sub}>O que vocês querem conquistar?</p>
-      </div>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-        {goals.map(g => (
-          editId === g.id ? (
-            <div key={g.id} style={{ ...cardStyle, flexDirection: 'column', gap: 8, alignItems: 'stretch' }}>
-              <input style={inlineInput} placeholder="Ex: Viagem Europa" value={editName} onChange={e => setEditName(e.target.value)} autoFocus />
-              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                <span style={{ fontSize: 13, color: 'var(--color-text-secondary)', flexShrink: 0 }}>R$</span>
-                <input style={{ ...inlineInput, width: 90 }} type="number" inputMode="decimal" placeholder="0" value={editTarget} onChange={e => setEditTarget(e.target.value)} />
-                <input style={{ ...inlineInput, flex: 1 }} type="month" value={editDeadline} onChange={e => setEditDeadline(e.target.value)} />
-                <button onClick={saveEdit} style={iconBtn('var(--color-success)')}><Check size={16} /></button>
-                <button onClick={() => setEditId(null)} style={iconBtn('var(--color-text-tertiary)')}><X size={16} /></button>
-              </div>
-            </div>
-          ) : (
-            <div key={g.id} style={{
-              ...cardStyle,
-              border: '1px solid rgba(139,92,246,0.25)',
-            }}>
-              <div style={{ minWidth: 0, flex: 1 }}>
-                <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-text-primary)', margin: 0 }}>{g.name || '(sem nome)'}</p>
-                <p style={{ fontSize: 12, color: 'var(--color-text-tertiary)', margin: 0 }}>
-                  R$ {Number(g.target || 0).toLocaleString('pt-BR')}
-                  {g.deadline && ` · ${g.deadline.replace('-', '/')}`}
-                </p>
-              </div>
-              <button onClick={() => startEdit(g)} style={iconBtn('var(--color-accent-primary)')}><Pencil size={14} /></button>
-              <button onClick={() => remove(g.id)} style={iconBtn('var(--color-danger)')}><Trash2 size={14} /></button>
-            </div>
-          )
-        ))}
-        <button onClick={addNew} style={{
-          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-          padding: '10px', fontSize: 13, fontWeight: 600, fontFamily: 'var(--font-sans)',
-          background: 'rgba(139,92,246,0.06)', color: 'var(--color-accent-couple)',
-          border: '1px dashed rgba(139,92,246,0.25)', borderRadius: 'var(--radius-card)', cursor: 'pointer',
-        }}>
-          <Plus size={14} /> Adicionar objetivo
-        </button>
-      </div>
-      <Button variant="couple" fullWidth onClick={onFinish} type="button">
-        Vamos começar!
-      </Button>
-    </div>
-  )
-}
-
-// ─── Onboarding orchestrator ──────────────────────────────────────────────────
+// ─── Orchestrator ─────────────────────────────────────────────────────────────
 
 export default function Onboarding() {
-  const [step, setStep] = useState(0)
-  const [name, setName] = useState('')
-  // Invite code entered by this user (they were invited by someone)
-  const [inviteResult, setInviteResult] = useState<InviteResult>(null)
-
-  // Lifted state — survives step navigation
-  const [sources, setSources] = useState<SourceItem[]>([
-    { id: '1', name: 'Salário CLT', amount: '3000' },
-    { id: '2', name: 'Freelance',   amount: '1000' },
-  ])
-  const [contas,  setContas]  = useState<ContaItem[]>([
-    { id: '1', name: 'Aluguel / Financiamento', amount: '800', dia: '10' },
-    { id: '2', name: 'Internet / Telefone',      amount: '120', dia: '15' },
-    { id: '3', name: 'Energia elétrica',         amount: '150', dia: '20' },
-  ])
-  const [goals,   setGoals]   = useState<GoalItem[]>([
-    { id: '1', name: 'Fundo de emergência', target: '10000', deadline: '' },
-    { id: '2', name: 'Viagem dos sonhos',   target: '5000',  deadline: '' },
-  ])
+  const [step, setStep]   = useState(0)
+  const [name, setName]   = useState('')
+  const [avatar, setAvatar] = useState('')
+  const [goal, setGoal]   = useState('')
+  const dirRef = useRef<1 | -1>(1)
 
   const [, navigate]       = useLocation()
   const completeOnboarding = useAppStore(s => s.completeOnboarding)
-  const setPartner         = useAppStore(s => s.setPartner)
-  const dirRef = useRef<1 | -1>(1)
   const { uid, displayName, email, photoURL } = useAuth()
 
-  const totalSteps = 7
-  function goNext() { dirRef.current = 1; setStep(s => s + 1) }
-  function goBack() { dirRef.current = -1; setStep(s => s - 1) }
+  const totalSteps = 5
+
+  function goNext() { dirRef.current = 1;  setStep(s => Math.min(s + 1, totalSteps - 1)) }
+  function goBack() { dirRef.current = -1; setStep(s => Math.max(s - 1, 0)) }
 
   function handleFinish() {
     const userId = uid ?? `user-${Date.now()}`
+    const partnerCode = Date.now().toString(36).slice(-4).toUpperCase()
+
     const user: User = {
       id: userId,
       name: name || displayName || 'Usuário',
       email: email ?? '',
-      avatar: photoURL ?? undefined,
-      partnerCode: Date.now().toString(36).slice(-4).toUpperCase(),
-    }
-    const incomeSources = sources
-      .filter(s => s.name.trim())
-      .map(s => ({
-        userId,
-        name: s.name.trim(),
-        type: 'fixed' as const,
-        expectedAmount: parseFloat(s.amount) || 0,
-      }))
-    const saidasFixas = contas
-      .filter(c => c.name.trim())
-      .map(c => ({
-        userId,
-        name: c.name.trim(),
-        amount: parseFloat(c.amount) || 0,
-        dueDay: parseInt(c.dia) || 1,
-        paymentMethod: 'auto_debit' as const,
-        divisaoId: 'cx-essencial',
-        autoDebit: false,
-        category: 'Conta fixa',
-      }))
-    const objetivos = goals
-      .filter(g => g.name.trim())
-      .map(g => ({
-        userId,
-        name: g.name.trim(),
-        emoji: '🎯',
-        targetAmount: parseFloat(g.target) || 0,
-        targetDate: g.deadline || undefined,
-      }))
-    completeOnboarding(user, { incomeSources, saidasFixas, objetivos })
-
-    // If user entered an invite code, link both users bilaterally in Firestore
-    if (uid && inviteResult) {
-      const { inviterUid, inviterName, code } = inviteResult
-      // Update local Zustand partner immediately (UI responds right away)
-      setPartner({ id: inviterUid, name: inviterName, partnerCode: code })
-
-      // Write bilateral link to Firestore (fire-and-forget, debounce will retry)
-      setDoc(doc(db, 'users', uid), {
-        partner: { id: inviterUid, name: inviterName, partnerCode: code },
-      }, { merge: true }).catch(() => {})
-
-      setDoc(doc(db, 'users', inviterUid), {
-        partner: { id: uid, name: user.name, partnerCode: user.partnerCode },
-      }, { merge: true }).catch(() => {})
+      avatar: avatar || photoURL || undefined,
+      partnerCode,
+      goal: goal || undefined,
     }
 
-    // Save to Firestore IMMEDIATELY — do not rely on the 1.5s debounce.
-    // If the page reloads before debounce fires, the migration would find
-    // Firestore empty and trigger a false reset (double onboarding bug).
+    completeOnboarding(user, { incomeSources: [], saidasFixas: [], objetivos: [] })
+
     if (uid) {
-      const finalState = useAppStore.getState()
       import('../lib/firestoreService').then(({ saveStateToFirestore }) => {
-        saveStateToFirestore(uid, finalState as import('../types').AppState)
-          .then(() => {
-            localStorage.setItem('somus-firebase-migrated', uid)
-          })
-          .catch(() => {}) // Firestore write will be retried by debounced save
+        saveStateToFirestore(uid, useAppStore.getState() as import('../types').AppState)
+          .then(() => localStorage.setItem('somus-firebase-migrated', uid))
+          .catch(() => {})
       })
     }
 
     navigate('/home')
   }
 
+  const partnerCode = Date.now().toString(36).slice(-4).toUpperCase()
+
   const steps = [
-    <Step1 key={0} name={name} setName={setName} onNext={goNext} />,
-    // NEW: ask if they have an invite code from their partner
-    <StepInviteIn key={1} onNext={goNext} setInviteResult={setInviteResult} />,
-    // Existing steps shifted +1
-    <Step2 key={2} onNext={goNext} onSkip={goNext} />,
-    <Step3 key={3} sources={sources} setSources={setSources} onNext={goNext} />,
-    <Step4 key={4} onNext={goNext} />,
-    <Step5 key={5} contas={contas} setContas={setContas} onNext={goNext} />,
-    <Step6 key={6} goals={goals} setGoals={setGoals} onFinish={handleFinish} />,
+    <Step1 key={0} onNext={goNext} />,
+    <Step2 key={1} name={name} setName={setName} avatar={avatar} setAvatar={setAvatar} onNext={goNext} />,
+    <Step3 key={2} goal={goal} setGoal={setGoal} onNext={goNext} />,
+    <Step4 key={3} onNext={goNext} />,
+    <Step5 key={4} partnerCode={partnerCode} onFinish={handleFinish} />,
   ]
 
   return (
     <div style={{
       minHeight: '100dvh', display: 'flex', flexDirection: 'column',
-      alignItems: 'center', justifyContent: 'center', padding: 24,
+      alignItems: 'center', justifyContent: 'center',
+      padding: '24px 24px 40px',
       background: 'var(--color-bg-primary)',
+      position: 'relative', overflow: 'hidden',
     }}>
-      {/* Barra de progresso do wizard */}
-      <div style={{ display: 'flex', gap: 6, marginBottom: 32 }}>
-        {Array.from({ length: totalSteps }).map((_, i) => (
-          <div
-            key={i}
-            style={{
+      {/* Progress dots */}
+      {step > 0 && (
+        <div style={{ display: 'flex', gap: 6, marginBottom: 28, alignSelf: 'center' }}>
+          {Array.from({ length: totalSteps }).map((_, i) => (
+            <div key={i} style={{
               height: 4, borderRadius: 99,
-              width: i === step ? 32 : 8,
-              background: i <= step ? 'var(--color-accent-primary)' : 'var(--color-bg-tertiary)',
+              width: i === step ? 28 : 6,
+              background: i < step
+                ? 'var(--color-accent-primary)'
+                : i === step
+                  ? 'var(--color-accent-primary)'
+                  : 'rgba(255,255,255,0.12)',
               transition: 'all 300ms ease',
-            }}
-          />
-        ))}
-      </div>
+            }} />
+          ))}
+        </div>
+      )}
 
-      {/* Conteúdo do step */}
-      <div style={{ width: '100%', maxWidth: 384 }}>
+      {/* Step content */}
+      <div style={{ width: '100%', maxWidth: 400 }}>
         <AnimatePresence mode="wait" custom={dirRef.current}>
           <motion.div
             key={step}
             custom={dirRef.current}
             variants={{
-              enter: (d: number) => ({ opacity: 0, x: d * 60 }),
+              enter: (d: number) => ({ opacity: 0, x: d * 48 }),
               center: { opacity: 1, x: 0 },
-              exit: (d: number) => ({ opacity: 0, x: d * -60 }),
+              exit:  (d: number) => ({ opacity: 0, x: d * -48 }),
             }}
             initial="enter"
             animate="center"
             exit="exit"
-            transition={{ duration: 0.25, ease: [0.25, 0.46, 0.45, 0.94] }}
+            transition={{ duration: 0.28, ease: [0.25, 0.46, 0.45, 0.94] }}
           >
             {steps[step]}
           </motion.div>
         </AnimatePresence>
       </div>
 
-      {/* Back btn */}
+      {/* Back button */}
       {step > 0 && (
         <button
           onClick={goBack}
-          style={{
-            marginTop: 24, fontSize: 14, fontWeight: 500,
-            color: 'var(--color-text-secondary)',
-            cursor: 'pointer', background: 'none',
-            border: 'none', fontFamily: 'var(--font-sans)',
-            padding: '8px 20px', borderRadius: 'var(--radius-button)',
-            transition: 'color 150ms ease',
-          }}
+          style={{ ...ghostBtn, marginTop: 20, fontSize: 14 }}
         >
           ← Voltar
         </button>

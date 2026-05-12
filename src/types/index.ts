@@ -11,6 +11,7 @@ export interface User {
   email: string
   avatar?: string
   partnerCode?: string
+  goal?: string   // objetivo selecionado no onboarding (etapa 3)
 }
 
 // ─── Fontes de renda ────────────────────────────────────────────────────────

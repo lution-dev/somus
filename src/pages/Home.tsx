@@ -29,6 +29,17 @@ import {
   AlertCircle,
   Eye,
   EyeOff,
+  Receipt,
+  Users,
+  Sparkles,
+  Info,
+  X,
+  Plane,
+  Shield,
+  Home as HomeIcon,
+  Heart,
+  BarChart2,
+  Share2,
 } from 'lucide-react'
 
 // ─── Pill button style ──────────────────────────────────────────────────────
@@ -613,6 +624,230 @@ function DivisoesSection({ balanceHidden = false }: { balanceHidden?: boolean })
   )
 }
 
+// ─── Progressive Onboarding Banner ──────────────────────────────────────────
+
+const CHIP_SUGGESTIONS = ['Aluguel', 'Mercado', 'Internet', 'Transporte', 'Streaming']
+
+const OBJ_SUGGESTIONS = [
+  { label: 'Viagem',        Icon: Plane,    color: '#8B5CF6' },
+  { label: 'Reserva',       Icon: Shield,   color: '#10B981' },
+  { label: 'Casa',          Icon: HomeIcon, color: '#3B82F6' },
+  { label: 'Casamento',     Icon: Heart,    color: '#EC4899' },
+  { label: 'Investimentos', Icon: BarChart2,color: '#F59E0B' },
+  { label: '+ Criar',       Icon: Plus,     color: '#64748B' },
+]
+
+const cardMotion = {
+  initial: { opacity: 0, y: 8 },
+  animate: { opacity: 1, y: 0 },
+  exit:    { opacity: 0, y: -4 },
+  transition: { duration: 0.35, ease: [0.25, 0.46, 0.45, 0.94] as [number,number,number,number] },
+}
+
+function ProgressiveOnboardingBanner({ onLancar }: { onLancar: () => void }) {
+  const [, navigate] = useLocation()
+
+  const incomeSources = useAppStore(useShallow(s => s.incomeSources.filter(src => src.userId === (s.currentUser?.id ?? ''))))
+  const saidasFixas   = useAppStore(useShallow(selectCurrentSaidasFixas))
+  const objetivos     = useAppStore(useShallow(s => s.objetivos))
+  const partner       = useAppStore(s => s.partner)
+  const currentUser   = useAppStore(s => s.currentUser)
+
+  const [victoryDismissed, setVictoryDismissed] = React.useState(
+    () => !!localStorage.getItem('somus:victory-shown')
+  )
+  const [hintEntrada, setHintEntrada] = React.useState(
+    () => !!localStorage.getItem('somus:hint-entrada')
+  )
+  const [hintObjetivo, setHintObjetivo] = React.useState(
+    () => !!localStorage.getItem('somus:hint-objetivo')
+  )
+  const [partnerDismissed, setPartnerDismissed] = React.useState(
+    () => !!localStorage.getItem('somus:partner-later')
+  )
+  const [copied, setCopied] = React.useState(false)
+
+  // Auto-dismiss victory
+  React.useEffect(() => {
+    if (incomeSources.length > 0 && !victoryDismissed) {
+      const t = setTimeout(() => {
+        localStorage.setItem('somus:victory-shown', '1')
+        setVictoryDismissed(true)
+      }, 6000)
+      return () => clearTimeout(t)
+    }
+  }, [incomeSources.length, victoryDismissed])
+
+  // Auto-dismiss hint-entrada
+  React.useEffect(() => {
+    if (incomeSources.length > 0 && !hintEntrada) {
+      const t = setTimeout(() => {
+        localStorage.setItem('somus:hint-entrada', '1')
+        setHintEntrada(true)
+      }, 5000)
+      return () => clearTimeout(t)
+    }
+  }, [incomeSources.length, hintEntrada])
+
+  function handleShare() {
+    const code = currentUser?.partnerCode ?? ''
+    const text = `Vem construir comigo no Somus!\nhttps://somus.vercel.app/convite/${code}`
+    if (navigator.share) { navigator.share({ title: 'Somus', text }).catch(() => {}) }
+    else { navigator.clipboard.writeText(text).then(() => { setCopied(true); setTimeout(() => setCopied(false), 2000) }) }
+  }
+
+  const glassCard = (extra?: React.CSSProperties): React.CSSProperties => ({
+    background: 'rgba(255,255,255,0.04)',
+    backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
+    border: '1px solid rgba(255,255,255,0.09)',
+    borderRadius: 16, padding: '18px 16px',
+    marginBottom: 16,
+    ...extra,
+  })
+
+  // Card 1: sem renda
+  if (incomeSources.length === 0) return (
+    <AnimatePresence>
+      <motion.div key="card1" {...cardMotion} style={glassCard({ border: '1px solid rgba(59,130,246,0.2)' })}>
+        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14 }}>
+          <div style={{ width: 40, height: 40, borderRadius: 12, background: 'rgba(16,185,129,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <TrendingUp size={20} color="var(--color-success)" />
+          </div>
+          <div style={{ flex: 1 }}>
+            <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-text-primary)', margin: '0 0 4px' }}>Vamos começar pela sua base financeira?</p>
+            <p style={{ fontSize: 13, color: 'var(--color-text-secondary)', margin: '0 0 14px', lineHeight: 1.5 }}>Adicionar sua primeira entrada ajuda a Somus a organizar tudo melhor.</p>
+            <button onClick={onLancar} style={{ background: 'var(--color-success)', color: '#fff', border: 'none', borderRadius: 10, padding: '9px 18px', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-sans)' }}>
+              Adicionar entrada
+            </button>
+          </div>
+        </div>
+      </motion.div>
+    </AnimatePresence>
+  )
+
+  // Card 5: Primeira Vitória (logo após 1ª entrada)
+  if (!victoryDismissed) return (
+    <AnimatePresence>
+      <motion.div key="victory" {...cardMotion} style={glassCard({ border: '1px solid rgba(16,185,129,0.3)' })}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <Sparkles size={20} color="var(--color-success)" style={{ flexShrink: 0 }} />
+          <p style={{ flex: 1, fontSize: 14, fontWeight: 500, color: 'var(--color-text-primary)', margin: 0 }}>
+            Sua estrutura financeira começou a ganhar forma ✨
+          </p>
+          <button onClick={() => { localStorage.setItem('somus:victory-shown','1'); setVictoryDismissed(true) }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-text-tertiary)', padding: 4, flexShrink: 0 }}>
+            <X size={16} />
+          </button>
+        </div>
+      </motion.div>
+    </AnimatePresence>
+  )
+
+  // Card 6a: Hint após 1ª entrada
+  if (incomeSources.length === 1 && !hintEntrada) return (
+    <AnimatePresence>
+      <motion.div key="hint-entrada" {...cardMotion} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 12px', borderRadius: 12, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', marginBottom: 12 }}>
+        <Info size={14} color="var(--color-text-tertiary)" style={{ flexShrink: 0 }} />
+        <p style={{ flex: 1, fontSize: 13, color: 'var(--color-text-secondary)', margin: 0 }}>Agora a Somus já consegue visualizar sua estrutura mensal.</p>
+        <button onClick={() => { localStorage.setItem('somus:hint-entrada','1'); setHintEntrada(true) }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-text-tertiary)', padding: 4 }}>
+          <X size={14} />
+        </button>
+      </motion.div>
+    </AnimatePresence>
+  )
+
+  // Card 2: sem custos fixos
+  if (saidasFixas.length === 0) return (
+    <AnimatePresence>
+      <motion.div key="card2" {...cardMotion} style={glassCard()}>
+        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14 }}>
+          <div style={{ width: 40, height: 40, borderRadius: 12, background: 'rgba(239,68,68,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <Receipt size={20} color="var(--color-danger)" />
+          </div>
+          <div style={{ flex: 1 }}>
+            <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-text-primary)', margin: '0 0 4px' }}>Agora vamos entender sua rotina.</p>
+            <p style={{ fontSize: 13, color: 'var(--color-text-secondary)', margin: '0 0 12px', lineHeight: 1.5 }}>Adicione os custos que fazem parte do seu mês.</p>
+            {/* Chips */}
+            <div style={{ display: 'flex', gap: 8, overflowX: 'auto', paddingBottom: 4, marginBottom: 12 }}>
+              {CHIP_SUGGESTIONS.map(chip => (
+                <button key={chip} onClick={() => navigate('/fluxo')} style={{ flexShrink: 0, background: 'rgba(239,68,68,0.08)', color: 'var(--color-danger)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: 20, padding: '5px 14px', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-sans)', whiteSpace: 'nowrap' }}>
+                  {chip}
+                </button>
+              ))}
+            </div>
+            <button onClick={() => navigate('/fluxo')} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 13, color: 'var(--color-text-tertiary)', fontFamily: 'var(--font-sans)', padding: 0, textDecoration: 'underline' }}>
+              Ver todos os custos
+            </button>
+          </div>
+        </div>
+      </motion.div>
+    </AnimatePresence>
+  )
+
+  // Card 3: sem objetivos
+  if (objetivos.length === 0) return (
+    <AnimatePresence>
+      <motion.div key="card3" {...cardMotion} style={glassCard()}>
+        <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-text-primary)', margin: '0 0 14px' }}>O que você gostaria de construir?</p>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
+          {OBJ_SUGGESTIONS.map(({ label, Icon, color }) => (
+            <button key={label} onClick={() => navigate('/casal')} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, padding: '12px 8px', borderRadius: 12, background: `${color}0D`, border: `1px solid ${color}25`, cursor: 'pointer', fontFamily: 'var(--font-sans)', fontSize: 11, fontWeight: 600, color: 'var(--color-text-secondary)', transition: 'all 200ms ease' }}>
+              <Icon size={18} color={color} />
+              {label}
+            </button>
+          ))}
+        </div>
+      </motion.div>
+    </AnimatePresence>
+  )
+
+  // Card 6b: Hint após 1º objetivo
+  if (objetivos.length === 1 && !hintObjetivo) return (
+    <AnimatePresence>
+      <motion.div key="hint-objetivo" {...cardMotion} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 12px', borderRadius: 12, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', marginBottom: 12 }}>
+        <Info size={14} color="var(--color-text-tertiary)" style={{ flexShrink: 0 }} />
+        <p style={{ flex: 1, fontSize: 13, color: 'var(--color-text-secondary)', margin: 0 }}>Que tal criar uma divisão para acelerar esse objetivo?</p>
+        <button onClick={() => navigate('/relatorios')} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, color: 'var(--color-accent-primary)', fontFamily: 'var(--font-sans)', padding: '0 8px', whiteSpace: 'nowrap' }}>Ver divisões</button>
+        <button onClick={() => { localStorage.setItem('somus:hint-objetivo','1'); setHintObjetivo(true) }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-text-tertiary)', padding: 4 }}>
+          <X size={14} />
+        </button>
+      </motion.div>
+    </AnimatePresence>
+  )
+
+  // Card 4: sem parceiro
+  if (!partner && !partnerDismissed) return (
+    <AnimatePresence>
+      <motion.div key="card4" {...cardMotion} style={glassCard({ background: 'linear-gradient(135deg, rgba(59,130,246,0.05) 0%, rgba(139,92,246,0.05) 100%)', border: '1px solid rgba(139,92,246,0.15)', position: 'relative', overflow: 'hidden' })}>
+        {/* Ambient SVG lines */}
+        <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none' }} viewBox="0 0 300 100" preserveAspectRatio="none">
+          <path d="M 0 50 Q 150 10 300 50" stroke="rgba(139,92,246,0.08)" strokeWidth="1" fill="none" />
+          <path d="M 0 60 Q 150 20 300 60" stroke="rgba(59,130,246,0.06)" strokeWidth="1" fill="none" />
+        </svg>
+        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14, position: 'relative' }}>
+          {/* Dual glow icons */}
+          <div style={{ position: 'relative', width: 44, height: 40, flexShrink: 0 }}>
+            <div style={{ position: 'absolute', top: 2, left: 0, width: 28, height: 28, borderRadius: '50%', background: 'radial-gradient(circle, rgba(59,130,246,0.4) 0%, transparent 70%)' }} />
+            <div style={{ position: 'absolute', top: 2, right: 0, width: 28, height: 28, borderRadius: '50%', background: 'radial-gradient(circle, rgba(139,92,246,0.4) 0%, transparent 70%)' }} />
+            <Users size={16} color="rgba(139,92,246,0.8)" style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }} />
+          </div>
+          <div style={{ flex: 1 }}>
+            <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-text-primary)', margin: '0 0 4px' }}>Agora imagine compartilhar tudo isso com alguém.</p>
+            <p style={{ fontSize: 13, color: 'var(--color-text-secondary)', margin: '0 0 14px', lineHeight: 1.5 }}>Cada pessoa mantém sua individualidade, mas vocês podem construir juntos.</p>
+            <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+              <button onClick={handleShare} style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'rgba(139,92,246,0.15)', color: '#A78BFA', border: '1px solid rgba(139,92,246,0.25)', borderRadius: 10, padding: '8px 16px', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-sans)' }}>
+                <Share2 size={14} />{copied ? 'Copiado!' : 'Convidar parceiro(a)'}
+              </button>
+              <button onClick={() => { localStorage.setItem('somus:partner-later', '1'); setPartnerDismissed(true) }} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 13, color: 'var(--color-text-tertiary)', fontFamily: 'var(--font-sans)', padding: 0 }}>Talvez depois</button>
+            </div>
+          </div>
+        </div>
+      </motion.div>
+    </AnimatePresence>
+  )
+
+  return null
+}
+
 // ─── Home Page ────────────────────────────────────────────────────────────
 
 export default function Home() {
@@ -743,6 +978,11 @@ export default function Home() {
           onDespesaClick={handleDespesaClick}
         />
       )}
+
+      {/* Progressive Onboarding */}
+      <div style={{ marginTop: 16 }}>
+        <ProgressiveOnboardingBanner onLancar={() => setLancarOpen(true)} />
+      </div>
 
       {/* Divisoes */}
       <DivisoesSection balanceHidden={balanceHidden} />
