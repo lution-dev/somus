@@ -201,7 +201,7 @@ export default function Relatorios() {
           <div style={{ width: 52, height: 52, borderRadius: 16, background: 'rgba(59,130,246,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 14 }}>
             <Calendar size={24} color="var(--color-accent-primary)" strokeWidth={1.5} />
           </div>
-          <p style={{ fontSize: 15, fontWeight: 600, color: 'var(--color-text-primary)', margin: '0 0 6px' }}>Nenhum lançamento</p>
+          <p style={{ fontSize: 15, fontWeight: 600, color: 'var(--color-text-primary)', margin: '0 0 6px' }}>Ainda sem movimentos</p>
           <p style={{ fontSize: 13, color: 'var(--color-text-tertiary)', margin: 0, lineHeight: 1.5, maxWidth: 280 }}>
             Nenhum movimento em {monthLabel(month).toLowerCase()}.
           </p>

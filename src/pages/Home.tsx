@@ -352,7 +352,7 @@ function ProximosDias({ onEntradaClick, onDespesaClick, isDesktop }: {
     >
       <Calendar size={13} color="var(--color-text-tertiary)" />
       <span className="section-label" style={{ marginBottom: 0, flex: 1, textAlign: 'left' }}>
-        Próximos dias
+        O que vem por aí
       </span>
       {/* Status badges — shown when collapsed and there are items */}
       {collapsed && upcoming.length > 0 && (

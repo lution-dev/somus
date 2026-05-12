@@ -575,7 +575,7 @@ export default function Fluxo() {
                 <ArrowDownLeft size={16} /> Lançar saída
               </Button>
               <Button variant="primary" onClick={() => setLancarOpen(true)}>
-                <ArrowUpRight size={16} /> Lançar entrada
+                <ArrowUpRight size={16} /> Registrar entrada
               </Button>
             </div>
           </div>
@@ -675,7 +675,7 @@ export default function Fluxo() {
                     </button>
                   </motion.div>
                   <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <span style={{ fontSize: 12, fontWeight: 600, color: 'white', background: 'rgba(0,0,0,0.7)', padding: '5px 10px', borderRadius: 8 }}>Lançar entrada</span>
+                    <span style={{ fontSize: 12, fontWeight: 600, color: 'white', background: 'rgba(0,0,0,0.7)', padding: '5px 10px', borderRadius: 8 }}>Registrar entrada</span>
                     <button onClick={() => { setFabOpen(false); setLancarOpen(true) }} style={{ width: 46, height: 46, borderRadius: 14, background: 'var(--color-success)', border: 'none', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}>
                       <ArrowUpRight size={20} strokeWidth={2.5} />
                     </button>

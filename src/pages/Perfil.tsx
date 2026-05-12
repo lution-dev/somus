@@ -26,7 +26,7 @@ export default function Perfil() {
       {!isMobile && (
         <div style={{ paddingTop: 32, marginBottom: 24 }}>
           <h1 style={{ fontSize: 24, fontWeight: 600, color: 'var(--color-text-primary)', margin: 0 }}>
-            Perfil
+            Sua conta
           </h1>
         </div>
       )}
