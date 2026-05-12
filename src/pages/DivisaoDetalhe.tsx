@@ -455,33 +455,58 @@ export default function DivisaoDetalhe() {
             Adicionar Custo Fixo
           </button>}
 
-          {/* Filter chips */}
-          <div style={{ marginBottom: 12 }}>
-            <p className="section-label" style={{ marginBottom: 8 }}>Filtrar por</p>
-            <div style={{ display: 'flex', gap: 8 }}>
-              {(['date', 'payment'] as const).map(mode => (
-                <button
-                  key={mode}
-                  onClick={() => setGroupBy(mode)}
-                  style={{
-                    padding: '6px 14px', borderRadius: 20,
-                    fontSize: 13, fontWeight: 600,
-                    fontFamily: 'var(--font-sans)',
-                    cursor: 'pointer',
-                    border: `1.5px solid ${groupBy === mode ? 'var(--color-accent-primary)' : 'var(--color-border)'}`,
-                    background: groupBy === mode ? 'rgba(59,130,246,0.1)' : 'transparent',
-                    color: groupBy === mode ? 'var(--color-accent-primary)' : 'var(--color-text-secondary)',
-                    transition: 'all 150ms ease',
-                  }}
-                >
-                  {mode === 'date' ? 'Data' : 'Forma de Pagamento'}
-                </button>
-              ))}
+          {/* List header + filter chips inline (Fluxo pattern) */}
+          <div style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            marginBottom: 10, paddingLeft: 2,
+          }}>
+            <p style={{
+              fontSize: 13, fontWeight: 700,
+              color: 'var(--color-text-tertiary)',
+              textTransform: 'uppercase',
+              letterSpacing: '0.06em',
+              margin: 0,
+            }}>
+              Custos Fixos
+            </p>
+            <div style={{ display: 'flex', gap: 6 }}>
+              <button
+                onClick={() => setGroupBy('date')}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 4,
+                  padding: '4px 10px', borderRadius: 8,
+                  fontSize: 11, fontWeight: 700,
+                  fontFamily: 'var(--font-sans)',
+                  cursor: 'pointer',
+                  transition: 'all 150ms ease',
+                  border: groupBy === 'date' ? '1px solid rgba(59,130,246,0.4)' : '1px solid var(--color-border)',
+                  background: groupBy === 'date' ? 'rgba(59,130,246,0.12)' : 'var(--color-bg-secondary)',
+                  color: groupBy === 'date' ? 'var(--color-accent-primary)' : 'var(--color-text-tertiary)',
+                }}
+              >
+                Data
+              </button>
+              <button
+                onClick={() => setGroupBy('payment')}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 4,
+                  padding: '4px 10px', borderRadius: 8,
+                  fontSize: 11, fontWeight: 700,
+                  fontFamily: 'var(--font-sans)',
+                  cursor: 'pointer',
+                  transition: 'all 150ms ease',
+                  border: groupBy === 'payment' ? '1px solid rgba(59,130,246,0.4)' : '1px solid var(--color-border)',
+                  background: groupBy === 'payment' ? 'rgba(59,130,246,0.12)' : 'var(--color-bg-secondary)',
+                  color: groupBy === 'payment' ? 'var(--color-accent-primary)' : 'var(--color-text-tertiary)',
+                }}
+              >
+                Forma de Pgto
+              </button>
             </div>
           </div>
 
           <SearchBar value={searchQuery} onChange={setSearchQuery} />
-
+          <div style={{ marginBottom: 12 }} />
           {/* Custos grouped list */}
           <div style={{
             borderRadius: 'var(--radius-card)',
