@@ -78,7 +78,7 @@ export function Dialog({
             initial={isMobile ? { opacity: 0, y: 32 } : { opacity: 0, scale: 0.97, y: 8 }}
             animate={isMobile ? { opacity: 1, y: 0 } : { opacity: 1, scale: 1, y: 0 }}
             exit={isMobile ? { opacity: 0, y: 20 } : { opacity: 0, scale: 0.97 }}
-            transition={{ duration: 0.35, ease: 'easeOut' }} }}
+            transition={{ duration: 0.35, ease: 'easeOut' }}
             style={{
               position: 'relative', zIndex: 10, width: '100%',
               maxWidth: SIZE_WIDTHS[size],
