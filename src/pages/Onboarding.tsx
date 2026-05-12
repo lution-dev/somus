@@ -440,7 +440,7 @@ function Step4({ onNext }: { onNext: () => void }) {
 
 // ─── Step 5: Conexão Compartilhada (3 sub-telas) ─────────────────────────────
 
-function Step5({ partnerCode, onFinish, onBack: _onBack, onSubStepChange }: {
+function Step5({ partnerCode, onFinish, onBack, onSubStepChange }: {
   partnerCode: string; onFinish: () => void; onBack: () => void
   onSubStepChange?: (sub: 0|1|2) => void
 }) {
@@ -657,6 +657,7 @@ function Step5({ partnerCode, onFinish, onBack: _onBack, onSubStepChange }: {
         </button>
         <button onClick={handleLater} style={ghostBtn}>Fazer isso depois</button>
       </div>
+      <button onClick={onBack} style={{ ...ghostBtn, marginTop: 4, fontSize: 14 }}>← Voltar</button>
     </div>
   )
 }
