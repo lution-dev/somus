@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useLocation } from 'wouter'
 import { useAppStore } from '../stores/useAppStore'
@@ -148,6 +148,7 @@ function Step2({
   }
 
   const initials = name.trim().charAt(0).toUpperCase() || '?'
+  const isGooglePhoto = avatar.startsWith('https://')
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 28 }}>
@@ -178,7 +179,7 @@ function Step2({
           style={{ ...ghostBtn, display: 'flex', alignItems: 'center', gap: 6, fontSize: 13 }}
         >
           <Camera size={14} />
-          {avatar ? 'Trocar foto' : 'Adicionar foto'}
+          {isGooglePhoto ? 'Foto do Google · Trocar' : avatar ? 'Trocar foto' : 'Adicionar foto'}
         </button>
         <input ref={fileRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleFile} />
       </div>
@@ -460,6 +461,15 @@ export default function Onboarding() {
   const [, navigate]       = useLocation()
   const completeOnboarding = useAppStore(s => s.completeOnboarding)
   const { uid, displayName, email, photoURL } = useAuth()
+
+  // Auto-popula com os dados do Google assim que disponíveis
+  useEffect(() => {
+    if (photoURL && !avatar) setAvatar(photoURL)
+  }, [photoURL])       // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    if (displayName && !name) setName(displayName.split(' ')[0])
+  }, [displayName])    // eslint-disable-line react-hooks/exhaustive-deps
 
   const totalSteps = 5
 
