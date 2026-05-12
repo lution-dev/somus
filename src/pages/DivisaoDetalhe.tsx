@@ -203,8 +203,8 @@ export default function DivisaoDetalhe() {
           <PageHeader title={divisao.name} back bg={HERO_BG} />
           <div style={{
             background: `linear-gradient(to bottom, ${HERO_BG} 0%, transparent 100%)`,
-            padding: '12px 16px 24px',
-            marginBottom: 20,
+            padding: '12px 16px 16px',
+            marginBottom: 12,
             overflow: 'hidden',
           }}>
             {/* Icon */}
