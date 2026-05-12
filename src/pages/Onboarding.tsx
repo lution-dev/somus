@@ -675,6 +675,19 @@ export default function Onboarding() {
     if (displayName && !name) setName(displayName.split(' ')[0])
   }, [displayName])    // eslint-disable-line react-hooks/exhaustive-deps
 
+  // B5-FIX: pré-salva o partnerCode no Firestore assim que o usuário chega no Step5
+  // Isso garante que o parceiro pode usar o link ANTES do host completar o onboarding
+  useEffect(() => {
+    if (step !== 4 || !uid) return
+    const code = partnerCodeRef.current
+    import('../lib/firebase').then(({ db }) =>
+      import('firebase/firestore').then(({ doc, setDoc }) =>
+        setDoc(doc(db, 'users', uid), { currentUser: { partnerCode: code } }, { merge: true })
+          .catch(() => {})
+      )
+    )
+  }, [step, uid]) // eslint-disable-line react-hooks/exhaustive-deps
+
   const totalSteps = 5
 
   function goNext() { dirRef.current = 1;  setStep(s => Math.min(s + 1, totalSteps - 1)) }
@@ -684,13 +697,14 @@ export default function Onboarding() {
     setExiting(true)
     setTimeout(() => {
       const userId = uid ?? `user-${Date.now()}`
-      const partnerCode = Date.now().toString(36).slice(-4).toUpperCase()
+      // B4-FIX: usa o MESMO partnerCode estável que foi compartilhado no Step5
+      const code = partnerCodeRef.current
       const user: User = {
         id: userId,
         name: name || displayName || 'Usuário',
         email: email ?? '',
         avatar: avatar || photoURL || undefined,
-        partnerCode,
+        partnerCode: code,
         goal: goal || undefined,
       }
       completeOnboarding(user, { incomeSources: [], saidasFixas: [], objetivos: [] })
