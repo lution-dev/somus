@@ -345,10 +345,10 @@ export default function Login() {
   /* ─── DESKTOP — Split screen ─────────────────────────────── */
   return (
     <div style={{
-      minHeight: '100dvh', display: 'grid',
-      gridTemplateColumns: '1fr 1.2fr',
+      minHeight: '100dvh',
       background: 'linear-gradient(180deg, #050816 0%, #0A1020 100%)',
       position: 'relative', overflow: 'hidden',
+      display: 'flex', alignItems: 'stretch', justifyContent: 'center',
     }}>
       <style>{waveCSS}</style>
 
@@ -368,6 +368,15 @@ export default function Login() {
 
       {/* Waves span full width behind both panels */}
       <AtmosphericWaves />
+
+      {/* ── Constrained grid — content max-width ── */}
+      <div style={{
+        width: '100%',
+        maxWidth: 1440,
+        display: 'grid',
+        gridTemplateColumns: '1fr 1.2fr',
+        position: 'relative', zIndex: 1,
+      }}>
 
       {/* ── LEFT PANEL — Branding ─────────────────────────── */}
       <div style={{
@@ -567,6 +576,7 @@ export default function Login() {
           </div>
         </motion.div>
       </div>
+      </div>{/* /constrained grid */}
     </div>
   )
 }
