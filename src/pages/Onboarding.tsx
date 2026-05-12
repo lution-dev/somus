@@ -15,15 +15,31 @@ import {
 // ─── Shared styles ────────────────────────────────────────────────────────────
 
 const col: React.CSSProperties = { display: 'flex', flexDirection: 'column', alignItems: 'center' }
-const btn = (bg: string, color = '#fff'): React.CSSProperties => ({
-  width: '100%', padding: '14px 0', borderRadius: 14, border: 'none', cursor: 'pointer',
-  background: bg, color, fontSize: 15, fontWeight: 600, fontFamily: 'var(--font-sans)',
-  transition: 'opacity 150ms ease',
+
+// Premium solid button — sem gradient, iluminação atmosférica
+const primaryBtn = (active = true): React.CSSProperties => ({
+  width: '100%', padding: '15px 0', borderRadius: 14, border: 'none', cursor: active ? 'pointer' : 'default',
+  background: active ? '#2563EB' : 'rgba(255,255,255,0.06)',
+  color: active ? '#fff' : 'rgba(255,255,255,0.3)',
+  fontSize: 15, fontWeight: 600, fontFamily: 'var(--font-sans)',
+  boxShadow: active
+    ? '0 10px 30px rgba(37,99,235,0.22), inset 0 1px 0 rgba(255,255,255,0.12)'
+    : 'none',
+  transition: 'all 200ms ease',
+  letterSpacing: '0.01em',
+})
+const coupleBtn = (): React.CSSProperties => ({
+  width: '100%', padding: '15px 0', borderRadius: 14, border: 'none', cursor: 'pointer',
+  background: '#6D28D9',
+  color: '#fff', fontSize: 15, fontWeight: 600, fontFamily: 'var(--font-sans)',
+  boxShadow: '0 10px 30px rgba(109,40,217,0.25), inset 0 1px 0 rgba(255,255,255,0.1)',
+  transition: 'all 200ms ease',
+  letterSpacing: '0.01em',
 })
 const ghostBtn: React.CSSProperties = {
   background: 'none', border: 'none', cursor: 'pointer',
-  fontSize: 14, color: 'var(--color-text-tertiary)', fontFamily: 'var(--font-sans)',
-  padding: '10px 0',
+  fontSize: 14, color: 'rgba(255,255,255,0.35)', fontFamily: 'var(--font-sans)',
+  padding: '10px 0', letterSpacing: '0.01em',
 }
 
 // ─── Step 1: Welcome ──────────────────────────────────────────────────────────
@@ -31,21 +47,28 @@ const ghostBtn: React.CSSProperties = {
 function Step1({ onNext }: { onNext: () => void }) {
   return (
     <div style={{ ...col, gap: 0, minHeight: '100%', justifyContent: 'center', padding: '40px 0' }}>
-      {/* Atmospheric glow layers */}
-      <div style={{
-        position: 'absolute', inset: 0, pointerEvents: 'none', overflow: 'hidden',
-      }}>
+      {/* Atmospheric glow layers — cinematográfico */}
+      <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', overflow: 'hidden' }}>
+        {/* Outer ambient — enorme e suave */}
         <div style={{
-          position: 'absolute', top: '20%', left: '50%', transform: 'translateX(-50%)',
-          width: 320, height: 320, borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(59,130,246,0.18) 0%, transparent 70%)',
-          animation: 'onb-breathe 4s ease-in-out infinite',
+          position: 'absolute', top: '-10%', left: '50%', transform: 'translateX(-50%)',
+          width: 560, height: 560, borderRadius: '50%',
+          background: 'radial-gradient(circle, rgba(37,99,235,0.22) 0%, transparent 60%)',
+          animation: 'onb-breathe 5s ease-in-out infinite',
         }} />
+        {/* Inner core — mais concentrado */}
         <div style={{
-          position: 'absolute', top: '25%', left: '50%', transform: 'translateX(-50%)',
-          width: 180, height: 180, borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(59,130,246,0.12) 0%, transparent 70%)',
-          animation: 'onb-breathe 3s ease-in-out infinite 0.5s',
+          position: 'absolute', top: '10%', left: '50%', transform: 'translateX(-50%)',
+          width: 260, height: 260, borderRadius: '50%',
+          background: 'radial-gradient(circle, rgba(59,130,246,0.28) 0%, transparent 65%)',
+          animation: 'onb-breathe 3.5s ease-in-out infinite 0.8s',
+        }} />
+        {/* Subtle purple accent — profundidade */}
+        <div style={{
+          position: 'absolute', top: '5%', left: '50%', transform: 'translateX(-50%)',
+          width: 200, height: 200, borderRadius: '50%',
+          background: 'radial-gradient(circle, rgba(109,40,217,0.10) 0%, transparent 70%)',
+          animation: 'onb-breathe 6s ease-in-out infinite 1.2s',
         }} />
       </div>
 
@@ -88,17 +111,17 @@ function Step1({ onNext }: { onNext: () => void }) {
         transition={{ duration: 0.5, delay: 0.35 }}
         style={{ width: '100%', position: 'relative', zIndex: 1 }}
       >
-        <button onClick={onNext} style={btn('var(--color-accent-primary)')}>Começar</button>
+        <button onClick={onNext} style={primaryBtn()}>Começar</button>
       </motion.div>
 
       <style>{`
         @keyframes onb-breathe {
           0%, 100% { transform: translateX(-50%) scale(1); opacity: 1; }
-          50% { transform: translateX(-50%) scale(1.3); opacity: 0.7; }
+          50% { transform: translateX(-50%) scale(1.18); opacity: 0.75; }
         }
         @keyframes onb-logo-breathe {
-          0%, 100% { transform: scale(1); }
-          50% { transform: scale(1.04); }
+          0%, 100% { transform: scale(1); filter: drop-shadow(0 0 12px rgba(37,99,235,0.3)); }
+          50% { transform: scale(1.05); filter: drop-shadow(0 0 24px rgba(37,99,235,0.55)); }
         }
         @keyframes onb-spin { to { transform: rotate(360deg); } }
         @keyframes onb-pulse-glow {
@@ -107,15 +130,23 @@ function Step1({ onNext }: { onNext: () => void }) {
         }
         @keyframes onb-dual-approach {
           0%, 100% { transform: translateX(0); }
-          50% { transform: translateX(-12px); }
+          50% { transform: translateX(-14px); }
         }
         @keyframes onb-dual-approach-r {
           0%, 100% { transform: translateX(0); }
-          50% { transform: translateX(12px); }
+          50% { transform: translateX(14px); }
         }
         @keyframes onb-bar-breathe {
           0%, 100% { opacity: 1; }
-          50% { opacity: 0.78; }
+          50% { opacity: 0.75; }
+        }
+        @keyframes onb-dot-breathe {
+          0%, 100% { box-shadow: 0 0 0 0 rgba(37,99,235,0.5); }
+          50% { box-shadow: 0 0 0 4px rgba(37,99,235,0); }
+        }
+        @keyframes onb-bar-glow {
+          0%, 100% { filter: brightness(1); }
+          50% { filter: brightness(1.25); }
         }
       `}</style>
     </div>
@@ -207,11 +238,7 @@ function Step2({
       <button
         onClick={handleNext}
         disabled={!name.trim()}
-        style={{
-          ...btn(name.trim() ? 'var(--color-accent-primary)' : 'var(--color-bg-tertiary)',
-            name.trim() ? '#fff' : 'var(--color-text-tertiary)'),
-          cursor: name.trim() ? 'pointer' : 'default',
-        }}
+        style={primaryBtn(!!name.trim())}
       >
         Continuar
       </button>
@@ -276,11 +303,7 @@ function Step3({ goal, setGoal, onNext }: { goal: string; setGoal: (v: string) =
       <button
         onClick={onNext}
         disabled={!goal}
-        style={{
-          ...btn(goal ? 'var(--color-accent-primary)' : 'var(--color-bg-tertiary)',
-            goal ? '#fff' : 'var(--color-text-tertiary)'),
-          cursor: goal ? 'pointer' : 'default',
-        }}
+        style={primaryBtn(!!goal)}
       >
         Continuar
       </button>
@@ -317,6 +340,13 @@ function Step4({ onNext }: { onNext: () => void }) {
             'cx-dizimo':    'Dízimo',
             'cx-educacao':  'Educação',
           }
+          const descs: Record<string, string> = {
+            'cx-essencial': 'O que sustenta sua rotina.',
+            'cx-objetivos': 'O que você quer construir.',
+            'cx-reserva':   'Seu futuro com mais tranquilidade.',
+            'cx-dizimo':    'Generosidade e propósito.',
+            'cx-educacao':  'Crescimento contínuo.',
+          }
           return (
             <motion.div
               key={id}
@@ -330,31 +360,38 @@ function Step4({ onNext }: { onNext: () => void }) {
                 borderRadius: 14, padding: '14px 16px',
               }}
             >
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 10 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 6 }}>
                 <div style={{
                   width: 36, height: 36, borderRadius: 10, flexShrink: 0,
                   background: `${color}18`, display: 'flex', alignItems: 'center', justifyContent: 'center',
                 }}>
                   <Icon size={20} style={{ color }} />
                 </div>
-                <span style={{ flex: 1, fontSize: 14, fontWeight: 600, color: 'var(--color-text-primary)' }}>
-                  {names[id]}
-                </span>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <span style={{ fontSize: 14, fontWeight: 600, color: 'rgba(255,255,255,0.9)', display: 'block', marginBottom: 1 }}>
+                    {names[id]}
+                  </span>
+                  <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.38)', fontWeight: 400 }}>
+                    {descs[id]}
+                  </span>
+                </div>
                 <span style={{
-                  fontSize: 16, fontWeight: 700, color,
-                  background: `${color}15`, padding: '2px 10px', borderRadius: 8,
+                  fontSize: 15, fontWeight: 700, color,
+                  background: `${color}18`, padding: '2px 10px', borderRadius: 8, flexShrink: 0,
                 }}>
                   {pct}%
                 </span>
               </div>
-              {/* Animated bar */}
-              <div style={{ height: 6, borderRadius: 99, background: 'rgba(255,255,255,0.08)', overflow: 'hidden' }}>
+              {/* Animated bar with glow */}
+              <div style={{ height: 5, borderRadius: 99, background: 'rgba(255,255,255,0.07)', overflow: 'hidden' }}>
                 <motion.div
                   initial={{ width: 0 }}
                   animate={{ width: `${pct}%` }}
-                  transition={{ delay: 0.4 + i * 0.12, duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] }}
+                  transition={{ delay: 0.45 + i * 0.14, duration: 0.75, ease: [0.25, 0.46, 0.45, 0.94] }}
                   style={{
-                    height: '100%', borderRadius: 99, background: color,
+                    height: '100%', borderRadius: 99,
+                    background: color,
+                    boxShadow: `0 0 8px ${color}80`,
                     animation: 'onb-bar-breathe 3s ease-in-out infinite',
                   }}
                 />
@@ -368,9 +405,7 @@ function Step4({ onNext }: { onNext: () => void }) {
         A Somus ajuda você a visualizar,<br />organizar e construir com mais equilíbrio.
       </p>
 
-      <button onClick={onNext} style={btn('var(--color-accent-primary)')}>
-        Entendi, vamos lá!
-      </button>
+      <button onClick={onNext} style={primaryBtn()}>Entendi, vamos lá!</button>
     </div>
   )
 }
@@ -394,31 +429,38 @@ function Step5({ partnerCode, onFinish }: { partnerCode: string; onFinish: () =>
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 32, alignItems: 'center' }}>
-      {/* Dual glow visual */}
-      <div style={{ position: 'relative', width: 120, height: 64 }}>
+      {/* Dual glow visual — violet atmosférico */}
+      <div style={{ position: 'relative', width: 140, height: 80 }}>
+        {/* Violet outer ambient */}
+        <div style={{
+          position: 'absolute', top: -20, left: '50%', transform: 'translateX(-50%)',
+          width: 180, height: 120, borderRadius: '50%',
+          background: 'radial-gradient(ellipse, rgba(109,40,217,0.18) 0%, transparent 70%)',
+          pointerEvents: 'none',
+        }} />
         <div style={{
           position: 'absolute', top: 0, left: 0,
-          width: 64, height: 64, borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(59,130,246,0.35) 0%, transparent 70%)',
-          animation: 'onb-dual-approach 3s ease-in-out infinite',
+          width: 72, height: 72, borderRadius: '50%',
+          background: 'radial-gradient(circle, rgba(37,99,235,0.45) 0%, transparent 70%)',
+          animation: 'onb-dual-approach 3.5s ease-in-out infinite',
         }} />
         <div style={{
           position: 'absolute', top: 0, right: 0,
-          width: 64, height: 64, borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(139,92,246,0.35) 0%, transparent 70%)',
-          animation: 'onb-dual-approach-r 3s ease-in-out infinite',
+          width: 72, height: 72, borderRadius: '50%',
+          background: 'radial-gradient(circle, rgba(109,40,217,0.45) 0%, transparent 70%)',
+          animation: 'onb-dual-approach-r 3.5s ease-in-out infinite',
         }} />
         {/* Connection line + heart */}
-        <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }} viewBox="0 0 120 64">
-          <path d="M 32 32 Q 60 16 88 32" stroke="rgba(139,92,246,0.2)" strokeWidth="1.5" fill="none" strokeDasharray="4 4" />
+        <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }} viewBox="0 0 140 80">
+          <path d="M 36 40 Q 70 18 104 40" stroke="rgba(139,92,246,0.18)" strokeWidth="1" fill="none" strokeDasharray="5 4" />
         </svg>
         <motion.div
           initial={{ opacity: 0, scale: 0.5 }}
           animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.5, duration: 0.4, type: 'spring' }}
+          transition={{ delay: 0.6, duration: 0.5, type: 'spring' }}
           style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }}
         >
-          <Heart size={16} color="#8B5CF6" fill="#8B5CF6" />
+          <Heart size={16} color="#A78BFA" fill="#A78BFA" />
         </motion.div>
       </div>
 
@@ -434,10 +476,7 @@ function Step5({ partnerCode, onFinish }: { partnerCode: string; onFinish: () =>
       </div>
 
       <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 12 }}>
-        <button
-          onClick={handleShare}
-          style={btn('linear-gradient(135deg, #7C3AED, #8B5CF6)')}
-        >
+        <button onClick={handleShare} style={coupleBtn()}>
           <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
             {copied ? <Check size={16} /> : <Share2 size={16} />}
             {copied ? 'Link copiado!' : 'Convidar parceiro(a)'}
@@ -519,22 +558,19 @@ export default function Onboarding() {
       minHeight: '100dvh', display: 'flex', flexDirection: 'column',
       alignItems: 'center', justifyContent: 'center',
       padding: '24px 24px 40px',
-      background: 'var(--color-bg-primary)',
+      background: 'radial-gradient(circle at 50% 0%, rgba(37,99,235,0.28) 0%, transparent 40%), linear-gradient(180deg, #081120 0%, #050816 100%)',
       position: 'relative', overflow: 'hidden',
     }}>
-      {/* Progress dots */}
+      {/* Progress dots — premium */}
       {step > 0 && (
-        <div style={{ display: 'flex', gap: 6, marginBottom: 28, alignSelf: 'center' }}>
+        <div style={{ display: 'flex', gap: 10, marginBottom: 32, alignSelf: 'center' }}>
           {Array.from({ length: totalSteps }).map((_, i) => (
             <div key={i} style={{
               height: 4, borderRadius: 99,
-              width: i === step ? 28 : 6,
-              background: i < step
-                ? 'var(--color-accent-primary)'
-                : i === step
-                  ? 'var(--color-accent-primary)'
-                  : 'rgba(255,255,255,0.12)',
-              transition: 'all 300ms ease',
+              width: i === step ? 32 : 6,
+              background: i <= step ? '#2563EB' : 'rgba(255,255,255,0.1)',
+              animation: i === step ? 'onb-dot-breathe 2.5s ease-in-out infinite' : 'none',
+              transition: 'all 350ms cubic-bezier(0.34,1.56,0.64,1)',
             }} />
           ))}
         </div>

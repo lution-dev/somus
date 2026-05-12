@@ -37,6 +37,13 @@ export async function migrateToFirestore(
   localState: AppState
 ): Promise<AppState> {
   try {
+    // ── DEV: skip remote restore if flag is set (for testing onboarding) ──
+    if (sessionStorage.getItem('somus-skip-remote') === '1') {
+      log('⚠️  DEV FLAG: somus-skip-remote=1 → ignoring Firestore state')
+      sessionStorage.removeItem('somus-skip-remote') // single-use
+      return localState
+    }
+
     const localWeight = stateWeight(localState)
     log('Migration start for uid:', uid)
     log('Local state — onboarded:', localState.isOnboarded,
