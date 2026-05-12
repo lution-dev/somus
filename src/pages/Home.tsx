@@ -456,7 +456,44 @@ function ProximosDias({ onEntradaClick, onDespesaClick, isDesktop }: {
 function DivisoesSection({ balanceHidden = false }: { balanceHidden?: boolean }) {
   const [, navigate]   = useLocation()
   const divisoes      = useAppStore(useShallow(selectCurrentDivisoes))
+  const incomeSources = useAppStore(useShallow(s => s.incomeSources.filter(src => src.userId === (s.currentUser?.id ?? ''))))
   const mask = '•••'
+
+  // Taglines filosóficos por divisão (empty state)
+  const DORMANT_TAG: Record<string, string> = {
+    'cx-essencial':  'O que sustenta sua rotina.',
+    'cx-objetivos':  'O que você quer construir.',
+    'cx-reserva':    'Seu futuro com mais tranquilidade.',
+    'cx-dizimo':     'Generosidade como hábito.',
+    'cx-educacao':   'O fermento da vida financeira.',
+  }
+
+  const isDormant = incomeSources.length === 0
+
+  // Helper pct usado
+  const calcPct = (cx: typeof divisoes[0]) => {
+    const totalIn  = cx.movements.filter(m => m.type === 'income').reduce((s, m) => s + m.amount, 0)
+    const totalOut = cx.movements.filter(m => m.type === 'expense').reduce((s, m) => s + Math.abs(m.amount), 0)
+    return totalIn > 0 ? Math.min(100, (totalOut / totalIn) * 100) : 0
+  }
+
+  // Se divisões ainda não foram criadas (rarissimo), mostra placeholder mínimo
+  if (divisoes.length === 0) return (
+    <div style={{
+      display: 'flex', flexDirection: 'column', alignItems: 'center',
+      padding: '32px 16px', borderRadius: 'var(--radius-card)',
+      background: 'var(--color-bg-secondary)', border: '1px solid var(--color-border)',
+    }}>
+      <Wallet size={24} color="var(--color-text-tertiary)" strokeWidth={1.5} style={{ marginBottom: 10 }} />
+      <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-text-primary)', margin: '0 0 4px' }}>A estrutura está sendo preparada.</p>
+      <p style={{ fontSize: 12, color: 'var(--color-text-tertiary)', margin: 0, textAlign: 'center', maxWidth: 240 }}>
+        Isso leva apenas um instante.
+      </p>
+    </div>
+  )
+
+  const essencial = divisoes.find(cx => cx.id === 'cx-essencial')
+  const others    = divisoes.filter(cx => cx.id !== 'cx-essencial')
 
   return (
     <div style={{ marginTop: 20 }}>
@@ -464,162 +501,199 @@ function DivisoesSection({ balanceHidden = false }: { balanceHidden?: boolean })
         <p className="section-label" style={{ marginBottom: 0, display: 'flex', alignItems: 'center', gap: 6 }}>
           <Wallet size={13} />
           Divisões
+          {isDormant && (
+            <span style={{
+              fontSize: 10, fontWeight: 600, letterSpacing: '0.04em',
+              background: 'rgba(59,130,246,0.1)', color: 'rgba(59,130,246,0.6)',
+              padding: '1px 7px', borderRadius: 6, marginLeft: 4,
+            }}>aguardando</span>
+          )}
         </p>
       </div>
 
-      {divisoes.length === 0 ? (
-        <div style={{
-          display: 'flex', flexDirection: 'column', alignItems: 'center',
-          padding: '32px 16px', borderRadius: 'var(--radius-card)',
-          background: 'var(--color-bg-secondary)', border: '1px solid var(--color-border)',
-        }}>
-          <Wallet size={24} color="var(--color-text-tertiary)" strokeWidth={1.5} style={{ marginBottom: 10 }} />
-          <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-text-primary)', margin: '0 0 4px' }}>Suas divisões aparecem aqui.</p>
-          <p style={{ fontSize: 12, color: 'var(--color-text-tertiary)', margin: 0, textAlign: 'center', maxWidth: 240 }}>
-            Lance sua primeira entrada para organizar o dinheiro automaticamente.
-          </p>
-        </div>
-      ) : (() => {
-        // Option A: Essencial (55%) as featured card, rest in 2x2 grid
-        const essencial = divisoes.find(cx => cx.id === 'cx-essencial')
-        const others = divisoes.filter(cx => cx.id !== 'cx-essencial')
+      <div style={{
+        display: 'flex', flexDirection: 'column', gap: 12,
+        opacity: isDormant ? 0.65 : 1,
+        transition: 'opacity 0.8s ease',
+        filter: isDormant ? 'saturate(0.55)' : 'saturate(1)',
+      }}>
 
-        // Helper to calc % used: expenses are stored as negative amounts, so use Math.abs
-        const calcPct = (cx: typeof divisoes[0]) => {
-          const totalIn  = cx.movements.filter(m => m.type === 'income').reduce((s, m) => s + m.amount, 0)
-          const totalOut = cx.movements.filter(m => m.type === 'expense').reduce((s, m) => s + Math.abs(m.amount), 0)
-          return totalIn > 0 ? Math.min(100, (totalOut / totalIn) * 100) : 0
-        }
+        {/* ── Featured: Essencial (55%) ── */}
+        {essencial && (() => {
+          const { Icon, color } = getDivisaoIcon(essencial.id)
+          const pct    = calcPct(essencial)
+          const totalIn = essencial.movements.filter(m => m.type === 'income').reduce((s, m) => s + m.amount, 0)
+          return (
+            <button
+              onClick={() => navigate(`/relatorios/${essencial.id}`)}
+              className="card card-interactive"
+              style={{
+                display: 'flex', alignItems: 'center', gap: 14,
+                textAlign: 'left', cursor: 'pointer', width: '100%',
+                border: 'none', fontFamily: 'var(--font-sans)',
+                background: isDormant
+                  ? 'rgba(255,255,255,0.03)'
+                  : 'var(--color-bg-secondary)',
+                borderWidth: 1, borderStyle: 'solid',
+                borderColor: isDormant ? 'rgba(255,255,255,0.06)' : 'var(--color-border)',
+                borderRadius: 'var(--radius-card)',
+                padding: 16,
+                boxShadow: isDormant ? 'none' : undefined,
+                transition: 'all 0.6s ease',
+              }}
+            >
+              {/* Icon */}
+              <div style={{
+                width: 44, height: 44, borderRadius: 14, flexShrink: 0,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                background: `${color}${isDormant ? '0A' : '15'}`,
+                transition: 'background 0.6s ease',
+              }}>
+                <Icon size={30} style={{ color: isDormant ? `${color}70` : color }} />
+              </div>
 
-        return (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            {/* ── Featured: Essencial (55%) ── */}
-            {essencial && (() => {
-              const { Icon, color } = getDivisaoIcon(essencial.id)
-              const pct = calcPct(essencial)
-              const totalIn = essencial.movements.filter(m => m.type === 'income').reduce((s, m) => s + m.amount, 0)
-              return (
-                <button
-                  onClick={() => navigate(`/relatorios/${essencial.id}`)}
-                  className="card card-interactive"
-                  style={{
-                    display: 'flex', alignItems: 'center', gap: 14,
-                    textAlign: 'left', cursor: 'pointer', width: '100%',
-                    border: 'none', fontFamily: 'var(--font-sans)',
-                    background: 'var(--color-bg-secondary)',
-                    borderWidth: 1, borderStyle: 'solid',
-                    borderColor: 'var(--color-border)',
-                    borderRadius: 'var(--radius-card)',
-                    padding: 16,
-                  }}
-                >
-                  {/* Icon */}
-                  <div style={{
-                    width: 44, height: 44, borderRadius: 14, flexShrink: 0,
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    background: `${color}15`,
-                  }}>
-                    <Icon size={30} style={{ color }} />
-                  </div>
+              {/* Info */}
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
+                  <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text-primary)', margin: 0 }}>{essencial.name}</p>
+                  <span style={{
+                    fontSize: 10, fontWeight: 700, color, flexShrink: 0,
+                    background: `${color}15`, padding: '1px 5px', borderRadius: 6,
+                  }}>{essencial.percentage}%</span>
+                </div>
 
-                  {/* Info */}
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
-                      <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text-primary)', margin: 0 }}>{essencial.name}</p>
+                {isDormant ? (
+                  <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.3)', margin: '0 0 8px', fontStyle: 'italic', lineHeight: 1.4 }}>
+                    {DORMANT_TAG['cx-essencial']}
+                  </p>
+                ) : (
+                  <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, marginBottom: 6 }}>
+                    <p style={{ fontSize: 18, fontWeight: 700, color: 'var(--color-text-primary)', margin: 0 }}>
+                      {balanceHidden ? <span style={{ letterSpacing: 2 }}>{mask}</span> : formatCurrency(essencial.balance)}
+                    </p>
+                    {totalIn > 0 && (
                       <span style={{
-                        fontSize: 10, fontWeight: 700, color, flexShrink: 0,
-                        background: `${color}15`, padding: '1px 5px', borderRadius: 6,
-                      }}>{essencial.percentage}%</span>
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, marginBottom: 6 }}>
-                      <p style={{ fontSize: 18, fontWeight: 700, color: 'var(--color-text-primary)', margin: 0 }}>
-                        {balanceHidden ? <span style={{ letterSpacing: 2 }}>{mask}</span> : formatCurrency(essencial.balance)}
-                      </p>
-                      {totalIn > 0 && (
-                        <span style={{
-                          fontSize: 10, fontWeight: 600,
-                          color: pct >= 80 ? 'var(--color-danger)' : pct >= 50 ? 'var(--color-warning)' : 'var(--color-text-tertiary)',
-                        }}>{Math.round(pct)}% usado</span>
-                      )}
-                    </div>
-                    <ProgressBar value={pct} size="sm" />
+                        fontSize: 10, fontWeight: 600,
+                        color: pct >= 80 ? 'var(--color-danger)' : pct >= 50 ? 'var(--color-warning)' : 'var(--color-text-tertiary)',
+                      }}>{Math.round(pct)}% usado</span>
+                    )}
                   </div>
-                </button>
-              )
-            })()}
+                )}
 
-            {/* ── Grid 2x2 (4 cards restantes) ── */}
-            <div className="home-divisoes-grid" style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(2, 1fr)',
-              gap: 12,
-            }}>
-              <style>{`
-                @media (min-width: 1024px) {
-                  .home-divisoes-grid { grid-template-columns: repeat(4, 1fr) !important; }
-                }
-              `}</style>
-              {others.slice(0, 4).map((cx) => {
-                const { Icon, color } = getDivisaoIcon(cx.id)
-                const pct = calcPct(cx)
-                const totalIn = cx.movements.filter(m => m.type === 'income').reduce((s, m) => s + m.amount, 0)
-
-                return (
-                  <button
-                    key={cx.id}
-                    onClick={() => navigate(`/relatorios/${cx.id}`)}
-                    className="card card-interactive home-divisoes-grid-item"
+                {/* Barra — vazia no dormant, animada quando ativo */}
+                <div style={{
+                  height: 4, borderRadius: 99,
+                  background: isDormant ? 'rgba(255,255,255,0.06)' : 'rgba(255,255,255,0.08)',
+                  overflow: 'hidden',
+                }}>
+                  <motion.div
+                    initial={{ width: 0 }}
+                    animate={{ width: isDormant ? '0%' : `${pct}%` }}
+                    transition={{ duration: 1.1, ease: [0.25, 0.46, 0.45, 0.94], delay: 0.1 }}
                     style={{
-                      textAlign: 'left', cursor: 'pointer',
-                      border: 'none', fontFamily: 'var(--font-sans)',
-                      background: 'var(--color-bg-secondary)',
-                      borderWidth: 1, borderStyle: 'solid',
-                      borderColor: 'var(--color-border)',
-                      borderRadius: 'var(--radius-card)',
-                      padding: 14,
+                      height: '100%', borderRadius: 99,
+                      background: `linear-gradient(90deg, ${color}80, ${color})`,
+                      boxShadow: isDormant ? 'none' : `0 0 8px ${color}60`,
                     }}
-                  >
-                    {/* Ícone */}
-                    <div style={{
-                      width: 36, height: 36, borderRadius: 12,
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      background: `${color}15`, marginBottom: 10,
-                    }}>
-                      <Icon size={24} style={{ color }} />
-                    </div>
+                  />
+                </div>
+              </div>
+            </button>
+          )
+        })()}
 
-                    {/* Nome + % alocação */}
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
-                      <p style={{ fontSize: 11, color: 'var(--color-text-secondary)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1, minWidth: 0 }}>{cx.name}</p>
+        {/* ── Grid 2x2 / 4x1 (demais divisões) ── */}
+        <div className="home-divisoes-grid" style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(2, 1fr)',
+          gap: 12,
+        }}>
+          <style>{`
+            @media (min-width: 1024px) {
+              .home-divisoes-grid { grid-template-columns: repeat(4, 1fr) !important; }
+            }
+          `}</style>
+          {others.slice(0, 4).map((cx) => {
+            const { Icon, color } = getDivisaoIcon(cx.id)
+            const pct    = calcPct(cx)
+            const totalIn = cx.movements.filter(m => m.type === 'income').reduce((s, m) => s + m.amount, 0)
+
+            return (
+              <button
+                key={cx.id}
+                onClick={() => navigate(`/relatorios/${cx.id}`)}
+                className="card card-interactive home-divisoes-grid-item"
+                style={{
+                  textAlign: 'left', cursor: 'pointer',
+                  border: 'none', fontFamily: 'var(--font-sans)',
+                  background: isDormant ? 'rgba(255,255,255,0.025)' : 'var(--color-bg-secondary)',
+                  borderWidth: 1, borderStyle: 'solid',
+                  borderColor: isDormant ? 'rgba(255,255,255,0.05)' : 'var(--color-border)',
+                  borderRadius: 'var(--radius-card)',
+                  padding: 14,
+                  transition: 'all 0.6s ease',
+                }}
+              >
+                {/* Ícone */}
+                <div style={{
+                  width: 36, height: 36, borderRadius: 12,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  background: `${color}${isDormant ? '08' : '15'}`, marginBottom: 10,
+                  transition: 'background 0.6s ease',
+                }}>
+                  <Icon size={24} style={{ color: isDormant ? `${color}60` : color }} />
+                </div>
+
+                {/* Nome + % alocação */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
+                  <p style={{ fontSize: 11, color: 'var(--color-text-secondary)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1, minWidth: 0 }}>{cx.name}</p>
+                  <span style={{
+                    fontSize: 10, fontWeight: 700, color: isDormant ? `${color}60` : color, flexShrink: 0,
+                    background: `${color}${isDormant ? '08' : '15'}`, padding: '1px 5px', borderRadius: 6,
+                  }}>{cx.percentage}%</span>
+                </div>
+
+                {/* Valor ou tagline dormant */}
+                {isDormant ? (
+                  <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.25)', margin: '4px 0 8px', fontStyle: 'italic', lineHeight: 1.4 }}>
+                    {DORMANT_TAG[cx.id] ?? 'Aguardando.'}
+                  </p>
+                ) : (
+                  <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, marginBottom: 8 }}>
+                    <p style={{ fontSize: 14, fontWeight: 700, color: 'var(--color-text-primary)', margin: 0 }}>
+                      {balanceHidden ? <span style={{ letterSpacing: 2 }}>{mask}</span> : formatCurrency(cx.balance)}
+                    </p>
+                    {totalIn > 0 && (
                       <span style={{
-                        fontSize: 10, fontWeight: 700, color, flexShrink: 0,
-                        background: `${color}15`, padding: '1px 5px', borderRadius: 6,
-                      }}>{cx.percentage}%</span>
-                    </div>
+                        fontSize: 10, fontWeight: 600,
+                        color: pct >= 80 ? 'var(--color-danger)' : pct >= 50 ? 'var(--color-warning)' : 'var(--color-text-tertiary)',
+                      }}>{Math.round(pct)}% usado</span>
+                    )}
+                  </div>
+                )}
 
-                    {/* Valor + % gasto */}
-                    <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, marginBottom: 8 }}>
-                      <p style={{ fontSize: 14, fontWeight: 700, color: 'var(--color-text-primary)', margin: 0 }}>
-                        {balanceHidden ? <span style={{ letterSpacing: 2 }}>{mask}</span> : formatCurrency(cx.balance)}
-                      </p>
-                      {totalIn > 0 && (
-                        <span style={{
-                          fontSize: 10, fontWeight: 600,
-                          color: pct >= 80 ? 'var(--color-danger)' : pct >= 50 ? 'var(--color-warning)' : 'var(--color-text-tertiary)',
-                        }}>{Math.round(pct)}% usado</span>
-                      )}
-                    </div>
-
-                    {/* Barra */}
-                    <ProgressBar value={pct} size="sm" />
-                  </button>
-                )
-              })}
-            </div>
-          </div>
-        )
-      })()
-      }
+                {/* Barra */}
+                <div style={{
+                  height: 4, borderRadius: 99,
+                  background: isDormant ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.08)',
+                  overflow: 'hidden',
+                }}>
+                  <motion.div
+                    initial={{ width: 0 }}
+                    animate={{ width: isDormant ? '0%' : `${pct}%` }}
+                    transition={{ duration: 1.1, ease: [0.25, 0.46, 0.45, 0.94], delay: 0.15 }}
+                    style={{
+                      height: '100%', borderRadius: 99,
+                      background: `linear-gradient(90deg, ${color}80, ${color})`,
+                      boxShadow: isDormant ? 'none' : `0 0 6px ${color}50`,
+                    }}
+                  />
+                </div>
+              </button>
+            )
+          })}
+        </div>
+      </div>
     </div>
   )
 }
