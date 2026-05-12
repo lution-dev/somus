@@ -447,14 +447,15 @@ function Step5({ partnerCode, onFinish, onBack: _onBack }: { partnerCode: string
 
   function handleShare() {
     if (navigator.share) {
-      navigator.share({ title: 'Somus', text: inviteText }).catch(() => {})
+      navigator.share({ title: 'Somus', text: inviteText })
+        .then(() => setSubStep(2))   // B2-FIX: só avança se o share foi concluído
+        .catch(() => {})             // cancelou — fica na 5B
     } else {
       navigator.clipboard.writeText(inviteText).then(() => {
         setCopied(true)
-        setTimeout(() => setCopied(false), 2000)
+        setTimeout(() => { setCopied(false); setSubStep(2) }, 1800)
       })
     }
-    setTimeout(() => setSubStep(2), 600)
   }
 
   function handleCopy() {
@@ -658,6 +659,8 @@ export default function Onboarding() {
   const [goal, setGoal]   = useState('')
   const [exiting, setExiting] = useState(false)
   const dirRef = useRef<1 | -1>(1)
+  // B1-FIX: partnerCode estável — gerado uma única vez, nunca muda a cada render
+  const partnerCodeRef = useRef(Date.now().toString(36).slice(-4).toUpperCase())
 
   const [, navigate]       = useLocation()
   const completeOnboarding = useAppStore(s => s.completeOnboarding)
@@ -702,7 +705,7 @@ export default function Onboarding() {
     }, 680)
   }
 
-  const partnerCode = Date.now().toString(36).slice(-4).toUpperCase()
+  const partnerCode = partnerCodeRef.current
 
   const steps = [
     <Step1 key={0} onNext={goNext} />,
