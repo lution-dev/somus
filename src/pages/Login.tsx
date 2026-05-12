@@ -74,21 +74,148 @@ const waveCSS = `
 /* ── Atmospheric Wave Layer ────────────────────────────────── */
 function AtmosphericWaves() {
   return (
-    <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 220, pointerEvents: 'none', overflow: 'hidden' }}>
+    <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 280, pointerEvents: 'none', overflow: 'hidden' }}>
+      {/* Base atmospheric glow */}
       <div style={{
-        position: 'absolute', bottom: -60, left: '-10%', right: '-10%', height: 180,
-        background: 'radial-gradient(ellipse 80% 50% at 50% 100%, rgba(35,132,255,0.08) 0%, transparent 70%)',
-        animation: 'wave-drift 8s ease-in-out infinite',
+        position: 'absolute', bottom: 0, left: '-10%', right: '-10%', height: 200,
+        background: 'radial-gradient(ellipse 100% 80% at 50% 100%, rgba(35,132,255,0.12) 0%, transparent 70%)',
+      }} />
+
+      {/* SVG Wave Mesh — luminous wave lines */}
+      <svg
+        viewBox="0 0 1440 320"
+        preserveAspectRatio="none"
+        style={{
+          position: 'absolute', bottom: -20, left: '-5%', right: '-5%',
+          width: '110%', height: 240, opacity: 1,
+        }}
+      >
+        <defs>
+          <filter id="wave-glow">
+            <feGaussianBlur stdDeviation="3" result="blur" />
+            <feMerge>
+              <feMergeNode in="blur" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
+          <filter id="wave-glow-strong">
+            <feGaussianBlur stdDeviation="6" result="blur" />
+            <feMerge>
+              <feMergeNode in="blur" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
+          <linearGradient id="wave-grad-1" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="rgba(35,132,255,0)" />
+            <stop offset="30%" stopColor="rgba(35,132,255,0.3)" />
+            <stop offset="50%" stopColor="rgba(34,211,238,0.4)" />
+            <stop offset="70%" stopColor="rgba(35,132,255,0.3)" />
+            <stop offset="100%" stopColor="rgba(35,132,255,0)" />
+          </linearGradient>
+          <linearGradient id="wave-grad-2" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="rgba(34,211,238,0)" />
+            <stop offset="20%" stopColor="rgba(34,211,238,0.2)" />
+            <stop offset="50%" stopColor="rgba(59,130,246,0.3)" />
+            <stop offset="80%" stopColor="rgba(34,211,238,0.2)" />
+            <stop offset="100%" stopColor="rgba(34,211,238,0)" />
+          </linearGradient>
+          <linearGradient id="wave-grad-3" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="rgba(59,130,246,0)" />
+            <stop offset="40%" stopColor="rgba(59,130,246,0.15)" />
+            <stop offset="60%" stopColor="rgba(35,132,255,0.2)" />
+            <stop offset="100%" stopColor="rgba(59,130,246,0)" />
+          </linearGradient>
+        </defs>
+
+        {/* Wave 1 — primary, most visible */}
+        <path
+          d="M0,220 C120,180 240,260 360,220 C480,180 600,240 720,200 C840,160 960,230 1080,210 C1200,190 1320,250 1440,220 L1440,320 L0,320 Z"
+          fill="url(#wave-grad-1)"
+          fillOpacity="0.08"
+          style={{ animation: 'wave-drift 8s ease-in-out infinite' }}
+        />
+        <path
+          d="M0,220 C120,180 240,260 360,220 C480,180 600,240 720,200 C840,160 960,230 1080,210 C1200,190 1320,250 1440,220"
+          fill="none"
+          stroke="url(#wave-grad-1)"
+          strokeWidth="1.5"
+          filter="url(#wave-glow)"
+          style={{ animation: 'wave-drift 8s ease-in-out infinite' }}
+        />
+
+        {/* Wave 2 — secondary */}
+        <path
+          d="M0,250 C180,210 300,270 480,240 C660,210 780,260 960,230 C1140,200 1260,260 1440,240 L1440,320 L0,320 Z"
+          fill="url(#wave-grad-2)"
+          fillOpacity="0.06"
+          style={{ animation: 'wave-drift-2 10s ease-in-out infinite' }}
+        />
+        <path
+          d="M0,250 C180,210 300,270 480,240 C660,210 780,260 960,230 C1140,200 1260,260 1440,240"
+          fill="none"
+          stroke="url(#wave-grad-2)"
+          strokeWidth="1"
+          filter="url(#wave-glow)"
+          style={{ animation: 'wave-drift-2 10s ease-in-out infinite' }}
+        />
+
+        {/* Wave 3 — tertiary, subtle */}
+        <path
+          d="M0,270 C200,240 400,280 600,260 C800,240 1000,275 1200,255 C1300,245 1380,265 1440,260"
+          fill="none"
+          stroke="url(#wave-grad-3)"
+          strokeWidth="0.8"
+          filter="url(#wave-glow)"
+          style={{ animation: 'wave-drift 12s ease-in-out infinite reverse' }}
+        />
+
+        {/* Wave 4 — bright accent line */}
+        <path
+          d="M0,235 C160,200 320,260 480,230 C640,200 800,250 960,220 C1120,190 1280,240 1440,225"
+          fill="none"
+          stroke="url(#wave-grad-1)"
+          strokeWidth="0.6"
+          filter="url(#wave-glow-strong)"
+          opacity="0.7"
+          style={{ animation: 'wave-drift-2 14s ease-in-out infinite' }}
+        />
+      </svg>
+
+      {/* Particle dots */}
+      <div style={{
+        position: 'absolute', bottom: 60, left: '20%',
+        width: 3, height: 3, borderRadius: '50%',
+        background: 'rgba(34,211,238,0.4)',
+        boxShadow: '0 0 8px rgba(34,211,238,0.3)',
+        animation: 'glow-pulse 4s ease-in-out infinite',
       }} />
       <div style={{
-        position: 'absolute', bottom: -40, left: '-5%', right: '-5%', height: 140,
-        background: 'radial-gradient(ellipse 70% 40% at 40% 100%, rgba(34,211,238,0.06) 0%, transparent 60%)',
-        animation: 'wave-drift-2 10s ease-in-out infinite',
+        position: 'absolute', bottom: 90, left: '55%',
+        width: 2, height: 2, borderRadius: '50%',
+        background: 'rgba(35,132,255,0.5)',
+        boxShadow: '0 0 6px rgba(35,132,255,0.3)',
+        animation: 'glow-pulse 5s ease-in-out infinite 1s',
       }} />
       <div style={{
-        position: 'absolute', bottom: -30, left: '10%', right: '10%', height: 100,
-        background: 'radial-gradient(ellipse 60% 30% at 60% 100%, rgba(59,130,246,0.05) 0%, transparent 50%)',
-        animation: 'wave-drift 12s ease-in-out infinite reverse',
+        position: 'absolute', bottom: 45, left: '75%',
+        width: 2.5, height: 2.5, borderRadius: '50%',
+        background: 'rgba(34,211,238,0.35)',
+        boxShadow: '0 0 10px rgba(34,211,238,0.25)',
+        animation: 'glow-pulse 6s ease-in-out infinite 2s',
+      }} />
+      <div style={{
+        position: 'absolute', bottom: 110, left: '35%',
+        width: 2, height: 2, borderRadius: '50%',
+        background: 'rgba(59,130,246,0.4)',
+        boxShadow: '0 0 6px rgba(59,130,246,0.3)',
+        animation: 'glow-pulse 3.5s ease-in-out infinite 0.5s',
+      }} />
+      <div style={{
+        position: 'absolute', bottom: 70, left: '88%',
+        width: 1.5, height: 1.5, borderRadius: '50%',
+        background: 'rgba(35,132,255,0.45)',
+        boxShadow: '0 0 5px rgba(35,132,255,0.3)',
+        animation: 'glow-pulse 5s ease-in-out infinite 3s',
       }} />
     </div>
   )
