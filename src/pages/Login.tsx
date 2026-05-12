@@ -314,17 +314,16 @@ export default function Login() {
 
           {/* Security info */}
           <motion.div variants={fadeUp} style={{
-            display: 'flex', alignItems: 'center', gap: 12, marginTop: 24, padding: '0 4px',
+            display: 'flex', flexDirection: 'column', alignItems: 'center',
+            textAlign: 'center', gap: 6, marginTop: 24, padding: '0 4px',
           }}>
-            <Lock size={16} color="var(--color-text-tertiary)" strokeWidth={1.5} />
-            <div>
-              <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--color-text-secondary)', margin: 0 }}>
-                Seus dados estão sempre protegidos
-              </p>
-              <p style={{ fontSize: 11, color: 'var(--color-text-tertiary)', margin: '1px 0 0' }}>
-                Utilizamos criptografia de ponta a ponta e não compartilhamos suas informações.
-              </p>
-            </div>
+            <Lock size={15} color="var(--color-text-tertiary)" strokeWidth={1.5} />
+            <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--color-text-secondary)', margin: 0 }}>
+              Seus dados estão protegidos
+            </p>
+            <p style={{ fontSize: 11, color: 'var(--color-text-tertiary)', margin: 0, lineHeight: 1.5 }}>
+              Criptografia de ponta a ponta. Simples assim.
+            </p>
           </motion.div>
 
           {/* Footer */}
@@ -489,23 +488,6 @@ export default function Login() {
             display: 'flex', flexDirection: 'column', alignItems: 'center',
           }}
         >
-          {/* Logo in glass container */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.85 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.7, delay: 0.5, ease: [0.16, 1, 0.3, 1] }}
-            style={{
-              width: 100, height: 100, borderRadius: 28,
-              background: 'rgba(35,132,255,0.06)',
-              border: '1px solid rgba(35,132,255,0.12)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              marginBottom: 28,
-              boxShadow: '0 0 60px rgba(35,132,255,0.08), inset 0 1px 0 rgba(255,255,255,0.06)',
-              animation: 'float-logo 5s ease-in-out infinite',
-            }}
-          >
-            <SomusLogo size={52} />
-          </motion.div>
 
           <h2 style={{ fontSize: 24, fontWeight: 700, color: 'var(--color-text-primary)', margin: '0 0 8px', textAlign: 'center' }}>
             Sua base começa aqui.
@@ -544,15 +526,6 @@ export default function Login() {
             }}>{error}</motion.p>
           )}
 
-          {/* Divider */}
-          <div style={{
-            display: 'flex', alignItems: 'center', gap: 12,
-            width: '100%', margin: '24px 0',
-          }}>
-            <div style={{ flex: 1, height: 1, background: 'rgba(255,255,255,0.08)' }} />
-            <span style={{ fontSize: 12, color: 'var(--color-text-tertiary)' }}>ou</span>
-            <div style={{ flex: 1, height: 1, background: 'rgba(255,255,255,0.08)' }} />
-          </div>
 
           {/* Security card */}
           <div style={{
