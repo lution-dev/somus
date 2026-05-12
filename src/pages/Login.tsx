@@ -526,12 +526,13 @@ export default function Login() {
             }}>{error}</motion.p>
           )}
 
+          {/* Separator + Security card */}
+          <div style={{ width: '100%', height: 1, background: 'rgba(255,255,255,0.06)', margin: '24px 0 16px' }} />
 
-          {/* Security card */}
           <div style={{
             width: '100%', padding: '14px 16px',
-            background: 'rgba(255,255,255,0.02)',
-            border: '1px solid rgba(255,255,255,0.06)',
+            background: 'rgba(255,255,255,0.03)',
+            border: '1px solid rgba(255,255,255,0.07)',
             borderRadius: 14,
             display: 'flex', alignItems: 'center', gap: 12,
           }}>
