@@ -3,7 +3,7 @@ import { useLocation } from 'wouter'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAppStore, selectCurrentSaidasFixas, selectCurrentEntradas } from '../stores/useAppStore'
 import { useShallow } from 'zustand/react/shallow'
-import { formatCurrency, isPaidForMonth, getDueDayLabel, getDaysUntil, getEffectiveAmount, getUnpaidMonths } from '../lib/calculations'
+import { formatCurrency, isPaidForMonth, getDueDayLabel, getDaysUntil, getDaysUntilDate, getEffectiveAmount, getUnpaidMonths } from '../lib/calculations'
 import LancarEntradaModal from '../components/features/LancarEntradaModal'
 import LancarDespesaModal from '../components/features/LancarDespesaModal'
 import EditSaidaFixaModal from '../components/features/EditSaidaFixaModal'
@@ -15,7 +15,7 @@ import ItemActionSheet from '../components/ui/ItemActionSheet'
 import { PageHeader, SearchBar, Dialog, Button, ConfirmDialog } from '../components/ui'
 import { useIsMobile } from '../hooks/useIsMobile'
 import { getDivisaoIcon } from '../lib/icons'
-import { Check, RefreshCw, Plus, Inbox, ArrowUpRight, ArrowDownLeft, CheckCircle2, Pencil, Trash2, XCircle, TrendingUp, AlertCircle, Clock, ChevronDown } from 'lucide-react'
+import { Check, RefreshCw, Plus, Inbox, ArrowUpRight, ArrowDownLeft, CheckCircle2, Pencil, Trash2, XCircle, TrendingUp, AlertCircle, Clock, ChevronDown, Copy, CalendarRange } from 'lucide-react'
 import type { SaidaFixa, SaidaVariavel, Entrada } from '../types'
 import { FluxoChart } from '../components/features/FluxoChart'
 
@@ -277,8 +277,7 @@ function VariavelItem({ sv, isLast, onPress }: { sv: SaidaVariavel; isLast: bool
 
 function EntradaItem({ e, isLast, onPress }: { e: Entrada; isLast: boolean; onPress: (e: Entrada) => void }) {
   const isPending = e.status === 'pending'
-  const entryDay = parseInt(e.date.split('-')[2])
-  const isOverdueEntry = isPending && getDaysUntil(entryDay) < 0
+  const isOverdueEntry = isPending && getDaysUntilDate(e.date) < 0
   return (
     <motion.div
       initial={{ opacity: 0, x: -10 }}
@@ -358,6 +357,7 @@ export default function Fluxo() {
   const [confirmPaySf, setConfirmPaySf] = useState<SaidaFixa | null>(null)
   const [pendingCollapsed, setPendingCollapsed] = useState(false)
   const [realizedCollapsed, setRealizedCollapsed] = useState(false)
+  const [futureCollapsed, setFutureCollapsed] = useState(true)
   const [confirmSkipSf, setConfirmSkipSf] = useState<SaidaFixa | null>(null)
   const [confirmDeleteSf, setConfirmDeleteSf] = useState<SaidaFixa | null>(null)
   const [actionSv, setActionSv] = useState<SaidaVariavel | null>(null)
@@ -370,6 +370,10 @@ export default function Fluxo() {
   const [editEntradaOpen, setEditEntradaOpen]           = useState(false)
   const [confirmDeleteEntrada, setConfirmDeleteEntrada] = useState(false)
   const [confirmPayEntrada, setConfirmPayEntrada]       = useState<Entrada | null>(null)
+  // Duplicate state
+  const [despesaPrefill, setDespesaPrefill] = useState<{ description?: string; amount?: number; paymentMethod?: string; subcategory?: string } | null>(null)
+  const [entradaPrefill, setEntradaPrefill] = useState<{ sourceName: string; amount: number; note?: string; date?: string } | null>(null)
+  const [dupeDivisaoPicker, setDupeDivisaoPicker] = useState(false)
   const isMobile = useIsMobile()
   const HERO_BG = '#112A5F'
   const [, setNewFixaPrefill] = useState<string | null>(null)
@@ -399,9 +403,18 @@ export default function Fluxo() {
   const deleteSaidaVariavel  = useAppStore(s => s.deleteSaidaVariavel)
   const deleteEntrada        = useAppStore(s => s.deleteEntrada)
 
-  // Filtra saídas variáveis e entradas do mês atual
-  const currentMonthEntradas = useMemo(() => entradas.filter(e => e.date.startsWith(yearMonth)), [entradas, yearMonth])
-  const currentMonthVariaveis = useMemo(() => saidasVariaveis.filter(sv => sv.date.startsWith(yearMonth)), [saidasVariaveis, yearMonth])
+  // Realizadas: só do mês atual. Pendentes: qualquer mês (entradas e despesas agendadas futuras)
+  const currentMonthEntradas     = useMemo(() => entradas.filter(e => e.date.startsWith(yearMonth) && e.status !== 'pending'), [entradas, yearMonth])
+  const allPendingEntradas        = useMemo(() => entradas.filter(e => e.status === 'pending'), [entradas])
+  const currentMonthVariaveis    = useMemo(() => saidasVariaveis.filter(sv => sv.date.startsWith(yearMonth)), [saidasVariaveis, yearMonth])
+  // Saídas variáveis pendentes de meses futuros (não estão no currentMonthVariaveis)
+  const allPendingSaidasVariaveis = useMemo(() =>
+    saidasVariaveis.filter(sv =>
+      sv.status === 'pending' &&
+      !sv.date.startsWith(yearMonth) &&
+      !sv.id.startsWith('sv-fixed-')
+    )
+  , [saidasVariaveis, yearMonth])
 
   const unifiedList = useMemo(() => {
     const q = fluxoSearch.toLowerCase()
@@ -425,13 +438,15 @@ export default function Fluxo() {
           items.push({ type: 'variavel', data: sv })
         }
       })
+      // Saídas variáveis pendentes de meses futuros
+      allPendingSaidasVariaveis.forEach(sv => items.push({ type: 'variavel', data: sv }))
     }
 
     if (filterType === 'all' || filterType === 'entradas') {
-      currentMonthEntradas.forEach(e => {
-        // Entradas pending de datas futuras ficam na seção pending, realized na seção realized
-        items.push({ type: 'entrada', data: e })
-      })
+      // Realizadas do mês atual
+      currentMonthEntradas.forEach(e => items.push({ type: 'entrada', data: e }))
+      // Pendentes de qualquer mês (agendamentos futuros)
+      allPendingEntradas.forEach(e => items.push({ type: 'entrada', data: e }))
     }
 
     if (q) {
@@ -463,7 +478,7 @@ export default function Fluxo() {
     })
 
     return items
-  }, [saidasFixas, currentMonthVariaveis, currentMonthEntradas, filterType, fluxoSearch, yearMonth])
+  }, [saidasFixas, currentMonthVariaveis, allPendingSaidasVariaveis, currentMonthEntradas, allPendingEntradas, filterType, fluxoSearch, yearMonth])
 
   // Cálculos de resumo
   const nonSkippedFixas = saidasFixas.filter(sf => !sf.skippedMonths?.includes(yearMonth))
@@ -492,15 +507,35 @@ export default function Fluxo() {
       return true
     })
 
+    // Função utilitária: verifica se um item pendente é do mês atual ou de um mês futuro
+    const isFutureMonth = (item: FluxoItem): boolean => {
+      if (item.type === 'fixa') return false // fixas são sempre do contexto mensal atual
+      const itemDate = (item.data as SaidaVariavel | Entrada).date
+      return !itemDate.startsWith(yearMonth)
+    }
+
+    const pendingThisMonth = pending.filter(i => !isFutureMonth(i))
+    const pendingFuture    = pending.filter(i => isFutureMonth(i))
+
+    // Agrupar futuros por mês
+    const futureByMonth = pendingFuture.reduce<Record<string, FluxoItem[]>>((acc, item) => {
+      const itemDate = (item.data as SaidaVariavel | Entrada).date
+      const ym = itemDate.slice(0, 7)
+      if (!acc[ym]) acc[ym] = []
+      acc[ym].push(item)
+      return acc
+    }, {})
+    const futureMonths = Object.keys(futureByMonth).sort()
+
     return (
       <>
-        {pending.length > 0 && (
+        {pendingThisMonth.length > 0 && (
           <>
             <SectionLabel
               icon={<Clock size={12} />}
               collapsed={pendingCollapsed}
               onClick={() => setPendingCollapsed(v => !v)}
-              extra={<StatusBadge status={getPendingStatus(pending)} />}
+              extra={<StatusBadge status={getPendingStatus(pendingThisMonth)} />}
             >Pendentes</SectionLabel>
             <AnimatePresence initial={false}>
               {!pendingCollapsed && (
@@ -512,8 +547,8 @@ export default function Fluxo() {
                   transition={{ duration: 0.22, ease: 'easeOut' }}
                   style={{ overflow: 'hidden' }}
                 >
-                  {pending.map((item, i) => {
-                    const isLast = i === pending.length - 1 && realized.length === 0
+                  {pendingThisMonth.map((item, i) => {
+                    const isLast = i === pendingThisMonth.length - 1 && realized.length === 0 && pendingFuture.length === 0
                     if (item.type === 'fixa') {
                       return (
                         <FixaItem
@@ -549,6 +584,64 @@ export default function Fluxo() {
                   })}
                   {/* Ghost link — aparece só quando expandido, após o último item */}
                   <GhostLink href="/relatorios/cx-essencial?from=fluxo" />
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </>
+        )}
+
+        {/* ── Meses Futuros ── */}
+        {pendingFuture.length > 0 && (
+          <>
+            <SectionLabel
+              icon={<CalendarRange size={12} />}
+              collapsed={futureCollapsed}
+              onClick={() => setFutureCollapsed(v => !v)}
+              count={pendingFuture.length}
+            >Meses futuros</SectionLabel>
+            <AnimatePresence initial={false}>
+              {!futureCollapsed && (
+                <motion.div
+                  key="future-section"
+                  initial={{ height: 0, opacity: 0, filter: 'blur(4px)' }}
+                  animate={{ height: 'auto', opacity: 1, filter: 'blur(0px)' }}
+                  exit={{ height: 0, opacity: 0, filter: 'blur(4px)' }}
+                  transition={{ duration: 0.22, ease: 'easeOut' }}
+                  style={{ overflow: 'hidden' }}
+                >
+                  {futureMonths.map(ym => {
+                    const monthLabel = new Date(ym + '-15').toLocaleString('pt-BR', { month: 'long', year: 'numeric' })
+                    const monthItems = futureByMonth[ym]
+                    return (
+                      <div key={ym}>
+                        {/* Sub-header do mês */}
+                        <div style={{
+                          padding: '8px 16px 4px',
+                          display: 'flex', alignItems: 'center', gap: 6,
+                        }}>
+                          <p style={{
+                            fontSize: 11, fontWeight: 600, letterSpacing: '0.04em',
+                            textTransform: 'capitalize',
+                            color: 'var(--color-text-tertiary)', margin: 0,
+                          }}>{monthLabel}</p>
+                          <div style={{ flex: 1, height: 1, background: 'var(--color-border)', opacity: 0.5 }} />
+                        </div>
+                        {/* Itens do mês com opacidade reduzida */}
+                        <div style={{ opacity: 0.75 }}>
+                          {monthItems.map((item, i) => {
+                            const isLast = i === monthItems.length - 1
+                            if (item.type === 'variavel') {
+                              return <VariavelItem key={`v-${item.data.id}`} sv={item.data as SaidaVariavel} isLast={isLast} onPress={setActionSv} />
+                            }
+                            if (item.type === 'entrada') {
+                              return <EntradaItem key={`e-${item.data.id}`} e={item.data as Entrada} isLast={isLast} onPress={setActionEntrada} />
+                            }
+                            return null
+                          })}
+                        </div>
+                      </div>
+                    )
+                  })}
                 </motion.div>
               )}
             </AnimatePresence>
@@ -789,8 +882,46 @@ export default function Fluxo() {
         </div>
       </Dialog>
 
+      {/* Seletor de divisão para duplicar despesa */}
+      <Dialog open={dupeDivisaoPicker} onClose={() => { setDupeDivisaoPicker(false); setDespesaPrefill(null) }} title="Duplicar em qual divisão?" size="sm">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {divisoes.map(cx => {
+            const { Icon, color } = getDivisaoIcon(cx.id)
+            return (
+              <button key={cx.id} onClick={() => {
+                setDupeDivisaoPicker(false)
+                setDespesaModal({ divisaoId: cx.id, divisaoName: cx.name })
+              }}
+                style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 14px', background: 'var(--color-bg-tertiary)', border: '1px solid var(--color-border)', borderRadius: 12, textAlign: 'left' }}>
+                <div style={{ width: 36, height: 36, borderRadius: 10, background: `${color}15`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <Icon size={24} style={{ color }} />
+                </div>
+                <div style={{ flex: 1 }}>
+                  <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-text-primary)', margin: 0 }}>{cx.name}</p>
+                  <p style={{ fontSize: 12, color: 'var(--color-text-tertiary)', margin: 0 }}>{cx.percentage}% · {formatCurrency(cx.balance)}</p>
+                </div>
+              </button>
+            )
+          })}
+        </div>
+      </Dialog>
+
       <LancarEntradaModal open={lancarOpen} onClose={() => setLancarOpen(false)} />
-      {despesaModal && <LancarDespesaModal open={!!despesaModal} onClose={() => setDespesaModal(null)} divisaoId={despesaModal.divisaoId} divisaoName={despesaModal.divisaoName} />}
+      {/* Duplicate entrada modal — pre-filled, separate from lancarOpen */}
+      <LancarEntradaModal
+        open={!!entradaPrefill}
+        onClose={() => setEntradaPrefill(null)}
+        prefill={entradaPrefill ?? undefined}
+      />
+      {despesaModal && (
+        <LancarDespesaModal
+          open={!!despesaModal}
+          onClose={() => { setDespesaModal(null); setDespesaPrefill(null) }}
+          divisaoId={despesaModal.divisaoId}
+          divisaoName={despesaModal.divisaoName}
+          prefill={despesaPrefill ?? undefined}
+        />
+      )}
 
       <ItemActionSheet
         open={!!actionSf}
@@ -807,6 +938,15 @@ export default function Fluxo() {
           ),
           { label: 'Editar valor deste mês', icon: TrendingUp, color: 'var(--color-accent-blue-light)', onClick: () => { setEditMonthlySf(actionSf); setActionSf(null) } },
           { label: 'Editar custo fixo base', icon: Pencil, color: 'var(--color-accent-primary)', onClick: () => { setEditSf(actionSf); setActionSf(null) } },
+          { label: 'Duplicar como variável', icon: Copy, color: 'var(--color-text-secondary)', onClick: () => {
+            const amount = getEffectiveAmount(actionSf, yearMonth)
+            // Fixa não tem data completa, usar o dia de vencimento no mês atual
+            const today = new Date()
+            const dueDateStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(actionSf.dueDay).padStart(2, '0')}`
+            setDespesaPrefill({ description: actionSf.name, amount, date: dueDateStr })
+            setDupeDivisaoPicker(true)
+            setActionSf(null)
+          }},
           { label: 'Excluir permanentemente', icon: Trash2, color: 'var(--color-danger)', onClick: () => { setConfirmDeleteSf(actionSf); setActionSf(null) } },
         ] : []}
       />
@@ -872,6 +1012,17 @@ export default function Fluxo() {
             setEditSvOpen(true)
             setActionSv(null)
           }},
+          { label: 'Duplicar lançamento', icon: Copy, color: 'var(--color-text-secondary)', onClick: () => {
+            setDespesaPrefill({
+              description: actionSv.description,
+              amount: actionSv.amount,
+              paymentMethod: actionSv.paymentMethod,
+              subcategory: actionSv.subcategory,
+              date: actionSv.date,
+            })
+            setDupeDivisaoPicker(true)
+            setActionSv(null)
+          }},
           { label: 'Excluir lançamento', icon: Trash2, color: 'var(--color-danger)', onClick: () => {
             setSelectedSv(actionSv)
             setConfirmDeleteSv(true)
@@ -919,6 +1070,15 @@ export default function Fluxo() {
           { label: 'Editar entrada', icon: Pencil, color: 'var(--color-accent-primary)', onClick: () => {
             setSelectedEntrada(actionEntrada)
             setEditEntradaOpen(true)
+            setActionEntrada(null)
+          }},
+          { label: 'Duplicar entrada', icon: Copy, color: 'var(--color-text-secondary)', onClick: () => {
+            setEntradaPrefill({
+              sourceName: actionEntrada.sourceName,
+              amount: actionEntrada.amount,
+              note: actionEntrada.note,
+              date: actionEntrada.date,
+            })
             setActionEntrada(null)
           }},
           { label: 'Excluir entrada', icon: Trash2, color: 'var(--color-danger)', onClick: () => {
@@ -972,8 +1132,8 @@ function getPendingStatus(pending: FluxoItem[]): PendingStatus {
 
   const getDays = (item: FluxoItem): number => {
     if (item.type === 'fixa') return getDaysUntil((item.data as SaidaFixa).dueDay)
-    if (item.type === 'variavel') return getDaysUntil(parseInt((item.data as SaidaVariavel).date.split('-')[2]))
-    if (item.type === 'entrada') return getDaysUntil(parseInt((item.data as Entrada).date.split('-')[2]))
+    if (item.type === 'variavel') return getDaysUntilDate((item.data as SaidaVariavel).date)
+    if (item.type === 'entrada') return getDaysUntilDate((item.data as Entrada).date)
     return 999
   }
 

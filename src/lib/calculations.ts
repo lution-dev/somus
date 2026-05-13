@@ -101,6 +101,16 @@ export function getDaysUntil(day: number): number {
   return Math.floor(diffTime / (1000 * 60 * 60 * 24))
 }
 
+/** Versão que recebe a data completa 'YYYY-MM-DD' — lida corretamente com meses futuros */
+export function getDaysUntilDate(dateStr: string): number {
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  const [y, m, d] = dateStr.split('-').map(Number)
+  const target = new Date(y, m - 1, d)
+  const diffTime = target.getTime() - today.getTime()
+  return Math.floor(diffTime / (1000 * 60 * 60 * 24))
+}
+
 // RN09: Verifica se uma saída fixa foi paga em um mês específico
 export const isPaidForMonth = (sf: SaidaFixa, yearMonth: string) => {
   return !!(sf.payments ?? {})[yearMonth]

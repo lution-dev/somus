@@ -1,4 +1,4 @@
-﻿import React, { useState, useMemo, useCallback } from 'react'
+import React, { useState, useMemo, useCallback } from 'react'
 import { useLocation } from 'wouter'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
@@ -9,7 +9,7 @@ import {
   selectExpectedMonthlyIncome,
 } from '../stores/useAppStore'
 import { useShallow } from 'zustand/react/shallow'
-import { formatCurrency, getMonthSummary, getDaysUntil, isPaidThisMonth, getEffectiveAmount } from '../lib/calculations'
+import { formatCurrency, getMonthSummary, getDaysUntil, getDaysUntilDate, isPaidThisMonth, getEffectiveAmount } from '../lib/calculations'
 import { getDivisaoIcon } from '../lib/icons'
 import { PageHeader, Dialog, groupByMonth, MonthHeader } from '../components/ui'
 import { useIsMobile } from '../hooks/useIsMobile'
@@ -201,7 +201,7 @@ function ProximosDias({ onEntradaClick, onDespesaClick, onEntradaPendingClick, i
   const saidasVariaveis = useAppStore(useShallow(s => s.saidasVariaveis))
   const entradasAll = useAppStore(useShallow(s => s.entradas))
 
-  const upcoming = useMemo(() => {
+  const result = useMemo(() => {
     const todayStr = new Date().toISOString().slice(0, 7) // 'YYYY-MM'
     const despesas = saidasFixas
       .filter(sf => !isPaidThisMonth(sf) && !sf.skippedMonths?.includes(todayStr))
@@ -213,14 +213,11 @@ function ProximosDias({ onEntradaClick, onDespesaClick, onEntradaPendingClick, i
 
     const variables = saidasVariaveis
       .filter(sv => sv.status === 'pending')
-      .map(sv => {
-        const day = parseInt(sv.date.split('-')[2])
-        return {
-          id: sv.id, name: sv.description, amount: sv.amount,
-          days: getDaysUntil(day), type: 'despesa' as const,
-          paymentMethod: sv.paymentMethod as string | undefined,
-        }
-      })
+      .map(sv => ({
+        id: sv.id, name: sv.description, amount: sv.amount,
+        days: getDaysUntilDate(sv.date), type: 'despesa' as const,
+        paymentMethod: sv.paymentMethod as string | undefined,
+      }))
 
     const entradas = incomeSources
       .filter(src => src.expectedDay !== undefined)
@@ -232,19 +229,33 @@ function ProximosDias({ onEntradaClick, onDespesaClick, onEntradaPendingClick, i
 
     const entradasPendentes = entradasAll
       .filter(e => e.status === 'pending')
-      .map(e => {
-        const day = parseInt(e.date.split('-')[2])
-        return {
-          id: e.id, name: e.sourceName, amount: e.amount,
-          days: getDaysUntil(day), type: 'entrada-pending' as const,
-          paymentMethod: undefined as string | undefined,
-        }
-      })
+      .map(e => ({
+        id: e.id, name: e.sourceName, amount: e.amount,
+        days: getDaysUntilDate(e.date), type: 'entrada-pending' as const,
+        paymentMethod: undefined as string | undefined,
+      }))
 
-    return [...despesas, ...variables, ...entradas, ...entradasPendentes]
+    const allItems = [...despesas, ...variables, ...entradas, ...entradasPendentes]
       .sort((a, b) => a.days - b.days)
-      .slice(0, 10)
+
+    const today = new Date().toISOString().slice(0, 7) // 'YYYY-MM'
+    const futureItems  = allItems.filter(i => {
+      // Items where days > current month boundary — roughly > 31 days OR the date is in a future yearMonth
+      // We detect "future month" by checking if it's not in this month's window
+      // despesas fixas: dueDay-based, treat as current month
+      // variables/entradas: have actual full date via getDaysUntilDate
+      return i.days > 31
+    })
+
+    const top10      = allItems.slice(0, 10)
+    const shownIds   = new Set(top10.map(i => i.id))
+    const futureHiddenCount = futureItems.filter(i => !shownIds.has(i.id)).length
+
+    return { items: top10, futureHiddenCount }
   }, [saidasFixas, saidasVariaveis, incomeSources, entradasAll])
+
+  const upcoming = result.items
+  const futureHiddenCount = result.futureHiddenCount
 
   // Status counts for mobile header badges
   const overdueCount  = upcoming.filter(i => i.days < 0 && (i.type === 'despesa' || i.type === 'entrada-pending')).length
@@ -382,6 +393,27 @@ function ProximosDias({ onEntradaClick, onDespesaClick, onEntradaPendingClick, i
             }}>
               {upcoming.map(renderItem)}
             </div>
+            {futureHiddenCount > 0 && (
+              <a
+                href="/relatorios"
+                style={{
+                  display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                  padding: '10px 14px',
+                  borderTop: '1px solid var(--color-border)',
+                  textDecoration: 'none',
+                  background: 'rgba(255,255,255,0.02)',
+                  transition: 'background 150ms ease',
+                  cursor: 'pointer',
+                }}
+                onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.05)')}
+                onMouseLeave={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.02)')}
+              >
+                <span style={{ fontSize: 12, color: 'var(--color-text-tertiary)' }}>
+                  + {futureHiddenCount} agendado{futureHiddenCount === 1 ? '' : 's'} em meses futuros
+                </span>
+                <span style={{ fontSize: 11, color: 'var(--color-accent-blue-light)', fontWeight: 500 }}>Ver no Fluxo →</span>
+              </a>
+            )}
           </div>
         )}
       </div>
@@ -483,6 +515,23 @@ function ProximosDias({ onEntradaClick, onDespesaClick, onEntradaPendingClick, i
               background: 'var(--color-bg-secondary)',
             }}>
               {upcoming.map(renderItem)}
+              {futureHiddenCount > 0 && (
+                <a
+                  href="/relatorios"
+                  style={{
+                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                    padding: '12px 16px',
+                    borderTop: '1px solid var(--color-border)',
+                    textDecoration: 'none',
+                    background: 'rgba(255,255,255,0.02)',
+                  }}
+                >
+                  <span style={{ fontSize: 12, color: 'var(--color-text-tertiary)' }}>
+                    + {futureHiddenCount} agendado{futureHiddenCount === 1 ? '' : 's'} em meses futuros
+                  </span>
+                  <span style={{ fontSize: 11, color: 'var(--color-accent-blue-light)', fontWeight: 500 }}>Ver no Fluxo →</span>
+                </a>
+              )}
             </div>
           </motion.div>
         )}

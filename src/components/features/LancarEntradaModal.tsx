@@ -10,7 +10,7 @@ import { useCurrencyInput } from '../../hooks/useCurrencyInput'
 interface Props {
   open: boolean
   onClose: () => void
-  prefill?: { sourceName: string; amount: number }
+  prefill?: { sourceName: string; amount: number; note?: string; date?: string }
 }
 
 export default function LancarEntradaModal({ open, onClose, prefill }: Props) {
@@ -52,13 +52,14 @@ export default function LancarEntradaModal({ open, onClose, prefill }: Props) {
         setSourceText(prefill.sourceName)
         const match = incomeSources.find(s => s.name.toLowerCase() === prefill.sourceName.toLowerCase())
         setSourceId(match?.id ?? '')
+        setNote(prefill.note ?? '')
       } else {
         amountInput.reset()
         setSourceId('')
         setSourceText('')
+        setNote('')
       }
-      setDate(new Date().toISOString().slice(0, 10))
-      setNote('')
+      setDate(prefill?.date ?? new Date().toISOString().slice(0, 10))
       setSubmitted(false)
       setSourceFocused(false)
     }

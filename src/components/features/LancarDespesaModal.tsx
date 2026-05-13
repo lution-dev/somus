@@ -14,6 +14,13 @@ interface Props {
   /** Pre-selected divisao (divisão) */
   divisaoId: string
   divisaoName: string
+  prefill?: {
+    description?: string
+    amount?: number
+    paymentMethod?: string
+    subcategory?: string
+    date?: string
+  }
 }
 
 const PAYMENT_METHODS: { value: PaymentMethod; label: string }[] = [
@@ -24,7 +31,7 @@ const PAYMENT_METHODS: { value: PaymentMethod; label: string }[] = [
   { value: 'auto_debit', label: 'Débito automático' },
 ]
 
-export default function LancarDespesaModal({ open, onClose, divisaoId, divisaoName }: Props) {
+export default function LancarDespesaModal({ open, onClose, divisaoId, divisaoName, prefill }: Props) {
   const [description, setDescription] = useState('')
   const amountInput = useCurrencyInput()
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod | ''>('')
@@ -40,11 +47,12 @@ export default function LancarDespesaModal({ open, onClose, divisaoId, divisaoNa
   // Reset on open
   useEffect(() => {
     if (open) {
-      setDescription('')
-      amountInput.reset()
-      setPaymentMethod('')
-      setDate(new Date().toISOString().slice(0, 10))
-      setSubcategory('')
+      setDescription(prefill?.description ?? '')
+      if (prefill?.amount) amountInput.setValue(prefill.amount)
+      else amountInput.reset()
+      setPaymentMethod((prefill?.paymentMethod as PaymentMethod | '') ?? '')
+      setDate(prefill?.date ?? new Date().toISOString().slice(0, 10))
+      setSubcategory(prefill?.subcategory ?? '')
       setSubmitted(false)
       setPmOpen(false)
     }
