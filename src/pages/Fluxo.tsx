@@ -277,6 +277,8 @@ function VariavelItem({ sv, isLast, onPress }: { sv: SaidaVariavel; isLast: bool
 
 function EntradaItem({ e, isLast, onPress }: { e: Entrada; isLast: boolean; onPress: (e: Entrada) => void }) {
   const isPending = e.status === 'pending'
+  const entryDay = parseInt(e.date.split('-')[2])
+  const isOverdueEntry = isPending && getDaysUntil(entryDay) < 0
   return (
     <motion.div
       initial={{ opacity: 0, x: -10 }}
@@ -294,23 +296,37 @@ function EntradaItem({ e, isLast, onPress }: { e: Entrada; isLast: boolean; onPr
       <div style={{
         width: 32, height: 32, borderRadius: 10,
         display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-        background: isPending ? 'rgba(16,185,129,0.08)' : 'rgba(16,185,129,0.1)',
-        border: isPending ? '1px solid rgba(16,185,129,0.15)' : 'none',
+        background: !isPending
+          ? 'rgba(16,185,129,0.1)'
+          : isOverdueEntry
+          ? 'rgba(245,158,11,0.10)'
+          : 'rgba(16,185,129,0.08)',
+        border: isPending
+          ? `1px solid ${isOverdueEntry ? 'rgba(245,158,11,0.25)' : 'rgba(16,185,129,0.15)'}`
+          : 'none',
       }}>
         {isPending
-          ? <Clock size={16} color="var(--color-success)" style={{ opacity: 0.7 }} />
+          ? <Clock size={16} color={isOverdueEntry ? 'var(--color-warning)' : 'var(--color-success)'} style={{ opacity: 0.75 }} />
           : <ArrowUpRight size={16} color="var(--color-success)" />
         }
       </div>
       <div style={{ flex: 1, minWidth: 0 }}>
         <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-text-primary)', margin: '0 0 2px' }}>{e.sourceName}</p>
-        <p style={{ fontSize: 12, color: 'var(--color-text-secondary)', margin: 0 }}>
-          {isPending ? 'Aguardando para ' : ''}
+        <p style={{ fontSize: 12, color: isOverdueEntry ? 'var(--color-warning)' : 'var(--color-text-secondary)', margin: 0 }}>
+          {isPending
+            ? isOverdueEntry
+              ? 'Não recebido — '
+              : 'Aguardando para '
+            : ''}
           {new Date(e.date + 'T12:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })}
         </p>
       </div>
       <div style={{ textAlign: 'right', display: 'flex', alignItems: 'center', gap: 10 }}>
-        <span style={{ fontSize: 15, fontWeight: 700, color: 'var(--color-success)', flexShrink: 0, opacity: isPending ? 0.65 : 1 }}>
+        <span style={{
+          fontSize: 15, fontWeight: 700, flexShrink: 0,
+          color: isOverdueEntry ? 'var(--color-warning)' : 'var(--color-success)',
+          opacity: isPending && !isOverdueEntry ? 0.65 : 1
+        }}>
           +{formatCurrency(e.amount)}
         </span>
         {isPending && (

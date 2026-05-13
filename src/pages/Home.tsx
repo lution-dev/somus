@@ -283,7 +283,7 @@ function ProximosDias({ onEntradaClick, onDespesaClick, onEntradaPendingClick, i
         background: item.type === 'entrada'
           ? 'rgba(16,185,129,0.12)'
           : item.type === 'entrada-pending'
-          ? 'rgba(16,185,129,0.08)'
+          ? item.days < 0 ? 'rgba(245,158,11,0.10)' : 'rgba(16,185,129,0.08)'
           : item.days < 0 ? 'rgba(239,68,68,0.12)'
           : item.days <= 2 ? 'rgba(245,158,11,0.10)'
           : 'rgba(148,163,184,0.08)',
@@ -291,7 +291,10 @@ function ProximosDias({ onEntradaClick, onDespesaClick, onEntradaPendingClick, i
         {item.type === 'entrada'
           ? <ArrowUpRight size={14} color="var(--color-success)" />
           : item.type === 'entrada-pending'
-          ? <Clock size={14} color="var(--color-success)" style={{ opacity: 0.7 }} />
+          ? <Clock size={14}
+              color={item.days < 0 ? 'var(--color-warning)' : 'var(--color-success)'}
+              style={{ opacity: 0.75 }}
+            />
           : <AlertCircle size={14} color={
               item.days < 0 ? 'var(--color-danger)'
               : item.days <= 2 ? 'var(--color-warning)'
@@ -301,8 +304,10 @@ function ProximosDias({ onEntradaClick, onDespesaClick, onEntradaPendingClick, i
       </div>
       <div style={{ flex: 1, minWidth: 0 }}>
         <p style={{ fontSize: 14, fontWeight: 500, color: 'var(--color-text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', margin: 0 }}>{item.name}</p>
-        <p style={{ fontSize: 12, color: 'var(--color-text-secondary)', margin: 0 }}>
-          {item.type === 'entrada-pending' ? 'Recebimento esperado — ' : ''}
+        <p style={{ fontSize: 12, color: item.type === 'entrada-pending' && item.days < 0 ? 'var(--color-warning)' : 'var(--color-text-secondary)', margin: 0 }}>
+          {item.type === 'entrada-pending'
+            ? item.days < 0 ? 'Não recebido — ' : 'Recebimento esperado — '
+            : ''}
           {item.days === 0 ? 'Hoje' : 
            item.days === 1 ? 'Amanhã' : 
            item.days < 0 ? `Atrasado há ${Math.abs(item.days)}d` : 
@@ -314,8 +319,12 @@ function ProximosDias({ onEntradaClick, onDespesaClick, onEntradaPendingClick, i
       </div>
       <span style={{
         fontSize: 14, fontWeight: 700, flexShrink: 0,
-        color: (item.type === 'entrada' || item.type === 'entrada-pending') ? 'var(--color-success)' : 'var(--color-text-primary)',
-        opacity: item.type === 'entrada-pending' ? 0.65 : 1,
+        color: (item.type === 'entrada' || item.type === 'entrada-pending')
+          ? item.type === 'entrada-pending' && item.days < 0
+            ? 'var(--color-warning)'
+            : 'var(--color-success)'
+          : 'var(--color-text-primary)',
+        opacity: item.type === 'entrada-pending' && item.days >= 0 ? 0.65 : 1,
       }}>
         {(item.type === 'entrada' || item.type === 'entrada-pending') ? '+' : '−'}{formatCurrency(item.amount)}
       </span>
