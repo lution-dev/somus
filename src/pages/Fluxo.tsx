@@ -1,4 +1,5 @@
-﻿import React, { useMemo, useState, useEffect } from 'react'
+import React, { useMemo, useState, useEffect, useCallback } from 'react'
+import { useLocation } from 'wouter'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAppStore, selectCurrentSaidasFixas, selectCurrentEntradas } from '../stores/useAppStore'
 import { useShallow } from 'zustand/react/shallow'
@@ -442,68 +443,47 @@ export default function Fluxo() {
           <>
             <SectionLabel
               icon={<Clock size={12} />}
-              count={pending.length}
               collapsed={pendingCollapsed}
               onClick={() => setPendingCollapsed(v => !v)}
-              extra={pendingCollapsed && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                  {(() => {
-                    const ov = pending.filter(item => getDaysUntil((item.data as SaidaFixa).dueDay) < 0).length
-                    const pd = pending.length - ov
-                    return (
-                      <>
-                        {ov > 0 && (
-                          <span style={{
-                            fontSize: 10, fontWeight: 700,
-                            background: 'rgba(239,68,68,0.15)', color: 'var(--color-danger)',
-                            padding: '2px 7px', borderRadius: 8,
-                          }}>
-                            {ov} atrasad{ov === 1 ? 'o' : 'os'}
-                          </span>
-                        )}
-                        {pd > 0 && (
-                          <span style={{
-                            fontSize: 10, fontWeight: 700,
-                            background: 'rgba(245,158,11,0.15)', color: 'var(--color-warning)',
-                            padding: '2px 7px', borderRadius: 8,
-                          }}>
-                            {pd} pendente{pd === 1 ? '' : 's'}
-                          </span>
-                        )}
-                      </>
-                    )
-                  })()}
-                </div>
-              )}
+              extra={<StatusBadge status={getPendingStatus(pending)} />}
             >Pendentes</SectionLabel>
             <AnimatePresence initial={false}>
               {!pendingCollapsed && (
-                <motion.div key="pending-section" initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }} style={{ overflow: 'hidden' }}>
+                <motion.div
+                  key="pending-section"
+                  initial={{ height: 0, opacity: 0, filter: 'blur(4px)' }}
+                  animate={{ height: 'auto', opacity: 1, filter: 'blur(0px)' }}
+                  exit={{ height: 0, opacity: 0, filter: 'blur(4px)' }}
+                  transition={{ duration: 0.22, ease: 'easeOut' }}
+                  style={{ overflow: 'hidden' }}
+                >
                   {pending.map((item, i) => {
                     const isLast = i === pending.length - 1 && realized.length === 0
                     if (item.type === 'fixa') {
                       return (
-                        <FixaItem 
-                          key={`${item.data.id}-${item.instanceMonth}`} 
-                          sf={item.data} 
-                          yearMonth={item.instanceMonth || yearMonth} 
-                          isLast={isLast} 
-                          onPress={setActionSf} 
+                        <FixaItem
+                          key={`${item.data.id}-${item.instanceMonth}`}
+                          sf={item.data}
+                          yearMonth={item.instanceMonth || yearMonth}
+                          isLast={isLast}
+                          onPress={setActionSf}
                         />
                       )
                     }
                     if (item.type === 'variavel') {
                       return (
-                        <VariavelItem 
-                          key={`v-${item.data.id}`} 
-                          sv={item.data as SaidaVariavel} 
-                          isLast={isLast} 
-                          onPress={setActionSv} 
+                        <VariavelItem
+                          key={`v-${item.data.id}`}
+                          sv={item.data as SaidaVariavel}
+                          isLast={isLast}
+                          onPress={setActionSv}
                         />
                       )
                     }
                     return null
                   })}
+                  {/* Ghost link — aparece só quando expandido, após o último item */}
+                  <GhostLink href="/relatorios/cx-essencial" />
                 </motion.div>
               )}
             </AnimatePresence>
@@ -520,7 +500,14 @@ export default function Fluxo() {
             >Lançamentos do mês</SectionLabel>
             <AnimatePresence initial={false}>
               {!realizedCollapsed && (
-                <motion.div key="realized-section" initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }} style={{ overflow: 'hidden' }}>
+                <motion.div
+                  key="realized-section"
+                  initial={{ height: 0, opacity: 0, filter: 'blur(4px)' }}
+                  animate={{ height: 'auto', opacity: 1, filter: 'blur(0px)' }}
+                  exit={{ height: 0, opacity: 0, filter: 'blur(4px)' }}
+                  transition={{ duration: 0.22, ease: 'easeOut' }}
+                  style={{ overflow: 'hidden' }}
+                >
                   {realized.map((item, i) => {
                     const isLast = i === realized.length - 1
                     if (item.type === 'fixa') {
@@ -893,6 +880,58 @@ export default function Fluxo() {
   )
 }
 
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+type PendingStatus =
+  | { kind: 'all-good' }
+  | { kind: 'upcoming';  count: number }
+  | { kind: 'pending';   count: number }
+  | { kind: 'overdue';   count: number; pending: number }
+
+function getPendingStatus(pending: { data: { dueDay?: number } }[]): PendingStatus {
+  if (pending.length === 0) return { kind: 'all-good' }
+  const overdue  = pending.filter(i => getDaysUntil((i.data as { dueDay: number }).dueDay) < 0).length
+  const upcoming = pending.filter(i => { const d = getDaysUntil((i.data as { dueDay: number }).dueDay); return d >= 0 && d <= 3 }).length
+  if (overdue > 0)  return { kind: 'overdue',  count: overdue,  pending: pending.length - overdue }
+  if (upcoming > 0) return { kind: 'pending',  count: pending.length }
+  return { kind: 'upcoming', count: pending.length }
+}
+
+function StatusBadge({ status }: { status: PendingStatus }) {
+  if (status.kind === 'all-good') return (
+    <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 8,
+      background: 'rgba(16,185,129,0.12)', color: 'var(--color-success)', opacity: 0.8 }}>
+      Tudo em dia
+    </span>
+  )
+  if (status.kind === 'upcoming') return (
+    <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 8,
+      background: 'rgba(59,130,246,0.12)', color: 'var(--color-accent-primary)' }}>
+      {status.count} {status.count === 1 ? 'próximo' : 'próximos'}
+    </span>
+  )
+  if (status.kind === 'pending') return (
+    <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 8,
+      background: 'rgba(245,158,11,0.15)', color: 'var(--color-warning)' }}>
+      {status.count} {status.count === 1 ? 'pendente' : 'pendentes'}
+    </span>
+  )
+  return (
+    <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+      <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 8,
+        background: 'rgba(239,68,68,0.15)', color: 'var(--color-danger)' }}>
+        {status.count} {status.count === 1 ? 'atrasado' : 'atrasados'}
+      </span>
+      {status.pending > 0 && (
+        <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 8,
+          background: 'rgba(245,158,11,0.15)', color: 'var(--color-warning)' }}>
+          {status.pending} {status.pending === 1 ? 'pendente' : 'pendentes'}
+        </span>
+      )}
+    </span>
+  )
+}
+
 function SectionLabel({ children, count, icon, onClick, collapsed, extra }: {
   children: React.ReactNode
   count?: number
@@ -901,22 +940,26 @@ function SectionLabel({ children, count, icon, onClick, collapsed, extra }: {
   collapsed?: boolean
   extra?: React.ReactNode
 }) {
+  const [hovered, setHovered] = useState(false)
   return (
     <div
       onClick={onClick}
-      style={{ 
-        padding: '10px 16px', 
-        margin: 0, 
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        padding: '10px 16px',
+        margin: 0,
         borderBottom: '1px solid var(--color-border)',
         display: 'flex',
         alignItems: 'center',
         gap: 8,
-        background: 'rgba(255,255,255,0.02)',
+        background: hovered && onClick ? 'rgba(255,255,255,0.04)' : 'rgba(255,255,255,0.02)',
         cursor: onClick ? 'pointer' : 'default',
         userSelect: 'none',
+        transition: 'background 150ms ease',
       }}
     >
-      {icon && <span style={{ color: 'var(--color-text-tertiary)', display: 'flex' }}>{icon}</span>}
+      {icon && <span style={{ color: 'var(--color-text-tertiary)', display: 'flex', transition: 'opacity 150ms ease', opacity: hovered && onClick ? 0.9 : 0.6 }}>{icon}</span>}
       <p className="section-label" style={{ margin: 0, flex: 1 }}>
         {children}
       </p>
@@ -939,7 +982,9 @@ function SectionLabel({ children, count, icon, onClick, collapsed, extra }: {
           color="var(--color-text-tertiary)"
           style={{
             transition: 'transform 200ms ease',
-            transform: collapsed ? 'rotate(-90deg)' : 'rotate(0deg)',
+            transform: collapsed
+              ? 'rotate(-90deg)'
+              : hovered ? 'rotate(4deg)' : 'rotate(0deg)',
             flexShrink: 0,
           }}
         />
@@ -956,6 +1001,43 @@ function EmptyState({ icon, label, desc }: { icon?: React.ReactNode; label: stri
         <p style={{ fontSize: 16, fontWeight: 700, color: 'var(--color-text-primary)', margin: '0 0 4px' }}>{label}</p>
         {desc && <p style={{ fontSize: 13, color: 'var(--color-text-tertiary)', margin: 0, lineHeight: 1.5, maxWidth: 260 }}>{desc}</p>}
       </div>
+    </div>
+  )
+}
+
+function GhostLink({ href }: { href: string }) {
+  const [, navigate] = useLocation()
+  const [hovered, setHovered] = useState(false)
+  return (
+    <div
+      onClick={(e) => { e.stopPropagation(); navigate(href) }}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        display: 'flex',
+        justifyContent: 'flex-end',
+        alignItems: 'center',
+        gap: 4,
+        padding: '8px 16px 10px',
+        cursor: 'pointer',
+        opacity: hovered ? 0.65 : 0.35,
+        transition: 'opacity 150ms ease',
+      }}
+    >
+      <span style={{
+        fontSize: 11,
+        fontWeight: 500,
+        color: 'var(--color-text-tertiary)',
+        letterSpacing: '0.01em',
+      }}>
+        Ver estrutura completa
+      </span>
+      <span style={{
+        fontSize: 11,
+        color: 'var(--color-text-tertiary)',
+        transition: 'transform 150ms ease',
+        transform: hovered ? 'translateX(2px)' : 'translateX(0)',
+      }}>→</span>
     </div>
   )
 }
