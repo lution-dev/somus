@@ -1,8 +1,8 @@
 # CONTEXT.md — Somus
 > Estado atual do projeto. Atualizado ao final de cada sessão.
 
-**Última atualização:** 2026-05-12
-**Status geral:** ✅ Onboarding v2 Premium + Home Empty State Estruturado + Fluxo de Convite 100% funcional
+**Última atualização:** 2026-05-13
+**Status geral:** ✅ Onboarding v2 Premium + Layout Login Ultrawide + Sidebar Minimalista + Filtros Fluxo-style
 
 ## O Que É
 App de planejamento financeiro para casais com renda variável. Mobile-first, dark mode only. Resolve o problema de apps que exigem renda fixa no início do mês — o Somus permite lançar entradas incrementais conforme caem e distribui automaticamente por divisões (método Nati Arcuri adaptado).

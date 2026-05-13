@@ -205,6 +205,7 @@ function ProximosDias({ onEntradaClick, onDespesaClick, isDesktop }: {
       .map(sf => ({
         id: sf.id, name: sf.name, amount: getEffectiveAmount(sf, todayStr),
         days: getDaysUntil(sf.dueDay), type: 'despesa' as const,
+        paymentMethod: sf.paymentMethod as string | undefined,
       }))
 
     const variables = saidasVariaveis
@@ -213,7 +214,8 @@ function ProximosDias({ onEntradaClick, onDespesaClick, isDesktop }: {
         const day = parseInt(sv.date.split('-')[2])
         return {
           id: sv.id, name: sv.description, amount: sv.amount,
-          days: getDaysUntil(day), type: 'despesa' as const, // Treat as despesa for UI consistency
+          days: getDaysUntil(day), type: 'despesa' as const,
+          paymentMethod: sv.paymentMethod as string | undefined,
         }
       })
 
@@ -279,6 +281,9 @@ function ProximosDias({ onEntradaClick, onDespesaClick, isDesktop }: {
            item.days === 1 ? 'Amanhã' : 
            item.days < 0 ? `Atrasado há ${Math.abs(item.days)}d` : 
            `Em ${item.days} dias`}
+          {'paymentMethod' in item && item.paymentMethod
+            ? ` · ${{ pix: 'Pix', debit: 'Débito', credit: 'Cred', cash: 'Dinheiro', auto_debit: 'Déb. Auto', boleto: 'Boleto' }[item.paymentMethod as string] ?? item.paymentMethod}`
+            : ''}
         </p>
       </div>
       <span style={{

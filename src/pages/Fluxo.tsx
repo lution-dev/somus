@@ -27,6 +27,15 @@ type FluxoItem =
 
 // ─── Componentes de Item ──────────────────────────────────────────────────────
 
+const PAYMENT_LABELS: Record<string, string> = {
+  pix: 'Pix',
+  debit: 'Débito',
+  credit: 'Cred',
+  cash: 'Dinheiro',
+  auto_debit: 'Déb. Auto',
+  boleto: 'Boleto',
+}
+
 function FixaItem({ sf, isLast, onPress, yearMonth }: {
   sf: SaidaFixa
   isLast: boolean
@@ -105,6 +114,11 @@ function FixaItem({ sf, isLast, onPress, yearMonth }: {
             }}>
               <AlertCircle size={10} />
               {isOverdue ? (isPastMonth ? `Atrasado · ${new Date(yearMonth + '-01T12:00:00').toLocaleString('pt-BR', { month: 'long' })}` : 'Atrasado') : daysUntil === 0 ? 'Hoje' : `Em ${daysUntil}d`}
+            </span>
+          )}
+          {sf.paymentMethod && (
+            <span style={{ fontSize: 11, color: 'var(--color-text-tertiary)' }}>
+              · {PAYMENT_LABELS[sf.paymentMethod] || sf.paymentMethod}
             </span>
           )}
         </div>

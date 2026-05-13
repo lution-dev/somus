@@ -538,6 +538,7 @@ export default function DivisaoDetalhe() {
                   </div>
                   {group.items.map((sf, i) => {
                     const paid = isPaidThisMonth(sf)
+                    const payLabel = PAYMENT_LABELS[sf.paymentMethod] || sf.paymentMethod
                     return (
                       <div
                         key={sf.id}
@@ -566,7 +567,8 @@ export default function DivisaoDetalhe() {
                           <p style={{ fontSize: 12, color: 'var(--color-text-secondary)', margin: 0 }}>
                             {sf.isVariable
                               ? <span style={{ color: 'var(--color-warning)', fontWeight: 600 }}>Variável</span>
-                              : formatCurrency(sf.amount)}{' · '}{getDueDayLabel(sf.dueDay)}
+                              : formatCurrency(sf.amount)}{' · '}{getDueDayLabel(sf.dueDay)}{' · '}
+                            <span style={{ color: 'var(--color-text-tertiary)' }}>{payLabel}</span>
                           </p>
                         </div>
                       </div>
@@ -621,7 +623,8 @@ export default function DivisaoDetalhe() {
                           <p style={{ fontSize: 12, color: 'var(--color-text-secondary)', margin: 0 }}>
                             {sf.isVariable
                               ? <span style={{ color: 'var(--color-warning)', fontWeight: 600 }}>Variável</span>
-                              : formatCurrency(sf.amount)}{' · '}{getDueDayLabel(sf.dueDay)}
+                              : formatCurrency(sf.amount)}{' · '}
+                            <span style={{ color: 'var(--color-text-tertiary)' }}>Dia {sf.dueDay}</span>
                           </p>
                         </div>
                       </div>

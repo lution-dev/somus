@@ -33,6 +33,16 @@
 | T-INVITE-B4 | ✅ done | handleFinish gerava partnerCode novo diferente do compartilhado → usa ref | Onboarding.tsx |
 | T-INVITE-B5 | ✅ done | Link inválido antes de completar onboarding → pré-salva no Firestore ao chegar no Step5 | Onboarding.tsx |
 
+## Sprint Concluído — UX/UI Polish & Parity (S-POLISH)
+
+| ID | Status | Descrição | Arquivo |
+|----|--------|-----------|---------|
+| T-POLISH-01 | ✅ done | Layout Login: constrained content a 1440px enquanto background é full-bleed | Login.tsx |
+| T-POLISH-02 | ✅ done | Filtros Essencial: padronização com estilo Fluxo (compacto, inline, accent colors) | DivisaoDetalhe.tsx |
+| T-POLISH-03 | ✅ done | SearchBar Essencial: correção de espaçamento grudado | DivisaoDetalhe.tsx |
+| T-POLISH-04 | ✅ done | Sidebar Cleanup: remoção de tagline redundante + redimensionamento wordmark (20px, 600) | AppLayout.tsx |
+| T-POLISH-05 | ✅ done | Hint Essencial: ajuste de padding/margin hero para aproximar o banner das abas | DivisaoDetalhe.tsx |
+
 ## Próximas fases
 
 | ID | Prioridade | Descrição |

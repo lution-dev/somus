@@ -1,4 +1,4 @@
-﻿import { useState, useRef, useEffect, type ReactNode } from 'react'
+import { useState, useRef, useEffect, type ReactNode } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useLocation } from 'wouter'
 import { Home, ArrowLeftRight, BarChart3, Heart, MoreVertical, User, LogOut } from 'lucide-react'
@@ -58,7 +58,7 @@ function Sidebar() {
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <SomusLogo size={28} />
           <div>
-            <p style={{ fontSize: 14, fontWeight: 800, color: 'var(--color-text-primary)', lineHeight: 1.2, margin: 0, letterSpacing: '-0.02em' }}>Somus</p>
+            <p style={{ fontSize: 20, fontWeight: 600, color: 'var(--color-text-primary)', lineHeight: 1.2, margin: 0, letterSpacing: '-0.02em' }}>Somus</p>
           </div>
         </div>
       </div>
