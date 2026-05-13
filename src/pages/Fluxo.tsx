@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect } from 'react'
+﻿import React, { useMemo, useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAppStore, selectCurrentSaidasFixas, selectCurrentEntradas } from '../stores/useAppStore'
 import { useShallow } from 'zustand/react/shallow'
@@ -30,7 +30,7 @@ type FluxoItem =
 const PAYMENT_LABELS: Record<string, string> = {
   pix: 'Pix',
   debit: 'Débito',
-  credit: 'Cred',
+  credit: 'Crédito',
   cash: 'Dinheiro',
   auto_debit: 'Déb. Auto',
   boleto: 'Boleto',

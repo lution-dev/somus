@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback } from 'react'
+﻿import React, { useState, useMemo, useCallback } from 'react'
 import { useLocation } from 'wouter'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
@@ -282,7 +282,7 @@ function ProximosDias({ onEntradaClick, onDespesaClick, isDesktop }: {
            item.days < 0 ? `Atrasado há ${Math.abs(item.days)}d` : 
            `Em ${item.days} dias`}
           {'paymentMethod' in item && item.paymentMethod
-            ? ` · ${{ pix: 'Pix', debit: 'Débito', credit: 'Cred', cash: 'Dinheiro', auto_debit: 'Déb. Auto', boleto: 'Boleto' }[item.paymentMethod as string] ?? item.paymentMethod}`
+            ? ` · ${{ pix: 'Pix', debit: 'Débito', credit: 'Crédito', cash: 'Dinheiro', auto_debit: 'Déb. Auto', boleto: 'Boleto' }[item.paymentMethod as string] ?? item.paymentMethod}`
             : ''}
         </p>
       </div>
