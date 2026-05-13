@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react'
+import React, { useState, useMemo, useEffect, useRef } from 'react'
 import { useParams, useLocation } from 'wouter'
 import { useAppStore, selectCurrentSaidasFixas, selectCurrentEntradas } from '../stores/useAppStore'
 import { useShallow } from 'zustand/react/shallow'
@@ -48,6 +48,35 @@ export default function DivisaoDetalhe() {
   const [editSf, setEditSf] = useState<SaidaFixa | null>(null)
   // Objetivo edit/delete
   const [editObjetivoTarget, setEditObjetivoTarget] = useState<Objetivo | null>(null)
+
+  // Deep-link highlight (from Fluxo GhostLink)
+  const [highlightCustos, setHighlightCustos] = useState(false)
+  const custosRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    if (params.get('from') === 'fluxo' && isEssencial) {
+      setActiveTab('custos')
+      // Inject keyframe once
+      if (!document.getElementById('somus-highlight-kf')) {
+        const s = document.createElement('style')
+        s.id = 'somus-highlight-kf'
+        s.textContent = `@keyframes somusHighlight {
+          0%   { box-shadow: 0 0 0 0 rgba(59,130,246,0.35); background-color: rgba(59,130,246,0.10); }
+          50%  { box-shadow: 0 0 0 6px rgba(59,130,246,0.08); background-color: rgba(59,130,246,0.06); }
+          100% { box-shadow: 0 0 0 0 rgba(59,130,246,0);    background-color: transparent; }
+        }`
+        document.head.appendChild(s)
+      }
+      // Small delay so the tab renders before scroll
+      setTimeout(() => {
+        custosRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+        setHighlightCustos(true)
+        setTimeout(() => setHighlightCustos(false), 1500)
+      }, 80)
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
   const [deleteObjetivoTarget, setDeleteObjetivoTarget] = useState<Objetivo | null>(null)
   const [objetivoActionTarget, setObjetivoActionTarget] = useState<Objetivo | null>(null)
   const [confirmPaySf, setConfirmPaySf] = useState<SaidaFixa | null>(null)
@@ -508,12 +537,19 @@ export default function DivisaoDetalhe() {
           <SearchBar value={searchQuery} onChange={setSearchQuery} />
           <div style={{ marginBottom: 12 }} />
           {/* Custos grouped list */}
-          <div style={{
-            borderRadius: 'var(--radius-card)',
-            overflow: 'hidden',
-            background: 'var(--color-bg-secondary)',
-            border: '1px solid var(--color-border)',
-          }}>
+          <div
+            ref={custosRef}
+            style={{
+              borderRadius: 'var(--radius-card)',
+              overflow: 'hidden',
+              background: 'var(--color-bg-secondary)',
+              border: '1px solid var(--color-border)',
+              transition: 'background-color 300ms ease, box-shadow 300ms ease',
+              ...(highlightCustos ? {
+                animation: 'somusHighlight 1.4s ease-out forwards',
+              } : {}),
+            }}
+          >
             {filteredCustos.length === 0 ? (
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '48px 0', gap: 8 }}>
                 <Info size={24} color="var(--color-text-tertiary)" />

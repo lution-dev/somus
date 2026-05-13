@@ -483,7 +483,7 @@ export default function Fluxo() {
                     return null
                   })}
                   {/* Ghost link — aparece só quando expandido, após o último item */}
-                  <GhostLink href="/relatorios/cx-essencial" />
+                  <GhostLink href="/relatorios/cx-essencial?from=fluxo" />
                 </motion.div>
               )}
             </AnimatePresence>
