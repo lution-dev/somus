@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect, useCallback } from 'react'
+import React, { useMemo, useState, useEffect } from 'react'
 import { useLocation } from 'wouter'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAppStore, selectCurrentSaidasFixas, selectCurrentEntradas } from '../stores/useAppStore'
@@ -445,7 +445,7 @@ export default function Fluxo() {
               icon={<Clock size={12} />}
               collapsed={pendingCollapsed}
               onClick={() => setPendingCollapsed(v => !v)}
-              extra={<StatusBadge status={getPendingStatus(pending)} />}
+              extra={<StatusBadge status={getPendingStatus(pending.filter(i => i.type === 'fixa') as { data: { dueDay?: number } }[])} />}
             >Pendentes</SectionLabel>
             <AnimatePresence initial={false}>
               {!pendingCollapsed && (
