@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback } from 'react'
+﻿import React, { useState, useMemo, useCallback } from 'react'
 import { useLocation } from 'wouter'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
@@ -247,8 +247,8 @@ function ProximosDias({ onEntradaClick, onDespesaClick, onEntradaPendingClick, i
   }, [saidasFixas, saidasVariaveis, incomeSources, entradasAll])
 
   // Status counts for mobile header badges
-  const overdueCount  = upcoming.filter(i => i.type === 'despesa' && i.days < 0).length
-  const pendingCount  = upcoming.filter(i => i.type === 'despesa' && i.days >= 0).length
+  const overdueCount  = upcoming.filter(i => i.days < 0 && (i.type === 'despesa' || i.type === 'entrada-pending')).length
+  const pendingCount  = upcoming.filter(i => i.days >= 0 && (i.type === 'despesa' || i.type === 'entrada-pending')).length
 
   const [collapsed, setCollapsed] = useState(() => localStorage.getItem('somus:proxDias') === 'collapsed')
 

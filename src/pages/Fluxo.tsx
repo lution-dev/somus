@@ -500,7 +500,7 @@ export default function Fluxo() {
               icon={<Clock size={12} />}
               collapsed={pendingCollapsed}
               onClick={() => setPendingCollapsed(v => !v)}
-              extra={<StatusBadge status={getPendingStatus(pending.filter(i => i.type === 'fixa') as { data: { dueDay?: number } }[])} />}
+              extra={<StatusBadge status={getPendingStatus(pending)} />}
             >Pendentes</SectionLabel>
             <AnimatePresence initial={false}>
               {!pendingCollapsed && (
@@ -967,12 +967,20 @@ type PendingStatus =
   | { kind: 'pending';   count: number }
   | { kind: 'overdue';   count: number; pending: number }
 
-function getPendingStatus(pending: { data: { dueDay?: number } }[]): PendingStatus {
+function getPendingStatus(pending: FluxoItem[]): PendingStatus {
   if (pending.length === 0) return { kind: 'all-good' }
-  const overdue  = pending.filter(i => getDaysUntil((i.data as { dueDay: number }).dueDay) < 0).length
-  const upcoming = pending.filter(i => { const d = getDaysUntil((i.data as { dueDay: number }).dueDay); return d >= 0 && d <= 3 }).length
-  if (overdue > 0)  return { kind: 'overdue',  count: overdue,  pending: pending.length - overdue }
-  if (upcoming > 0) return { kind: 'pending',  count: pending.length }
+
+  const getDays = (item: FluxoItem): number => {
+    if (item.type === 'fixa') return getDaysUntil((item.data as SaidaFixa).dueDay)
+    if (item.type === 'variavel') return getDaysUntil(parseInt((item.data as SaidaVariavel).date.split('-')[2]))
+    if (item.type === 'entrada') return getDaysUntil(parseInt((item.data as Entrada).date.split('-')[2]))
+    return 999
+  }
+
+  const overdue  = pending.filter(i => getDays(i) < 0).length
+  const upcoming = pending.filter(i => { const d = getDays(i); return d >= 0 && d <= 3 }).length
+  if (overdue > 0)  return { kind: 'overdue', count: overdue, pending: pending.length - overdue }
+  if (upcoming > 0) return { kind: 'pending', count: pending.length }
   return { kind: 'upcoming', count: pending.length }
 }
 
