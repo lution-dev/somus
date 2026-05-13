@@ -238,7 +238,6 @@ function ProximosDias({ onEntradaClick, onDespesaClick, onEntradaPendingClick, i
     const allItems = [...despesas, ...variables, ...entradas, ...entradasPendentes]
       .sort((a, b) => a.days - b.days)
 
-    const today = new Date().toISOString().slice(0, 7) // 'YYYY-MM'
     const futureItems  = allItems.filter(i => {
       // Items where days > current month boundary — roughly > 31 days OR the date is in a future yearMonth
       // We detect "future month" by checking if it's not in this month's window

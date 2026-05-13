@@ -371,7 +371,7 @@ export default function Fluxo() {
   const [confirmDeleteEntrada, setConfirmDeleteEntrada] = useState(false)
   const [confirmPayEntrada, setConfirmPayEntrada]       = useState<Entrada | null>(null)
   // Duplicate state
-  const [despesaPrefill, setDespesaPrefill] = useState<{ description?: string; amount?: number; paymentMethod?: string; subcategory?: string } | null>(null)
+  const [despesaPrefill, setDespesaPrefill] = useState<{ description?: string; amount?: number; paymentMethod?: string; subcategory?: string; date?: string } | null>(null)
   const [entradaPrefill, setEntradaPrefill] = useState<{ sourceName: string; amount: number; note?: string; date?: string } | null>(null)
   const [dupeDivisaoPicker, setDupeDivisaoPicker] = useState(false)
   const isMobile = useIsMobile()
