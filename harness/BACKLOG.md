@@ -53,3 +53,4 @@
 | T-NEXT-04 | média | Notificações push (PWA) para vencimentos |
 | T-NEXT-05 | baixa | Firebase Storage para imagens de objetivos (requer Blaze plan) |
 | T-NEXT-06 | baixa | Lançamento iOS/Android via PWA (manifest + service worker polish) |
+| T-NEXT-07 | média | GhostLink deep nav: ao navegar Fluxo→Essencial, scroll automático até "Custos Fixos" + micro highlight azul (pulse 1x) — "você veio daqui" |

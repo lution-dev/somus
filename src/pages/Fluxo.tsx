@@ -1020,7 +1020,6 @@ function GhostLink({ href }: { href: string }) {
         gap: 4,
         padding: '8px 16px 10px',
         cursor: 'pointer',
-        opacity: hovered ? 0.65 : 0.35,
         transition: 'opacity 150ms ease',
       }}
     >
@@ -1029,13 +1028,16 @@ function GhostLink({ href }: { href: string }) {
         fontWeight: 500,
         color: 'var(--color-text-tertiary)',
         letterSpacing: '0.01em',
+        opacity: hovered ? 0.82 : 0.72,
+        transition: 'opacity 150ms ease',
       }}>
         Ver estrutura completa
       </span>
       <span style={{
         fontSize: 11,
         color: 'var(--color-text-tertiary)',
-        transition: 'transform 150ms ease',
+        opacity: hovered ? 1 : 0.88,
+        transition: 'opacity 150ms ease, transform 150ms ease',
         transform: hovered ? 'translateX(2px)' : 'translateX(0)',
       }}>→</span>
     </div>
