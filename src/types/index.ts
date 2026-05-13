@@ -44,6 +44,7 @@ export interface Entrada {
   date: string
   note?: string
   distribution: DivisaoDistributionItem[]
+  status?: 'realized' | 'pending'
 }
 
 // ─── Divisoes ──────────────────────────────────────────────────────────────

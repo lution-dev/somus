@@ -73,14 +73,29 @@ function FixaItem({ sf, isLast, onPress, yearMonth }: {
     >
       <div style={{ 
         width: 32, height: 32, borderRadius: 10, flexShrink: 0, 
-        background: paid ? 'rgba(239,68,68,0.1)' : `${sf.color || 'var(--color-accent-primary)'}15`,
+        background: paid
+          ? 'rgba(239,68,68,0.1)'
+          : isOverdue
+          ? 'rgba(239,68,68,0.1)'
+          : isUrgent
+          ? 'rgba(245,158,11,0.1)'
+          : 'rgba(148,163,184,0.08)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        border: `1px solid ${paid ? 'rgba(239,68,68,0.2)' : `${sf.color || 'var(--color-accent-primary)'}30`}`
+        border: `1px solid ${
+          paid      ? 'rgba(239,68,68,0.2)'
+          : isOverdue ? 'rgba(239,68,68,0.2)'
+          : isUrgent  ? 'rgba(245,158,11,0.2)'
+          : 'rgba(148,163,184,0.12)'
+        }`
       }}>
         {paid ? (
           <ArrowDownLeft size={18} color="var(--color-danger)" />
         ) : (
-          <AlertCircle size={18} color={isOverdue ? 'var(--color-danger)' : sf.color || 'var(--color-accent-primary)'} />
+          <AlertCircle size={18} color={
+            isOverdue ? 'var(--color-danger)'
+            : isUrgent ? 'var(--color-warning)'
+            : 'var(--color-text-tertiary)'
+          } />
         )}
       </div>
 
@@ -261,6 +276,7 @@ function VariavelItem({ sv, isLast, onPress }: { sv: SaidaVariavel; isLast: bool
 }
 
 function EntradaItem({ e, isLast, onPress }: { e: Entrada; isLast: boolean; onPress: (e: Entrada) => void }) {
+  const isPending = e.status === 'pending'
   return (
     <motion.div
       initial={{ opacity: 0, x: -10 }}
@@ -272,24 +288,41 @@ function EntradaItem({ e, isLast, onPress }: { e: Entrada; isLast: boolean; onPr
         padding: '14px 16px',
         borderBottom: isLast ? 'none' : '1px solid var(--color-border)',
         cursor: 'pointer',
+        opacity: isPending ? 1 : 0.85,
       }}
     >
       <div style={{
         width: 32, height: 32, borderRadius: 10,
         display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-        background: 'rgba(16,185,129,0.1)',
+        background: isPending ? 'rgba(16,185,129,0.08)' : 'rgba(16,185,129,0.1)',
+        border: isPending ? '1px solid rgba(16,185,129,0.15)' : 'none',
       }}>
-        <ArrowUpRight size={16} color="var(--color-success)" />
+        {isPending
+          ? <Clock size={16} color="var(--color-success)" style={{ opacity: 0.7 }} />
+          : <ArrowUpRight size={16} color="var(--color-success)" />
+        }
       </div>
       <div style={{ flex: 1, minWidth: 0 }}>
         <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-text-primary)', margin: '0 0 2px' }}>{e.sourceName}</p>
         <p style={{ fontSize: 12, color: 'var(--color-text-secondary)', margin: 0 }}>
+          {isPending ? 'Aguardando para ' : ''}
           {new Date(e.date + 'T12:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })}
         </p>
       </div>
-      <span style={{ fontSize: 15, fontWeight: 700, color: 'var(--color-success)', flexShrink: 0 }}>
-        +{formatCurrency(e.amount)}
-      </span>
+      <div style={{ textAlign: 'right', display: 'flex', alignItems: 'center', gap: 10 }}>
+        <span style={{ fontSize: 15, fontWeight: 700, color: 'var(--color-success)', flexShrink: 0, opacity: isPending ? 0.65 : 1 }}>
+          +{formatCurrency(e.amount)}
+        </span>
+        {isPending && (
+          <div style={{
+            width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center',
+            border: '1.5px solid rgba(16,185,129,0.3)', borderRadius: 10,
+            background: 'rgba(16,185,129,0.06)',
+          }}>
+            <Check size={14} color="var(--color-success)" style={{ opacity: 0.7 }} />
+          </div>
+        )}
+      </div>
     </motion.div>
   )
 }
@@ -320,6 +353,7 @@ export default function Fluxo() {
   const [selectedEntrada, setSelectedEntrada]           = useState<Entrada | null>(null)
   const [editEntradaOpen, setEditEntradaOpen]           = useState(false)
   const [confirmDeleteEntrada, setConfirmDeleteEntrada] = useState(false)
+  const [confirmPayEntrada, setConfirmPayEntrada]       = useState<Entrada | null>(null)
   const isMobile = useIsMobile()
   const HERO_BG = '#112A5F'
   const [, setNewFixaPrefill] = useState<string | null>(null)
@@ -378,7 +412,10 @@ export default function Fluxo() {
     }
 
     if (filterType === 'all' || filterType === 'entradas') {
-      currentMonthEntradas.forEach(e => items.push({ type: 'entrada', data: e }))
+      currentMonthEntradas.forEach(e => {
+        // Entradas pending de datas futuras ficam na seção pending, realized na seção realized
+        items.push({ type: 'entrada', data: e })
+      })
     }
 
     if (q) {
@@ -429,12 +466,14 @@ export default function Fluxo() {
     const pending  = unifiedList.filter(item => {
       if (item.type === 'fixa') return !isPaidForMonth(item.data, item.instanceMonth || yearMonth)
       if (item.type === 'variavel') return item.data.status === 'pending'
+      if (item.type === 'entrada') return (item.data as Entrada).status === 'pending'
       return false
     })
     const realized = unifiedList.filter(item => {
       if (item.type === 'fixa') return isPaidForMonth(item.data, item.instanceMonth || yearMonth)
       if (item.type === 'variavel') return item.data.status !== 'pending'
-      return item.type === 'entrada'
+      if (item.type === 'entrada') return (item.data as Entrada).status !== 'pending'
+      return true
     })
 
     return (
@@ -477,6 +516,16 @@ export default function Fluxo() {
                           sv={item.data as SaidaVariavel}
                           isLast={isLast}
                           onPress={setActionSv}
+                        />
+                      )
+                    }
+                    if (item.type === 'entrada') {
+                      return (
+                        <EntradaItem
+                          key={`e-${item.data.id}`}
+                          e={item.data as Entrada}
+                          isLast={isLast}
+                          onPress={setActionEntrada}
                         />
                       )
                     }
@@ -848,7 +897,10 @@ export default function Fluxo() {
         title={actionEntrada?.sourceName ?? ''}
         subtitle={actionEntrada ? `+${formatCurrency(actionEntrada.amount)} · ${new Date(actionEntrada.date + 'T12:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })}` : ''}
         actions={actionEntrada ? [
-          { label: 'Editar entrada', icon: Pencil, color: 'var(--color-success)', onClick: () => {
+          ...(actionEntrada.status === 'pending' ? [
+            { label: 'Confirmar recebimento', icon: CheckCircle2, color: 'var(--color-success)', onClick: () => { setConfirmPayEntrada(actionEntrada); setActionEntrada(null) } }
+          ] : []),
+          { label: 'Editar entrada', icon: Pencil, color: 'var(--color-accent-primary)', onClick: () => {
             setSelectedEntrada(actionEntrada)
             setEditEntradaOpen(true)
             setActionEntrada(null)
@@ -872,9 +924,20 @@ export default function Fluxo() {
         onClose={() => setConfirmDeleteEntrada(false)}
         onConfirm={() => { if (selectedEntrada) { deleteEntrada(selectedEntrada.id); setSelectedEntrada(null) } }}
         title="Excluir entrada?"
-        description={`Isso removerá "${selectedEntrada?.sourceName}" e estornará +R$\u00a0${selectedEntrada ? selectedEntrada.amount.toFixed(2).replace('.', ',') : ''} das divisões.`}
+        description={selectedEntrada?.status === 'pending'
+          ? `Isso removerá o agendamento de recebimento "${selectedEntrada?.sourceName}".`
+          : `Isso removerá "${selectedEntrada?.sourceName}" e estornará +R$\u00a0${selectedEntrada ? selectedEntrada.amount.toFixed(2).replace('.', ',') : ''} das divisões.`
+        }
         confirmLabel="Excluir"
         variant="danger"
+      />
+
+      <ConfirmPaymentModal
+        open={!!confirmPayEntrada}
+        onClose={() => setConfirmPayEntrada(null)}
+        costName={confirmPayEntrada?.sourceName}
+        title="Confirmar recebimento"
+        onConfirm={(date) => { if (confirmPayEntrada) useAppStore.getState().confirmEntrada(confirmPayEntrada.id, date); setConfirmPayEntrada(null) }}
       />
     </div>
   )

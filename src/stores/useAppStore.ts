@@ -30,6 +30,7 @@ interface AppActions {
 
   // Entradas
   addEntrada: (entrada: Omit<Entrada, 'id'>) => void
+  confirmEntrada: (id: string, confirmationDate: string) => void
   editEntrada: (id: string, updates: { amount?: number; sourceName?: string; date?: string; note?: string }) => void
   deleteEntrada: (id: string) => void
 
@@ -128,9 +129,20 @@ export const useAppStore = create<AppState & AppActions>()(
 
       addEntrada: (entrada) => {
         const id = `e-${Date.now()}`
-        const newEntrada: Entrada = { ...entrada, id }
+        const today = new Date().toISOString().slice(0, 10)
+        const isFuture = entrada.date > today
+        const status: 'realized' | 'pending' = isFuture ? 'pending' : 'realized'
+        const newEntrada: Entrada = { ...entrada, id, status }
 
-        // Atualiza saldos das divisoes
+        if (isFuture) {
+          // Entrada futura: apenas registra, não distribui saldo
+          set((state) => ({
+            entradas: [...state.entradas, newEntrada],
+          }))
+          return
+        }
+
+        // Entrada realizada: distribui saldos nas divisoes
         set((state) => {
           const updatedDivisoes = state.divisoes.map((cx) => {
             const dist = entrada.distribution.find(d => d.divisaoId === cx.id)
@@ -156,6 +168,38 @@ export const useAppStore = create<AppState & AppActions>()(
           }
         })
       },
+
+      confirmEntrada: (id, confirmationDate) =>
+        set((state) => {
+          const e = state.entradas.find(x => x.id === id)
+          if (!e || e.status !== 'pending') return state
+
+          const updatedDivisoes = state.divisoes.map((cx) => {
+            const dist = e.distribution.find(d => d.divisaoId === cx.id)
+            if (!dist) return cx
+            return {
+              ...cx,
+              balance: cx.balance + dist.amount,
+              movements: [
+                ...cx.movements,
+                {
+                  id: `mv-${Date.now()}-${cx.id}`,
+                  date: confirmationDate,
+                  amount: dist.amount,
+                  description: `Distribuição — ${e.sourceName}`,
+                  type: 'income' as const,
+                },
+              ],
+            }
+          })
+
+          return {
+            entradas: state.entradas.map(x =>
+              x.id === id ? { ...x, status: 'realized' as const, date: confirmationDate } : x
+            ),
+            divisoes: updatedDivisoes,
+          }
+        }),
 
       editEntrada: (id, updates) =>
         set((state) => {

@@ -7,9 +7,11 @@ interface Props {
   onClose: () => void
   onConfirm: (date: string) => void
   costName?: string
+  title?: string
+  dateLabel?: string
 }
 
-export default function ConfirmPaymentModal({ open, onClose, onConfirm, costName }: Props) {
+export default function ConfirmPaymentModal({ open, onClose, onConfirm, costName, title, dateLabel }: Props) {
   const today = new Date().toISOString().slice(0, 10)
   const [selectedDate, setSelectedDate] = useState(today)
 
@@ -24,7 +26,7 @@ export default function ConfirmPaymentModal({ open, onClose, onConfirm, costName
   }
 
   return (
-    <Dialog open={open} onClose={onClose} title="Confirmar pagamento" size="sm">
+    <Dialog open={open} onClose={onClose} title={title ?? 'Confirmar pagamento'} size="sm">
       <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
 
         {/* Cost name */}
@@ -52,7 +54,7 @@ export default function ConfirmPaymentModal({ open, onClose, onConfirm, costName
             marginBottom: 8,
           }}>
             <CalendarDays size={14} />
-            Quando você pagou?
+            {dateLabel ?? 'Quando você pagou?'}
           </label>
           <input
             type="date"

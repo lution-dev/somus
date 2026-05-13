@@ -54,3 +54,14 @@
 | T-NEXT-05 | baixa | Firebase Storage para imagens de objetivos (requer Blaze plan) |
 | T-NEXT-06 | baixa | Lançamento iOS/Android via PWA (manifest + service worker polish) |
 | T-NEXT-07 | média | GhostLink deep nav: ao navegar Fluxo→Essencial, scroll automático até "Custos Fixos" + micro highlight azul (pulse 1x) — "você veio daqui" |
+
+## Sprint Atual — Agendamento de Entradas Futuras (S-ENT)
+
+| ID | Status | Descrição | Arquivo |
+|----|--------|-----------|---------|
+| T-ENT-01 | 🔄 doing | Adicionar `status` na interface `Entrada` | types/index.ts |
+| T-ENT-02 | ⬜ todo | Lógica pending + action `confirmEntrada` no store | useAppStore.ts |
+| T-ENT-03 | ⬜ todo | Hint dinâmico + mensagem de sucesso diferenciada | LancarEntradaModal.tsx |
+| T-ENT-04 | ⬜ todo | Entradas pendentes na seção Pendentes do Fluxo + Action Sheet | Fluxo.tsx |
+| T-ENT-05 | ⬜ todo | Entradas pendentes em ProximosDias + confirmação | Home.tsx |
+| T-ENT-06 | ⬜ todo | Projeção inclui entradas pendentes futuras | useFluxoProjection.ts |

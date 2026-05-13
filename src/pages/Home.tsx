@@ -1,4 +1,4 @@
-﻿import React, { useState, useMemo, useCallback } from 'react'
+import React, { useState, useMemo, useCallback } from 'react'
 import { useLocation } from 'wouter'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
@@ -40,6 +40,7 @@ import {
   Heart,
   BarChart2,
   Share2,
+  Clock,
 } from 'lucide-react'
 
 // ─── Pill button style ──────────────────────────────────────────────────────
@@ -187,9 +188,10 @@ function HistoricoDialog({ open, onClose }: { open: boolean; onClose: () => void
 
 // ─── Próximos Dias ─────────────────────────────────────────────────────────
 
-function ProximosDias({ onEntradaClick, onDespesaClick, isDesktop }: {
+function ProximosDias({ onEntradaClick, onDespesaClick, onEntradaPendingClick, isDesktop }: {
   onEntradaClick: (name: string, amount: number) => void
   onDespesaClick: (id: string) => void
+  onEntradaPendingClick: (id: string) => void
   isDesktop?: boolean
 }) {
   const saidasFixas = useAppStore(useShallow(selectCurrentSaidasFixas))
@@ -197,6 +199,7 @@ function ProximosDias({ onEntradaClick, onDespesaClick, isDesktop }: {
     s.incomeSources.filter(src => src.userId === (s.currentUser?.id ?? ''))
   ))
   const saidasVariaveis = useAppStore(useShallow(s => s.saidasVariaveis))
+  const entradasAll = useAppStore(useShallow(s => s.entradas))
 
   const upcoming = useMemo(() => {
     const todayStr = new Date().toISOString().slice(0, 7) // 'YYYY-MM'
@@ -227,10 +230,21 @@ function ProximosDias({ onEntradaClick, onDespesaClick, isDesktop }: {
       }))
       .filter(e => e.days > 0 && e.days <= 10)
 
-    return [...despesas, ...variables, ...entradas]
+    const entradasPendentes = entradasAll
+      .filter(e => e.status === 'pending')
+      .map(e => {
+        const day = parseInt(e.date.split('-')[2])
+        return {
+          id: e.id, name: e.sourceName, amount: e.amount,
+          days: getDaysUntil(day), type: 'entrada-pending' as const,
+          paymentMethod: undefined as string | undefined,
+        }
+      })
+
+    return [...despesas, ...variables, ...entradas, ...entradasPendentes]
       .sort((a, b) => a.days - b.days)
       .slice(0, 10)
-  }, [saidasFixas, saidasVariaveis, incomeSources])
+  }, [saidasFixas, saidasVariaveis, incomeSources, entradasAll])
 
   // Status counts for mobile header badges
   const overdueCount  = upcoming.filter(i => i.type === 'despesa' && i.days < 0).length
@@ -250,10 +264,11 @@ function ProximosDias({ onEntradaClick, onDespesaClick, isDesktop }: {
   const renderItem = (item: typeof upcoming[0], i: number) => (
     <div
       key={item.id}
-      onClick={() => item.type === 'entrada'
-        ? onEntradaClick(item.name, item.amount)
-        : onDespesaClick(item.id)
-      }
+      onClick={() => {
+        if (item.type === 'entrada') onEntradaClick(item.name, item.amount)
+        else if (item.type === 'entrada-pending') onEntradaPendingClick(item.id)
+        else onDespesaClick(item.id)
+      }}
       style={{
         display: 'flex', alignItems: 'center', gap: 12,
         padding: '12px 16px',
@@ -267,16 +282,27 @@ function ProximosDias({ onEntradaClick, onDespesaClick, isDesktop }: {
         display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
         background: item.type === 'entrada'
           ? 'rgba(16,185,129,0.12)'
-          : item.days <= 2 ? 'rgba(239,68,68,0.12)' : 'rgba(59,130,246,0.12)',
+          : item.type === 'entrada-pending'
+          ? 'rgba(16,185,129,0.08)'
+          : item.days < 0 ? 'rgba(239,68,68,0.12)'
+          : item.days <= 2 ? 'rgba(245,158,11,0.10)'
+          : 'rgba(148,163,184,0.08)',
       }}>
         {item.type === 'entrada'
           ? <ArrowUpRight size={14} color="var(--color-success)" />
-          : <AlertCircle size={14} color={item.days <= 2 ? 'var(--color-danger)' : 'var(--color-warning)'} />
+          : item.type === 'entrada-pending'
+          ? <Clock size={14} color="var(--color-success)" style={{ opacity: 0.7 }} />
+          : <AlertCircle size={14} color={
+              item.days < 0 ? 'var(--color-danger)'
+              : item.days <= 2 ? 'var(--color-warning)'
+              : 'var(--color-text-tertiary)'
+            } />
         }
       </div>
       <div style={{ flex: 1, minWidth: 0 }}>
         <p style={{ fontSize: 14, fontWeight: 500, color: 'var(--color-text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', margin: 0 }}>{item.name}</p>
         <p style={{ fontSize: 12, color: 'var(--color-text-secondary)', margin: 0 }}>
+          {item.type === 'entrada-pending' ? 'Recebimento esperado — ' : ''}
           {item.days === 0 ? 'Hoje' : 
            item.days === 1 ? 'Amanhã' : 
            item.days < 0 ? `Atrasado há ${Math.abs(item.days)}d` : 
@@ -288,9 +314,10 @@ function ProximosDias({ onEntradaClick, onDespesaClick, isDesktop }: {
       </div>
       <span style={{
         fontSize: 14, fontWeight: 700, flexShrink: 0,
-        color: item.type === 'entrada' ? 'var(--color-success)' : 'var(--color-text-primary)',
+        color: (item.type === 'entrada' || item.type === 'entrada-pending') ? 'var(--color-success)' : 'var(--color-text-primary)',
+        opacity: item.type === 'entrada-pending' ? 0.65 : 1,
       }}>
-        {item.type === 'entrada' ? '+' : '−'}{formatCurrency(item.amount)}
+        {(item.type === 'entrada' || item.type === 'entrada-pending') ? '+' : '−'}{formatCurrency(item.amount)}
       </span>
     </div>
   )
@@ -934,6 +961,7 @@ export default function Home() {
   const [historicoOpen, setHistoricoOpen] = useState(false)
   const [prefill, setPrefill] = useState<{ sourceName: string; amount: number } | undefined>()
   const [confirmPayId, setConfirmPayId] = useState<string | null>(null)
+  const [confirmPayEntradaId, setConfirmPayEntradaId] = useState<string | null>(null)
   const isMobile = useIsMobile()
   const { displayName } = useAuth()
 
@@ -1042,6 +1070,7 @@ export default function Home() {
             <ProximosDias
               onEntradaClick={handleEntradaClick}
               onDespesaClick={handleDespesaClick}
+              onEntradaPendingClick={setConfirmPayEntradaId}
               isDesktop
             />
           </div>
@@ -1055,6 +1084,7 @@ export default function Home() {
         <ProximosDias
           onEntradaClick={handleEntradaClick}
           onDespesaClick={handleDespesaClick}
+          onEntradaPendingClick={setConfirmPayEntradaId}
         />
       )}
 
@@ -1085,6 +1115,20 @@ export default function Home() {
             }
           }
           setConfirmPayId(null)
+        }}
+      />
+      <ConfirmPaymentModal
+        open={!!confirmPayEntradaId}
+        onClose={() => setConfirmPayEntradaId(null)}
+        title="Confirmar recebimento"
+        dateLabel="Quando você recebeu?"
+        costName={confirmPayEntradaId
+          ? (useAppStore.getState().entradas.find(e => e.id === confirmPayEntradaId)?.sourceName ?? '')
+          : ''
+        }
+        onConfirm={(date) => {
+          if (confirmPayEntradaId) useAppStore.getState().confirmEntrada(confirmPayEntradaId, date)
+          setConfirmPayEntradaId(null)
         }}
       />
     </div>

@@ -4,7 +4,7 @@ import { useAppStore, selectCurrentDivisoes, selectCurrentIncomeSources, selectC
 import { useShallow } from 'zustand/react/shallow'
 import { formatCurrency } from '../../lib/calculations'
 import { Dialog, DialogFooter, Button, Input } from '../ui'
-import { Check } from 'lucide-react'
+import { Check, AlertCircle } from 'lucide-react'
 import { useCurrencyInput } from '../../hooks/useCurrencyInput'
 
 interface Props {
@@ -125,13 +125,17 @@ export default function LancarEntradaModal({ open, onClose, prefill }: Props) {
           >
             <div style={{
               width: 64, height: 64, borderRadius: '50%',
-              background: 'rgba(16,185,129,0.15)',
+              background: date > new Date().toISOString().slice(0, 10) ? 'rgba(245,158,11,0.15)' : 'rgba(16,185,129,0.15)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
             }}>
-              <Check size={32} color="var(--color-success)" strokeWidth={2.5} />
+              <Check size={32} color={date > new Date().toISOString().slice(0, 10) ? 'var(--color-warning)' : 'var(--color-success)'} strokeWidth={2.5} />
             </div>
-            <p style={{ fontSize: 18, fontWeight: 700, color: 'var(--color-success)', margin: 0 }}>Entrada lançada!</p>
-            <p style={{ fontSize: 14, color: 'var(--color-text-secondary)', margin: 0 }}>Divisoes atualizadas</p>
+            <p style={{ fontSize: 18, fontWeight: 700, color: date > new Date().toISOString().slice(0, 10) ? 'var(--color-warning)' : 'var(--color-success)', margin: 0 }}>
+              {date > new Date().toISOString().slice(0, 10) ? 'Entrada agendada!' : 'Entrada lançada!'}
+            </p>
+            <p style={{ fontSize: 14, color: 'var(--color-text-secondary)', margin: 0 }}>
+              {date > new Date().toISOString().slice(0, 10) ? 'Confirme quando o dinheiro chegar' : 'Divisões atualizadas'}
+            </p>
           </motion.div>
         ) : (
           <motion.div key="form" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
@@ -217,6 +221,20 @@ export default function LancarEntradaModal({ open, onClose, prefill }: Props) {
                 value={date}
                 onChange={e => setDate(e.target.value)}
               />
+              {date > new Date().toISOString().slice(0, 10) && (
+                <p style={{
+                  fontSize: 11,
+                  color: 'var(--color-warning)',
+                  margin: '4px 0 0',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 4,
+                  fontWeight: 500,
+                }}>
+                  <AlertCircle size={12} />
+                  <span>Ficará guardada como recebimento esperado para você confirmar no dia</span>
+                </p>
+              )}
             </div>
 
 

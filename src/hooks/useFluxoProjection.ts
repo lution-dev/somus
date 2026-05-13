@@ -36,6 +36,7 @@ export function useFluxoProjection() {
     // Custos pendentes (Fixos + Variáveis agendadas)
     const pendingFixas = saidasFixas.filter((f) => !isPaidForMonth(f, yearMonth))
     const pendingVariaveis = saidasVariaveis.filter(v => v.status === 'pending' && v.date.startsWith(yearMonth))
+    const pendingEntradas = entradas.filter(e => e.status === 'pending' && e.date.startsWith(yearMonth))
 
     const days: ProjectionDay[] = []
 
@@ -72,7 +73,12 @@ export function useFluxoProjection() {
       const dayVariaveis = pendingVariaveis
         .filter(v => parseInt(v.date.split('-')[2]) === d)
         .reduce((sum, v) => sum + v.amount, 0)
+
+      const dayEntradasPending = pendingEntradas
+        .filter(e => parseInt(e.date.split('-')[2]) === d)
+        .reduce((sum, e) => sum + e.amount, 0)
       
+      runningBalanceProj += dayEntradasPending
       runningBalanceProj -= (dayFixas + dayVariaveis)
       projectionData[d] = runningBalanceProj
     }
@@ -82,7 +88,8 @@ export function useFluxoProjection() {
       const dateStr = `${yearMonth}-${d.toString().padStart(2, '0')}`
       const eventos = [
         ...pendingFixas.filter((f) => f.dueDay === d).map((f) => ({ name: f.name, amount: getEffectiveAmount(f, yearMonth) })),
-        ...pendingVariaveis.filter(v => parseInt(v.date.split('-')[2]) === d).map(v => ({ name: v.description, amount: v.amount }))
+        ...pendingVariaveis.filter(v => parseInt(v.date.split('-')[2]) === d).map(v => ({ name: v.description, amount: v.amount })),
+        ...pendingEntradas.filter(e => parseInt(e.date.split('-')[2]) === d).map(e => ({ name: `+${e.sourceName}`, amount: e.amount }))
       ]
 
       days.push({
