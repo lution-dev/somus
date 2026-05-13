@@ -59,7 +59,6 @@ function Sidebar() {
           <SomusLogo size={28} />
           <div>
             <p style={{ fontSize: 14, fontWeight: 800, color: 'var(--color-text-primary)', lineHeight: 1.2, margin: 0, letterSpacing: '-0.02em' }}>Somus</p>
-            <p style={{ fontSize: 10, color: 'var(--color-text-tertiary)', lineHeight: 1.3, margin: 0, letterSpacing: '0.04em', textTransform: 'uppercase' }}>Finanças do casal</p>
           </div>
         </div>
       </div>
