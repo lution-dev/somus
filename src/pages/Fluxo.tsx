@@ -310,8 +310,8 @@ function EntradaItem({ e, isLast, onPress }: { e: Entrada; isLast: boolean; onPr
   const isPending = e.status === 'pending'
   const isOverdueEntry = isPending && e.date < new Date().toISOString().slice(0, 10)
   const divName = e.distribution?.length === 1 ? e.distribution[0].divisaoName : e.distribution?.length > 1 ? 'Múltiplas' : null
-  const divisao = useAppStore(s => s.divisoes.find(d => d.name === divName))
   
+
   return (
     <motion.div
       initial={{ opacity: 0, x: -10 }}
