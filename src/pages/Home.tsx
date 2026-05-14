@@ -18,6 +18,7 @@ import { useBalanceHidden } from '../hooks/useBalanceHidden'
 import UserMenu from '../components/ui/UserMenu'
 import LancarEntradaModal from '../components/features/LancarEntradaModal'
 import ConfirmPaymentModal from '../components/features/ConfirmPaymentModal'
+import { useNavStore } from '../stores/useNavStore'
 import {
   Plus,
   TrendingUp,
@@ -188,6 +189,51 @@ function HistoricoDialog({ open, onClose }: { open: boolean; onClose: () => void
 
 // ─── Próximos Dias ─────────────────────────────────────────────────────────
 
+
+// ─── Future hint link (GhostLink-style) ───────────────────────────────────────
+function FutureHint({ count, borderTop = false }: { count: number; borderTop?: boolean }) {
+  const [, navigate] = useLocation()
+  const setFluxoFutureOpen    = useNavStore(s => s.setFluxoFutureOpen)
+  const triggerFluxoFuturePulse = useNavStore(s => s.triggerFluxoFuturePulse)
+  const [hovered, setHovered] = useState(false)
+  return (
+    <div
+      onClick={() => {
+        setFluxoFutureOpen(true)
+        triggerFluxoFuturePulse()
+        navigate('/fluxo')
+      }}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        padding: '10px 16px',
+        borderTop: borderTop ? '1px solid var(--color-border)' : undefined,
+        cursor: 'pointer',
+        transition: 'background 150ms ease',
+        background: hovered ? 'rgba(255,255,255,0.04)' : 'transparent',
+      }}
+    >
+      <span style={{
+        fontSize: 11, fontWeight: 500,
+        color: 'var(--color-text-tertiary)',
+        letterSpacing: '0.01em',
+        opacity: hovered ? 0.82 : 0.72,
+        transition: 'opacity 150ms ease',
+      }}>
+        + {count} agendado{count === 1 ? '' : 's'} em meses futuros
+      </span>
+      <span style={{
+        fontSize: 11,
+        color: 'var(--color-text-tertiary)',
+        opacity: hovered ? 1 : 0.88,
+        transition: 'opacity 150ms ease, transform 150ms ease',
+        transform: hovered ? 'translateX(3px)' : 'translateX(0)',
+      }}>→</span>
+    </div>
+  )
+}
+
 function ProximosDias({ onEntradaClick, onDespesaClick, onEntradaPendingClick, isDesktop }: {
   onEntradaClick: (name: string, amount: number) => void
   onDespesaClick: (id: string) => void
@@ -238,9 +284,10 @@ function ProximosDias({ onEntradaClick, onDespesaClick, onEntradaPendingClick, i
     const allItems = [...despesas, ...variables, ...entradas, ...entradasPendentes]
       .sort((a, b) => a.days - b.days)
 
-    // Count ALL items in future months (days > 31), visible or not
-    const futureCount = allItems.filter(i => i.days > 31).length
-    const top10 = allItems.slice(0, 10)
+    // Separa mês atual (≤ 31 dias) de meses futuros (> 31 dias)
+    const currentItems = allItems.filter(i => i.days <= 31)
+    const futureCount  = allItems.filter(i => i.days > 31).length
+    const top10 = currentItems.slice(0, 10)
 
     return { items: top10, futureCount }
   }, [saidasFixas, saidasVariaveis, incomeSources, entradasAll])
@@ -384,27 +431,7 @@ function ProximosDias({ onEntradaClick, onDespesaClick, onEntradaPendingClick, i
             }}>
               {upcoming.map(renderItem)}
             </div>
-            {futureHiddenCount > 0 && (
-              <a
-                href="/relatorios"
-                style={{
-                  display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                  padding: '10px 14px',
-                  borderTop: '1px solid var(--color-border)',
-                  textDecoration: 'none',
-                  background: 'rgba(255,255,255,0.02)',
-                  transition: 'background 150ms ease',
-                  cursor: 'pointer',
-                }}
-                onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.05)')}
-                onMouseLeave={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.02)')}
-              >
-                <span style={{ fontSize: 12, color: 'var(--color-text-tertiary)' }}>
-                  + {futureHiddenCount} agendado{futureHiddenCount === 1 ? '' : 's'} em meses futuros
-                </span>
-                <span style={{ fontSize: 11, color: 'var(--color-accent-blue-light)', fontWeight: 500 }}>Ver no Fluxo →</span>
-              </a>
-            )}
+            {futureHiddenCount > 0 && <FutureHint count={futureHiddenCount} borderTop />}
           </div>
         )}
       </div>
@@ -506,23 +533,7 @@ function ProximosDias({ onEntradaClick, onDespesaClick, onEntradaPendingClick, i
               background: 'var(--color-bg-secondary)',
             }}>
               {upcoming.map(renderItem)}
-              {futureHiddenCount > 0 && (
-                <a
-                  href="/relatorios"
-                  style={{
-                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                    padding: '12px 16px',
-                    borderTop: '1px solid var(--color-border)',
-                    textDecoration: 'none',
-                    background: 'rgba(255,255,255,0.02)',
-                  }}
-                >
-                  <span style={{ fontSize: 12, color: 'var(--color-text-tertiary)' }}>
-                    + {futureHiddenCount} agendado{futureHiddenCount === 1 ? '' : 's'} em meses futuros
-                  </span>
-                  <span style={{ fontSize: 11, color: 'var(--color-accent-blue-light)', fontWeight: 500 }}>Ver no Fluxo →</span>
-                </a>
-              )}
+              {futureHiddenCount > 0 && <FutureHint count={futureHiddenCount} borderTop />}
             </div>
           </motion.div>
         )}
@@ -988,11 +999,11 @@ function ProgressiveOnboardingBanner({ onLancar }: { onLancar: () => void }) {
           <div style={{ flex: 1 }}>
             <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-text-primary)', margin: '0 0 4px' }}>Agora imagine compartilhar tudo isso com alguém.</p>
             <p style={{ fontSize: 13, color: 'var(--color-text-secondary)', margin: '0 0 14px', lineHeight: 1.5 }}>Cada pessoa mantém sua individualidade, mas vocês podem construir juntos.</p>
-            <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-              <button onClick={handleShare} style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'rgba(139,92,246,0.15)', color: '#A78BFA', border: '1px solid rgba(139,92,246,0.25)', borderRadius: 10, padding: '8px 16px', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-sans)' }}>
+            <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'nowrap' }}>
+              <button onClick={handleShare} style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'rgba(139,92,246,0.15)', color: '#A78BFA', border: '1px solid rgba(139,92,246,0.25)', borderRadius: 10, padding: '8px 14px', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-sans)', whiteSpace: 'nowrap', flexShrink: 0 }}>
                 <Share2 size={14} />{copied ? 'Copiado!' : 'Convidar parceiro(a)'}
               </button>
-              <button onClick={() => { localStorage.setItem('somus:partner-later', '1'); setPartnerDismissed(true) }} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 13, color: 'var(--color-text-tertiary)', fontFamily: 'var(--font-sans)', padding: 0 }}>Talvez depois</button>
+              <button onClick={() => { localStorage.setItem('somus:partner-later', '1'); setPartnerDismissed(true) }} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 13, color: 'var(--color-text-tertiary)', fontFamily: 'var(--font-sans)', padding: 0, whiteSpace: 'nowrap', flexShrink: 0 }}>Talvez depois</button>
             </div>
           </div>
         </div>
