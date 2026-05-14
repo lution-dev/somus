@@ -1,4 +1,4 @@
-﻿import { useEffect } from 'react'
+import { useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import { AnimatePresence, motion } from 'framer-motion'
 import { Pencil, Trash2, X } from 'lucide-react'
@@ -59,7 +59,7 @@ export default function ItemActionSheet({ open, onClose, onEdit, onDelete, title
             style={{
               position: 'fixed', inset: 0, zIndex: 9000,
               background: 'rgba(0,0,0,0.5)',
-              backdropFilter: isMobile ? 'none' : 'blur(4px)',
+              backdropFilter: 'blur(4px)',
               touchAction: 'none',
               willChange: 'opacity',
             }}
@@ -75,19 +75,22 @@ export default function ItemActionSheet({ open, onClose, onEdit, onDelete, title
             style={{
               position: 'fixed',
               zIndex: 9001,
-              background: 'var(--color-bg-secondary)',
-              border: '1px solid var(--color-border)',
+              background: 'rgba(20, 20, 20, 0.7)',
+              backdropFilter: 'blur(28px) saturate(200%)',
+              WebkitBackdropFilter: 'blur(28px) saturate(200%)',
+              border: '1px solid rgba(255, 255, 255, 0.12)',
               ...(isMobile ? {
                 bottom: 0, left: 0, right: 0,
                 borderRadius: '28px 28px 0 0',
                 paddingBottom: 'calc(16px + env(safe-area-inset-bottom, 0px))',
+                boxShadow: '0 -8px 32px rgba(0,0,0,0.35)',
               } : {
                 top: '50%', left: '50%',
                 transform: 'translate(-50%, -50%)',
                 borderRadius: 16,
                 width: '100%',
                 maxWidth: 340,
-                boxShadow: '0 16px 48px rgba(0,0,0,0.4)',
+                boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.1), 0 16px 48px rgba(0,0,0,0.5)',
               }),
               willChange: 'transform, opacity',
             }}

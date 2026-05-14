@@ -229,16 +229,37 @@ function Sidebar() {
 
 
 // ─── Page Transition ────────────────────────────────────────────────────────
+// Profundidade da rota — abas = 0, detalhes = 1
+function getDepth(path: string): number {
+  if (path.startsWith('/casal/objetivo/')) return 1
+  if (path.startsWith('/relatorios/') && path !== '/relatorios') return 1
+  return 0
+}
+
 function PageTransition({ children }: { children: ReactNode }) {
   const [location] = useLocation()
+  const prevLocation = useRef(location)
+  const direction = useRef<'push' | 'pop' | 'tab'>('tab')
+
+  if (location !== prevLocation.current) {
+    const prevDepth = getDepth(prevLocation.current)
+    const nextDepth = getDepth(location)
+    direction.current = nextDepth > prevDepth ? 'push' : nextDepth < prevDepth ? 'pop' : 'tab'
+    prevLocation.current = location
+  }
+
+  const d = direction.current
+  const slideX = d === 'push' ? '18%' : d === 'pop' ? '-18%' : 0
+  const exitX  = d === 'push' ? '-10%' : d === 'pop' ? '10%' : 0
+
   return (
-    <AnimatePresence mode="wait" initial={false}>
+    <AnimatePresence mode="popLayout" initial={false}>
       <motion.div
         key={location}
-        initial={{ opacity: 0, y: 8 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: -4 }}
-        transition={{ duration: 0.22, ease: [0.4, 0, 0.2, 1] }}
+        initial={{ opacity: 0, x: slideX }}
+        animate={{ opacity: 1, x: 0 }}
+        exit={{ opacity: 0, x: exitX }}
+        transition={{ duration: d === 'tab' ? 0.15 : 0.25, ease: [0.32, 0.72, 0, 1] }}
         style={{ width: '100%' }}
       >
         {children}
