@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useEffect, useRef } from 'react'
-import { useLocation } from 'wouter'
+
 import { useNavStore } from '../stores/useNavStore'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAppStore, selectCurrentSaidasFixas, selectCurrentEntradas } from '../stores/useAppStore'
@@ -346,7 +346,7 @@ function EntradaItem({ e, isLast, onPress }: { e: Entrada; isLast: boolean; onPr
 // â”€â”€â”€ Fluxo Page â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export default function Fluxo() {
-  const [location] = useLocation()
+
   const [filterType, setFilterType] = useState<'all' | 'saidas' | 'entradas'>('all')
   const [lancarOpen, setLancarOpen] = useState(false)
   const [despesaModal, setDespesaModal] = useState<{ divisaoId: string; divisaoName: string } | null>(null)

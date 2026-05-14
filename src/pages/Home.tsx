@@ -588,7 +588,7 @@ function DivisoesSection({ balanceHidden = false }: { balanceHidden?: boolean })
   const others    = divisoes.filter(cx => cx.id !== 'cx-essencial')
 
   return (
-    <div style={{ marginTop: 20 }}>
+    <div style={{ marginTop: 12 }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
         <p className="section-label" style={{ marginBottom: 0, display: 'flex', alignItems: 'center', gap: 6 }}>
           <Wallet size={13} />
@@ -1172,10 +1172,8 @@ export default function Home() {
         />
       )}
 
-      {/* Progressive Onboarding */}
-      <div style={{ marginTop: 16 }}>
-        <ProgressiveOnboardingBanner onLancar={() => setLancarOpen(true)} />
-      </div>
+      {/* Progressive Onboarding — sem wrapper com margin fixo para nao criar espaco morto quando null */}
+      <ProgressiveOnboardingBanner onLancar={() => setLancarOpen(true)} />
 
       {/* Divisoes */}
       <DivisoesSection balanceHidden={balanceHidden} />
