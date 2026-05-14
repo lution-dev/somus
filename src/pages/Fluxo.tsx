@@ -1,4 +1,4 @@
-﻿import React, { useMemo, useState, useEffect, useRef } from 'react'
+import React, { useMemo, useState, useEffect, useRef } from 'react'
 import { useLocation } from 'wouter'
 import { useNavStore } from '../stores/useNavStore'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -408,7 +408,7 @@ export default function Fluxo() {
       // Scroll into view after the section expands (brief delay for animation)
       requestAnimationFrame(() => {
         setTimeout(() => {
-          futureRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+          futureRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
         }, 120)
       })
       return () => clearTimeout(t)
@@ -614,7 +614,7 @@ export default function Fluxo() {
                 </motion.div>
               )}
             </AnimatePresence>
-          </div>
+          </>
         )}
 
         {/* â”€â”€ Meses Futuros â”€â”€ */}
@@ -718,7 +718,7 @@ export default function Fluxo() {
                 </motion.div>
               )}
             </AnimatePresence>
-          </div>
+          </>
         )}
       </>
     )

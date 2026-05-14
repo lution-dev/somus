@@ -989,22 +989,23 @@ function ProgressiveOnboardingBanner({ onLancar }: { onLancar: () => void }) {
           <path d="M 0 50 Q 150 10 300 50" stroke="rgba(139,92,246,0.08)" strokeWidth="1" fill="none" />
           <path d="M 0 60 Q 150 20 300 60" stroke="rgba(59,130,246,0.06)" strokeWidth="1" fill="none" />
         </svg>
-        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14, position: 'relative' }}>
-          {/* Dual glow icons */}
-          <div style={{ position: 'relative', width: 44, height: 40, flexShrink: 0 }}>
-            <div style={{ position: 'absolute', top: 2, left: 0, width: 28, height: 28, borderRadius: '50%', background: 'radial-gradient(circle, rgba(59,130,246,0.4) 0%, transparent 70%)' }} />
-            <div style={{ position: 'absolute', top: 2, right: 0, width: 28, height: 28, borderRadius: '50%', background: 'radial-gradient(circle, rgba(139,92,246,0.4) 0%, transparent 70%)' }} />
-            <Users size={16} color="rgba(139,92,246,0.8)" style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }} />
-          </div>
-          <div style={{ flex: 1 }}>
-            <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-text-primary)', margin: '0 0 4px' }}>Agora imagine compartilhar tudo isso com alguém.</p>
-            <p style={{ fontSize: 13, color: 'var(--color-text-secondary)', margin: '0 0 14px', lineHeight: 1.5 }}>Cada pessoa mantém sua individualidade, mas vocês podem construir juntos.</p>
-            <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'nowrap' }}>
-              <button onClick={handleShare} style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'rgba(139,92,246,0.15)', color: '#A78BFA', border: '1px solid rgba(139,92,246,0.25)', borderRadius: 10, padding: '8px 14px', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-sans)', whiteSpace: 'nowrap', flexShrink: 0 }}>
-                <Share2 size={14} />{copied ? 'Copiado!' : 'Convidar parceiro(a)'}
-              </button>
-              <button onClick={() => { localStorage.setItem('somus:partner-later', '1'); setPartnerDismissed(true) }} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 13, color: 'var(--color-text-tertiary)', fontFamily: 'var(--font-sans)', padding: 0, whiteSpace: 'nowrap', flexShrink: 0 }}>Talvez depois</button>
-            </div>
+
+        {/* Icon decorativo — canto superior direito */}
+        <div style={{ position: 'absolute', top: 14, right: 14, width: 40, height: 36, pointerEvents: 'none' }}>
+          <div style={{ position: 'absolute', top: 0, left: 0, width: 26, height: 26, borderRadius: '50%', background: 'radial-gradient(circle, rgba(59,130,246,0.35) 0%, transparent 70%)' }} />
+          <div style={{ position: 'absolute', top: 0, right: 0, width: 26, height: 26, borderRadius: '50%', background: 'radial-gradient(circle, rgba(139,92,246,0.35) 0%, transparent 70%)' }} />
+          <Users size={15} color="rgba(139,92,246,0.65)" style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }} />
+        </div>
+
+        {/* Conteúdo — largura total, com recuo direito para não sobrepo o ícone */}
+        <div style={{ position: 'relative', paddingRight: 52 }}>
+          <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-text-primary)', margin: '0 0 4px' }}>Imagine construir isso com alguém.</p>
+          <p style={{ fontSize: 13, color: 'var(--color-text-secondary)', margin: '0 0 14px', lineHeight: 1.5 }}>Cada pessoa mantém sua individualidade, mas vocês podem construir juntos.</p>
+          <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'nowrap' }}>
+            <button onClick={handleShare} style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'rgba(139,92,246,0.15)', color: '#A78BFA', border: '1px solid rgba(139,92,246,0.25)', borderRadius: 10, padding: '8px 14px', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-sans)', whiteSpace: 'nowrap', flexShrink: 0 }}>
+              <Share2 size={14} />{copied ? 'Copiado!' : 'Convidar parceiro(a)'}
+            </button>
+            <button onClick={() => { localStorage.setItem('somus:partner-later', '1'); setPartnerDismissed(true) }} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 13, color: 'var(--color-text-tertiary)', fontFamily: 'var(--font-sans)', padding: 0, whiteSpace: 'nowrap', flexShrink: 0 }}>Talvez depois</button>
           </div>
         </div>
       </motion.div>
