@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useEffect, useRef } from 'react'
-
+import { useLocation } from 'wouter'
 import { useNavStore } from '../stores/useNavStore'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAppStore, selectCurrentSaidasFixas, selectCurrentEntradas } from '../stores/useAppStore'
@@ -31,10 +31,10 @@ type FluxoItem =
 
 const PAYMENT_LABELS: Record<string, string> = {
   pix: 'Pix',
-  debit: 'DÃ©bito',
-  credit: 'CrÃ©dito',
+  debit: 'Débito',
+  credit: 'Crédito',
   cash: 'Dinheiro',
-  auto_debit: 'DÃ©b. Auto',
+  auto_debit: 'Déb. Auto',
   boleto: 'Boleto',
 }
 
@@ -109,9 +109,9 @@ function FixaItem({ sf, isLast, onPress, yearMonth }: {
           }}>
             {sf.name}
           </span>
-          {hasOverride && <div style={{ width: 4, height: 4, borderRadius: '50%', background: 'var(--color-warning)' }} title="Valor editado este mÃªs" />}
+          {hasOverride && <div style={{ width: 4, height: 4, borderRadius: '50%', background: 'var(--color-warning)' }} title="Valor editado este mês" />}
           {sf.autoDebit && (
-            <div title="DÃ©bito AutomÃ¡tico" style={{ display: 'flex', alignItems: 'center', background: 'rgba(59,130,246,0.1)', padding: '2px 4px', borderRadius: 4 }}>
+            <div title="Débito AutomÃ¡tico" style={{ display: 'flex', alignItems: 'center', background: 'rgba(59,130,246,0.1)', padding: '2px 4px', borderRadius: 4 }}>
               <RefreshCw size={10} color="var(--color-accent-primary)" />
             </div>
           )}
@@ -130,12 +130,12 @@ function FixaItem({ sf, isLast, onPress, yearMonth }: {
               display: 'flex', alignItems: 'center', gap: 3
             }}>
               <AlertCircle size={10} />
-              {isOverdue ? (isPastMonth ? `Atrasado Â· ${new Date(yearMonth + '-01T12:00:00').toLocaleString('pt-BR', { month: 'long' })}` : 'Atrasado') : daysUntil === 0 ? 'Hoje' : `Em ${daysUntil}d`}
+              {isOverdue ? (isPastMonth ? `Atrasado · ${new Date(yearMonth + '-01T12:00:00').toLocaleString('pt-BR', { month: 'long' })}` : 'Atrasado') : daysUntil === 0 ? 'Hoje' : `Em ${daysUntil}d`}
             </span>
           )}
           {sf.paymentMethod && (
             <span style={{ fontSize: 11, color: 'var(--color-text-tertiary)' }}>
-              Â· {PAYMENT_LABELS[sf.paymentMethod] || sf.paymentMethod}
+              · {PAYMENT_LABELS[sf.paymentMethod] || sf.paymentMethod}
             </span>
           )}
         </div>
@@ -315,7 +315,7 @@ function EntradaItem({ e, isLast, onPress }: { e: Entrada; isLast: boolean; onPr
         <p style={{ fontSize: 12, color: isOverdueEntry ? 'var(--color-warning)' : 'var(--color-text-secondary)', margin: 0 }}>
           {isPending
             ? isOverdueEntry
-              ? 'NÃ£o recebido â€” '
+              ? 'Não recebido â€” '
               : 'Aguardando para '
             : ''}
           {new Date(e.date + 'T12:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })}
@@ -373,7 +373,7 @@ export default function Fluxo() {
   const [confirmSkipSf, setConfirmSkipSf] = useState<SaidaFixa | null>(null)
   const [confirmDeleteSf, setConfirmDeleteSf] = useState<SaidaFixa | null>(null)
   const [actionSv, setActionSv] = useState<SaidaVariavel | null>(null)
-  const [selectedSv, setSelectedSv] = useState<SaidaVariavel | null>(null)  // mantÃ©m referÃªncia durante edit/delete
+  const [selectedSv, setSelectedSv] = useState<SaidaVariavel | null>(null)  // mantém referÃªncia durante edit/delete
   const [editSvOpen, setEditSvOpen] = useState(false)
   const [confirmDeleteSv, setConfirmDeleteSv] = useState(false)
   const [confirmPaySv, setConfirmPaySv] = useState<SaidaVariavel | null>(null)
@@ -430,11 +430,11 @@ export default function Fluxo() {
   const deleteSaidaVariavel  = useAppStore(s => s.deleteSaidaVariavel)
   const deleteEntrada        = useAppStore(s => s.deleteEntrada)
 
-  // Realizadas: sÃ³ do mÃªs atual. Pendentes: qualquer mÃªs (entradas e despesas agendadas futuras)
+  // Realizadas: só do mês atual. Pendentes: qualquer mês (entradas e despesas agendadas futuras)
   const currentMonthEntradas     = useMemo(() => entradas.filter(e => e.date.startsWith(yearMonth) && e.status !== 'pending'), [entradas, yearMonth])
   const allPendingEntradas        = useMemo(() => entradas.filter(e => e.status === 'pending'), [entradas])
   const currentMonthVariaveis    = useMemo(() => saidasVariaveis.filter(sv => sv.date.startsWith(yearMonth)), [saidasVariaveis, yearMonth])
-  // SaÃ­das variÃ¡veis pendentes de meses futuros (nÃ£o estÃ£o no currentMonthVariaveis)
+  // Saídas variáveis pendentes de meses futuros (não estão no currentMonthVariaveis)
   const allPendingSaidasVariaveis = useMemo(() =>
     saidasVariaveis.filter(sv =>
       sv.status === 'pending' &&
@@ -449,30 +449,30 @@ export default function Fluxo() {
 
     if (filterType === 'all' || filterType === 'saidas') {
       saidasFixas.forEach(sf => {
-        // Pendentes: todos os meses nÃ£o pagos atÃ© o atual
+        // Pendentes: todos os meses não pagos atÃ© o atual
         const unpaidMonths = getUnpaidMonths(sf, yearMonth)
         unpaidMonths.forEach(m => items.push({ type: 'fixa', data: sf, instanceMonth: m }))
 
-        // Realizados: pago neste mÃªs
+        // Realizados: pago neste mês
         if (isPaidForMonth(sf, yearMonth)) {
           items.push({ type: 'fixa', data: sf, instanceMonth: yearMonth })
         }
       })
 
-      // Despesas variÃ¡veis manuais (exclui as geradas automaticamente por custos fixos)
+      // Despesas variáveis manuais (exclui as geradas automaticamente por custos fixos)
       currentMonthVariaveis.forEach(sv => {
         if (!sv.id.startsWith('sv-fixed-')) {
           items.push({ type: 'variavel', data: sv })
         }
       })
-      // SaÃ­das variÃ¡veis pendentes de meses futuros
+      // Saídas variáveis pendentes de meses futuros
       allPendingSaidasVariaveis.forEach(sv => items.push({ type: 'variavel', data: sv }))
     }
 
     if (filterType === 'all' || filterType === 'entradas') {
-      // Realizadas do mÃªs atual
+      // Realizadas do mês atual
       currentMonthEntradas.forEach(e => items.push({ type: 'entrada', data: e }))
-      // Pendentes de qualquer mÃªs (agendamentos futuros)
+      // Pendentes de qualquer mês (agendamentos futuros)
       allPendingEntradas.forEach(e => items.push({ type: 'entrada', data: e }))
     }
 
@@ -484,7 +484,7 @@ export default function Fluxo() {
       })
     }
 
-    // OrdenaÃ§Ã£o: pendentes primeiro; pagos por data desc (mais recente no topo)
+    // Ordenação: pendentes primeiro; pagos por data desc (mais recente no topo)
     items.sort((a, b) => {
       const aPaid = a.type === 'fixa' 
         ? isPaidForMonth(a.data, a.instanceMonth || yearMonth) 
@@ -501,13 +501,13 @@ export default function Fluxo() {
       const bDay = b.type === 'fixa' ? b.data.dueDay : parseInt(b.data.date.split('-')[2])
       
       if (aPaid && bPaid) return bDay - aDay  // pagos: mais recentes primeiro
-      return aDay - bDay                      // pendentes: mais prÃ³ximos primeiro
+      return aDay - bDay                      // pendentes: mais próximos primeiro
     })
 
     return items
   }, [saidasFixas, currentMonthVariaveis, allPendingSaidasVariaveis, currentMonthEntradas, allPendingEntradas, filterType, fluxoSearch, yearMonth])
 
-  // CÃ¡lculos de resumo
+  // Cálculos de resumo
   const nonSkippedFixas = saidasFixas.filter(sf => !sf.skippedMonths?.includes(yearMonth))
   const totalFixasPending = nonSkippedFixas.filter(sf => !isPaidForMonth(sf, yearMonth)).reduce((s, sf) => s + getEffectiveAmount(sf, yearMonth), 0)
   const totalFixasPaid = nonSkippedFixas.filter(sf => isPaidForMonth(sf, yearMonth)).reduce((s, sf) => s + getEffectiveAmount(sf, yearMonth), 0)
@@ -519,7 +519,7 @@ export default function Fluxo() {
   const currentMonthLabel = new Date().toLocaleString('pt-BR', { month: 'long', year: 'numeric' })
 
   const renderUnifiedList = () => {
-    if (unifiedList.length === 0) return <EmptyState icon={<Inbox size={24} />} label="Nenhum lanÃ§amento encontrado" desc="Tente mudar os filtros ou adicione novos lanÃ§amentos." />
+    if (unifiedList.length === 0) return <EmptyState icon={<Inbox size={24} />} label="Nenhum lançamento encontrado" desc="Tente mudar os filtros ou adicione novos lançamentos." />
 
     const pending  = unifiedList.filter(item => {
       if (item.type === 'fixa') return !isPaidForMonth(item.data, item.instanceMonth || yearMonth)
@@ -534,9 +534,9 @@ export default function Fluxo() {
       return true
     })
 
-    // FunÃ§Ã£o utilitÃ¡ria: verifica se um item pendente Ã© do mÃªs atual ou de um mÃªs futuro
+    // Função utilitária: verifica se um item pendente Ã© do mês atual ou de um mês futuro
     const isFutureMonth = (item: FluxoItem): boolean => {
-      if (item.type === 'fixa') return false // fixas sÃ£o sempre do contexto mensal atual
+      if (item.type === 'fixa') return false // fixas são sempre do contexto mensal atual
       const itemDate = (item.data as SaidaVariavel | Entrada).date
       return !itemDate.startsWith(yearMonth)
     }
@@ -544,7 +544,7 @@ export default function Fluxo() {
     const pendingThisMonth = pending.filter(i => !isFutureMonth(i))
     const pendingFuture    = pending.filter(i => isFutureMonth(i))
 
-    // Agrupar futuros por mÃªs
+    // Agrupar futuros por mês
     const futureByMonth = pendingFuture.reduce<Record<string, FluxoItem[]>>((acc, item) => {
       const itemDate = (item.data as SaidaVariavel | Entrada).date
       const ym = itemDate.slice(0, 7)
@@ -609,7 +609,7 @@ export default function Fluxo() {
                     }
                     return null
                   })}
-                  {/* Ghost link â€” aparece sÃ³ quando expandido, apÃ³s o Ãºltimo item */}
+                  {/* Ghost link â€” aparece só quando expandido, após o último item */}
                   <GhostLink href="/relatorios/cx-essencial?from=fluxo" />
                 </motion.div>
               )}
@@ -642,7 +642,7 @@ export default function Fluxo() {
                     const monthItems = futureByMonth[ym]
                     return (
                       <div key={ym}>
-                        {/* Sub-header do mÃªs */}
+                        {/* Sub-header do mês */}
                         <div style={{
                           padding: '8px 16px 4px',
                           display: 'flex', alignItems: 'center', gap: 6,
@@ -654,7 +654,7 @@ export default function Fluxo() {
                           }}>{monthLabel}</p>
                           <div style={{ flex: 1, height: 1, background: 'var(--color-border)', opacity: 0.5 }} />
                         </div>
-                        {/* Itens do mÃªs com opacidade reduzida */}
+                        {/* Itens do mês com opacidade reduzida */}
                         <div style={{ opacity: 0.75 }}>
                           {monthItems.map((item, i) => {
                             const isLast = i === monthItems.length - 1
@@ -683,7 +683,7 @@ export default function Fluxo() {
               count={realized.length}
               collapsed={realizedCollapsed}
               onClick={() => setRealizedCollapsed(v => !v)}
-            >LanÃ§amentos do mÃªs</SectionLabel>
+            >Lançamentos do mês</SectionLabel>
             <AnimatePresence initial={false}>
               {!realizedCollapsed && (
                 <motion.div
@@ -771,7 +771,7 @@ export default function Fluxo() {
             <h1 style={{ fontSize: 24, fontWeight: 700, color: 'var(--color-text-primary)', margin: 0 }}>Fluxo de Caixa</h1>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <Button variant="secondary" onClick={() => setDivisaoPicker(true)} style={{ color: 'var(--color-danger)', border: '1px solid rgba(239,68,68,0.2)' }}>
-                <ArrowDownLeft size={16} /> LanÃ§ar saÃ­da
+                <ArrowDownLeft size={16} /> Lançar saída
               </Button>
               <Button variant="primary" onClick={() => setLancarOpen(true)}>
                 <ArrowUpRight size={16} /> Registrar entrada
@@ -808,7 +808,7 @@ export default function Fluxo() {
             margin: 0,
             transition: 'color 200ms ease',
           }}>
-            {filterType === 'saidas' ? 'SaÃ­das' : filterType === 'entradas' ? 'Entradas' : 'LanÃ§amentos'}
+            {filterType === 'saidas' ? 'Saídas' : filterType === 'entradas' ? 'Entradas' : 'Lançamentos'}
           </p>
           <div style={{ display: 'flex', gap: 6 }}>
             <button
@@ -826,7 +826,7 @@ export default function Fluxo() {
               }}
             >
               <ArrowDownLeft size={11} strokeWidth={2.5} />
-              SaÃ­das
+              Saídas
             </button>
             <button
               onClick={() => setFilterType(f => f === 'entradas' ? 'all' : 'entradas')}
@@ -850,7 +850,7 @@ export default function Fluxo() {
 
         {/* Search */}
         <div style={{ marginBottom: 12 }}>
-          <SearchBar value={fluxoSearch} onChange={setFluxoSearch} placeholder="Buscar lanÃ§amentos..." />
+          <SearchBar value={fluxoSearch} onChange={setFluxoSearch} placeholder="Buscar lançamentos..." />
         </div>
 
         {/* List */}
@@ -868,7 +868,7 @@ export default function Fluxo() {
               {fabOpen && (
                 <>
                   <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <span style={{ fontSize: 12, fontWeight: 600, color: 'white', background: 'rgba(0,0,0,0.7)', padding: '5px 10px', borderRadius: 8 }}>LanÃ§ar saÃ­da</span>
+                    <span style={{ fontSize: 12, fontWeight: 600, color: 'white', background: 'rgba(0,0,0,0.7)', padding: '5px 10px', borderRadius: 8 }}>Lançar saída</span>
                     <button onClick={() => { setFabOpen(false); setDivisaoPicker(true) }} style={{ width: 46, height: 46, borderRadius: 14, background: 'var(--color-danger)', border: 'none', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}>
                       <ArrowDownLeft size={20} strokeWidth={2.5} />
                     </button>
@@ -890,7 +890,7 @@ export default function Fluxo() {
       )}
 
       {/* Modals */}
-      <Dialog open={divisaoPicker} onClose={() => setDivisaoPicker(false)} title="Qual divisÃ£o?" size="sm">
+      <Dialog open={divisaoPicker} onClose={() => setDivisaoPicker(false)} title="Qual divisão?" size="sm">
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           {divisoes.map(cx => {
             const { Icon, color } = getDivisaoIcon(cx.id)
@@ -902,7 +902,7 @@ export default function Fluxo() {
                 </div>
                 <div style={{ flex: 1 }}>
                   <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-text-primary)', margin: 0 }}>{cx.name}</p>
-                  <p style={{ fontSize: 12, color: 'var(--color-text-tertiary)', margin: 0 }}>{cx.percentage}% Â· {formatCurrency(cx.balance)}</p>
+                  <p style={{ fontSize: 12, color: 'var(--color-text-tertiary)', margin: 0 }}>{cx.percentage}% · {formatCurrency(cx.balance)}</p>
                 </div>
               </button>
             )
@@ -910,8 +910,8 @@ export default function Fluxo() {
         </div>
       </Dialog>
 
-      {/* Seletor de divisÃ£o para duplicar despesa */}
-      <Dialog open={dupeDivisaoPicker} onClose={() => { setDupeDivisaoPicker(false); setDespesaPrefill(null) }} title="Duplicar em qual divisÃ£o?" size="sm">
+      {/* Seletor de divisão para duplicar despesa */}
+      <Dialog open={dupeDivisaoPicker} onClose={() => { setDupeDivisaoPicker(false); setDespesaPrefill(null) }} title="Duplicar em qual divisão?" size="sm">
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           {divisoes.map(cx => {
             const { Icon, color } = getDivisaoIcon(cx.id)
@@ -926,7 +926,7 @@ export default function Fluxo() {
                 </div>
                 <div style={{ flex: 1 }}>
                   <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-text-primary)', margin: 0 }}>{cx.name}</p>
-                  <p style={{ fontSize: 12, color: 'var(--color-text-tertiary)', margin: 0 }}>{cx.percentage}% Â· {formatCurrency(cx.balance)}</p>
+                  <p style={{ fontSize: 12, color: 'var(--color-text-tertiary)', margin: 0 }}>{cx.percentage}% · {formatCurrency(cx.balance)}</p>
                 </div>
               </button>
             )
@@ -955,20 +955,20 @@ export default function Fluxo() {
         open={!!actionSf}
         onClose={() => setActionSf(null)}
         title={actionSf?.name ?? ''}
-        subtitle={actionSf ? formatCurrency(getEffectiveAmount(actionSf, yearMonth)) + ' Â· Dia ' + actionSf.dueDay : ''}
+        subtitle={actionSf ? formatCurrency(getEffectiveAmount(actionSf, yearMonth)) + ' · Dia ' + actionSf.dueDay : ''}
         actions={actionSf ? [
           ...(isPaidForMonth(actionSf, yearMonth)
             ? [{ label: 'Desmarcar pagamento', icon: XCircle, color: 'var(--color-warning)', onClick: () => { useAppStore.getState().markSaidaFixaUnpaid(actionSf.id, yearMonth) } }]
             : [
                 { label: 'Marcar como pago', icon: CheckCircle2, color: 'var(--color-success)', onClick: () => { setConfirmPaySf(actionSf) } },
-                { label: 'Pular este mÃªs', icon: XCircle, color: 'var(--color-warning)', onClick: () => { setConfirmSkipSf(actionSf); setActionSf(null) } }
+                { label: 'Pular este mês', icon: XCircle, color: 'var(--color-warning)', onClick: () => { setConfirmSkipSf(actionSf); setActionSf(null) } }
               ]
           ),
-          { label: 'Editar valor deste mÃªs', icon: TrendingUp, color: 'var(--color-accent-blue-light)', onClick: () => { setEditMonthlySf(actionSf); setActionSf(null) } },
+          { label: 'Editar valor deste mês', icon: TrendingUp, color: 'var(--color-accent-blue-light)', onClick: () => { setEditMonthlySf(actionSf); setActionSf(null) } },
           { label: 'Editar custo fixo base', icon: Pencil, color: 'var(--color-accent-primary)', onClick: () => { setEditSf(actionSf); setActionSf(null) } },
-          { label: 'Duplicar como variÃ¡vel', icon: Copy, color: 'var(--color-text-secondary)', onClick: () => {
+          { label: 'Duplicar como variável', icon: Copy, color: 'var(--color-text-secondary)', onClick: () => {
             const amount = getEffectiveAmount(actionSf, yearMonth)
-            // Fixa nÃ£o tem data completa, usar o dia de vencimento no mÃªs atual
+            // Fixa não tem data completa, usar o dia de vencimento no mês atual
             const today = new Date()
             const dueDateStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(actionSf.dueDay).padStart(2, '0')}`
             setDespesaPrefill({ description: actionSf.name, amount, date: dueDateStr })
@@ -1009,9 +1009,9 @@ export default function Fluxo() {
         open={!!confirmSkipSf}
         onClose={() => setConfirmSkipSf(null)}
         onConfirm={() => { if (confirmSkipSf) skipMonthly(confirmSkipSf.id, yearMonth) }}
-        title="Pular este mÃªs?"
-        description={`O custo "${confirmSkipSf?.name}" nÃ£o serÃ¡ cobrado este mÃªs, mas continuarÃ¡ aparecendo nos prÃ³ximos.`}
-        confirmLabel="Pular mÃªs"
+        title="Pular este mês?"
+        description={`O custo "${confirmSkipSf?.name}" não será cobrado este mês, mas continuará aparecendo nos próximos.`}
+        confirmLabel="Pular mês"
         variant="warning"
       />
 
@@ -1020,27 +1020,27 @@ export default function Fluxo() {
         onClose={() => setConfirmDeleteSf(null)}
         onConfirm={() => { if (confirmDeleteSf) deleteSaidaFixa(confirmDeleteSf.id) }}
         title="Excluir permanentemente?"
-        description={`Isso removerÃ¡ o custo "${confirmDeleteSf?.name}" de TODOS os meses passados e futuros. Esta aÃ§Ã£o nÃ£o pode ser desfeita.`}
+        description={`Isso removerá o custo "${confirmDeleteSf?.name}" de TODOS os meses passados e futuros. Esta ação não pode ser desfeita.`}
         confirmLabel="Excluir custo"
         variant="danger"
       />
 
-      {/* â”€â”€ VariÃ¡vel: Action Sheet â”€â”€ */}
+      {/* â”€â”€ Variável: Action Sheet â”€â”€ */}
       <ItemActionSheet
         open={!!actionSv}
         onClose={() => setActionSv(null)}
         title={actionSv?.description ?? ''}
-        subtitle={actionSv ? `-${formatCurrency(actionSv.amount)} Â· ${new Date(actionSv.date + 'T12:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })}` : ''}
+        subtitle={actionSv ? `-${formatCurrency(actionSv.amount)} · ${new Date(actionSv.date + 'T12:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })}` : ''}
         actions={actionSv ? [
           ...(actionSv.status === 'pending' ? [
             { label: 'Confirmar pagamento', icon: CheckCircle2, color: 'var(--color-success)', onClick: () => { setConfirmPaySv(actionSv); setActionSv(null) } }
           ] : []),
-          { label: 'Editar lanÃ§amento', icon: Pencil, color: 'var(--color-accent-primary)', onClick: () => {
+          { label: 'Editar lançamento', icon: Pencil, color: 'var(--color-accent-primary)', onClick: () => {
             setSelectedSv(actionSv)
             setEditSvOpen(true)
             setActionSv(null)
           }},
-          { label: 'Duplicar lanÃ§amento', icon: Copy, color: 'var(--color-text-secondary)', onClick: () => {
+          { label: 'Duplicar lançamento', icon: Copy, color: 'var(--color-text-secondary)', onClick: () => {
             setDespesaPrefill({
               description: actionSv.description,
               amount: actionSv.amount,
@@ -1051,7 +1051,7 @@ export default function Fluxo() {
             setDupeDivisaoPicker(true)
             setActionSv(null)
           }},
-          { label: 'Excluir lanÃ§amento', icon: Trash2, color: 'var(--color-danger)', onClick: () => {
+          { label: 'Excluir lançamento', icon: Trash2, color: 'var(--color-danger)', onClick: () => {
             setSelectedSv(actionSv)
             setConfirmDeleteSv(true)
             setActionSv(null)
@@ -1076,10 +1076,10 @@ export default function Fluxo() {
         open={confirmDeleteSv}
         onClose={() => setConfirmDeleteSv(false)}
         onConfirm={() => { if (selectedSv) { deleteSaidaVariavel(selectedSv.id); setSelectedSv(null) } }}
-        title="Excluir lanÃ§amento?"
+        title="Excluir lançamento?"
         description={selectedSv?.status === 'pending' 
-          ? `Isso removerÃ¡ o agendamento "${selectedSv?.description}".`
-          : `Isso removerÃ¡ "${selectedSv?.description}" e estornarÃ¡ R$\u00a0${selectedSv ? selectedSv.amount.toFixed(2).replace('.', ',') : ''} no saldo da divisÃ£o.`
+          ? `Isso removerá o agendamento "${selectedSv?.description}".`
+          : `Isso removerá "${selectedSv?.description}" e estornará R$\u00a0${selectedSv ? selectedSv.amount.toFixed(2).replace('.', ',') : ''} no saldo da divisão.`
         }
         confirmLabel="Excluir"
         variant="danger"
@@ -1090,7 +1090,7 @@ export default function Fluxo() {
         open={!!actionEntrada}
         onClose={() => setActionEntrada(null)}
         title={actionEntrada?.sourceName ?? ''}
-        subtitle={actionEntrada ? `+${formatCurrency(actionEntrada.amount)} Â· ${new Date(actionEntrada.date + 'T12:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })}` : ''}
+        subtitle={actionEntrada ? `+${formatCurrency(actionEntrada.amount)} · ${new Date(actionEntrada.date + 'T12:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })}` : ''}
         actions={actionEntrada ? [
           ...(actionEntrada.status === 'pending' ? [
             { label: 'Confirmar recebimento', icon: CheckCircle2, color: 'var(--color-success)', onClick: () => { setConfirmPayEntrada(actionEntrada); setActionEntrada(null) } }
@@ -1129,8 +1129,8 @@ export default function Fluxo() {
         onConfirm={() => { if (selectedEntrada) { deleteEntrada(selectedEntrada.id); setSelectedEntrada(null) } }}
         title="Excluir entrada?"
         description={selectedEntrada?.status === 'pending'
-          ? `Isso removerÃ¡ o agendamento de recebimento "${selectedEntrada?.sourceName}".`
-          : `Isso removerÃ¡ "${selectedEntrada?.sourceName}" e estornarÃ¡ +R$\u00a0${selectedEntrada ? selectedEntrada.amount.toFixed(2).replace('.', ',') : ''} das divisÃµes.`
+          ? `Isso removerá o agendamento de recebimento "${selectedEntrada?.sourceName}".`
+          : `Isso removerá "${selectedEntrada?.sourceName}" e estornará +R$\u00a0${selectedEntrada ? selectedEntrada.amount.toFixed(2).replace('.', ',') : ''} das divisões.`
         }
         confirmLabel="Excluir"
         variant="danger"
@@ -1182,7 +1182,7 @@ function StatusBadge({ status }: { status: PendingStatus }) {
   if (status.kind === 'upcoming') return (
     <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 8,
       background: 'rgba(59,130,246,0.12)', color: 'var(--color-accent-primary)' }}>
-      {status.count} {status.count === 1 ? 'prÃ³ximo' : 'prÃ³ximos'}
+      {status.count} {status.count === 1 ? 'próximo' : 'próximos'}
     </span>
   )
   if (status.kind === 'pending') return (
