@@ -1,10 +1,10 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react'
 import { useParams, useLocation } from 'wouter'
-import { useAppStore, selectCurrentSaidasFixas, selectCurrentEntradas } from '../stores/useAppStore'
+import { useAppStore, selectCurrentSaidasFixas } from '../stores/useAppStore'
 import { useShallow } from 'zustand/react/shallow'
 import { formatCurrency, isPaidThisMonth, getDueDayLabel } from '../lib/calculations'
 import { getDivisaoIcon } from '../lib/icons'
-import { ProgressBar, PageHeader, SearchBar, groupByMonth, MonthHeader, ConfirmDialog, Breadcrumb } from '../components/ui'
+import { PageHeader, SearchBar, groupByMonth, MonthHeader, ConfirmDialog, Breadcrumb } from '../components/ui'
 import ItemActionSheet from '../components/ui/ItemActionSheet'
 import { useIsMobile } from '../hooks/useIsMobile'
 import { Plus, Pencil, Trash2, Target, ArrowUpRight, ArrowDownRight, XCircle, CheckCircle2, Info } from 'lucide-react'
@@ -16,8 +16,6 @@ import AddSaidaFixaModal from '../components/features/AddSaidaFixaModal'
 import AddObjetivoModal from '../components/features/AddObjetivoModal'
 import ConfirmPaymentModal from '../components/features/ConfirmPaymentModal'
 import type { DivisaoMovement, SaidaFixa, Objetivo } from '../types'
-
-const HERO_BG = '#001442'
 
 /** Convert hex color + alpha (0-1) to rgba string */
 function hexToRgba(hex: string, alpha: number): string {
@@ -253,7 +251,6 @@ export default function DivisaoDetalhe() {
 
   const divisao = useAppStore(s => s.divisoes.find(cx => cx.id === id))
   const saidasFixas = useAppStore(useShallow(selectCurrentSaidasFixas))
-  const entradas = useAppStore(useShallow(selectCurrentEntradas))
   const objetivos = useAppStore(useShallow(s => s.objetivos))
   const currentUser = useAppStore(s => s.currentUser)
   const editDivisaoMovement = useAppStore(s => s.editDivisaoMovement)

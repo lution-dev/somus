@@ -74,12 +74,14 @@ export default function ObjetivoDetalhe() {
   function showToast(msg: string) { setToast(msg) }
 
   function handleUsar(amount: number, description: string, date: string) {
+    if (!objetivo) return
     addObjetivoMovement(objetivo.id, { date, amount, description, type: 'withdraw' })
     editObjetivo(objetivo.id, { status: 'em_realizacao' })
     showToast('Utilização registrada ✨')
   }
 
   function handleRedistribuir(items: { objetivoId: string; objetivoName: string; amount: number }[]) {
+    if (!objetivo) return
     const total = items.reduce((s, i) => s + i.amount, 0)
     const today = new Date().toISOString().slice(0, 10)
     // Withdraw from origin

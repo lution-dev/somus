@@ -43,7 +43,7 @@ export default function Casal() {
         const data = snap.data()
         const avatar = data?.currentUser?.avatar ?? data?.currentUser?.photoURL ?? null
         if (avatar) {
-          setPartner({ ...partner, avatar })
+          setPartner({ id: partner.id, name: partner.name, partnerCode: partner.partnerCode ?? '', avatar })
         }
       } catch (err) {
         console.warn('[Somus] Could not fetch partner avatar:', err)
