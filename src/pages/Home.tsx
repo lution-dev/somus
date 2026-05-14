@@ -238,23 +238,15 @@ function ProximosDias({ onEntradaClick, onDespesaClick, onEntradaPendingClick, i
     const allItems = [...despesas, ...variables, ...entradas, ...entradasPendentes]
       .sort((a, b) => a.days - b.days)
 
-    const futureItems  = allItems.filter(i => {
-      // Items where days > current month boundary — roughly > 31 days OR the date is in a future yearMonth
-      // We detect "future month" by checking if it's not in this month's window
-      // despesas fixas: dueDay-based, treat as current month
-      // variables/entradas: have actual full date via getDaysUntilDate
-      return i.days > 31
-    })
+    // Count ALL items in future months (days > 31), visible or not
+    const futureCount = allItems.filter(i => i.days > 31).length
+    const top10 = allItems.slice(0, 10)
 
-    const top10      = allItems.slice(0, 10)
-    const shownIds   = new Set(top10.map(i => i.id))
-    const futureHiddenCount = futureItems.filter(i => !shownIds.has(i.id)).length
-
-    return { items: top10, futureHiddenCount }
+    return { items: top10, futureCount }
   }, [saidasFixas, saidasVariaveis, incomeSources, entradasAll])
 
   const upcoming = result.items
-  const futureHiddenCount = result.futureHiddenCount
+  const futureHiddenCount = result.futureCount
 
   // Status counts for mobile header badges
   const overdueCount  = upcoming.filter(i => i.days < 0 && (i.type === 'despesa' || i.type === 'entrada-pending')).length
