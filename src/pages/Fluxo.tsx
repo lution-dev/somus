@@ -34,7 +34,7 @@ const PAYMENT_LABELS: Record<string, string> = {
   debit: 'Débito',
   credit: 'Crédito',
   cash: 'Dinheiro',
-  auto_debit: 'Déb. Auto',
+  auto_debit: 'Débito Automático',
   boleto: 'Boleto',
 }
 
@@ -119,8 +119,8 @@ function FixaItem({ sf, isLast, onPress, yearMonth }: {
         </div>
         
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6, minWidth: 0, overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>
-            <span style={{ fontSize: 12, color: 'var(--color-text-secondary)', flexShrink: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+            <span style={{ fontSize: 12, color: 'var(--color-text-secondary)' }}>
               {paid ? 'Pago' : getDueDayLabel(sf.dueDay)}
             </span>
             {!paid && (isUrgent || isOverdue) && (
@@ -129,14 +129,14 @@ function FixaItem({ sf, isLast, onPress, yearMonth }: {
                 padding: '1px 6px', borderRadius: 4,
                 background: isOverdue ? 'rgba(239,68,68,0.15)' : 'rgba(245,158,11,0.15)',
                 color: isOverdue ? 'var(--color-danger)' : 'var(--color-warning)',
-                display: 'flex', alignItems: 'center', gap: 3, flexShrink: 0
+                display: 'flex', alignItems: 'center', gap: 3
               }}>
                 <AlertCircle size={10} />
                 {isOverdue ? (isPastMonth ? `Atrasado` : 'Atrasado') : daysUntil === 0 ? 'Hoje' : `Em ${daysUntil}d`}
               </span>
             )}
             {sf.paymentMethod && (
-              <span style={{ fontSize: 11, color: 'var(--color-text-tertiary)', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              <span style={{ fontSize: 11, color: 'var(--color-text-tertiary)' }}>
                 · {PAYMENT_LABELS[sf.paymentMethod] || sf.paymentMethod}
               </span>
             )}
@@ -144,7 +144,7 @@ function FixaItem({ sf, isLast, onPress, yearMonth }: {
               <span style={{
                 fontSize: 10, fontWeight: 600, color: divisao.color,
                 background: `${divisao.color}15`, padding: '1px 6px', borderRadius: 4,
-                display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0
+                display: 'flex', alignItems: 'center', gap: 4
               }}>
                 {divisao.name}
               </span>
@@ -255,13 +255,13 @@ function VariavelItem({ sv, isLast, onPress }: { sv: SaidaVariavel; isLast: bool
           overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap'
         }}>{sv.description}</p>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6, minWidth: 0, overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>
-            <span style={{ fontSize: 12, color: 'var(--color-text-secondary)', flexShrink: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+            <span style={{ fontSize: 12, color: 'var(--color-text-secondary)' }}>
               {isPending ? 'Agendado para ' : ''}
-              {new Date(sv.date + 'T12:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })}
+              {new Date(sv.date + 'T12:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: 'long' })}
             </span>
             {sv.paymentMethod && (
-              <span style={{ fontSize: 11, color: 'var(--color-text-tertiary)', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              <span style={{ fontSize: 11, color: 'var(--color-text-tertiary)' }}>
                 · {PAYMENT_LABELS[sv.paymentMethod] || sv.paymentMethod}
               </span>
             )}
@@ -269,7 +269,7 @@ function VariavelItem({ sv, isLast, onPress }: { sv: SaidaVariavel; isLast: bool
               <span style={{
                 fontSize: 10, fontWeight: 600, color: divisao.color,
                 background: `${divisao.color}15`, padding: '1px 6px', borderRadius: 4,
-                display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0
+                display: 'flex', alignItems: 'center', gap: 4
               }}>
                 {divisao.name}
               </span>
@@ -305,12 +305,12 @@ function VariavelItem({ sv, isLast, onPress }: { sv: SaidaVariavel; isLast: bool
   )
 }
 
-
 function EntradaItem({ e, isLast, onPress }: { e: Entrada; isLast: boolean; onPress: (e: Entrada) => void }) {
   const isPending = e.status === 'pending'
   const isOverdueEntry = isPending && e.date < new Date().toISOString().slice(0, 10)
-  const divName = e.distribution?.length === 1 ? e.distribution[0].divisaoName : e.distribution?.length > 1 ? 'Múltiplas' : null
-  
+  const divName = e.distribution?.length === 1 ? e.distribution[0].divisaoName : 'Entrada'
+  const divisao = useAppStore(s => s.divisoes.find(d => d.name === divName))
+  const badgeColor = divisao ? divisao.color : 'var(--color-success)'
 
   return (
     <motion.div
@@ -349,24 +349,22 @@ function EntradaItem({ e, isLast, onPress }: { e: Entrada; isLast: boolean; onPr
           overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap'
         }}>{e.sourceName}</p>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6, minWidth: 0, overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>
-            <span style={{ fontSize: 12, color: isOverdueEntry ? 'var(--color-warning)' : 'var(--color-text-secondary)', flexShrink: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+            <span style={{ fontSize: 12, color: isOverdueEntry ? 'var(--color-warning)' : 'var(--color-text-secondary)' }}>
               {isPending
                 ? isOverdueEntry
                   ? 'Não recebido — '
                   : 'Aguardando para '
                 : ''}
-              {new Date(e.date + 'T12:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })}
+              {new Date(e.date + 'T12:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: 'long' })}
             </span>
-            {divName && (
-              <span style={{
-                fontSize: 10, fontWeight: 600, color: 'var(--color-success)',
-                background: `rgba(16, 185, 129, 0.1)`, padding: '1px 6px', borderRadius: 4,
-                display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0
-              }}>
-                {divName}
-              </span>
-            )}
+            <span style={{
+              fontSize: 10, fontWeight: 600, color: badgeColor,
+              background: divisao ? `${badgeColor}15` : 'rgba(16, 185, 129, 0.1)', padding: '1px 6px', borderRadius: 4,
+              display: 'flex', alignItems: 'center', gap: 4
+            }}>
+              {divName}
+            </span>
           </div>
           <span style={{
             fontSize: 14, fontWeight: 700, flexShrink: 0,
