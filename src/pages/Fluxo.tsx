@@ -101,11 +101,12 @@ function FixaItem({ sf, isLast, onPress, yearMonth }: {
       </div>
 
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
+        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 6, marginBottom: 2 }}>
           <span style={{
             fontSize: 14, fontWeight: 600, color: 'var(--color-text-primary)',
-            overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+            display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden',
             textDecoration: paid ? 'line-through' : 'none',
+            lineHeight: 1.3
           }}>
             {sf.name}
           </span>
@@ -242,27 +243,18 @@ function VariavelItem({ sv, isLast, onPress }: { sv: SaidaVariavel; isLast: bool
         <p style={{ 
           fontSize: 14, fontWeight: 600, color: 'var(--color-text-primary)', margin: '0 0 2px',
           textDecoration: !isPending ? 'line-through' : 'none',
-          overflow: 'hidden', textOverflow: 'ellipsis',
-          ...(isMobile ? {} : { whiteSpace: 'nowrap' as const }),
+          display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden',
+          lineHeight: 1.3
         }}>{sv.description}</p>
-        <p style={{ fontSize: 12, color: 'var(--color-text-secondary)', margin: 0, display: 'flex', alignItems: 'baseline', gap: 6, flexWrap: 'wrap' }}>
-          <span>
-            {isPending ? 'Agendado para ' : ''}
-            {new Date(sv.date + 'T12:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })}
-          </span>
-          {isMobile && (
-            <span style={{ fontSize: 13, fontWeight: 700, color: isPending ? 'var(--color-text-primary)' : 'var(--color-danger)' }}>
-              -{formatCurrency(sv.amount)}
-            </span>
-          )}
+        <p style={{ fontSize: 12, color: 'var(--color-text-secondary)', margin: 0 }}>
+          {isPending ? 'Agendado para ' : ''}
+          {new Date(sv.date + 'T12:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })}
         </p>
       </div>
       <div style={{ textAlign: 'right', display: 'flex', alignItems: 'center', gap: 12 }}>
-        {!isMobile && (
-          <span style={{ fontSize: 15, fontWeight: 700, color: isPending ? 'var(--color-text-primary)' : 'var(--color-danger)', flexShrink: 0 }}>
-            -{formatCurrency(sv.amount)}
-          </span>
-        )}
+        <span style={{ fontSize: 15, fontWeight: 700, color: isPending ? 'var(--color-text-primary)' : 'var(--color-danger)', flexShrink: 0 }}>
+          -{formatCurrency(sv.amount)}
+        </span>
         
         {isPending && (
           isMobile ? (
@@ -323,7 +315,11 @@ function EntradaItem({ e, isLast, onPress }: { e: Entrada; isLast: boolean; onPr
         }
       </div>
       <div style={{ flex: 1, minWidth: 0 }}>
-        <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-text-primary)', margin: '0 0 2px' }}>{e.sourceName}</p>
+        <p style={{ 
+          fontSize: 14, fontWeight: 600, color: 'var(--color-text-primary)', margin: '0 0 2px',
+          display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden',
+          lineHeight: 1.3
+        }}>{e.sourceName}</p>
         <p style={{ fontSize: 12, color: isOverdueEntry ? 'var(--color-warning)' : 'var(--color-text-secondary)', margin: 0 }}>
           {isPending
             ? isOverdueEntry
