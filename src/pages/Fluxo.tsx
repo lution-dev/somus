@@ -51,6 +51,7 @@ function FixaItem({ sf, isLast, onPress, yearMonth }: {
   const isOverdue  = !paid && (isPastMonth || daysUntil < 0)
   const [dateDialogOpen, setDateDialogOpen] = useState(false)
   const isMobile = useIsMobile()
+  const divisao = useAppStore(s => s.divisoes.find(d => d.id === sf.divisaoId))
   
   const effectiveAmount = getEffectiveAmount(sf, yearMonth)
   const hasOverride = sf.monthlyAmountOverrides?.[yearMonth] !== undefined
@@ -139,6 +140,15 @@ function FixaItem({ sf, isLast, onPress, yearMonth }: {
                 · {PAYMENT_LABELS[sf.paymentMethod] || sf.paymentMethod}
               </span>
             )}
+            {divisao && (
+              <span style={{
+                fontSize: 10, fontWeight: 600, color: divisao.color,
+                background: `${divisao.color}15`, padding: '1px 6px', borderRadius: 4,
+                display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0
+              }}>
+                {divisao.name}
+              </span>
+            )}
           </div>
           <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--color-text-primary)', flexShrink: 0 }}>
             {formatCurrency(effectiveAmount)}
@@ -215,6 +225,7 @@ function FixaItem({ sf, isLast, onPress, yearMonth }: {
 function VariavelItem({ sv, isLast, onPress }: { sv: SaidaVariavel; isLast: boolean; onPress: (sv: SaidaVariavel) => void }) {
   const isPending = sv.status === 'pending'
   const isMobile = useIsMobile()
+  const divisao = useAppStore(s => s.divisoes.find(d => d.id === sv.divisaoId))
 
   return (
     <motion.div
@@ -244,10 +255,26 @@ function VariavelItem({ sv, isLast, onPress }: { sv: SaidaVariavel; isLast: bool
           overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap'
         }}>{sv.description}</p>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6 }}>
-          <p style={{ fontSize: 12, color: 'var(--color-text-secondary)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-            {isPending ? 'Agendado para ' : ''}
-            {new Date(sv.date + 'T12:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })}
-          </p>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, minWidth: 0, overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>
+            <span style={{ fontSize: 12, color: 'var(--color-text-secondary)', flexShrink: 0 }}>
+              {isPending ? 'Agendado para ' : ''}
+              {new Date(sv.date + 'T12:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })}
+            </span>
+            {sv.paymentMethod && (
+              <span style={{ fontSize: 11, color: 'var(--color-text-tertiary)', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                · {PAYMENT_LABELS[sv.paymentMethod] || sv.paymentMethod}
+              </span>
+            )}
+            {divisao && (
+              <span style={{
+                fontSize: 10, fontWeight: 600, color: divisao.color,
+                background: `${divisao.color}15`, padding: '1px 6px', borderRadius: 4,
+                display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0
+              }}>
+                {divisao.name}
+              </span>
+            )}
+          </div>
           <span style={{ fontSize: 14, fontWeight: 700, color: isPending ? 'var(--color-text-primary)' : 'var(--color-danger)', flexShrink: 0 }}>
             -{formatCurrency(sv.amount)}
           </span>
@@ -281,7 +308,10 @@ function VariavelItem({ sv, isLast, onPress }: { sv: SaidaVariavel; isLast: bool
 
 function EntradaItem({ e, isLast, onPress }: { e: Entrada; isLast: boolean; onPress: (e: Entrada) => void }) {
   const isPending = e.status === 'pending'
-  const isOverdueEntry = isPending && getDaysUntilDate(e.date) < 0
+  const isOverdueEntry = isPending && e.date < new Date().toISOString().slice(0, 10)
+  const divName = e.distribution?.length === 1 ? e.distribution[0].divisaoName : e.distribution?.length > 1 ? 'Múltiplas' : null
+  const divisao = useAppStore(s => s.divisoes.find(d => d.name === divName))
+  
   return (
     <motion.div
       initial={{ opacity: 0, x: -10 }}
@@ -319,14 +349,25 @@ function EntradaItem({ e, isLast, onPress }: { e: Entrada; isLast: boolean; onPr
           overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap'
         }}>{e.sourceName}</p>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6 }}>
-          <p style={{ fontSize: 12, color: isOverdueEntry ? 'var(--color-warning)' : 'var(--color-text-secondary)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-            {isPending
-              ? isOverdueEntry
-                ? 'Não recebido — '
-                : 'Aguardando para '
-              : ''}
-            {new Date(e.date + 'T12:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })}
-          </p>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, minWidth: 0, overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>
+            <span style={{ fontSize: 12, color: isOverdueEntry ? 'var(--color-warning)' : 'var(--color-text-secondary)', flexShrink: 0 }}>
+              {isPending
+                ? isOverdueEntry
+                  ? 'Não recebido — '
+                  : 'Aguardando para '
+                : ''}
+              {new Date(e.date + 'T12:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })}
+            </span>
+            {divName && (
+              <span style={{
+                fontSize: 10, fontWeight: 600, color: 'var(--color-success)',
+                background: `rgba(16, 185, 129, 0.1)`, padding: '1px 6px', borderRadius: 4,
+                display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0
+              }}>
+                {divName}
+              </span>
+            )}
+          </div>
           <span style={{
             fontSize: 14, fontWeight: 700, flexShrink: 0,
             color: isOverdueEntry ? 'var(--color-warning)' : 'var(--color-success)',
