@@ -1,0 +1,21 @@
+# ┌──────────────────────────────────────────────────────────┐
+# │  PRE-PUSH — Somus                                       │
+# │  Bloqueia push para branch 'master'.                     │
+# │  Produção usa APENAS 'main'.                             │
+# └──────────────────────────────────────────────────────────┘
+
+while read local_ref local_sha remote_ref remote_sha
+do
+  if echo "$remote_ref" | grep -q "refs/heads/master"; then
+    echo ""
+    echo "══════════════════════════════════════════════════════"
+    echo "  ❌ PUSH TO 'master' BLOCKED!"
+    echo "  This project uses 'main' as the production branch."
+    echo "  Use: git push origin main"
+    echo "══════════════════════════════════════════════════════"
+    echo ""
+    exit 1
+  fi
+done
+
+exit 0

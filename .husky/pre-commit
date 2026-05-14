@@ -1,1 +1,20 @@
-npm test
+# ┌──────────────────────────────────────────────────────────┐
+# │  PRE-COMMIT — Somus                                     │
+# │  Bloqueia commits com erros de TypeScript.               │
+# │  Compartilhado via Husky — roda em TODA máquina.         │
+# └──────────────────────────────────────────────────────────┘
+
+echo "🔍 Verificando TypeScript..."
+
+npx tsc --noEmit 2>&1
+TSC_EXIT=$?
+
+if [ $TSC_EXIT -ne 0 ]; then
+  echo ""
+  echo "❌ COMMIT BLOQUEADO: TypeScript encontrou erros."
+  echo "   Corrija os erros acima antes de commitar."
+  echo ""
+  exit 1
+fi
+
+echo "✅ TypeScript OK"
