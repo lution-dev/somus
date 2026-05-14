@@ -456,8 +456,8 @@ function ProximosDias({ onEntradaClick, onDespesaClick, onEntradaPendingClick, i
       <span className="section-label" style={{ marginBottom: 0, flex: 1, textAlign: 'left' }}>
         O que vem por aí
       </span>
-      {/* Status badges — shown when collapsed and there are items */}
-      {collapsed && upcoming.length > 0 && (
+      {/* Status badges — shown when collapsed */}
+      {collapsed && (upcoming.length > 0 || futureHiddenCount > 0) && (
         <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginRight: 4 }}>
           {overdueCount > 0 && (
             <span style={{
@@ -475,6 +475,16 @@ function ProximosDias({ onEntradaClick, onDespesaClick, onEntradaPendingClick, i
               padding: '2px 7px', borderRadius: 8,
             }}>
               {pendingCount} pendente{pendingCount === 1 ? '' : 's'}
+            </span>
+          )}
+          {futureHiddenCount > 0 && (
+            <span style={{
+              fontSize: 10, fontWeight: 600,
+              background: 'rgba(100,116,139,0.12)', color: 'var(--color-text-tertiary)',
+              padding: '2px 7px', borderRadius: 8,
+              opacity: 0.85,
+            }}>
+              +{futureHiddenCount} próximo{futureHiddenCount === 1 ? '' : 's'}
             </span>
           )}
         </div>
