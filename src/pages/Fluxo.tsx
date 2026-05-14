@@ -111,7 +111,7 @@ function FixaItem({ sf, isLast, onPress, yearMonth }: {
           </span>
           {hasOverride && <div style={{ width: 4, height: 4, borderRadius: '50%', background: 'var(--color-warning)' }} title="Valor editado este mês" />}
           {sf.autoDebit && (
-            <div title="Débito AutomÃ¡tico" style={{ display: 'flex', alignItems: 'center', background: 'rgba(59,130,246,0.1)', padding: '2px 4px', borderRadius: 4 }}>
+            <div title="Débito Automático" style={{ display: 'flex', alignItems: 'center', background: 'rgba(59,130,246,0.1)', padding: '2px 4px', borderRadius: 4 }}>
               <RefreshCw size={10} color="var(--color-accent-primary)" />
             </div>
           )}
@@ -373,7 +373,7 @@ export default function Fluxo() {
   const [confirmSkipSf, setConfirmSkipSf] = useState<SaidaFixa | null>(null)
   const [confirmDeleteSf, setConfirmDeleteSf] = useState<SaidaFixa | null>(null)
   const [actionSv, setActionSv] = useState<SaidaVariavel | null>(null)
-  const [selectedSv, setSelectedSv] = useState<SaidaVariavel | null>(null)  // mantém referÃªncia durante edit/delete
+  const [selectedSv, setSelectedSv] = useState<SaidaVariavel | null>(null)  // mantém referência durante edit/delete
   const [editSvOpen, setEditSvOpen] = useState(false)
   const [confirmDeleteSv, setConfirmDeleteSv] = useState(false)
   const [confirmPaySv, setConfirmPaySv] = useState<SaidaVariavel | null>(null)
@@ -449,7 +449,7 @@ export default function Fluxo() {
 
     if (filterType === 'all' || filterType === 'saidas') {
       saidasFixas.forEach(sf => {
-        // Pendentes: todos os meses não pagos atÃ© o atual
+        // Pendentes: todos os meses não pagos até o atual
         const unpaidMonths = getUnpaidMonths(sf, yearMonth)
         unpaidMonths.forEach(m => items.push({ type: 'fixa', data: sf, instanceMonth: m }))
 
@@ -534,7 +534,7 @@ export default function Fluxo() {
       return true
     })
 
-    // Função utilitária: verifica se um item pendente Ã© do mês atual ou de um mês futuro
+    // Função utilitária: verifica se um item pendente é do mês atual ou de um mês futuro
     const isFutureMonth = (item: FluxoItem): boolean => {
       if (item.type === 'fixa') return false // fixas são sempre do contexto mensal atual
       const itemDate = (item.data as SaidaVariavel | Entrada).date
