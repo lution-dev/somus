@@ -993,11 +993,14 @@ function ProgressiveOnboardingBanner({ onLancar }: { onLancar: () => void }) {
           <path d="M 0 60 Q 150 20 300 60" stroke="rgba(59,130,246,0.07)" strokeWidth="1" fill="none" />
         </svg>
 
-        {/* Icon decorativo — canto superior direito, puramente ambiental */}
-        <div style={{ position: 'absolute', top: 14, right: 14, width: 40, height: 36, pointerEvents: 'none', opacity: 0.45 }}>
-          <div style={{ position: 'absolute', top: 0, left: 0, width: 26, height: 26, borderRadius: '50%', background: 'radial-gradient(circle, rgba(59,130,246,0.5) 0%, transparent 70%)' }} />
-          <div style={{ position: 'absolute', top: 0, right: 0, width: 26, height: 26, borderRadius: '50%', background: 'radial-gradient(circle, rgba(139,92,246,0.5) 0%, transparent 70%)' }} />
-          <Users size={15} color="rgba(139,92,246,1)" style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }} />
+        {/* Icon decorativo — canto superior direito, aurora ambiente */}
+        <div style={{ position: 'absolute', top: 8, right: 8, width: 56, height: 52, pointerEvents: 'none' }}>
+          {/* Glow blob azul — maior, sutil */}
+          <div style={{ position: 'absolute', top: -8, left: -10, width: 56, height: 56, borderRadius: '50%', background: 'radial-gradient(circle, rgba(59,130,246,0.32) 0%, transparent 72%)', filter: 'blur(6px)' }} />
+          {/* Glow blob roxo — maior, levemente deslocado */}
+          <div style={{ position: 'absolute', top: -4, right: -8, width: 56, height: 56, borderRadius: '50%', background: 'radial-gradient(circle, rgba(139,92,246,0.32) 0%, transparent 72%)', filter: 'blur(6px)' }} />
+          {/* Ícone acima dos glows */}
+          <Users size={16} color="rgba(167,139,250,0.85)" style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', zIndex: 1 }} />
         </div>
 
         {/* Conteúdo — largura total com recuo direito para não sobrepor o ícone */}
