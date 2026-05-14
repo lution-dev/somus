@@ -20,14 +20,14 @@ import { Check, RefreshCw, Plus, Inbox, ArrowUpRight, ArrowDownLeft, CheckCircle
 import type { SaidaFixa, SaidaVariavel, Entrada } from '../types'
 import { FluxoChart } from '../components/features/FluxoChart'
 
-// â”€â”€â”€ Tipos Locais â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// --- Tipos Locais -------------------------------------------------------------
 
 type FluxoItem =
   | { type: 'fixa';     data: SaidaFixa;     instanceMonth?: string }
   | { type: 'variavel'; data: SaidaVariavel }
   | { type: 'entrada';  data: Entrada }
 
-// â”€â”€â”€ Componentes de Item â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// --- Componentes de Item ------------------------------------------------------
 
 const PAYMENT_LABELS: Record<string, string> = {
   pix: 'Pix',
@@ -315,7 +315,7 @@ function EntradaItem({ e, isLast, onPress }: { e: Entrada; isLast: boolean; onPr
         <p style={{ fontSize: 12, color: isOverdueEntry ? 'var(--color-warning)' : 'var(--color-text-secondary)', margin: 0 }}>
           {isPending
             ? isOverdueEntry
-              ? 'Não recebido â€” '
+              ? 'Não recebido — '
               : 'Aguardando para '
             : ''}
           {new Date(e.date + 'T12:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })}
@@ -343,7 +343,7 @@ function EntradaItem({ e, isLast, onPress }: { e: Entrada; isLast: boolean; onPr
   )
 }
 
-// â”€â”€â”€ Fluxo Page â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// --- Fluxo Page ---------------------------------------------------------------
 
 export default function Fluxo() {
 
@@ -609,7 +609,7 @@ export default function Fluxo() {
                     }
                     return null
                   })}
-                  {/* Ghost link â€” aparece só quando expandido, após o último item */}
+                  {/* Ghost link — aparece só quando expandido, após o último item */}
                   <GhostLink href="/relatorios/cx-essencial?from=fluxo" />
                 </motion.div>
               )}
@@ -617,7 +617,7 @@ export default function Fluxo() {
           </>
         )}
 
-        {/* â”€â”€ Meses Futuros â”€â”€ */}
+        {/* -- Meses Futuros -- */}
         {pendingFuture.length > 0 && (
           <div ref={futureRef}>
             <SectionLabel
@@ -741,7 +741,7 @@ export default function Fluxo() {
               </div>
             }
           />
-          {/* Gradient wrapping FluxoChart â€” same structure as Home wraps BalanceCard */}
+          {/* Gradient wrapping FluxoChart — same structure as Home wraps BalanceCard */}
           <div style={{
             background: `linear-gradient(to bottom, ${HERO_BG} 0%, transparent 100%)`,
             padding: '12px 16px 20px',
@@ -781,7 +781,7 @@ export default function Fluxo() {
           <p style={{ fontSize: 13, color: 'var(--color-text-secondary)', textTransform: 'capitalize', margin: 0 }}>{currentMonthLabel}</p>
           </div>
 
-          {/* FluxoChart â€” desktop */}
+          {/* FluxoChart — desktop */}
           <div style={{ marginBottom: 24, position: 'relative', zIndex: 1 }}>
             <FluxoChart
               paidPct={paidPct}
@@ -935,7 +935,7 @@ export default function Fluxo() {
       </Dialog>
 
       <LancarEntradaModal open={lancarOpen} onClose={() => setLancarOpen(false)} />
-      {/* Duplicate entrada modal â€” pre-filled, separate from lancarOpen */}
+      {/* Duplicate entrada modal — pre-filled, separate from lancarOpen */}
       <LancarEntradaModal
         open={!!entradaPrefill}
         onClose={() => setEntradaPrefill(null)}
@@ -1025,7 +1025,7 @@ export default function Fluxo() {
         variant="danger"
       />
 
-      {/* â”€â”€ Variável: Action Sheet â”€â”€ */}
+      {/* -- Variável: Action Sheet -- */}
       <ItemActionSheet
         open={!!actionSv}
         onClose={() => setActionSv(null)}
@@ -1085,7 +1085,7 @@ export default function Fluxo() {
         variant="danger"
       />
 
-      {/* â”€â”€ Entrada: Action Sheet â”€â”€ */}
+      {/* -- Entrada: Action Sheet -- */}
       <ItemActionSheet
         open={!!actionEntrada}
         onClose={() => setActionEntrada(null)}
@@ -1147,7 +1147,7 @@ export default function Fluxo() {
   )
 }
 
-// â”€â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// --- Helpers ------------------------------------------------------------------
 
 type PendingStatus =
   | { kind: 'all-good' }
@@ -1318,7 +1318,7 @@ function GhostLink({ href }: { href: string }) {
         opacity: hovered ? 1 : 0.88,
         transition: 'opacity 150ms ease, transform 150ms ease',
         transform: hovered ? 'translateX(2px)' : 'translateX(0)',
-      }}>â†’</span>
+      }}>→</span>
     </div>
   )
 }
