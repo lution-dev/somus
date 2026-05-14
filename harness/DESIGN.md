@@ -268,6 +268,65 @@ No desktop, usar **radial spotlight** no topo em vez de linear:
 | Casal | `var(--color-accent-couple)` (`#8B5CF6`) |
 | DivisaoDetalhe / ObjetivoDetalhe | `#001442` |
 
+## 4.11 Today Highlight — Itens que vencem hoje
+
+Itens pendentes cuja data coincide com **hoje** recebem um background suave para urgência visual **sem agressividade**. O padrão é idêntico entre Home e Fluxo.
+
+| Tipo de item | Background | Usado quando |
+|---|---|---|
+| **Saída (fixa/variável)** | `rgba(239, 68, 68, 0.06)` | `daysUntil === 0` ou `formatShortDate(date) === 'Hoje'` e pendente |
+| **Entrada** | `rgba(16, 185, 129, 0.06)` | `formatShortDate(date) === 'Hoje'` e pendente (não atrasado) |
+
+**Regras:**
+- **Somente pendentes** — itens pagos/confirmados **não** recebem highlight
+- **Itens atrasados** — usam a sinalização de atraso (badge laranja), **não** o today highlight
+- A cor segue a semântica: vermelho suave para saídas, verde suave para entradas
+- O texto da data exibe **"Hoje"** em vez da data formatada
+
+### Exemplo em código
+
+```tsx
+// FixaItem (usa daysUntil do getDaysUntil)
+background: !paid && daysUntil === 0 ? 'rgba(239,68,68,0.06)' : 'transparent'
+
+// VariavelItem / EntradaItem (usa formatShortDate)
+const isToday = isPending && formatShortDate(sv.date) === 'Hoje'
+background: isToday ? 'rgba(239,68,68,0.06)' : 'transparent'
+
+// EntradaItem — cor verde para entradas
+background: isToday ? 'rgba(16,185,129,0.06)' : 'transparent'
+```
+
+---
+
+## 4.12 Date Labels — Formato Padronizado
+
+As datas de itens pendentes usam um **formato contextual** consistente entre Home e Fluxo:
+
+| Condição | Label exibido | Exemplo |
+|---|---|---|
+| Data = hoje | `Hoje` | "Hoje · Pix" |
+| Data = amanhã | `Amanhã` | "Amanhã · Crédito" |
+| Data futura (> 1 dia) | `Para DD Mmm` | "Para 23 Mai" |
+| Data passada (atrasado) | `Atrasado — DD Mmm` | "Atrasado — 10 Mai" |
+| Item já pago/confirmado | `DD Mmm` (sem prefixo) | "14 Mai" |
+
+**Função canônica:** `formatShortDate(dateString)` em `Fluxo.tsx`
+
+```tsx
+function formatShortDate(dateString: string) {
+  const d = new Date(dateString + 'T12:00:00')
+  const today = new Date(); today.setHours(12, 0, 0, 0)
+  const diffDays = Math.round((d.getTime() - today.getTime()) / 86400000)
+  if (diffDays === 0) return 'Hoje'
+  if (diffDays === 1) return 'Amanhã'
+  const monthStr = d.toLocaleDateString('pt-BR', { month: 'short' }).replace('.', '')
+  return `${d.getDate().toString().padStart(2, '0')} ${monthStr.charAt(0).toUpperCase() + monthStr.slice(1)}`
+}
+```
+
+**Regra:** Quando `formatShortDate` retorna "Hoje" ou "Amanhã", **não** prefixar com "Para".
+
 ---
 
 ## 5. Navegação
@@ -325,3 +384,6 @@ No desktop, usar **radial spotlight** no topo em vez de linear:
 10. **Contexto visual claro** — azul=Lucas, rosa=Mírian, lilás=Casal
 11. **PageHeader com bg: sempre sólido** — nunca aplicar alpha ou blur quando bg é fornecido
 12. **Desktop usa radial glow** — não linear-gradient; apenas mobile usa linear hero
+13. **Today Highlight obrigatório** — itens pendentes de hoje SEMPRE recebem `background: rgba(...)` suave (§4.11). Consistente entre Home e Fluxo
+14. **Date labels contextuais** — usar "Hoje"/"Amanhã" em vez de data numérica (§4.12). Consistente entre Home e Fluxo
+

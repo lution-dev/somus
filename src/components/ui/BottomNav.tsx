@@ -1,4 +1,4 @@
-﻿import { useLocation } from 'wouter'
+import { useLocation } from 'wouter'
 import { motion } from 'framer-motion'
 import { haptic } from '../../lib/haptic'
 
@@ -27,29 +27,33 @@ export function BottomNav({ items }: BottomNavProps) {
         left: 0,
         right: 0,
         zIndex: 40,
-        /* Floating pill: margin lifts it above the home indicator */
         margin: '0 16px calc(env(safe-area-inset-bottom, 0px) / 2 + 4px)',
         borderRadius: 22,
         border: '1px solid rgba(255,255,255,0.06)',
-        /* Glassmorphism */
         background: 'rgba(8, 14, 28, 0.55)',
         backdropFilter: 'blur(32px) saturate(160%)',
         WebkitBackdropFilter: 'blur(32px) saturate(160%)',
         boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 4px 24px rgba(0, 0, 0, 0.4)',
       }}
     >
-      {/* Nav buttons */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-around', padding: '0 4px', height: 56 }}>
         {items.map((item) => {
-          // If any item claims this route via activeFor, suppress startsWith for the rest
           const claimedByActiveFor = items.some(i => i.activeFor?.some(p => location.startsWith(p)))
           const isActive =
             location === item.path ||
             (!claimedByActiveFor && location.startsWith(item.path + '/')) ||
             (item.activeFor?.some(prefix => location.startsWith(prefix)) ?? false)
-          const activeColor = item.path === '/casal'
-            ? 'var(--color-accent-couple)'
-            : 'var(--color-accent-primary)'
+
+          const isCasal = item.path === '/casal'
+          const activeColor = isCasal ? 'var(--color-accent-couple)' : 'var(--color-accent-primary)'
+
+          const gradientTextStyle = isActive && !isCasal ? {
+            background: 'linear-gradient(90deg, #2563EB, #22D3EE)',
+            WebkitBackgroundClip: 'text' as const,
+            WebkitTextFillColor: 'transparent' as const,
+            backgroundClip: 'text' as const,
+          } : {}
+
           return (
             <motion.button
               key={item.path}
@@ -67,13 +71,22 @@ export function BottomNav({ items }: BottomNavProps) {
                 transition: 'color 150ms ease',
               }}
             >
-            <span style={{ display: 'flex', position: 'relative', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
-                {(isActive && item.activeIcon) ? item.activeIcon : item.icon}
+              <span style={{ display: 'flex', position: 'relative', flexDirection: 'column', alignItems: 'center' }}>
+                <span style={isActive && !isCasal ? {
+                  background: 'linear-gradient(135deg, #2563EB, #22D3EE)',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  backgroundClip: 'text',
+                  display: 'flex',
+                } : {}}>
+                  {(isActive && item.activeIcon) ? item.activeIcon : item.icon}
+                </span>
               </span>
               <span style={{
                 fontSize: 10, fontWeight: isActive ? 600 : 500,
                 color: isActive ? activeColor : 'var(--color-text-tertiary)',
-                transition: 'margin 150ms ease',
+                transition: 'color 150ms ease',
+                ...gradientTextStyle,
               }}>
                 {item.label}
               </span>

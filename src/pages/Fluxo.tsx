@@ -14,6 +14,7 @@ import EditSaidaVariavelModal from '../components/features/EditSaidaVariavelModa
 import EditEntradaModal from '../components/features/EditEntradaModal'
 import ItemActionSheet from '../components/ui/ItemActionSheet'
 import { PageHeader, SearchBar, Dialog, Button, ConfirmDialog } from '../components/ui'
+import UserMenu from '../components/ui/UserMenu'
 import { useIsMobile } from '../hooks/useIsMobile'
 import { getDivisaoIcon } from '../lib/icons'
 import { Check, RefreshCw, Plus, Inbox, ArrowUpRight, ArrowDownLeft, CheckCircle2, Pencil, Trash2, XCircle, TrendingUp, AlertCircle, Clock, ChevronDown, Copy, CalendarRange } from 'lucide-react'
@@ -40,6 +41,12 @@ const PAYMENT_LABELS: Record<string, string> = {
 
 function formatShortDate(dateString: string) {
   const d = new Date(dateString + 'T12:00:00')
+  const today = new Date()
+  today.setHours(12, 0, 0, 0)
+  const diffMs = d.getTime() - today.getTime()
+  const diffDays = Math.round(diffMs / 86400000)
+  if (diffDays === 0) return 'Hoje'
+  if (diffDays === 1) return 'Amanhã'
   const monthStr = d.toLocaleDateString('pt-BR', { month: 'short' }).replace('.', '')
   return `${d.getDate().toString().padStart(2, '0')} ${monthStr.charAt(0).toUpperCase() + monthStr.slice(1)}`
 }
@@ -77,6 +84,7 @@ function FixaItem({ sf, isLast, onPress, yearMonth }: {
         opacity: paid ? 0.55 : 1,
         cursor: 'pointer',
         transition: 'opacity 300ms ease',
+        background: !paid && daysUntil === 0 ? 'rgba(239,68,68,0.06)' : 'transparent',
       }}
     >
       <div style={{ 
@@ -234,6 +242,7 @@ function VariavelItem({ sv, isLast, onPress }: { sv: SaidaVariavel; isLast: bool
   const isPending = sv.status === 'pending'
   const isMobile = useIsMobile()
   const divisao = useAppStore(s => s.divisoes.find(d => d.id === sv.divisaoId))
+  const isToday = isPending && formatShortDate(sv.date) === 'Hoje'
 
   return (
     <motion.div
@@ -247,6 +256,7 @@ function VariavelItem({ sv, isLast, onPress }: { sv: SaidaVariavel; isLast: bool
         borderBottom: isLast ? 'none' : '1px solid var(--color-border)',
         cursor: 'pointer',
         opacity: isPending ? 1 : 0.55,
+        background: isToday ? 'rgba(239,68,68,0.06)' : 'transparent',
       }}
     >
       <div style={{
@@ -276,8 +286,11 @@ function VariavelItem({ sv, isLast, onPress }: { sv: SaidaVariavel; isLast: bool
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
             <span style={{ fontSize: 12, color: 'var(--color-text-secondary)' }}>
-              {isPending ? 'Para ' : ''}
-              {formatShortDate(sv.date)}
+              {(() => {
+                const label = formatShortDate(sv.date)
+                if (!isPending) return label
+                return label === 'Hoje' || label === 'Amanhã' ? label : `Para ${label}`
+              })()}
             </span>
             {sv.paymentMethod && (
               <span style={{ fontSize: 11, color: 'var(--color-text-tertiary)' }}>
@@ -318,6 +331,7 @@ function VariavelItem({ sv, isLast, onPress }: { sv: SaidaVariavel; isLast: bool
 function EntradaItem({ e, isLast, onPress }: { e: Entrada; isLast: boolean; onPress: (e: Entrada) => void }) {
   const isPending = e.status === 'pending'
   const isOverdueEntry = isPending && e.date < new Date().toISOString().slice(0, 10)
+  const isToday = isPending && !isOverdueEntry && formatShortDate(e.date) === 'Hoje'
   const divName = e.distribution?.length === 1 ? e.distribution[0].divisaoName : 'Entrada'
   const divisao = useAppStore(s => s.divisoes.find(d => d.name === divName))
   const badgeColor = divisao ? divisao.color : 'var(--color-success)'
@@ -334,6 +348,7 @@ function EntradaItem({ e, isLast, onPress }: { e: Entrada; isLast: boolean; onPr
         borderBottom: isLast ? 'none' : '1px solid var(--color-border)',
         cursor: 'pointer',
         opacity: isPending ? 1 : 0.85,
+        background: isToday ? 'rgba(16,185,129,0.06)' : 'transparent',
       }}
     >
       <div style={{
@@ -370,12 +385,12 @@ function EntradaItem({ e, isLast, onPress }: { e: Entrada; isLast: boolean; onPr
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
             <span style={{ fontSize: 12, color: isOverdueEntry ? 'var(--color-warning)' : 'var(--color-text-secondary)' }}>
-              {isPending
-                ? isOverdueEntry
-                  ? 'Atrasado — '
-                  : 'Para '
-                : ''}
-              {formatShortDate(e.date)}
+              {(() => {
+                const label = formatShortDate(e.date)
+                if (!isPending) return label
+                if (isOverdueEntry) return `Atrasado — ${label}`
+                return label === 'Hoje' || label === 'Amanhã' ? label : `Para ${label}`
+              })()}
             </span>
           </div>
           <span style={{
@@ -788,17 +803,11 @@ export default function Fluxo() {
       {/* Header */}
       {isMobile ? (
         <>
-          <PageHeader 
-            title="Fluxo" 
-            bg={HERO_BG} 
-            rightAction={
-              <div style={{ 
-                background: 'rgba(255,255,255,0.08)', padding: '4px 10px', borderRadius: 8,
-                fontSize: 12, fontWeight: 600, color: 'var(--color-text-secondary)', textTransform: 'capitalize'
-              }}>
-                {new Date().toLocaleString('pt-BR', { month: 'long' })}
-              </div>
-            }
+          <PageHeader
+            title="Fluxo"
+            bg={HERO_BG}
+            showLogo
+            rightAction={<UserMenu variant="hero" />}
           />
           {/* Gradient wrapping FluxoChart — same structure as Home wraps BalanceCard */}
           <div style={{

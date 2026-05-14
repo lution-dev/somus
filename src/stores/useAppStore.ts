@@ -70,7 +70,7 @@ interface AppActions {
   updateObjetivoImage: (objetivoId: string, imageUrl: string) => void
 
   // Partner
-  setPartner: (partner: { id: string; name: string; partnerCode: string } | null) => void
+  setPartner: (partner: { id: string; name: string; partnerCode: string; avatar?: string } | null) => void
 
   // Reset
   resetAll: () => void

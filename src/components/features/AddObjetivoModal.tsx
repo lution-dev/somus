@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useAppStore } from '../../stores/useAppStore'
 import { Dialog, DialogFooter, Button, Input } from '../ui'
 import { formatCurrency } from '../../lib/calculations'
@@ -25,6 +25,7 @@ export default function AddObjetivoModal({ open, onClose, defaultIsCouple = fals
   const [name, setName]             = useState('')
   const amountInput                 = useCurrencyInput()
   const [months, setMonths]         = useState('')
+  const [startDate, setStartDate]   = useState(new Date().toISOString().slice(0, 10))
   const [imageUrl, setImageUrl]     = useState<string | undefined>(undefined)
   const [cropSrc, setCropSrc]       = useState<string | null>(null)
 
@@ -40,12 +41,14 @@ export default function AddObjetivoModal({ open, onClose, defaultIsCouple = fals
         setName(editTarget.name)
         amountInput.setValue(editTarget.targetAmount)
         setMonths(String(editTarget.monthsToAchieve ?? ''))
+        setStartDate(editTarget.startDate ?? editTarget.createdAt ?? new Date().toISOString().slice(0, 10))
         setImageUrl(editTarget.imageUrl)
       } else {
         setIsCouple(defaultIsCouple)
         setName('')
         amountInput.reset()
         setMonths('')
+        setStartDate(new Date().toISOString().slice(0, 10))
         setImageUrl(undefined)
       }
     }
@@ -84,6 +87,7 @@ export default function AddObjetivoModal({ open, onClose, defaultIsCouple = fals
       targetDate,
       imageUrl,
       isCouple,
+      startDate,
     }
 
     if (isEditMode && onSave) {
@@ -97,6 +101,7 @@ export default function AddObjetivoModal({ open, onClose, defaultIsCouple = fals
         currentAmount: 0,
         movements: [],
         createdAt: new Date().toISOString().slice(0, 10),
+        startDate,
       } as any)
     }
     onClose()
@@ -232,6 +237,22 @@ export default function AddObjetivoModal({ open, onClose, defaultIsCouple = fals
               : '—'}
           </p>
         )}
+      </div>
+
+      {/* ── Data de início ── */}
+      <div style={{ marginBottom: 20 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+          <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-text-primary)', margin: 0 }}>Data de início</p>
+          <p style={{ fontSize: 12, color: 'var(--color-text-tertiary)', margin: 0 }}>Opcional</p>
+        </div>
+        <Input
+          type="date"
+          value={startDate}
+          onChange={e => setStartDate(e.target.value)}
+        />
+        <p style={{ fontSize: 11, color: 'var(--color-text-tertiary)', margin: '6px 0 0' }}>
+          Pode ser retroativa se já está construindo há um tempo.
+        </p>
       </div>
 
       {/* ── Capa (Integrated Image Picker) ── */}

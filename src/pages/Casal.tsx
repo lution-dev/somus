@@ -1,9 +1,10 @@
-﻿import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useLocation } from 'wouter'
 import { useAppStore } from '../stores/useAppStore'
 import { useShallow } from 'zustand/react/shallow'
 import { formatCurrency } from '../lib/calculations'
 import { PageHeader, ConfirmDialog } from '../components/ui'
+import UserMenu from '../components/ui/UserMenu'
 import ItemActionSheet from '../components/ui/ItemActionSheet'
 import { useIsMobile } from '../hooks/useIsMobile'
 import { useAuth } from '../hooks/useAuth'
@@ -30,6 +31,26 @@ export default function Casal() {
   const entradas       = useAppStore(useShallow(s => s.entradas))
   const editObjetivo   = useAppStore(s => s.editObjetivo)
   const deleteObjetivo = useAppStore(s => s.deleteObjetivo)
+  const setPartner     = useAppStore(s => s.setPartner)
+
+  // ── Backfill partner avatar if missing (users linked before avatar feature) ──
+  useEffect(() => {
+    if (!partner || partner.avatar) return  // already have it or no partner
+    const fetchPartnerAvatar = async () => {
+      try {
+        const { doc: fDoc, getDoc } = await import('firebase/firestore')
+        const snap = await getDoc(fDoc(db, 'users', partner.id))
+        const data = snap.data()
+        const avatar = data?.currentUser?.avatar ?? data?.currentUser?.photoURL ?? null
+        if (avatar) {
+          setPartner({ ...partner, avatar })
+        }
+      } catch (err) {
+        console.warn('[Somus] Could not fetch partner avatar:', err)
+      }
+    }
+    fetchPartnerAvatar()
+  }, [partner?.id]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Calculate real balances ───────────────────────────────────────────
   const currentUserBalance = divisoes
@@ -92,11 +113,14 @@ export default function Casal() {
             </button>
           </div>
           <p style={{
-            fontSize: 32, fontWeight: 600, letterSpacing: 'var(--tracking-financial)',
-            color: 'var(--color-text-primary)',
+            fontSize: 32, fontWeight: 700, letterSpacing: 'var(--tracking-financial)',
             margin: '0 0 14px', lineHeight: 1,
+            background: 'linear-gradient(135deg, #8B5CF6 0%, #22D3EE 100%)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            backgroundClip: 'text',
           }}>
-            {balanceHidden ? <span style={{ letterSpacing: 4 }}>{mask}</span> : formatCurrency(totalCouple)}
+            {balanceHidden ? <span style={{ letterSpacing: 4, WebkitTextFillColor: 'var(--color-text-primary)' }}>{mask}</span> : formatCurrency(totalCouple)}
           </p>
 
         </div>
@@ -139,9 +163,14 @@ export default function Casal() {
           {hasPartner ? (
             <div style={{ padding: '14px 20px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-                <div style={{ width: 28, height: 28, borderRadius: '50%', flexShrink: 0, background: 'var(--color-mirian)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: 11, fontWeight: 700 }}>
-                  {partner.name.charAt(0)}
-                </div>
+                {partner.avatar ? (
+                  <img src={partner.avatar} alt="" referrerPolicy="no-referrer"
+                    style={{ width: 28, height: 28, borderRadius: '50%', objectFit: 'cover', flexShrink: 0, border: '2px solid var(--color-mirian)' }} />
+                ) : (
+                  <div style={{ width: 28, height: 28, borderRadius: '50%', flexShrink: 0, background: 'var(--color-mirian)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: 11, fontWeight: 700 }}>
+                    {partner.name.charAt(0)}
+                  </div>
+                )}
                 <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text-primary)', margin: 0 }}>
                   {partner.name.split(' ')[0]}
                 </p>
@@ -220,7 +249,7 @@ export default function Casal() {
       {/* ── Header ── */}
       {isMobile ? (
         <>
-          <PageHeader title="Casal" bg={HERO_BG} />
+          <PageHeader title="Casal" bg={HERO_BG} showLogo rightAction={<UserMenu variant="hero" />} />
           <div style={{ position: 'relative', overflow: 'hidden' }}>
             {/* Cinematic ambient layer 1 — couple blue glow */}
             <div style={{
@@ -291,76 +320,126 @@ export default function Casal() {
         confirmLabel="Excluir permanentemente" variant="danger"
       />
 
-      <div className='somus-stagger' style={{
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 20,
-        padding: isMobile ? '0 16px' : 0,
-        position: 'relative', zIndex: 1,
-      }}>
-        {/* Desktop: PatrimonioCard at top */}
-        {!isMobile && <PatrimonioCard />}
+      {isMobile ? (
+        /* ── Mobile: Single column ── */
+        <div className='somus-stagger' style={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 20,
+          padding: '0 16px',
+          position: 'relative', zIndex: 1,
+        }}>
+          {/* InviteCodeCard — shown when no partner */}
+          {!hasPartner && (
+            <InviteCodeCard copied={copied} setCopied={setCopied} partnerCode={partnerCode} />
+          )}
 
-        {/* InviteCodeCard — shown when no partner, both mobile and desktop */}
-        {!hasPartner && (
-          <InviteCodeCard copied={copied} setCopied={setCopied} partnerCode={partnerCode} />
-        )}
-
-        {/* Objetivos */}
-        <div>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-            <p className="section-label" style={{ display: 'flex', alignItems: 'center', gap: 6, margin: 0 }}>
-              <Target size={13} />Objetivos do casal
-            </p>
-            <button
-              id="btn-add-objetivo-inline"
-              onClick={() => setAddObjetivoOpen(true)}
-              style={{
-                display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 600,
-                padding: '7px 14px', borderRadius: 10, cursor: 'pointer',
-                background: 'rgba(139,92,246,0.1)', color: 'var(--color-accent-couple)',
-                border: '1.5px solid rgba(139,92,246,0.25)', fontFamily: 'var(--font-sans)',
-                transition: 'all 150ms ease',
-              }}
-            >
-              <Plus size={13} strokeWidth={2.5} />Novo
-            </button>
+          {/* Objetivos */}
+          <ObjetivosSection
+            objetivos={sortedObjetivos}
+            onAdd={() => setAddObjetivoOpen(true)}
+            onNavigate={(id) => navigate(`/casal/objetivo/${id}`)}
+            onAction={setObjetivoActionTarget}
+            compact
+          />
+        </div>
+      ) : (
+        /* ── Desktop: 2-column layout ── */
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: '340px 1fr',
+          gap: 24,
+          alignItems: 'start',
+          position: 'relative', zIndex: 1,
+        }}>
+          {/* Left column: Patrimônio + Invite */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16, position: 'sticky', top: 24 }}>
+            <PatrimonioCard />
+            {!hasPartner && (
+              <InviteCodeCard copied={copied} setCopied={setCopied} partnerCode={partnerCode} />
+            )}
           </div>
 
-          {sortedObjetivos.length === 0 ? (
-            <div style={{
-              background: 'var(--color-bg-secondary)',
-              border: '1.5px dashed rgba(139,92,246,0.3)',
-              borderRadius: 16, padding: 32,
-              display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: 12,
-            }}>
-              <div style={{ width: 52, height: 52, borderRadius: 16, background: 'rgba(139,92,246,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <Target size={24} color="var(--color-accent-couple)" strokeWidth={1.5} />
-              </div>
-              <div>
-                <p style={{ fontSize: 15, fontWeight: 700, color: 'var(--color-text-primary)', margin: '0 0 4px' }}>Nenhum objetivo ainda</p>
-                <p style={{ fontSize: 13, color: 'var(--color-text-tertiary)', margin: 0, lineHeight: 1.5 }}>Defina aonde vocês querem chegar juntos</p>
-              </div>
-            </div>
-          ) : (
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: sortedObjetivos.length === 1 ? '1fr' : '1fr 1fr',
-              gap: 16,
-              alignItems: 'stretch',
-            }}>
-              {sortedObjetivos.map(obj => (
-                <ObjetivoCard
-                  key={obj.id}
-                  obj={obj}
-                  onNavigate={(id) => navigate(`/casal/objetivo/${id}`)}
-                  onAction={setObjetivoActionTarget}
-                />
-              ))}
-            </div>
-          )}
+          {/* Right column: Objetivos */}
+          <ObjetivosSection
+            objetivos={sortedObjetivos}
+            onAdd={() => setAddObjetivoOpen(true)}
+            onNavigate={(id) => navigate(`/casal/objetivo/${id}`)}
+            onAction={setObjetivoActionTarget}
+          />
         </div>
+      )}
+    </div>
+  )
+}
+
+// ── Objetivos Section (shared mobile+desktop) ──
+function ObjetivosSection({ objetivos, onAdd, onNavigate, onAction, compact = false }: {
+  objetivos: Objetivo[]
+  onAdd: () => void
+  onNavigate: (id: string) => void
+  onAction: (obj: Objetivo) => void
+  compact?: boolean
+}) {
+  return (
+    <div>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+        <p className="section-label" style={{ display: 'flex', alignItems: 'center', gap: 6, margin: 0 }}>
+          <Target size={13} />Objetivos do casal
+        </p>
+        <button
+          id="btn-add-objetivo-inline"
+          onClick={onAdd}
+          style={{
+            display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 600,
+            padding: '7px 14px', borderRadius: 10, cursor: 'pointer',
+            background: 'rgba(139,92,246,0.1)', color: 'var(--color-accent-couple)',
+            border: '1.5px solid rgba(139,92,246,0.25)', fontFamily: 'var(--font-sans)',
+            transition: 'all 150ms ease',
+          }}
+        >
+          <Plus size={13} strokeWidth={2.5} />Novo
+        </button>
       </div>
+
+      {objetivos.length === 0 ? (
+        <div style={{
+          background: 'var(--color-bg-secondary)',
+          border: '1.5px dashed rgba(139,92,246,0.3)',
+          borderRadius: 16, padding: 32,
+          display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: 12,
+        }}>
+          <div style={{ width: 52, height: 52, borderRadius: 16, background: 'rgba(139,92,246,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Target size={24} color="var(--color-accent-couple)" strokeWidth={1.5} />
+          </div>
+          <div>
+            <p style={{ fontSize: 15, fontWeight: 700, color: 'var(--color-text-primary)', margin: '0 0 4px' }}>Nenhum objetivo ainda</p>
+            <p style={{ fontSize: 13, color: 'var(--color-text-tertiary)', margin: 0, lineHeight: 1.5 }}>Defina aonde vocês querem chegar juntos</p>
+          </div>
+        </div>
+      ) : (
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: objetivos.length === 1
+            ? '1fr'
+            : compact
+              ? 'repeat(2, 1fr)'
+              : 'repeat(auto-fill, minmax(260px, 1fr))',
+          gap: 16,
+          alignItems: 'stretch',
+        }}>
+          {objetivos.map(obj => (
+            <ObjetivoCard
+              key={obj.id}
+              obj={obj}
+              onNavigate={onNavigate}
+              onAction={onAction}
+              hideCasalBadge
+              compact={compact}
+            />
+          ))}
+        </div>
+      )}
     </div>
   )
 }
@@ -404,16 +483,27 @@ function InviteCodeCard({
     if (!uid || !foundUid || !currentUser) return
     setLinkStatus('loading')
     try {
+      // Fetch partner's photoURL from their Firestore profile
+      let partnerAvatar: string | undefined
+      try {
+        const partnerDoc = await import('firebase/firestore').then(({ doc: fDoc, getDoc }) =>
+          getDoc(fDoc(db, 'users', foundUid))
+        )
+        const partnerData = partnerDoc.data()
+        partnerAvatar = partnerData?.currentUser?.avatar ?? partnerData?.currentUser?.photoURL ?? undefined
+      } catch (_) { /* non-critical */ }
+
       // Link current user → partner
       await setDoc(doc(db, 'users', uid), {
-        partner: { id: foundUid, name: foundName, partnerCode: normalised },
+        partner: { id: foundUid, name: foundName, partnerCode: normalised, avatar: partnerAvatar ?? null },
       }, { merge: true })
-      // Link partner → current user (bilateral)
+      // Link partner → current user (bilateral) — send our avatar to them
+      const ourAvatar = useAppStore.getState().currentUser?.avatar ?? null
       await setDoc(doc(db, 'users', foundUid), {
-        partner: { id: uid, name: currentUser.name, partnerCode: currentUser.partnerCode ?? '' },
+        partner: { id: uid, name: currentUser.name, partnerCode: currentUser.partnerCode ?? '', avatar: ourAvatar },
       }, { merge: true })
       // Update local Zustand immediately
-      setPartner({ id: foundUid, name: foundName, partnerCode: normalised })
+      setPartner({ id: foundUid, name: foundName, partnerCode: normalised, avatar: partnerAvatar })
       setLinkStatus('done')
     } catch (err) {
       console.warn('[Somus] handleLink error:', err)

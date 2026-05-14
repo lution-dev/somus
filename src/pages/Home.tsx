@@ -92,16 +92,21 @@ function BalanceCard({
         </button>
       </div>
 
-      {/* Valor principal */}
-      <p style={{ fontSize: 36, fontWeight: 600, fontFamily: 'var(--font-display)', letterSpacing: 'var(--tracking-financial)', color: 'var(--color-text-primary)', lineHeight: 1, marginBottom: 12 }}>
-        {balanceHidden ? <span style={{ letterSpacing: 4 }}>{mask}</span> : formatCurrency(total)}
+      {/* Valor principal — gradiente brand azul→ciano */}
+      <p style={{
+        fontSize: 36, fontWeight: 600, fontFamily: 'var(--font-display)',
+        letterSpacing: 'var(--tracking-financial)', lineHeight: 1, marginBottom: 12,
+        background: 'linear-gradient(90deg, #e8eeff 0%, #22D3EE 100%)',
+        WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text',
+      }}>
+        {balanceHidden ? <span style={{ letterSpacing: 4, WebkitTextFillColor: 'var(--color-text-primary)' }}>{mask}</span> : formatCurrency(total)}
       </p>
 
       {/* Indicadores */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 14 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          <TrendingUp size={13} color="var(--color-success)" />
-          <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--color-success)' }}>
+          <TrendingUp size={13} color="#22D3EE" />
+          <span style={{ fontSize: 12, fontWeight: 600, color: '#22D3EE' }}>
             {balanceHidden ? mask : formatCurrency(totalIncome)} recebido
           </span>
         </div>
@@ -880,7 +885,8 @@ function ProgressiveOnboardingBanner({ onLancar }: { onLancar: () => void }) {
     backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
     border: '1px solid rgba(255,255,255,0.09)',
     borderRadius: 16, padding: '18px 16px',
-    marginBottom: 16,
+    marginTop: 16,
+    marginBottom: 0,
     ...extra,
   })
 
@@ -1103,6 +1109,7 @@ export default function Home() {
           <PageHeader
             title={`${greeting}, ${firstName}`}
             bg={HERO_BG}
+            showLogo
             rightAction={<UserMenu variant="hero" />}
           />
           <div style={{

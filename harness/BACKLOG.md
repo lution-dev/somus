@@ -55,7 +55,14 @@
 | T-NEXT-06 | baixa | Lançamento iOS/Android via PWA (manifest + service worker polish) |
 | T-NEXT-07 | média | GhostLink deep nav: ao navegar Fluxo→Essencial, scroll automático até "Custos Fixos" + micro highlight azul (pulse 1x) — "você veio daqui" |
 
-## Sprint Atual — Agendamento de Entradas Futuras (S-ENT)
+## Sprint Atual — Desktop Polish: Casal + ObjetivoDetalhe (S-DESK)
+
+| ID | Status | Descrição | Arquivo |
+|----|--------|-----------|---------|
+| T-DESK-01 | ✅ done | Casal: 2-col layout (PatrimonioCard+InviteCard esquerda, Objetivos direita), ObjetivosSection extraída | Casal.tsx |
+| T-DESK-02 | ✅ done | ObjetivoDetalhe: 2-col layout (progress+CTA esquerda sticky, Histórico direita), hero 220px | ObjetivoDetalhe.tsx |
+
+## Sprint Pendente — Agendamento de Entradas Futuras (S-ENT)
 
 | ID | Status | Descrição | Arquivo |
 |----|--------|-----------|---------|

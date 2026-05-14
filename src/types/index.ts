@@ -10,6 +10,7 @@ export interface User {
   name: string
   email: string
   avatar?: string
+  photoURL?: string
   partnerCode?: string
   goal?: string   // objetivo selecionado no onboarding (etapa 3)
 }
@@ -115,6 +116,8 @@ export interface ObjetivoMovement {
   type: 'deposit' | 'withdraw'
 }
 
+export type ObjetivoStatus = 'em_realizacao' | 'redistribuido'
+
 export interface Objetivo {
   id: string
   userId: string
@@ -127,8 +130,11 @@ export interface Objetivo {
   imageUrl?: string
   divisaoId?: string
   createdAt?: string
+  startDate?: string             // data de início (pode ser retroativa ou futura)
   isCouple?: boolean          // true = aparece na aba Casal
   movements: ObjetivoMovement[]
+  status?: ObjetivoStatus     // estado pós-meta: em_realizacao | redistribuido
+  originObjectiveName?: string // herança emocional: "Construído a partir de: Casamento ✨"
 }
 
 // ─── App State ──────────────────────────────────────────────────────────────

@@ -4,6 +4,7 @@ import { useShallow } from 'zustand/react/shallow'
 import { formatCurrency } from '../lib/calculations'
 import { getDivisaoIcon } from '../lib/icons'
 import { PageHeader } from '../components/ui'
+import UserMenu from '../components/ui/UserMenu'
 import { useIsMobile } from '../hooks/useIsMobile'
 import {
   ChevronLeft, ChevronRight,
@@ -153,8 +154,12 @@ export default function Relatorios() {
           <PageHeader
             title="Relatórios"
             bg={headerBg}
+            showLogo
             rightAction={
-              <MonthNav month={month} today={TODAY} onChange={setMonth} showLabel />
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <MonthNav month={month} today={TODAY} onChange={setMonth} showLabel />
+                <UserMenu variant="hero" />
+              </div>
             }
           />
           {/* Toggle abaixo da navbar — gradient hero estendido */}

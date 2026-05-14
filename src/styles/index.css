@@ -1,4 +1,4 @@
-﻿/* ─── Fontshare — Satoshi (brand display font) ─── */
+/* ─── Fontshare — Satoshi (brand display font) ─── */
 @import url('https://api.fontshare.com/v2/css?f[]=satoshi@700,600,500&display=swap');
 
 /* ─── Google Fonts — Inter (body) ─── */
@@ -23,7 +23,8 @@
 
   /* ── Brand Gradient ── */
   --gradient-brand:      linear-gradient(135deg, #2563EB 0%, #22D3EE 100%);
-  --gradient-couple:     linear-gradient(90deg, #2563EB 0%, #22D3EE 50%, #8F6DF5 100%); /* fusão emocional */
+  --gradient-brand-h:    linear-gradient(90deg,  #2563EB 0%, #22D3EE 100%);  /* horizontal — progress bars, nav */
+  --gradient-couple:     linear-gradient(90deg, #2563EB 0%, #22D3EE 50%, #8F6DF5 100%); /* fusao emocional */
   --gradient-atmospheric:
     radial-gradient(circle at top, rgba(37,99,235,0.22), transparent 42%),
     linear-gradient(180deg, #091223 0%, #050816 100%);
@@ -114,13 +115,18 @@ body {
   background:
     radial-gradient(
       circle at top,
-      rgba(37, 99, 235, 0.30),
-      transparent 46%
+      rgba(37, 99, 235, 0.28),
+      transparent 44%
     ),
     radial-gradient(
       circle at bottom right,
-      rgba(34, 211, 238, 0.05),
-      transparent 30%
+      rgba(34, 211, 238, 0.10),
+      transparent 35%
+    ),
+    radial-gradient(
+      circle at top right,
+      rgba(34, 211, 238, 0.06),
+      transparent 28%
     ),
     linear-gradient(
       180deg,
@@ -195,6 +201,10 @@ body::before {
 @keyframes pulseGlow {
   0%, 100% { opacity: 0.55; }
   50%       { opacity: 1; }
+}
+@keyframes shimmerSlide {
+  0%   { background-position: -200% center; }
+  100% { background-position:  200% center; }
 }
 
 /* ─── Stagger System — calm, 60ms between items ─── */
@@ -301,10 +311,11 @@ body::before {
   transition: width 0.5s ease;
 }
 .progress-fill--success { background: var(--color-success); }
-.progress-fill--primary { background: var(--color-accent-primary); }
+.progress-fill--primary { background: var(--gradient-brand-h); }  /* azul→ciano */
+.progress-fill--brand   { background: var(--gradient-brand-h); }  /* alias explícito */
 .progress-fill--warning { background: var(--color-warning); }
 .progress-fill--danger  { background: var(--color-danger); }
-.progress-fill--couple  { background: var(--color-accent-couple); }
+.progress-fill--couple  { background: var(--gradient-couple); }
 .progress-fill--lucas   { background: var(--color-lucas); }
 .progress-fill--mirian  { background: var(--color-mirian); }
 

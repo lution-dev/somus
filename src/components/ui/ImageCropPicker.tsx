@@ -246,7 +246,14 @@ export default function ImageCropPicker({
       </div>
 
       {/* Zoom controls */}
-      <div style={{
+      <style>{`
+        @media (max-width: 768px) {
+          .crop-zoom-controls { display: none !important; }
+        }
+      `}</style>
+      <div
+        className="crop-zoom-controls"
+        style={{
         display: 'flex', alignItems: 'center', gap: 12,
         marginTop: 16,
       }}>

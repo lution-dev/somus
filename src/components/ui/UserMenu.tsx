@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { useLocation } from 'wouter'
 import { useAuth } from '../../hooks/useAuth'
+import { useAppStore } from '../../stores/useAppStore'
 import { User, LogOut } from 'lucide-react'
 
 /**
@@ -9,6 +10,7 @@ import { User, LogOut } from 'lucide-react'
  */
 export default function UserMenu({ variant = 'default' }: { variant?: 'default' | 'hero' }) {
   const { displayName, photoURL, email, signOut } = useAuth()
+  const partner = useAppStore(s => s.partner)
   const [, navigate] = useLocation()
   const [open, setOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
@@ -34,17 +36,22 @@ export default function UserMenu({ variant = 'default' }: { variant?: 'default' 
 
   const isHero = variant === 'hero'
   const avatarSize = isHero ? 32 : 34
+  const hasPartner = !!partner
 
   return (
     <div ref={menuRef} style={{ position: 'relative' }}>
-      {/* Avatar trigger */}
+      {/* Avatar trigger — stacked when partner exists */}
       <button
         onClick={() => setOpen(prev => !prev)}
         style={{
           background: 'none', border: 'none', cursor: 'pointer', padding: 0,
           borderRadius: '50%', display: 'flex',
+          position: 'relative',
+          width: hasPartner && isHero ? avatarSize + 14 : avatarSize,
+          height: avatarSize,
         }}
       >
+        {/* Own avatar */}
         {photoURL ? (
           <img
             src={photoURL}
@@ -56,6 +63,7 @@ export default function UserMenu({ variant = 'default' }: { variant?: 'default' 
               border: isHero
                 ? '2px solid rgba(255,255,255,0.2)'
                 : '2px solid var(--color-border)',
+              position: 'relative', zIndex: 2,
             }}
           />
         ) : (
@@ -64,11 +72,43 @@ export default function UserMenu({ variant = 'default' }: { variant?: 'default' 
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             background: isHero ? 'rgba(255,255,255,0.15)' : 'var(--color-accent-primary)',
             color: 'white', fontSize: 13, fontWeight: 700,
+            position: 'relative', zIndex: 2,
           }}>
             {initials}
           </div>
         )}
+
+        {/* Partner avatar — stacked to the right (hero only) */}
+        {hasPartner && isHero && (
+          partner.avatar ? (
+            <img
+              src={partner.avatar}
+              alt=""
+              referrerPolicy="no-referrer"
+              style={{
+                width: avatarSize - 4, height: avatarSize - 4, borderRadius: '50%',
+                objectFit: 'cover',
+                border: '2px solid rgba(167,139,250,0.6)',
+                position: 'absolute', right: 0, top: 2,
+                zIndex: 1,
+              }}
+            />
+          ) : (
+            <div style={{
+              width: avatarSize - 4, height: avatarSize - 4, borderRadius: '50%',
+              background: 'var(--color-mirian)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              color: 'white', fontSize: 11, fontWeight: 700,
+              border: '2px solid rgba(167,139,250,0.4)',
+              position: 'absolute', right: 0, top: 2,
+              zIndex: 1,
+            }}>
+              {partner.name.charAt(0)}
+            </div>
+          )
+        )}
       </button>
+
 
       {/* Dropdown */}
       {open && (
