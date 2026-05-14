@@ -101,51 +101,49 @@ function FixaItem({ sf, isLast, onPress, yearMonth }: {
       </div>
 
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 6, marginBottom: 2 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
           <span style={{
             fontSize: 14, fontWeight: 600, color: 'var(--color-text-primary)',
-            display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden',
+            overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
             textDecoration: paid ? 'line-through' : 'none',
-            lineHeight: 1.3
           }}>
             {sf.name}
           </span>
-          {hasOverride && <div style={{ width: 4, height: 4, borderRadius: '50%', background: 'var(--color-warning)' }} title="Valor editado este mês" />}
+          {hasOverride && <div style={{ width: 4, height: 4, borderRadius: '50%', background: 'var(--color-warning)', flexShrink: 0 }} title="Valor editado este mês" />}
           {sf.autoDebit && (
-            <div title="Débito Automático" style={{ display: 'flex', alignItems: 'center', background: 'rgba(59,130,246,0.1)', padding: '2px 4px', borderRadius: 4 }}>
+            <div title="Débito Automático" style={{ display: 'flex', alignItems: 'center', background: 'rgba(59,130,246,0.1)', padding: '2px 4px', borderRadius: 4, flexShrink: 0 }}>
               <RefreshCw size={10} color="var(--color-accent-primary)" />
             </div>
           )}
         </div>
         
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          <span style={{ fontSize: 12, color: 'var(--color-text-secondary)' }}>
-            {paid ? 'Pago' : getDueDayLabel(sf.dueDay)}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, minWidth: 0, overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>
+            <span style={{ fontSize: 12, color: 'var(--color-text-secondary)', flexShrink: 0 }}>
+              {paid ? 'Pago' : getDueDayLabel(sf.dueDay)}
+            </span>
+            {!paid && (isUrgent || isOverdue) && (
+              <span style={{
+                fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em',
+                padding: '1px 6px', borderRadius: 4,
+                background: isOverdue ? 'rgba(239,68,68,0.15)' : 'rgba(245,158,11,0.15)',
+                color: isOverdue ? 'var(--color-danger)' : 'var(--color-warning)',
+                display: 'flex', alignItems: 'center', gap: 3, flexShrink: 0
+              }}>
+                <AlertCircle size={10} />
+                {isOverdue ? (isPastMonth ? `Atrasado` : 'Atrasado') : daysUntil === 0 ? 'Hoje' : `Em ${daysUntil}d`}
+              </span>
+            )}
+            {sf.paymentMethod && (
+              <span style={{ fontSize: 11, color: 'var(--color-text-tertiary)', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                · {PAYMENT_LABELS[sf.paymentMethod] || sf.paymentMethod}
+              </span>
+            )}
+          </div>
+          <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--color-text-primary)', flexShrink: 0 }}>
+            {formatCurrency(effectiveAmount)}
           </span>
-          {!paid && (isUrgent || isOverdue) && (
-            <span style={{
-              fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em',
-              padding: '1px 6px', borderRadius: 4,
-              background: isOverdue ? 'rgba(239,68,68,0.15)' : 'rgba(245,158,11,0.15)',
-              color: isOverdue ? 'var(--color-danger)' : 'var(--color-warning)',
-              display: 'flex', alignItems: 'center', gap: 3
-            }}>
-              <AlertCircle size={10} />
-              {isOverdue ? (isPastMonth ? `Atrasado · ${new Date(yearMonth + '-01T12:00:00').toLocaleString('pt-BR', { month: 'long' })}` : 'Atrasado') : daysUntil === 0 ? 'Hoje' : `Em ${daysUntil}d`}
-            </span>
-          )}
-          {sf.paymentMethod && (
-            <span style={{ fontSize: 11, color: 'var(--color-text-tertiary)' }}>
-              · {PAYMENT_LABELS[sf.paymentMethod] || sf.paymentMethod}
-            </span>
-          )}
         </div>
-      </div>
-
-      <div style={{ textAlign: 'right', marginRight: 4 }}>
-        <p style={{ fontSize: 15, fontWeight: 700, color: 'var(--color-text-primary)', margin: 0 }}>
-          {formatCurrency(effectiveAmount)}
-        </p>
       </div>
 
       {!sf.autoDebit && (
@@ -243,18 +241,19 @@ function VariavelItem({ sv, isLast, onPress }: { sv: SaidaVariavel; isLast: bool
         <p style={{ 
           fontSize: 14, fontWeight: 600, color: 'var(--color-text-primary)', margin: '0 0 2px',
           textDecoration: !isPending ? 'line-through' : 'none',
-          display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden',
-          lineHeight: 1.3
+          overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap'
         }}>{sv.description}</p>
-        <p style={{ fontSize: 12, color: 'var(--color-text-secondary)', margin: 0 }}>
-          {isPending ? 'Agendado para ' : ''}
-          {new Date(sv.date + 'T12:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })}
-        </p>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6 }}>
+          <p style={{ fontSize: 12, color: 'var(--color-text-secondary)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            {isPending ? 'Agendado para ' : ''}
+            {new Date(sv.date + 'T12:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })}
+          </p>
+          <span style={{ fontSize: 14, fontWeight: 700, color: isPending ? 'var(--color-text-primary)' : 'var(--color-danger)', flexShrink: 0 }}>
+            -{formatCurrency(sv.amount)}
+          </span>
+        </div>
       </div>
       <div style={{ textAlign: 'right', display: 'flex', alignItems: 'center', gap: 12 }}>
-        <span style={{ fontSize: 15, fontWeight: 700, color: isPending ? 'var(--color-text-primary)' : 'var(--color-danger)', flexShrink: 0 }}>
-          -{formatCurrency(sv.amount)}
-        </span>
         
         {isPending && (
           isMobile ? (
@@ -317,26 +316,27 @@ function EntradaItem({ e, isLast, onPress }: { e: Entrada; isLast: boolean; onPr
       <div style={{ flex: 1, minWidth: 0 }}>
         <p style={{ 
           fontSize: 14, fontWeight: 600, color: 'var(--color-text-primary)', margin: '0 0 2px',
-          display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden',
-          lineHeight: 1.3
+          overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap'
         }}>{e.sourceName}</p>
-        <p style={{ fontSize: 12, color: isOverdueEntry ? 'var(--color-warning)' : 'var(--color-text-secondary)', margin: 0 }}>
-          {isPending
-            ? isOverdueEntry
-              ? 'Não recebido — '
-              : 'Aguardando para '
-            : ''}
-          {new Date(e.date + 'T12:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })}
-        </p>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6 }}>
+          <p style={{ fontSize: 12, color: isOverdueEntry ? 'var(--color-warning)' : 'var(--color-text-secondary)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            {isPending
+              ? isOverdueEntry
+                ? 'Não recebido — '
+                : 'Aguardando para '
+              : ''}
+            {new Date(e.date + 'T12:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })}
+          </p>
+          <span style={{
+            fontSize: 14, fontWeight: 700, flexShrink: 0,
+            color: isOverdueEntry ? 'var(--color-warning)' : 'var(--color-success)',
+            opacity: isPending && !isOverdueEntry ? 0.65 : 1
+          }}>
+            +{formatCurrency(e.amount)}
+          </span>
+        </div>
       </div>
       <div style={{ textAlign: 'right', display: 'flex', alignItems: 'center', gap: 10 }}>
-        <span style={{
-          fontSize: 15, fontWeight: 700, flexShrink: 0,
-          color: isOverdueEntry ? 'var(--color-warning)' : 'var(--color-success)',
-          opacity: isPending && !isOverdueEntry ? 0.65 : 1
-        }}>
-          +{formatCurrency(e.amount)}
-        </span>
         {isPending && (
           <div style={{
             width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center',
