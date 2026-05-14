@@ -803,11 +803,14 @@ const OBJ_SUGGESTIONS = [
   { label: '+ Criar',       Icon: Plus,     color: '#64748B' },
 ]
 
+// prefers-reduced-motion: sem translate se o usuário pediu menos movimento
+const prefersReducedMotion = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
+
 const cardMotion = {
-  initial: { opacity: 0, y: 8 },
+  initial: { opacity: 0, y: prefersReducedMotion ? 0 : 8 },
   animate: { opacity: 1, y: 0 },
-  exit:    { opacity: 0, y: -4 },
-  transition: { duration: 0.35, ease: [0.25, 0.46, 0.45, 0.94] as [number,number,number,number] },
+  exit:    { opacity: 0, y: prefersReducedMotion ? 0 : -4 },
+  transition: { duration: prefersReducedMotion ? 0.01 : 0.35, ease: [0.25, 0.46, 0.45, 0.94] as [number,number,number,number] },
 }
 
 function ProgressiveOnboardingBanner({ onLancar }: { onLancar: () => void }) {
@@ -983,29 +986,46 @@ function ProgressiveOnboardingBanner({ onLancar }: { onLancar: () => void }) {
   // Card 4: sem parceiro
   if (!partner && !partnerDismissed) return (
     <AnimatePresence>
-      <motion.div key="card4" {...cardMotion} style={glassCard({ background: 'linear-gradient(135deg, rgba(59,130,246,0.05) 0%, rgba(139,92,246,0.05) 100%)', border: '1px solid rgba(139,92,246,0.15)', position: 'relative', overflow: 'hidden' })}>
+      <motion.div key="card4" {...cardMotion} style={glassCard({ background: 'linear-gradient(135deg, rgba(59,130,246,0.06) 0%, rgba(139,92,246,0.06) 100%)', border: '1px solid rgba(139,92,246,0.22)', position: 'relative', overflow: 'hidden' })}>
         {/* Ambient SVG lines */}
         <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none' }} viewBox="0 0 300 100" preserveAspectRatio="none">
-          <path d="M 0 50 Q 150 10 300 50" stroke="rgba(139,92,246,0.08)" strokeWidth="1" fill="none" />
-          <path d="M 0 60 Q 150 20 300 60" stroke="rgba(59,130,246,0.06)" strokeWidth="1" fill="none" />
+          <path d="M 0 50 Q 150 10 300 50" stroke="rgba(139,92,246,0.10)" strokeWidth="1" fill="none" />
+          <path d="M 0 60 Q 150 20 300 60" stroke="rgba(59,130,246,0.07)" strokeWidth="1" fill="none" />
         </svg>
 
-        {/* Icon decorativo — canto superior direito */}
-        <div style={{ position: 'absolute', top: 14, right: 14, width: 40, height: 36, pointerEvents: 'none' }}>
-          <div style={{ position: 'absolute', top: 0, left: 0, width: 26, height: 26, borderRadius: '50%', background: 'radial-gradient(circle, rgba(59,130,246,0.35) 0%, transparent 70%)' }} />
-          <div style={{ position: 'absolute', top: 0, right: 0, width: 26, height: 26, borderRadius: '50%', background: 'radial-gradient(circle, rgba(139,92,246,0.35) 0%, transparent 70%)' }} />
-          <Users size={15} color="rgba(139,92,246,0.65)" style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }} />
+        {/* Icon decorativo — canto superior direito, puramente ambiental */}
+        <div style={{ position: 'absolute', top: 14, right: 14, width: 40, height: 36, pointerEvents: 'none', opacity: 0.45 }}>
+          <div style={{ position: 'absolute', top: 0, left: 0, width: 26, height: 26, borderRadius: '50%', background: 'radial-gradient(circle, rgba(59,130,246,0.5) 0%, transparent 70%)' }} />
+          <div style={{ position: 'absolute', top: 0, right: 0, width: 26, height: 26, borderRadius: '50%', background: 'radial-gradient(circle, rgba(139,92,246,0.5) 0%, transparent 70%)' }} />
+          <Users size={15} color="rgba(139,92,246,1)" style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }} />
         </div>
 
-        {/* Conteúdo — largura total, com recuo direito para não sobrepo o ícone */}
+        {/* Conteúdo — largura total com recuo direito para não sobrepor o ícone */}
         <div style={{ position: 'relative', paddingRight: 52 }}>
-          <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-text-primary)', margin: '0 0 4px' }}>Imagine construir isso com alguém.</p>
-          <p style={{ fontSize: 13, color: 'var(--color-text-secondary)', margin: '0 0 14px', lineHeight: 1.5 }}>Cada pessoa mantém sua individualidade, mas vocês podem construir juntos.</p>
+          <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-text-primary)', margin: '0 0 4px' }}>Construindo juntos, vai mais longe.</p>
+          <p style={{ fontSize: 13, color: 'var(--color-text-secondary)', margin: '0 0 14px', lineHeight: 1.5 }}>Cada um mantém o próprio espaço — mas podem criar metas e estrutura em comum.</p>
           <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'nowrap' }}>
-            <button onClick={handleShare} style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'rgba(139,92,246,0.15)', color: '#A78BFA', border: '1px solid rgba(139,92,246,0.25)', borderRadius: 10, padding: '8px 14px', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-sans)', whiteSpace: 'nowrap', flexShrink: 0 }}>
+            <button
+              onClick={handleShare}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 6,
+                background: 'rgba(139,92,246,0.28)',
+                color: '#C4B5FD',
+                border: '1px solid rgba(139,92,246,0.40)',
+                borderRadius: 10, padding: '8px 14px',
+                fontSize: 13, fontWeight: 600,
+                cursor: 'pointer', fontFamily: 'var(--font-sans)',
+                whiteSpace: 'nowrap', flexShrink: 0,
+                boxShadow: '0 0 12px rgba(139,92,246,0.18)',
+                transition: 'background 150ms ease, box-shadow 150ms ease',
+              }}
+            >
               <Share2 size={14} />{copied ? 'Copiado!' : 'Convidar parceiro(a)'}
             </button>
-            <button onClick={() => { localStorage.setItem('somus:partner-later', '1'); setPartnerDismissed(true) }} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 13, color: 'var(--color-text-tertiary)', fontFamily: 'var(--font-sans)', padding: 0, whiteSpace: 'nowrap', flexShrink: 0 }}>Talvez depois</button>
+            <button
+              onClick={() => { localStorage.setItem('somus:partner-later', '1'); setPartnerDismissed(true) }}
+              style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 13, color: 'var(--color-text-tertiary)', fontFamily: 'var(--font-sans)', padding: 0, whiteSpace: 'nowrap', flexShrink: 0 }}
+            >Talvez depois</button>
           </div>
         </div>
       </motion.div>
