@@ -241,17 +241,28 @@ function VariavelItem({ sv, isLast, onPress }: { sv: SaidaVariavel; isLast: bool
       <div style={{ flex: 1, minWidth: 0 }}>
         <p style={{ 
           fontSize: 14, fontWeight: 600, color: 'var(--color-text-primary)', margin: '0 0 2px',
-          textDecoration: !isPending ? 'line-through' : 'none'
+          textDecoration: !isPending ? 'line-through' : 'none',
+          overflow: 'hidden', textOverflow: 'ellipsis',
+          ...(isMobile ? {} : { whiteSpace: 'nowrap' as const }),
         }}>{sv.description}</p>
-        <p style={{ fontSize: 12, color: 'var(--color-text-secondary)', margin: 0 }}>
-          {isPending ? 'Agendado para ' : ''}
-          {new Date(sv.date + 'T12:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })}
+        <p style={{ fontSize: 12, color: 'var(--color-text-secondary)', margin: 0, display: 'flex', alignItems: 'baseline', gap: 6, flexWrap: 'wrap' }}>
+          <span>
+            {isPending ? 'Agendado para ' : ''}
+            {new Date(sv.date + 'T12:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })}
+          </span>
+          {isMobile && (
+            <span style={{ fontSize: 13, fontWeight: 700, color: isPending ? 'var(--color-text-primary)' : 'var(--color-danger)' }}>
+              -{formatCurrency(sv.amount)}
+            </span>
+          )}
         </p>
       </div>
       <div style={{ textAlign: 'right', display: 'flex', alignItems: 'center', gap: 12 }}>
-        <span style={{ fontSize: 15, fontWeight: 700, color: isPending ? 'var(--color-text-primary)' : 'var(--color-danger)', flexShrink: 0 }}>
-          -{formatCurrency(sv.amount)}
-        </span>
+        {!isMobile && (
+          <span style={{ fontSize: 15, fontWeight: 700, color: isPending ? 'var(--color-text-primary)' : 'var(--color-danger)', flexShrink: 0 }}>
+            -{formatCurrency(sv.amount)}
+          </span>
+        )}
         
         {isPending && (
           isMobile ? (
@@ -275,6 +286,7 @@ function VariavelItem({ sv, isLast, onPress }: { sv: SaidaVariavel; isLast: bool
     </motion.div>
   )
 }
+
 
 function EntradaItem({ e, isLast, onPress }: { e: Entrada; isLast: boolean; onPress: (e: Entrada) => void }) {
   const isPending = e.status === 'pending'
