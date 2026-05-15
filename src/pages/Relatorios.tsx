@@ -242,7 +242,7 @@ export default function Relatorios() {
               Icon={ArrowDownRight}
             />
             <KpiCard
-              label="Saldo do mês"
+              label="Resultado do mês"
               value={formatCurrency(globalIn - globalOut)}
               delta={inDelta - outDelta}
               positiveIsGood
