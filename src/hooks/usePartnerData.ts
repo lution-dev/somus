@@ -114,16 +114,11 @@ export function usePartnerData(): PartnerData {
         avatarBackfilled.current = true
       }
 
-      const rawDivisoes = extractDivisoes(raw)
+      const divisoes = extractDivisoes(raw)
       const entradas = extractEntradas(raw)
-
-      // Recalculate balance from movements to ensure consistency.
-      // The stored `balance` field may drift from reality if any operation
-      // modified it without a matching movement entry.
-      const divisoes = rawDivisoes.map(cx => {
-        const movementBalance = cx.movements.reduce((s, mv) => s + mv.amount, 0)
-        return { ...cx, balance: movementBalance }
-      })
+      // Use stored balance — this is what the partner sees on their own device.
+      // Do NOT recalculate from movements: the movements array is used for the
+      // monthly flow view (Relatórios), while balance is the accumulated total.
       const balance = divisoes.reduce((s, cx) => s + cx.balance, 0)
 
       setData({
