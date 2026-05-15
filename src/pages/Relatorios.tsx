@@ -118,8 +118,18 @@ export default function Relatorios() {
     const myDivisoes = allDivisoes.filter(cx => cx.userId === currentUser?.id)
     if (reportCtx === 'me') return myDivisoes
     if (reportCtx === 'partner') return partnerData.divisoes
-    // 'couple' → merge both
-    return [...myDivisoes, ...partnerData.divisoes]
+    // 'couple' → merge divisões with the same id (they share the same template IDs
+    // like cx-essencial, cx-objetivos, etc.) combining movements and balances
+    const partnerMap = new Map(partnerData.divisoes.map(cx => [cx.id, cx]))
+    return myDivisoes.map(cx => {
+      const pCx = partnerMap.get(cx.id)
+      if (!pCx) return cx
+      return {
+        ...cx,
+        balance: cx.balance + pCx.balance,
+        movements: [...cx.movements, ...pCx.movements],
+      }
+    })
   }, [allDivisoes, reportCtx, currentUser?.id, partnerData.divisoes])
 
   const data     = aggregateMonth(divisoes, month)
