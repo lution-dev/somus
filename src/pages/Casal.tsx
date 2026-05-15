@@ -13,7 +13,7 @@ import { useBalanceHidden } from '../hooks/useBalanceHidden'
 import type { Objetivo } from '../types'
 import AddObjetivoModal from '../components/features/AddObjetivoModal'
 import ObjetivoCard from '../components/features/ObjetivoCard'
-import { collection, query, where, getDocs, doc, setDoc } from 'firebase/firestore'
+import { collection, query, where, getDocs, doc, setDoc, onSnapshot } from 'firebase/firestore'
 import { db } from '../lib/firebase'
 
 export default function Casal() {
@@ -33,33 +33,54 @@ export default function Casal() {
   const deleteObjetivo = useAppStore(s => s.deleteObjetivo)
   const setPartner     = useAppStore(s => s.setPartner)
 
-  // ── Backfill partner avatar if missing (users linked before avatar feature) ──
+  // ── Partner data from Firestore (real-time) ─────────────────────────────
+  // Partner data lives in THEIR OWN Firestore doc, not in our local Zustand.
+  // We need a real-time listener to fetch and keep their balance up to date.
+  const [partnerBalance, setPartnerBalance] = useState(0)
+  const [partnerEntradasCount, setPartnerEntradasCount] = useState(0)
+
   useEffect(() => {
-    if (!partner || partner.avatar) return  // already have it or no partner
-    const fetchPartnerAvatar = async () => {
-      try {
-        const { doc: fDoc, getDoc } = await import('firebase/firestore')
-        const snap = await getDoc(fDoc(db, 'users', partner.id))
-        const data = snap.data()
-        const avatar = data?.currentUser?.avatar ?? data?.currentUser?.photoURL ?? null
+    if (!partner?.id) return
+
+    const partnerDocRef = doc(db, 'users', partner.id)
+
+    const unsubscribe = onSnapshot(partnerDocRef, (snap) => {
+      const data = snap.data()
+      if (!data) {
+        setPartnerBalance(0)
+        setPartnerEntradasCount(0)
+        return
+      }
+
+      // Backfill avatar if missing
+      if (!partner.avatar) {
+        const avatar = data.currentUser?.avatar ?? data.currentUser?.photoURL ?? null
         if (avatar) {
           setPartner({ id: partner.id, name: partner.name, partnerCode: partner.partnerCode ?? '', avatar })
         }
-      } catch (err) {
-        console.warn('[Somus] Could not fetch partner avatar:', err)
       }
-    }
-    fetchPartnerAvatar()
+
+      // Calculate partner balance from their divisoes
+      const partnerDivisoes = data.divisoes ?? data.caixinhas ?? []
+      const balance = Array.isArray(partnerDivisoes)
+        ? partnerDivisoes.reduce((s: number, cx: { balance?: number }) => s + (cx.balance ?? 0), 0)
+        : 0
+      setPartnerBalance(balance)
+
+      // Count partner entradas
+      const partnerEntradas = data.entradas ?? []
+      setPartnerEntradasCount(Array.isArray(partnerEntradas) ? partnerEntradas.length : 0)
+    }, (err) => {
+      console.warn('[Somus:Casal] Error listening to partner data:', err)
+    })
+
+    return () => unsubscribe()
   }, [partner?.id]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // ── Calculate real balances ───────────────────────────────────────────
+  // ── Calculate current user balances ────────────────────────────────────
   const currentUserBalance = divisoes
     .filter(cx => cx.userId === (currentUser?.id ?? ''))
     .reduce((s, cx) => s + cx.balance, 0)
-
-  const partnerBalance = partner
-    ? divisoes.filter(cx => cx.userId === partner.id).reduce((s, cx) => s + cx.balance, 0)
-    : 0
 
   const currentUserEntradas = entradas.filter(e => e.userId === (currentUser?.id ?? ''))
 
@@ -178,7 +199,11 @@ export default function Casal() {
               <p style={{ fontSize: 18, fontWeight: 600, letterSpacing: 'var(--tracking-financial)', color: 'var(--color-mirian)', margin: '0 0 3px' }}>
                 {balanceHidden ? <span style={{ letterSpacing: 2 }}>{mask}</span> : formatCurrency(partnerBalance)}
               </p>
-              <p style={{ fontSize: 11, color: 'var(--color-text-tertiary)', margin: 0 }}>Parceiro(a)</p>
+              <p style={{ fontSize: 11, color: 'var(--color-text-tertiary)', margin: 0 }}>
+                {partnerEntradasCount > 0
+                  ? `${partnerEntradasCount} lançamento${partnerEntradasCount > 1 ? 's' : ''}`
+                  : 'Parceiro(a)'}
+              </p>
             </div>
           ) : (
             <div style={{
