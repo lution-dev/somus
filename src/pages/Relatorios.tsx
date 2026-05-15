@@ -6,6 +6,7 @@ import { getDivisaoIcon } from '../lib/icons'
 import { PageHeader } from '../components/ui'
 import UserMenu from '../components/ui/UserMenu'
 import { useIsMobile } from '../hooks/useIsMobile'
+import { usePartnerData } from '../hooks/usePartnerData'
 import {
   ChevronLeft, ChevronRight,
   ArrowUpRight, ArrowDownRight,
@@ -96,6 +97,7 @@ export default function Relatorios() {
   const currentUser  = useAppStore(s => s.currentUser)
   const partner      = useAppStore(s => s.partner)
   const isMobile     = useIsMobile()
+  const partnerData  = usePartnerData()
   const TODAY        = currentYM()
   const [month, setMonth]         = useState(TODAY)
   const [reportCtx, setReportCtx] = useState<'me' | 'partner' | 'couple'>('couple')
@@ -111,12 +113,14 @@ export default function Relatorios() {
     { key: 'couple',  label: 'Casal' },
   ]
 
+  // Merge local user divisoes + partner Firestore divisoes based on context
   const divisoes = useMemo(() => {
-    if (!allDivisoes || allDivisoes.length === 0) return []
-    if (reportCtx === 'me')      return allDivisoes.filter(cx => cx.userId === currentUser?.id)
-    if (reportCtx === 'partner') return allDivisoes.filter(cx => cx.userId === partner?.id)
-    return allDivisoes
-  }, [allDivisoes, reportCtx, currentUser, partner])
+    const myDivisoes = allDivisoes.filter(cx => cx.userId === currentUser?.id)
+    if (reportCtx === 'me') return myDivisoes
+    if (reportCtx === 'partner') return partnerData.divisoes
+    // 'couple' → merge both
+    return [...myDivisoes, ...partnerData.divisoes]
+  }, [allDivisoes, reportCtx, currentUser?.id, partnerData.divisoes])
 
   const data     = aggregateMonth(divisoes, month)
   const dataPrev = aggregateMonth(divisoes, shiftMonth(month, -1))

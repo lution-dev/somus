@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useLocation } from 'wouter'
 import { useAppStore } from '../stores/useAppStore'
 import { useShallow } from 'zustand/react/shallow'
@@ -13,7 +13,8 @@ import { useBalanceHidden } from '../hooks/useBalanceHidden'
 import type { Objetivo } from '../types'
 import AddObjetivoModal from '../components/features/AddObjetivoModal'
 import ObjetivoCard from '../components/features/ObjetivoCard'
-import { collection, query, where, getDocs, doc, setDoc, onSnapshot } from 'firebase/firestore'
+import { collection, query, where, getDocs, doc, setDoc } from 'firebase/firestore'
+import { usePartnerData } from '../hooks/usePartnerData'
 import { db } from '../lib/firebase'
 
 export default function Casal() {
@@ -31,51 +32,9 @@ export default function Casal() {
   const entradas       = useAppStore(useShallow(s => s.entradas))
   const editObjetivo   = useAppStore(s => s.editObjetivo)
   const deleteObjetivo = useAppStore(s => s.deleteObjetivo)
-  const setPartner     = useAppStore(s => s.setPartner)
 
-  // ── Partner data from Firestore (real-time) ─────────────────────────────
-  // Partner data lives in THEIR OWN Firestore doc, not in our local Zustand.
-  // We need a real-time listener to fetch and keep their balance up to date.
-  const [partnerBalance, setPartnerBalance] = useState(0)
-  const [partnerEntradasCount, setPartnerEntradasCount] = useState(0)
-
-  useEffect(() => {
-    if (!partner?.id) return
-
-    const partnerDocRef = doc(db, 'users', partner.id)
-
-    const unsubscribe = onSnapshot(partnerDocRef, (snap) => {
-      const data = snap.data()
-      if (!data) {
-        setPartnerBalance(0)
-        setPartnerEntradasCount(0)
-        return
-      }
-
-      // Backfill avatar if missing
-      if (!partner.avatar) {
-        const avatar = data.currentUser?.avatar ?? data.currentUser?.photoURL ?? null
-        if (avatar) {
-          setPartner({ id: partner.id, name: partner.name, partnerCode: partner.partnerCode ?? '', avatar })
-        }
-      }
-
-      // Calculate partner balance from their divisoes
-      const partnerDivisoes = data.divisoes ?? data.caixinhas ?? []
-      const balance = Array.isArray(partnerDivisoes)
-        ? partnerDivisoes.reduce((s: number, cx: { balance?: number }) => s + (cx.balance ?? 0), 0)
-        : 0
-      setPartnerBalance(balance)
-
-      // Count partner entradas
-      const partnerEntradas = data.entradas ?? []
-      setPartnerEntradasCount(Array.isArray(partnerEntradas) ? partnerEntradas.length : 0)
-    }, (err) => {
-      console.warn('[Somus:Casal] Error listening to partner data:', err)
-    })
-
-    return () => unsubscribe()
-  }, [partner?.id]) // eslint-disable-line react-hooks/exhaustive-deps
+  // ── Partner data from Firestore (real-time, centralized hook) ──────────
+  const { balance: partnerBalance, entradasCount: partnerEntradasCount } = usePartnerData()
 
   // ── Calculate current user balances ────────────────────────────────────
   const currentUserBalance = divisoes
