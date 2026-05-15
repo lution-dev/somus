@@ -1,4 +1,4 @@
-﻿import React from 'react'
+import React from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   AreaChart,
@@ -212,7 +212,8 @@ export function FluxoChart({ paidPct, totalFixasPending, totalPagoNoMes }: {
                     fillOpacity={1}
                     fill="url(#colorReal)"
                     connectNulls={false}
-                    animationDuration={1200}
+                    animationDuration={1000}
+                    animationBegin={0}
                   />
 
                   <Area
@@ -224,8 +225,8 @@ export function FluxoChart({ paidPct, totalFixasPending, totalPagoNoMes }: {
                     fillOpacity={1}
                     fill="url(#colorProj)"
                     connectNulls={true}
-                    animationDuration={1200}
-                    animationBegin={500}
+                    animationDuration={1000}
+                    animationBegin={0}
                   />
 
                   <ReferenceLine 
