@@ -15,11 +15,13 @@ interface PageHeaderProps {
   height?: number
   /** Show Somus logo on the left (only when back is false) */
   showLogo?: boolean
+  /** Hide rightAction on mobile — used when the AppLayout overlay already renders the avatar */
+  hideRightOnMobile?: boolean
 }
 
 const HEADER_H = 56
 
-export function PageHeader({ title, back, backTo, rightAction, bg, height, showLogo }: PageHeaderProps) {
+export function PageHeader({ title, back, backTo, rightAction, bg, height, showLogo, hideRightOnMobile }: PageHeaderProps) {
   const [, navigate] = useLocation()
   const h = height ?? HEADER_H
 
@@ -114,7 +116,9 @@ export function PageHeader({ title, back, backTo, rightAction, bg, height, showL
 
           {/* Right: action or spacer (only when back to balance centering) */}
           {rightAction ? (
-            <div style={{ flexShrink: 0 }}>{rightAction}</div>
+            <div style={{ flexShrink: 0 }} className={hideRightOnMobile ? 'somus-desktop' : undefined}>
+              {rightAction}
+            </div>
           ) : back ? (
             <div style={{ width: 36, flexShrink: 0 }} />
           ) : null}

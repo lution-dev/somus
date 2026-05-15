@@ -1110,7 +1110,7 @@ export default function Home() {
             title={`${greeting}, ${firstName}`}
             bg={HERO_BG}
             showLogo
-            rightAction={<UserMenu variant="hero" />}
+            rightAction={<span className="somus-desktop"><UserMenu variant="hero" /></span>}
           />
           <div style={{
             background: `linear-gradient(to bottom, ${HERO_BG} 0%, transparent 100%)`,

@@ -7,6 +7,7 @@ import type { NavItem } from '../ui'
 import SomusLogo from '../ui/SomusLogo'
 import PullToRefresh from '../ui/PullToRefresh'
 import { useAuth } from '../../hooks/useAuth'
+import UserMenu from '../ui/UserMenu'
 
 export const NAV_ITEMS: NavItem[] = [
   { path: '/home',       label: 'Home',        icon: <Home size={20} strokeWidth={1.5} />,          activeIcon: <Home size={20} strokeWidth={1.75} />,          activeFor: ['/relatorios/'] },
@@ -336,6 +337,17 @@ export function AppLayout({ children }: AppLayoutProps) {
           overflow: 'hidden',
         }}
       >
+        {/* Persistent avatar overlay — outside PageTransition so it never disappears during tab switches */}
+        <div style={{
+          position: 'absolute',
+          top: `calc(env(safe-area-inset-top, 0px) + 12px)`,
+          right: 16,
+          zIndex: 100,
+          pointerEvents: 'auto',
+        }}>
+          <UserMenu variant="hero" />
+        </div>
+
         <main
           ref={mainRef}
           style={{

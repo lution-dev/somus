@@ -172,7 +172,7 @@ export default function Relatorios() {
             rightAction={
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                 <MonthNav month={month} today={TODAY} onChange={setMonth} showLabel />
-                <UserMenu variant="hero" />
+                <span className="somus-desktop"><UserMenu variant="hero" /></span>
               </div>
             }
           />

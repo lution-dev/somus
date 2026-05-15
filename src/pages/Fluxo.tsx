@@ -807,7 +807,7 @@ export default function Fluxo() {
             title="Fluxo"
             bg={HERO_BG}
             showLogo
-            rightAction={<UserMenu variant="hero" />}
+            rightAction={<span className="somus-desktop"><UserMenu variant="hero" /></span>}
           />
           {/* Gradient wrapping FluxoChart — same structure as Home wraps BalanceCard */}
           <div style={{

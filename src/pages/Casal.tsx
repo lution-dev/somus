@@ -4,7 +4,6 @@ import { useAppStore } from '../stores/useAppStore'
 import { useShallow } from 'zustand/react/shallow'
 import { formatCurrency } from '../lib/calculations'
 import { PageHeader, ConfirmDialog } from '../components/ui'
-import UserMenu from '../components/ui/UserMenu'
 import ItemActionSheet from '../components/ui/ItemActionSheet'
 import { useIsMobile } from '../hooks/useIsMobile'
 import { useAuth } from '../hooks/useAuth'
@@ -233,7 +232,7 @@ export default function Casal() {
       {/* ── Header ── */}
       {isMobile ? (
         <>
-          <PageHeader title="Casal" bg={HERO_BG} showLogo rightAction={<UserMenu variant="hero" />} />
+          <PageHeader title="Casal" bg={HERO_BG} showLogo />
           <div style={{ position: 'relative', overflow: 'hidden' }}>
             {/* Cinematic ambient layer 1 — couple blue glow */}
             <div style={{
