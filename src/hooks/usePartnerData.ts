@@ -114,9 +114,17 @@ export function usePartnerData(): PartnerData {
         avatarBackfilled.current = true
       }
 
-      const divisoes = extractDivisoes(raw)
+      const rawDivisoes = extractDivisoes(raw)
       const entradas = extractEntradas(raw)
-      const balance  = divisoes.reduce((s, cx) => s + cx.balance, 0)
+
+      // Recalculate balance from movements to ensure consistency.
+      // The stored `balance` field may drift from reality if any operation
+      // modified it without a matching movement entry.
+      const divisoes = rawDivisoes.map(cx => {
+        const movementBalance = cx.movements.reduce((s, mv) => s + mv.amount, 0)
+        return { ...cx, balance: movementBalance }
+      })
+      const balance = divisoes.reduce((s, cx) => s + cx.balance, 0)
 
       setData({
         divisoes,
