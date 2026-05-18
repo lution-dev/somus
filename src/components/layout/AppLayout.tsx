@@ -253,14 +253,17 @@ function PageTransition({ children }: { children: ReactNode }) {
   const d = direction.current
   const slideX = d === 'push' ? '18%' : d === 'pop' ? '-18%' : 0
   const exitX  = d === 'push' ? '-10%' : d === 'pop' ? '10%' : 0
+  // Tab switches: no opacity fade — keeps header (logo/avatar) solid
+  const fadeIn  = d === 'tab' ? 1 : 0
+  const fadeOut = d === 'tab' ? 1 : 0
 
   return (
     <AnimatePresence mode="popLayout" initial={false}>
       <motion.div
         key={location}
-        initial={{ opacity: 0, x: slideX }}
+        initial={{ opacity: fadeIn, x: slideX }}
         animate={{ opacity: 1, x: 0 }}
-        exit={{ opacity: 0, x: exitX }}
+        exit={{ opacity: fadeOut, x: exitX }}
         transition={{ duration: d === 'tab' ? 0.15 : 0.25, ease: [0.32, 0.72, 0, 1] }}
         style={{ width: '100%' }}
       >
@@ -341,18 +344,6 @@ export function AppLayout({ children }: AppLayoutProps) {
         }}
       >
         {/* ── Persistent header overlays — OUTSIDE PageTransition, never animate ── */}
-        {/* Logo on left */}
-        <div style={{
-          position: 'absolute',
-          top: `calc(env(safe-area-inset-top, 0px) + 18px)`,
-          left: 16,
-          zIndex: 100,
-          opacity: isTabRoute ? 1 : 0,
-          pointerEvents: 'none',
-          transition: 'opacity 0.15s ease',
-        }}>
-          <SomusLogo size={20} />
-        </div>
         {/* Avatar on right */}
         <div style={{
           position: 'absolute',

@@ -82,7 +82,7 @@ export function PageHeader({ title, back, backTo, rightAction, bg, height, showL
               <ChevronLeft size={20} strokeWidth={2} />
             </button>
           ) : showLogo ? (
-            <div style={{ display: 'flex', alignItems: 'center', flexShrink: 0 }} className="somus-desktop">
+            <div style={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
               {/* Inline Somus logo — objectBoundingBox gradient works at any size */}
               <svg width="20" height="21" viewBox="0 0 895 928" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ display: 'block' }}>
                 <path d="M539.089 2.206L542.761 5.66257C544.368 7.17438 545.279 9.28234 545.279 11.4882V178.851C545.279 180.894 544.497 182.859 543.095 184.344L539.146 188.525C537.635 190.125 535.531 191.032 533.33 191.032H324.279C276.945 192.198 182.379 225.332 190.779 346.532C194.779 388.032 227.079 471.032 324.279 471.032C419.539 471.032 535.706 476.795 584.86 479.849C585.939 479.858 586.914 479.922 587.779 480.032C586.834 479.972 585.861 479.911 584.86 479.849C571.171 479.73 540.778 488.454 507.779 525.532C463.279 575.532 418.779 620.532 324.279 635.032C229.779 649.532 24.2786 571.532 1.27857 346.532C-9.22143 241.532 45.7786 116.032 135.779 54.0316C207.779 4.43159 267.779 -0.468384 324.279 0.0315582L533.606 0.0315952C535.644 0.0315956 537.605 0.809306 539.089 2.206Z" fill="url(#logo_g1)"/>
