@@ -340,7 +340,20 @@ export function AppLayout({ children }: AppLayoutProps) {
           overflow: 'hidden',
         }}
       >
-        {/* Persistent avatar overlay — always mounted, CSS opacity hides on detail screens */}
+        {/* ── Persistent header overlays — OUTSIDE PageTransition, never animate ── */}
+        {/* Logo on left */}
+        <div style={{
+          position: 'absolute',
+          top: `calc(env(safe-area-inset-top, 0px) + 18px)`,
+          left: 16,
+          zIndex: 100,
+          opacity: isTabRoute ? 1 : 0,
+          pointerEvents: 'none',
+          transition: 'opacity 0.15s ease',
+        }}>
+          <SomusLogo size={20} />
+        </div>
+        {/* Avatar on right */}
         <div style={{
           position: 'absolute',
           top: `calc(env(safe-area-inset-top, 0px) + 12px)`,
@@ -358,7 +371,6 @@ export function AppLayout({ children }: AppLayoutProps) {
           style={{
             flex: 1,
             overflowY: 'auto',
-            WebkitOverflowScrolling: 'touch',
             paddingBottom: 80,
           }}
         >
