@@ -234,6 +234,7 @@ function Sidebar() {
 function getDepth(path: string): number {
   if (path.startsWith('/casal/objetivo/')) return 1
   if (path.startsWith('/relatorios/') && path !== '/relatorios') return 1
+  if (path.startsWith('/perfil')) return 1
   return 0
 }
 
@@ -340,7 +341,7 @@ export function AppLayout({ children }: AppLayoutProps) {
         }}
       >
         {/* Persistent avatar overlay — only on main tabs (depth=0), hidden on detail screens */}
-        <AnimatePresence>
+        <AnimatePresence initial={false}>
           {isTabRoute && (
             <motion.div
               key="avatar-overlay"
