@@ -273,6 +273,8 @@ interface AppLayoutProps { children: ReactNode }
 
 export function AppLayout({ children }: AppLayoutProps) {
   const mainRef = useRef<HTMLElement>(null)
+  const [location] = useLocation()
+  const isTabRoute = getDepth(location) === 0
 
   return (
     <>
@@ -337,16 +339,27 @@ export function AppLayout({ children }: AppLayoutProps) {
           overflow: 'hidden',
         }}
       >
-        {/* Persistent avatar overlay — outside PageTransition so it never disappears during tab switches */}
-        <div style={{
-          position: 'absolute',
-          top: `calc(env(safe-area-inset-top, 0px) + 12px)`,
-          right: 16,
-          zIndex: 100,
-          pointerEvents: 'auto',
-        }}>
-          <UserMenu variant="hero" />
-        </div>
+        {/* Persistent avatar overlay — only on main tabs (depth=0), hidden on detail screens */}
+        <AnimatePresence>
+          {isTabRoute && (
+            <motion.div
+              key="avatar-overlay"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.15 }}
+              style={{
+                position: 'absolute',
+                top: `calc(env(safe-area-inset-top, 0px) + 12px)`,
+                right: 16,
+                zIndex: 100,
+                pointerEvents: 'auto',
+              }}
+            >
+              <UserMenu variant="hero" />
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         <main
           ref={mainRef}
