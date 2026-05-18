@@ -340,27 +340,18 @@ export function AppLayout({ children }: AppLayoutProps) {
           overflow: 'hidden',
         }}
       >
-        {/* Persistent avatar overlay — only on main tabs (depth=0), hidden on detail screens */}
-        <AnimatePresence initial={false}>
-          {isTabRoute && (
-            <motion.div
-              key="avatar-overlay"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.15 }}
-              style={{
-                position: 'absolute',
-                top: `calc(env(safe-area-inset-top, 0px) + 12px)`,
-                right: 16,
-                zIndex: 100,
-                pointerEvents: 'auto',
-              }}
-            >
-              <UserMenu variant="hero" />
-            </motion.div>
-          )}
-        </AnimatePresence>
+        {/* Persistent avatar overlay — always mounted, CSS opacity hides on detail screens */}
+        <div style={{
+          position: 'absolute',
+          top: `calc(env(safe-area-inset-top, 0px) + 12px)`,
+          right: 16,
+          zIndex: 100,
+          opacity: isTabRoute ? 1 : 0,
+          pointerEvents: isTabRoute ? 'auto' : 'none',
+          transition: 'opacity 0.15s ease',
+        }}>
+          <UserMenu variant="hero" />
+        </div>
 
         <main
           ref={mainRef}
