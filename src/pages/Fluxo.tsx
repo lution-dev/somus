@@ -437,13 +437,16 @@ export default function Fluxo() {
   const fluxoFutureOpen      = useNavStore(s => s.fluxoFutureOpen)
   const setFluxoFutureOpen   = useNavStore(s => s.setFluxoFutureOpen)
   const fluxoFuturePulse     = useNavStore(s => s.fluxoFuturePulse)
+  const fluxoLancadosOpen    = useNavStore(s => s.fluxoLancadosOpen)
+  const setFluxoLancadosOpen = useNavStore(s => s.setFluxoLancadosOpen)
   const futureCollapsed      = !fluxoFutureOpen
   const setFutureCollapsed   = (v: boolean | ((prev: boolean) => boolean)) => {
     const next = typeof v === 'function' ? v(futureCollapsed) : v
     setFluxoFutureOpen(!next)
   }
   const [futureHighlight, setFutureHighlight] = useState(false)
-  const futureRef = useRef<HTMLDivElement>(null)
+  const futureRef    = useRef<HTMLDivElement>(null)
+  const realizedRef  = useRef<HTMLDivElement>(null)
   const [confirmSkipSf, setConfirmSkipSf] = useState<SaidaFixa | null>(null)
   const [confirmDeleteSf, setConfirmDeleteSf] = useState<SaidaFixa | null>(null)
   const [actionSv, setActionSv] = useState<SaidaVariavel | null>(null)
@@ -489,6 +492,18 @@ export default function Fluxo() {
     }
   }, [fluxoFuturePulse])
 
+  // Quando vem da Home após lançar, abre a seção "Lançamentos do mês" e faz scroll
+  useEffect(() => {
+    if (fluxoLancadosOpen) {
+      setRealizedCollapsed(false)
+      setFluxoLancadosOpen(false)
+      requestAnimationFrame(() => {
+        setTimeout(() => {
+          realizedRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+        }, 120)
+      })
+    }
+  }, [fluxoLancadosOpen, setFluxoLancadosOpen])
 
   const yearMonth = useMemo(() => new Date().toISOString().slice(0, 7), [])
 
@@ -751,7 +766,7 @@ export default function Fluxo() {
         )}
 
         {realized.length > 0 && (
-          <>
+          <div ref={realizedRef}>
             <SectionLabel
               icon={<TrendingUp size={12} />}
               count={realized.length}
@@ -792,7 +807,7 @@ export default function Fluxo() {
                 </motion.div>
               )}
             </AnimatePresence>
-          </>
+          </div>
         )}
       </>
     )

@@ -17,10 +17,12 @@ import { useAuth } from '../hooks/useAuth'
 import { useBalanceHidden } from '../hooks/useBalanceHidden'
 import UserMenu from '../components/ui/UserMenu'
 import LancarEntradaModal from '../components/features/LancarEntradaModal'
+import LancarDespesaModal from '../components/features/LancarDespesaModal'
 import ConfirmPaymentModal from '../components/features/ConfirmPaymentModal'
 import { useNavStore } from '../stores/useNavStore'
 import {
   Plus,
+  TrendingDown,
   TrendingUp,
   Calendar,
   ArrowUpRight,
@@ -61,10 +63,10 @@ const pillBtn = (accent: string, bg: string): React.CSSProperties => ({
 
 function BalanceCard({
   total, totalIncome, expectedIncome,
-  onLancar, onHistorico, balanceHidden, onToggleHidden,
+  onLancar, onLancarDespesa, onHistorico, balanceHidden, onToggleHidden,
 }: {
   total: number; totalIncome: number; expectedIncome: number
-  onLancar: () => void; onHistorico: () => void
+  onLancar: () => void; onLancarDespesa: () => void; onHistorico: () => void
   balanceHidden: boolean; onToggleHidden: () => void
 }) {
   const remaining = Math.max(0, expectedIncome - totalIncome)
@@ -92,7 +94,7 @@ function BalanceCard({
         </button>
       </div>
 
-      {/* Valor principal — gradiente brand azul→ciano */}
+      {/* Valor principal */}
       <p style={{
         fontSize: 36, fontWeight: 600, fontFamily: 'var(--font-display)',
         letterSpacing: 'var(--tracking-financial)', lineHeight: 1, marginBottom: 12,
@@ -124,6 +126,9 @@ function BalanceCard({
       <div style={{ display: 'flex', gap: 8, marginTop: 16, flexWrap: 'wrap' }}>
         <button onClick={onLancar} style={pillBtn('var(--color-accent-primary)', 'rgba(59,130,246,0.12)')}>
           <Plus size={14} strokeWidth={2.5} /> Entrada
+        </button>
+        <button onClick={onLancarDespesa} style={pillBtn('#f87171', 'rgba(248,113,113,0.12)')}>
+          <TrendingDown size={14} strokeWidth={2.5} /> Despesa
         </button>
         <button onClick={onHistorico} style={pillBtn('var(--color-text-secondary)', 'var(--color-bg-tertiary)')}>
           <History size={14} /> Histórico
@@ -1062,6 +1067,13 @@ export default function Home() {
   const [prefill, setPrefill] = useState<{ sourceName: string; amount: number } | undefined>()
   const [confirmPayId, setConfirmPayId] = useState<string | null>(null)
   const [confirmPayEntradaId, setConfirmPayEntradaId] = useState<string | null>(null)
+  // Despesa rápida da Home
+  const [divisaoPickerOpen, setDivisaoPickerOpen] = useState(false)
+  const [despesaModalOpen, setDespesaModalOpen] = useState(false)
+  const [selectedDivisaoId, setSelectedDivisaoId] = useState('')
+  const [selectedDivisaoName, setSelectedDivisaoName] = useState('')
+  const setFluxoLancadosOpen = useNavStore(s => s.setFluxoLancadosOpen)
+  const [, navigate] = useLocation()
   const isMobile = useIsMobile()
   const { displayName } = useAuth()
 
@@ -1094,6 +1106,23 @@ export default function Home() {
     setConfirmPayId(sfId)
   }
 
+  function handleOpenDespesaFromHome() {
+    setDivisaoPickerOpen(true)
+  }
+
+  function handleDivisaoSelected(id: string, name: string) {
+    setSelectedDivisaoId(id)
+    setSelectedDivisaoName(name)
+    setDivisaoPickerOpen(false)
+    setDespesaModalOpen(true)
+  }
+
+  function handleDespesaConfirmed() {
+    setDespesaModalOpen(false)
+    setFluxoLancadosOpen(true)
+    navigate('/fluxo')
+  }
+
   function handleCloseModal() {
     setLancarOpen(false)
     setPrefill(undefined)
@@ -1122,6 +1151,7 @@ export default function Home() {
               totalIncome={summary.totalIncome}
               expectedIncome={expectedIncome}
               onLancar={() => setLancarOpen(true)}
+              onLancarDespesa={handleOpenDespesaFromHome}
               onHistorico={() => setHistoricoOpen(true)}
               balanceHidden={balanceHidden}
               onToggleHidden={toggleBalanceHidden}
@@ -1162,6 +1192,7 @@ export default function Home() {
               totalIncome={summary.totalIncome}
               expectedIncome={expectedIncome}
               onLancar={() => setLancarOpen(true)}
+              onLancarDespesa={handleOpenDespesaFromHome}
               onHistorico={() => setHistoricoOpen(true)}
               balanceHidden={balanceHidden}
               onToggleHidden={toggleBalanceHidden}
@@ -1198,6 +1229,55 @@ export default function Home() {
       </div>
       <LancarEntradaModal open={lancarOpen} onClose={handleCloseModal} prefill={prefill} />
       <HistoricoDialog open={historicoOpen} onClose={() => setHistoricoOpen(false)} />
+
+      {/* Seletor de divisão para despesa rápida da Home */}
+      <Dialog open={divisaoPickerOpen} onClose={() => setDivisaoPickerOpen(false)} title="Em qual divisão?" size="sm">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {divisoes.map(cx => {
+            const { Icon, color } = getDivisaoIcon(cx.id)
+            return (
+              <button
+                key={cx.id}
+                onClick={() => handleDivisaoSelected(cx.id, cx.name)}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 12,
+                  padding: '12px 16px', borderRadius: 12,
+                  background: 'var(--color-bg-tertiary)',
+                  border: '1px solid var(--color-border)',
+                  cursor: 'pointer', textAlign: 'left',
+                  transition: 'background 150ms',
+                }}
+                onMouseEnter={e => (e.currentTarget.style.background = `${color}18`)}
+                onMouseLeave={e => (e.currentTarget.style.background = 'var(--color-bg-tertiary)')}
+              >
+                <div style={{
+                  width: 36, height: 36, borderRadius: 10,
+                  background: `${color}20`,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+                }}>
+                  <Icon size={18} style={{ color }} />
+                </div>
+                <div style={{ flex: 1 }}>
+                  <p style={{ margin: 0, fontSize: 14, fontWeight: 600, color: 'var(--color-text-primary)' }}>{cx.name}</p>
+                  <p style={{ margin: 0, fontSize: 12, color: 'var(--color-text-tertiary)' }}>
+                    {formatCurrency(cx.balance)} disponível
+                  </p>
+                </div>
+              </button>
+            )
+          })}
+        </div>
+      </Dialog>
+
+      {/* Modal de despesa rápida vindo da Home */}
+      {selectedDivisaoId && (
+        <LancarDespesaModal
+          open={despesaModalOpen}
+          onClose={handleDespesaConfirmed}
+          divisaoId={selectedDivisaoId}
+          divisaoName={selectedDivisaoName}
+        />
+      )}
       <ConfirmPaymentModal
         open={!!confirmPayId}
         onClose={() => setConfirmPayId(null)}
