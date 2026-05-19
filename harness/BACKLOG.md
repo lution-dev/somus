@@ -43,6 +43,19 @@
 | T-POLISH-04 | ✅ done | Sidebar Cleanup: remoção de tagline redundante + redimensionamento wordmark (20px, 600) | AppLayout.tsx |
 | T-POLISH-05 | ✅ done | Hint Essencial: ajuste de padding/margin hero para aproximar o banner das abas | DivisaoDetalhe.tsx |
 
+## Sprint Atual — Documentação Completa (S-DOC)
+
+| ID | Status | Descrição | Arquivo |
+|----|--------|-----------|---------|
+| T-DOC-01 | ✅ done | Criar ARCHITECTURE.md (referenciado no HARNESS mas não existia) | harness/ARCHITECTURE.md |
+| T-DOC-02 | ✅ done | Documentar useNavStore — contexto e propósito ausentes | stores/useNavStore.ts |
+| T-DOC-03 | ✅ done | Documentar usePWAInstall — sem JSDoc | hooks/usePWAInstall.ts |
+| T-DOC-04 | ✅ done | Documentar useAppStore — selectors sem comentários, migrações sem contexto | stores/useAppStore.ts |
+| T-DOC-05 | ✅ done | Documentar Dialog/PageHeader — props sem JSDoc | components/ui/ |
+| T-DOC-06 | ✅ done | Atualizar DESIGN.md — tokens CSS var não documentados, componentes novos faltando | harness/DESIGN.md |
+| T-DOC-07 | ✅ done | Atualizar CONTEXT.md — novos hooks (usePartnerData, useCurrencyInput) e useNavStore ausentes | harness/CONTEXT.md |
+| T-DOC-08 | ✅ done | Atualizar SPEC.md — SPEC usa nomenclatura antiga (Caixinhas/Livre), divergente do código atual | harness/SPEC.md |
+
 ## Próximas fases
 
 | ID | Prioridade | Descrição |

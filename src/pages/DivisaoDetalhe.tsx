@@ -16,6 +16,7 @@ import AddSaidaFixaModal from '../components/features/AddSaidaFixaModal'
 import AddObjetivoModal from '../components/features/AddObjetivoModal'
 import ConfirmPaymentModal from '../components/features/ConfirmPaymentModal'
 import type { DivisaoMovement, SaidaFixa, Objetivo } from '../types'
+import { usePartnerData } from '../hooks/usePartnerData'
 
 /** Convert hex color + alpha (0-1) to rgba string */
 function hexToRgba(hex: string, alpha: number): string {
@@ -267,11 +268,21 @@ export default function DivisaoDetalhe() {
       .reduce((sum, src) => sum + (src.expectedAmount ?? 0), 0)
   )
 
-  // Objetivos filtrados para o usuário atual
-  const myObjetivos = useMemo(
-    () => objetivos.filter(o => o.userId === (currentUser?.id ?? '') || o.isCouple),
-    [objetivos, currentUser]
-  )
+  const { partnerObjetivos } = usePartnerData()
+
+  // Objetivos filtrados: próprios + de casal do parceiro (deduplicados por id)
+  const myObjetivos = useMemo(() => {
+    const own = objetivos.filter(o => o.userId === (currentUser?.id ?? '') || o.isCouple)
+    const seen = new Set<string>(own.map(o => o.id))
+    const merged = [...own]
+    for (const o of partnerObjetivos) {
+      if (!seen.has(o.id)) {
+        seen.add(o.id)
+        merged.push(o)
+      }
+    }
+    return merged
+  }, [objetivos, currentUser, partnerObjetivos])
 
   const isMobile = useIsMobile()
 

@@ -55,6 +55,7 @@ interface AppActions {
   confirmSaidaVariavel: (id: string, confirmationDate: string) => void
   editSaidaVariavel: (id: string, updates: { amount?: number; description?: string; date?: string; category?: string }) => void
   deleteSaidaVariavel: (id: string) => void
+  autoConfirmPastPending: () => void
 
   // Income Sources
   addIncomeSource: (source: Omit<IncomeSource, 'id'>) => void
@@ -338,23 +339,10 @@ export const useAppStore = create<AppState & AppActions>()(
       addSaidaVariavel: (saida) =>
         set((state) => {
           const id = `sv-${Date.now()}`
-          const today = new Date().toISOString().split('T')[0]
-          const isPending = saida.date > today
-          
-          const newSaida: SaidaVariavel = { 
-            ...saida, 
-            id, 
-            status: isPending ? 'pending' : 'realized' 
-          }
-          
-          // Se for pendente, NÃO desconta do saldo agora
-          if (isPending) {
-            return {
-              saidasVariaveis: [...state.saidasVariaveis, newSaida],
-            }
-          }
 
-          // Se for realizado (hoje ou passado), desconta do saldo
+          // Lançamento = realizado imediatamente, independente da data
+          const newSaida: SaidaVariavel = { ...saida, id, status: 'realized' }
+
           return {
             saidasVariaveis: [...state.saidasVariaveis, newSaida],
             divisoes: state.divisoes.map((cx) =>
@@ -463,6 +451,52 @@ export const useAppStore = create<AppState & AppActions>()(
                 balance: cx.balance + sv.amount,
                 movements: (cx.movements ?? []).filter(mv => mv.id !== `mv-${id}-sv`),
               }
+            ),
+          }
+        }),
+
+      // Confirma automaticamente saidasVariaveis com status 'pending' cuja data já passou.
+      // Corrige lançamentos que foram criados como futuros mas agora são passados/hoje.
+      autoConfirmPastPending: () =>
+        set((state) => {
+          const today = new Date().toISOString().slice(0, 10)
+          const toConfirm = state.saidasVariaveis.filter(
+            sv => sv.status === 'pending' && sv.date <= today
+          )
+          if (toConfirm.length === 0) return state
+
+          const confirmedIds = new Set(toConfirm.map(sv => sv.id))
+          let divisoes = state.divisoes
+
+          for (const sv of toConfirm) {
+            // Evita duplicar movimento se já existe um com o mesmo id
+            divisoes = divisoes.map(cx => {
+              if (cx.id !== sv.divisaoId) return cx
+              const mvId = `mv-${sv.id}-sv`
+              const alreadyHasMovement = (cx.movements ?? []).some(m => m.id === mvId)
+              return {
+                ...cx,
+                balance: alreadyHasMovement ? cx.balance : cx.balance - sv.amount,
+                movements: alreadyHasMovement
+                  ? cx.movements
+                  : [
+                      ...(cx.movements ?? []),
+                      {
+                        id: mvId,
+                        date: sv.date,
+                        amount: -sv.amount,
+                        description: sv.description,
+                        type: 'expense' as const,
+                      },
+                    ],
+              }
+            })
+          }
+
+          return {
+            divisoes,
+            saidasVariaveis: state.saidasVariaveis.map(sv =>
+              confirmedIds.has(sv.id) ? { ...sv, status: 'realized' as const } : sv
             ),
           }
         }),
@@ -849,6 +883,16 @@ export const useAppStore = create<AppState & AppActions>()(
 
 // ─── Selectors ────────────────────────────────────────────────────────────────
 
+/**
+ * Retorna as divisões do usuário atual.
+ *
+ * Em modo `couple`: retorna TODAS as divisões (Lucas + Mírian juntas).
+ * Em modo `personal`: filtra por `userId` do usuário logado.
+ *
+ * Fallback: se nenhuma divisão bate com o userId (ex: após re-login com UID
+ * diferente), retorna todas as existentes para evitar tela vazia. O App.tsx
+ * detecta e corrige o userId automaticamente em seguida.
+ */
 export const selectCurrentDivisoes = (state: AppState) => {
   if (state.viewContext === 'couple') return state.divisoes
   const userId = state.currentUser?.id ?? ''
@@ -858,21 +902,35 @@ export const selectCurrentDivisoes = (state: AppState) => {
   return mine.length > 0 ? mine : state.divisoes
 }
 
+/**
+ * Retorna as fontes de renda do usuário atual (ou todas em modo couple).
+ */
 export const selectCurrentIncomeSources = (state: AppState) =>
   state.viewContext === 'couple'
     ? state.incomeSources
     : state.incomeSources.filter(src => src.userId === (state.currentUser?.id ?? ''))
 
+/**
+ * Retorna as entradas do usuário atual (ou todas em modo couple).
+ * Inclui entradas com `status: 'pending'`.
+ */
 export const selectCurrentEntradas = (state: AppState) =>
   state.viewContext === 'couple'
     ? state.entradas
     : state.entradas.filter(e => e.userId === (state.currentUser?.id ?? ''))
 
+/**
+ * Retorna as saídas fixas do usuário atual (ou todas em modo couple).
+ */
 export const selectCurrentSaidasFixas = (state: AppState) =>
   state.viewContext === 'couple'
     ? state.saidasFixas
     : state.saidasFixas.filter(sf => sf.userId === (state.currentUser?.id ?? ''))
 
+/**
+ * Calcula a renda mensal esperada do usuário atual.
+ * Soma `expectedAmount` de todas as fontes de renda ativas.
+ */
 export const selectExpectedMonthlyIncome = (state: AppState): number =>
   selectCurrentIncomeSources(state)
     .reduce((sum, src) => sum + (src.expectedAmount ?? 0), 0)

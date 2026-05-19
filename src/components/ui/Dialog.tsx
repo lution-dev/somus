@@ -1,15 +1,30 @@
-﻿import { useEffect, useCallback } from 'react'
+import { useEffect, useCallback } from 'react'
 import { createPortal } from 'react-dom'
 import type { HTMLAttributes, ReactNode } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 
+/**
+ * Dialog — Modal / Bottom Sheet responsivo.
+ *
+ * - Mobile: slide-up desde a base (bottom sheet), raio 28px nos cantos superiores.
+ * - Desktop: pop-up centralizado com animação de scale.
+ * - Renderizado via `createPortal` em `document.body` (zIndex 9000).
+ * - Bloqueia scroll do `<main>` e do `<body>` enquanto aberto.
+ * - Fecha ao pressionar Escape ou clicar no backdrop.
+ *
+ * Liquid Glass: backdrop-filter blur(28px) saturate(200%) — conforme §4.9 do DESIGN.md.
+ */
 interface DialogProps {
   open: boolean
   onClose: () => void
+  /** Título exibido no header (opcional) */
   title?: string
+  /** Subtítulo/descrição abaixo do título (opcional) */
   description?: string
   children: ReactNode
+  /** Largura máxima do modal no desktop (sm=384, md=448, lg=512, full=100%) */
   size?: 'sm' | 'md' | 'lg' | 'full'
+  /** Exibe o botão X de fechar no header (default: true) */
   showClose?: boolean
 }
 

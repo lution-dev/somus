@@ -8,8 +8,10 @@
 **Conceito:** App de clareza financeira para casais com renda variável.
 
 ## Navegação
-**Bottom Tab Bar:** Home · Fluxo · Caixinhas · Casal
-**Menu lateral:** Perfil · Configurações · Histórico · Objetivos · Investimentos
+**Bottom Tab Bar:** Home · Fluxo · Divisões · Casal
+**Menu lateral:** Perfil · Configurações · Histórico · Objetivos
+
+> ⚠️ O SPEC usa "Caixinhas" como nome de produto na aba — o código usa `Divisões`. Migração concluída na v10.
 
 ## Regras de Negócio
 
@@ -19,21 +21,24 @@
 | RN02 | Mesma fonte pode ser lançada múltiplas vezes no mês (renda parcial). |
 | RN03 | Saídas fixas não debitam auto. Débito automático marcado confirma sozinho. |
 | RN04 | Fatura do cartão = lançamento único na Essencial, com breakdown por categoria. |
-| RN05 | Reserva Emergência atingiu R$10k → redirecionar % para Objetivos (com confirmação). |
+| RN05 | Reserva Emergência atingiu meta → redirecionar % para Objetivos (com confirmação). |
 | RN06 | Valores futuros = prefixo `~` + cor âmbar. Confirmados = sem prefixo. |
 | RN07 | Saldos externos (99 Pago, Mercado Pago, Rico) = atualização manual no MVP. |
-| RN08 | Dízimo = prioridade máxima. Sempre primeiro na distribuição. |
+| RN08 | Dízimo = prioridade máxima. Sempre **primeiro** na distribuição (`calculateDistribution`). |
+| RN09 | Despesas variáveis com data futura não abatem saldo imediatamente (Agendamento). Confirmação manual. |
 
-## Caixinhas (Método Nati Arcuri Adaptado)
+## Divisões (Método Nati Arcuri Adaptado)
 
-| Caixinha | % | Descrição |
-|---|---|---|
-| Dízimo/Oferta | 10% | Prioridade máxima. Primeira a ser distribuída. |
-| Reserva Emergência | ~8% | Meta: R$10.000. Vínculo Mercado Pago. |
-| Objetivos | 20% | Apartamento. Múltiplos objetivos com foto e prazo. |
-| Essencial | 55% | Contas fixas, alimentação, transporte. |
-| Educação | 5% | Cursos, livros, mentorias. |
-| Livre | Restante | O que sobra após todas. |
+> Nota: no código e no banco as "caixinhas" foram renomeadas para "divisões" na v10.
+> A divisão "Livre" foi **removida** na v8 (saldo transferido para Liberdade Financeira).
+
+| ID | Divisão | % padrão | Descrição |
+|---|---|---|---|
+| cx-dizimo | Dízimo/Oferta | 10% | Prioridade máxima. Primeira na distribuição (RN08). |
+| cx-reserva | Liberdade Financeira | 10% | Reserva de emergência + investimentos de longo prazo. |
+| cx-objetivos | Objetivos | 20% | Múltiplos objetivos com foto e prazo. |
+| cx-essencial | Essencial | 55% | Contas fixas, alimentação, transporte. |
+| cx-educacao | Educação | 5% | Cursos, livros, mentorias. |
 
 ## Diferenciação Visual
 

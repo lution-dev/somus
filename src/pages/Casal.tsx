@@ -33,7 +33,7 @@ export default function Casal() {
   const deleteObjetivo = useAppStore(s => s.deleteObjetivo)
 
   // ── Partner data from Firestore (real-time, centralized hook) ──────────
-  const { balance: partnerBalance, entradasCount: partnerEntradasCount } = usePartnerData()
+  const { balance: partnerBalance, entradasCount: partnerEntradasCount, partnerObjetivos } = usePartnerData()
 
   // ── Calculate current user balances ────────────────────────────────────
   const currentUserBalance = divisoes
@@ -47,12 +47,22 @@ export default function Casal() {
   const hasPartner      = partner !== null
   const currentUserName = currentUser?.name ?? displayName ?? 'Você'
 
-  // ── Sort objetivos by progress (highest pct first) ───────────────────
-  const sortedObjetivos = [...objetivos].sort((a, b) => {
-    const pctA = a.targetAmount > 0 ? a.currentAmount / a.targetAmount : 0
-    const pctB = b.targetAmount > 0 ? b.currentAmount / b.targetAmount : 0
-    return pctB - pctA
-  })
+  // ── Merge couple objectives: own store + partner's (deduplicated by id) ──
+  const sortedObjetivos = (() => {
+    const seen = new Set<string>()
+    const merged: Objetivo[] = []
+    for (const o of [...objetivos, ...partnerObjetivos]) {
+      if (!seen.has(o.id)) {
+        seen.add(o.id)
+        merged.push(o)
+      }
+    }
+    return merged.sort((a, b) => {
+      const pctA = a.targetAmount > 0 ? a.currentAmount / a.targetAmount : 0
+      const pctB = b.targetAmount > 0 ? b.currentAmount / b.targetAmount : 0
+      return pctB - pctA
+    })
+  })()
 
   const isMobile = useIsMobile()
   const HERO_BG = '#0D0A20'

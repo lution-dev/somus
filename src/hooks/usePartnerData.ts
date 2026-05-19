@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { doc, onSnapshot } from 'firebase/firestore'
 import { db } from '../lib/firebase'
 import { useAppStore } from '../stores/useAppStore'
-import type { Divisao, Entrada } from '../types'
+import type { Divisao, Entrada, Objetivo, ObjetivoMovement } from '../types'
 
 // ─── Firestore → local type adapters ─────────────────────────────────────────
 
@@ -37,6 +37,36 @@ function toEntrada(raw: any): Entrada {
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function toObjetivoMovement(raw: any): ObjetivoMovement {
+  return {
+    id:          raw.id ?? '',
+    date:        raw.date ?? '',
+    amount:      raw.amount ?? 0,
+    description: raw.description ?? '',
+    type:        raw.type ?? 'deposit',
+  }
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function toObjetivo(raw: any): Objetivo {
+  return {
+    id:              raw.id ?? '',
+    userId:          raw.userId ?? '',
+    name:            raw.name ?? '',
+    emoji:           raw.emoji ?? '🎯',
+    targetAmount:    raw.targetAmount ?? 0,
+    currentAmount:   raw.currentAmount ?? 0,
+    targetDate:      raw.targetDate,
+    monthsToAchieve: raw.monthsToAchieve,
+    imageUrl:        raw.imageUrl,
+    isCouple:        raw.isCouple ?? false,
+    movements:       Array.isArray(raw.movements) ? raw.movements.map(toObjetivoMovement) : [],
+    createdAt:       raw.createdAt,
+    status:          raw.status,
+  }
+}
+
 // ─── Legacy naming migration (caixinhas → divisoes) ──────────────────────────
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -51,6 +81,14 @@ function extractEntradas(data: any): Entrada[] {
   return Array.isArray(raw) ? raw.map(toEntrada) : []
 }
 
+// Extrai apenas os objetivos de casal do parceiro (objetivos pessoais ficam privados)
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function extractPartnerObjetivos(data: any): Objetivo[] {
+  const raw = data.objetivos ?? []
+  if (!Array.isArray(raw)) return []
+  return raw.map(toObjetivo).filter(o => o.isCouple)
+}
+
 // ─── Hook ────────────────────────────────────────────────────────────────────
 
 export interface PartnerData {
@@ -58,6 +96,8 @@ export interface PartnerData {
   entradas: Entrada[]
   balance: number
   entradasCount: number
+  /** Objetivos marcados com isCouple=true do Firestore do parceiro */
+  partnerObjetivos: Objetivo[]
   loading: boolean
 }
 
@@ -66,12 +106,14 @@ const EMPTY: PartnerData = {
   entradas: [],
   balance: 0,
   entradasCount: 0,
+  partnerObjetivos: [],
   loading: false,
 }
 
 /**
  * Real-time listener for the partner's Firestore document.
- * Returns their divisoes, entradas, aggregated balance, and entry count.
+ * Returns their divisoes, entradas, aggregated balance, entry count,
+ * and couple objectives (isCouple=true only — personal ones stay private).
  *
  * Also handles avatar backfill if the partner's avatar was missing at link time.
  */
@@ -114,8 +156,9 @@ export function usePartnerData(): PartnerData {
         avatarBackfilled.current = true
       }
 
-      const divisoes = extractDivisoes(raw)
-      const entradas = extractEntradas(raw)
+      const divisoes         = extractDivisoes(raw)
+      const entradas         = extractEntradas(raw)
+      const partnerObjetivos = extractPartnerObjetivos(raw)
       // Use stored balance — this is what the partner sees on their own device.
       // Do NOT recalculate from movements: the movements array is used for the
       // monthly flow view (Relatórios), while balance is the accumulated total.
@@ -126,6 +169,7 @@ export function usePartnerData(): PartnerData {
         entradas,
         balance,
         entradasCount: entradas.length,
+        partnerObjetivos,
         loading: false,
       })
     }, (err) => {

@@ -1,8 +1,8 @@
 # CONTEXT.md — Somus
 > Estado atual do projeto. Atualizado ao final de cada sessão.
 
-**Última atualização:** 2026-05-13
-**Status geral:** ✅ Onboarding v2 Premium + Layout Login Ultrawide + Sidebar Minimalista + Filtros Fluxo-style
+**Última atualização:** 2026-05-19
+**Status geral:** ✅ Onboarding v2 Premium + Layout Login Ultrawide + Sidebar Minimalista + Filtros Fluxo-style + Documentação Completa
 
 ## O Que É
 App de planejamento financeiro para casais com renda variável. Mobile-first, dark mode only. Resolve o problema de apps que exigem renda fixa no início do mês — o Somus permite lançar entradas incrementais conforme caem e distribui automaticamente por divisões (método Nati Arcuri adaptado).
@@ -28,31 +28,40 @@ npm install && npm run dev
 ## Arquitetura de Arquivos
 ```
 src/
-  types/index.ts              # Tipos TypeScript
+  types/index.ts              # Tipos TypeScript — fonte única da verdade
   lib/
-    calculations.ts           # Funções de negócio + formatação
+    calculations.ts           # Funções de negócio + formatação (puras)
     divisoes.ts               # Metadados: DIVISAO_ORDER, DIVISAO_INFO, taglines
     icons.tsx                 # DIVISAO_ICONS com cor por divisão
-    firebase.ts               # Firebase config
-    firestoreService.ts       # saveStateToFirestore / loadStateFromFirestore
-    migrationService.ts       # Merge lógico local ↔ Firestore (inclui SECURITY: discard stale user)
+    firebase.ts               # Firebase config (app, auth, db)
+    firestoreService.ts       # saveStateToFirestore / loadStateFromFirestore / subscribeToState
+    migrationService.ts       # Merge lógico local ↔ Firestore (SECURITY: discard stale user)
+    haptic.ts                 # Vibration API: selection (10ms) / impact ([15,30,10]ms)
+    utils.ts                  # Utilitários genéricos: formatCurrency, formatDate, generateId, clamp
   stores/
-    useAppStore.ts            # Zustand store (persist localStorage + Firestore sync)
+    useAppStore.ts            # Zustand store principal (persist localStorage v15 + Firestore sync)
                               # selectCurrentDivisoes: fallback userId para evitar tela vazia
+    useNavStore.ts            # Zustand store leve SEM persist — estado de navegação cross-component
+                              # GhostLink: fluxoFutureOpen + fluxoFuturePulse
   components/
     ui/                       # Design system (Button, Card, Badge, Dialog, BottomNav, ProgressBar...)
-    layout/AppLayout.tsx      # Shell com BottomNav
+    layout/AppLayout.tsx      # Shell com BottomNav (mobile) + Sidebar (desktop)
     features/
       LancarEntradaModal.tsx  # Modal core de entrada
       FluxoChart.tsx          # Gráfico Recharts de projeção
   hooks/
-    useAuth.ts                # Firebase Google Auth
-    useFirebaseSync.tsx       # Bidirectional Zustand ↔ Firestore sync
-    useFluxoProjection.ts     # Projeção diária saldo real vs projetado
-    useImageUpload.ts         # Client-side image compression → base64
-    useIsMobile.ts            # Responsive breakpoint hook
-    usePWAInstall.ts          # PWA install prompt
-    useBalanceHidden.ts       # Toggle visibilidade de saldo
+    useAuth.ts                # Firebase Google Auth (popup only — redirect bloqueado por 3rd-party cookies)
+    useFirebaseSync.tsx       # Provider: migration + Zustand→Firestore (debounce 1.5s) + Firestore→Zustand
+    useFluxoProjection.ts     # Projeção diária: histórico reconstruído + saldo projetado fim do mês
+    usePartnerData.ts         # Real-time listener do doc Firestore do parceiro
+                              # Retorna: divisoes, entradas, balance, objetivos isCouple=true apenas
+                              # Backfill de avatar do parceiro se ausente no momento do link
+    useImageUpload.ts         # Compressão JPEG→base64 (max 800px, 75% qual, 500KB)
+    useIsMobile.ts            # useSyncExternalStore + matchMedia (<768px) — sem flicker
+    usePWAInstall.ts          # beforeinstallprompt API para instalar o app
+    useBalanceHidden.ts       # Toggle banco-style para ocultar saldos (localStorage + cross-tab sync)
+    useCurrencyInput.ts       # Formatação estilo calculadora: dígitos→centavos→"1.234,56"
+                              # Props: initialCents, displayValue, numericValue, handleChange, reset, setValue
   pages/
     Onboarding.tsx            # Wizard 5 steps + orchestrador + dissolve cinematic
     Home.tsx                  # Dashboard com Empty State Estruturado (dormant/ativo)
@@ -61,6 +70,7 @@ src/
     Relatorios.tsx            # Gráficos e histórico
     Casal.tsx                 # Modo casal + gerenciamento de parceiro
     InviteAccept.tsx          # Aceitação de convite via link /convite/:code
+    Perfil.tsx                # Perfil do usuário
   App.tsx                     # Routing + guard onboarding + backfill divisões + userId re-adopt
 ```
 

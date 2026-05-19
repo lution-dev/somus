@@ -57,6 +57,15 @@ export function FirebaseSyncProvider({ children }: FirebaseSyncProviderProps) {
             log('Ensured Firestore is up to date')
           }
         }
+
+        // After Firebase state is resolved, confirm any pending saidasVariaveis
+        // whose date has already passed. This fixes lançamentos created as future
+        // that were never deducted from the balance.
+        if (!cancelled) {
+          const { autoConfirmPastPending } = useAppStore.getState()
+          autoConfirmPastPending()
+          log('autoConfirmPastPending executed after remote sync')
+        }
       } catch (err) {
         console.warn('[Somus] Migration error (using local state):', err)
       }

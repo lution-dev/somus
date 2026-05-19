@@ -3,6 +3,8 @@
 
 > **v2.0 — Liquid Glass & Atmospheric Hero:** Atualização premium adicionando sistema visual de vidro líquido (estilo iOS 26) e padrão de hero gradient seamless em todas as telas mobile.
 
+> **Ver também:** `harness/ARCHITECTURE.md` para tokens CSS var, regras de componentes e padrões de código.
+
 ---
 
 ## 1. Filosofia
@@ -386,4 +388,89 @@ function formatShortDate(dateString: string) {
 12. **Desktop usa radial glow** — não linear-gradient; apenas mobile usa linear hero
 13. **Today Highlight obrigatório** — itens pendentes de hoje SEMPRE recebem `background: rgba(...)` suave (§4.11). Consistente entre Home e Fluxo
 14. **Date labels contextuais** — usar "Hoje"/"Amanhã" em vez de data numérica (§4.12). Consistente entre Home e Fluxo
+
+---
+
+## 8. Tokens CSS (Variáveis Globais)
+
+Todos definidos no CSS global em `src/styles/`. **Nunca usar valores hardcoded.**
+
+```css
+/* Fundos */
+--color-bg-primary:   #0D1B2A   /* fundo principal */
+--color-bg-secondary: #1A2D42   /* cards elevados */
+--color-bg-tertiary:  #243B55   /* inputs, listas */
+
+/* Acentos */
+--color-accent-primary: #3B82F6  /* CTAs, botões, tabs ativas */
+--color-accent-couple:  #8B5CF6  /* contexto casal */
+
+/* Identidade por usuário */
+--color-lucas:  #3B82F6
+--color-mirian: #EC4899
+
+/* Status */
+--color-success: #10B981  /* entradas, saldo positivo */
+--color-warning: #F59E0B  /* estimados, alertas */
+--color-danger:  #EF4444  /* saídas, déficit */
+
+/* Texto */
+--color-text-primary:   #F1F5F9  /* texto principal */
+--color-text-secondary: #94A3B8  /* labels, subtítulos */
+--color-text-tertiary:  #64748B  /* placeholders, hints */
+
+/* Bordas */
+--color-border: rgba(255, 255, 255, 0.08)
+
+/* Geometria */
+--radius-card: 16px
+--space-md:    16px
+
+/* Tipografia */
+--font-display: 'Inter', sans-serif
+```
+
+---
+
+## 9. Componentes UI Adicionais
+
+Componentes que existem em `src/components/ui/` e seguem as mesmas regras de design:
+
+### 9.1 ItemActionSheet
+Bottom sheet de ações contextuais (editar, excluir, pagar).
+- Mobile only, abre com slide-up desde a base.
+- Itens com ícone, label e variante (default / danger).
+- Fundo: Liquid Glass (mesmo padrão do `Dialog`).
+
+### 9.2 PullToRefresh
+Indicador visual de pull-to-refresh para mobile.
+- Exibe spinner suave ao puxar a página para baixo.
+- Integrado ao topo do scroll principal.
+
+### 9.3 ContextToggle
+Toggle "Pessoal / Casal" na Home.
+- Slide horizontal + fade (300ms) ao trocar contexto.
+- Azul para pessoal, lilás para casal.
+
+### 9.4 ImageCropPicker
+Seletor de imagem com crop para objetivos.
+- Permite upload via câmera ou galeria.
+- Preview do crop antes de confirmar.
+- Resultado: base64 comprimido via `useImageUpload`.
+
+### 9.5 UserMenu
+Menu de perfil do usuário (desktop: dropdown no sidebar).
+- Avatar, nome, email.
+- Links: Perfil, Configurações, Sair.
+- `signOut` via `useAuth` ao clicar em Sair.
+
+### 9.6 MonthGroup
+Agrupador visual de itens por mês.
+- Header com "Mês Ano" + separador.
+- Usado em histórico de movimentos e relatórios.
+
+### 9.7 Breadcrumb
+Navegação de volta no desktop (ver §5.3).
+- Parent items: `text-secondary`, clicável.
+- Item atual: `text-primary`, bold, sem link.
 
