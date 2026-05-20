@@ -62,8 +62,8 @@ export default function App() {
   const [location, navigate] = useLocation()
 
   // SW update strategy: check for new version every 60s.
-  // registerType 'autoUpdate' handles skipWaiting + reload automatically.
-  // The interval ensures mobile PWA checks for updates even if backgrounded.
+  // When a new SW activates (skipWaiting + clientsClaim), reload the page
+  // so the browser actually uses the new cached assets instead of stale ones.
   useRegisterSW({
     onRegisteredSW(_swUrl, registration) {
       if (registration) {
@@ -72,6 +72,20 @@ export default function App() {
       }
     },
   })
+
+  // Force reload when a new service worker takes control.
+  // Without this, the page keeps using old JS/CSS even after the new SW activates.
+  useEffect(() => {
+    if (!('serviceWorker' in navigator)) return
+    let reloading = false
+    const onControllerChange = () => {
+      if (reloading) return
+      reloading = true
+      window.location.reload()
+    }
+    navigator.serviceWorker.addEventListener('controllerchange', onControllerChange)
+    return () => navigator.serviceWorker.removeEventListener('controllerchange', onControllerChange)
+  }, [])
 
   // Runtime data hygiene (divisoes backfill + cx-livre cleanup + userId re-adopt)
   useEffect(() => {
