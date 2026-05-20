@@ -75,6 +75,16 @@
 | T-DESK-01 | ✅ done | Casal: 2-col layout (PatrimonioCard+InviteCard esquerda, Objetivos direita), ObjetivosSection extraída | Casal.tsx |
 | T-DESK-02 | ✅ done | ObjetivoDetalhe: 2-col layout (progress+CTA esquerda sticky, Histórico direita), hero 220px | ObjetivoDetalhe.tsx |
 
+## Sprint Atual — Bugfix: Inconsistência de Total nas Divisões (S-BUG)
+
+| ID | Status | Descrição | Arquivo |
+|----|--------|-----------|---------| 
+| T-BUG-01 | ✅ done | Fix: calcPct e valor exibido no card da Home não filtravam por mês atual — usavam todos os movements de todos os tempos | Home.tsx |
+| T-BUG-02 | ✅ done | Design: exibir gasto do mês e valor livre claramente nos cards da Home + hero do DivisaoDetalhe | Home.tsx, DivisaoDetalhe.tsx |
+| T-BUG-03 | ✅ done | Fix: rota /relatorios/:id → /divisao/:slug (sem cx-), BottomNav mantém Home ativa | App.tsx, AppLayout.tsx, Home.tsx, DivisaoDetalhe.tsx |
+| T-BUG-04 | ✅ done | Fix: % nos cards usava expectedBudget (renda esperada) → trocar por totalIn real da divisão | Home.tsx |
+| T-BUG-05 | ✅ done | Modal Entrada em 2 etapas: Renda (distribui %) vs Divisão específica (direto na caixinha, sem dízimo) | LancarEntradaModal.tsx |
+
 ## Sprint Pendente — Agendamento de Entradas Futuras (S-ENT)
 
 | ID | Status | Descrição | Arquivo |

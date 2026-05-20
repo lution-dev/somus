@@ -10,7 +10,7 @@ import { useAuth } from '../../hooks/useAuth'
 import UserMenu from '../ui/UserMenu'
 
 export const NAV_ITEMS: NavItem[] = [
-  { path: '/home',       label: 'Home',        icon: <Home size={20} strokeWidth={1.5} />,          activeIcon: <Home size={20} strokeWidth={1.75} />,          activeFor: ['/relatorios/'] },
+  { path: '/home',       label: 'Home',        icon: <Home size={20} strokeWidth={1.5} />,          activeIcon: <Home size={20} strokeWidth={1.75} />,          activeFor: ['/divisao/'] },
   { path: '/fluxo',     label: 'Fluxo',       icon: <ArrowLeftRight size={20} strokeWidth={1.5} />, activeIcon: <ArrowLeftRight size={20} strokeWidth={1.75} /> },
   { path: '/relatorios', label: 'Relatórios', icon: <BarChart3 size={20} strokeWidth={1.5} />,      activeIcon: <BarChart3 size={20} strokeWidth={1.75} /> },
   { path: '/casal',     label: 'Casal',       icon: <Heart size={20} strokeWidth={1.5} />,           activeIcon: <Heart size={20} strokeWidth={1.75} /> },
@@ -233,6 +233,7 @@ function Sidebar() {
 // Profundidade da rota — abas = 0, detalhes = 1
 function getDepth(path: string): number {
   if (path.startsWith('/casal/objetivo/')) return 1
+  if (path.startsWith('/divisao/')) return 1
   if (path.startsWith('/relatorios/') && path !== '/relatorios') return 1
   if (path.startsWith('/perfil')) return 1
   return 0

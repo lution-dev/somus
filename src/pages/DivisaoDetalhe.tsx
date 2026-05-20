@@ -158,7 +158,7 @@ function DivisaoHeroMobile({
         {/* Top row: lancado + pct + delta */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 12 }}>
           <div>
-            <p style={{ fontSize: 11, color: 'var(--color-text-tertiary)', margin: '0 0 3px', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Gasto no mês</p>
+            <p style={{ fontSize: 11, color: 'var(--color-text-tertiary)', margin: '0 0 3px', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Gasto este mês</p>
             <p style={{ fontSize: 20, fontWeight: 700, color: 'var(--color-text-primary)', margin: 0, letterSpacing: '-0.01em' }}>
               {formatCurrency(animLancado)}
             </p>
@@ -184,11 +184,26 @@ function DivisaoHeroMobile({
           </div>
         </div>
 
-        {/* Contextual copy */}
-        <p style={{ fontSize: 12, color: 'var(--color-text-secondary)', margin: 0, lineHeight: 1.45 }}>{c.copy}</p>
+        {/* Contextual copy + falta */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+          <p style={{ fontSize: 12, color: 'var(--color-text-secondary)', margin: 0, lineHeight: 1.45, flex: 1 }}>{c.copy}</p>
+          {totalIncomeMes > 0 && pctMes < 100 && (
+            <div style={{
+              flexShrink: 0, textAlign: 'right',
+              padding: '4px 10px', borderRadius: 8,
+              background: 'rgba(255,255,255,0.05)',
+              border: '1px solid rgba(255,255,255,0.08)',
+            }}>
+              <p style={{ fontSize: 9, color: 'var(--color-text-tertiary)', margin: 0, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Falta usar</p>
+              <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--color-success)', margin: 0, lineHeight: 1.2 }}>
+                {formatCurrency(totalIncomeMes - totalLancadoMes)}
+              </p>
+            </div>
+          )}
+        </div>
         {hasDelta && (
-          <p style={{ fontSize: 11, color: 'var(--color-text-tertiary)', margin: '4px 0 0' }}>
-            Mes anterior: {formatCurrency(lastMonthLancado)}
+          <p style={{ fontSize: 11, color: 'var(--color-text-tertiary)', margin: '6px 0 0' }}>
+            Mês anterior: {formatCurrency(lastMonthLancado)}
           </p>
         )}
       </div>
@@ -197,7 +212,11 @@ function DivisaoHeroMobile({
 }
 
 export default function DivisaoDetalhe() {
-  const { id } = useParams<{ id: string }>()
+  // Accepts both /relatorios/:id (cx-essencial) and /divisao/:slug (essencial)
+  const rawParams = useParams<{ id?: string; slug?: string }>()
+  const rawParam = rawParams.id ?? rawParams.slug ?? ''
+  // Normalize: if it doesn't start with 'cx-', prefix it
+  const id = rawParam.startsWith('cx-') ? rawParam : `cx-${rawParam}`
   const [, navigate] = useLocation()
   const isEssencial  = id === 'cx-essencial'
   const isObjetivos  = id === 'cx-objetivos'

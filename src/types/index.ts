@@ -46,6 +46,10 @@ export interface Entrada {
   note?: string
   distribution: DivisaoDistributionItem[]
   status?: 'realized' | 'pending'
+  /** 'distributable' (default): distributes to all divisions by %; shown in global history
+   *  'direct': goes only to targetDivisaoId; NOT in global income total; shown in Fluxo only */
+  kind?: 'distributable' | 'direct'
+  targetDivisaoId?: string
 }
 
 // ─── Divisoes ──────────────────────────────────────────────────────────────

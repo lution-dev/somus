@@ -135,15 +135,39 @@ export const useAppStore = create<AppState & AppActions>()(
         const status: 'realized' | 'pending' = isFuture ? 'pending' : 'realized'
         const newEntrada: Entrada = { ...entrada, id, status }
 
+        // ── kind === 'direct': vai só para uma divisão específica ──────────
+        if (entrada.kind === 'direct' && entrada.targetDivisaoId) {
+          const divisaoId = entrada.targetDivisaoId
+          set((state) => ({
+            entradas: [...state.entradas, newEntrada],
+            divisoes: isFuture ? state.divisoes : state.divisoes.map((cx) =>
+              cx.id !== divisaoId ? cx : {
+                ...cx,
+                balance: cx.balance + entrada.amount,
+                movements: [
+                  ...cx.movements,
+                  {
+                    id: `mv-${id}-direct`,
+                    date: entrada.date,
+                    amount: entrada.amount,
+                    description: entrada.sourceName,
+                    type: 'income' as const,
+                  },
+                ],
+              }
+            ),
+          }))
+          return
+        }
+
+        // ── kind === 'distributable' (default): distribui por todas as divisões ──
         if (isFuture) {
-          // Entrada futura: apenas registra, não distribui saldo
           set((state) => ({
             entradas: [...state.entradas, newEntrada],
           }))
           return
         }
 
-        // Entrada realizada: distribui saldos nas divisoes
         set((state) => {
           const updatedDivisoes = state.divisoes.map((cx) => {
             const dist = entrada.distribution.find(d => d.divisaoId === cx.id)
@@ -169,6 +193,7 @@ export const useAppStore = create<AppState & AppActions>()(
           }
         })
       },
+
 
       confirmEntrada: (id, confirmationDate) =>
         set((state) => {

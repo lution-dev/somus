@@ -174,6 +174,7 @@ export default function App() {
             <Switch>
               <Route path="/home">{() => <AnimatedHome isOnboarded={isOnboarded} />}</Route>
               <Route path="/fluxo" component={Fluxo} />
+              <Route path="/divisao/:slug" component={DivisaoDetalhe} />
               <Route path="/relatorios/:id" component={DivisaoDetalhe} />
               <Route path="/relatorios" component={Relatorios} />
               <Route path="/casal/objetivo/:id" component={ObjetivoDetalhe} />

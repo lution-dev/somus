@@ -64,7 +64,7 @@ export function getMonthSummary(
   const target = month || new Date().toISOString().slice(0, 7)
 
   const totalIncome = entradas
-    .filter(e => e.date.startsWith(target) && e.status !== 'pending')
+    .filter(e => e.date.startsWith(target) && e.status !== 'pending' && e.kind !== 'direct')
     .reduce((sum, e) => sum + e.amount, 0)
 
   const totalExpenses = saidasFixas

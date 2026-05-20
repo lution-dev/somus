@@ -44,6 +44,7 @@ import {
   BarChart2,
   Share2,
   Clock,
+  Trash2,
 } from 'lucide-react'
 
 // ─── Pill button style ──────────────────────────────────────────────────────
@@ -141,11 +142,19 @@ function BalanceCard({
 // ─── Histórico Dialog ────────────────────────────────────────────────────────
 
 function HistoricoDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
-  const entradas = useAppStore(useShallow(selectCurrentEntradas))
+  const entradas      = useAppStore(useShallow(selectCurrentEntradas))
+  const deleteEntrada = useAppStore(s => s.deleteEntrada)
+  const [confirmId, setConfirmId] = React.useState<string | null>(null)
+
+  // Only show distributable entradas (kind !== 'direct') in the global history
+  const distributableEntradas = useMemo(
+    () => entradas.filter(e => e.kind !== 'direct'),
+    [entradas],
+  )
 
   const grouped = useMemo(
-    () => groupByMonth(entradas, e => e.date, e => e.amount),
-    [entradas],
+    () => groupByMonth(distributableEntradas, e => e.date, e => e.amount),
+    [distributableEntradas],
   )
 
   return (
@@ -187,6 +196,29 @@ function HistoricoDialog({ open, onClose }: { open: boolean; onClose: () => void
                   <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--color-success)', flexShrink: 0 }}>
                     +{formatCurrency(item.amount)}
                   </span>
+                  {/* Delete entry */}
+                  {confirmId === item.id ? (
+                    <div style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
+                      <button
+                        onClick={() => { deleteEntrada(item.id); setConfirmId(null) }}
+                        style={{ fontSize: 11, fontWeight: 600, color: 'var(--color-danger)', background: 'rgba(239,68,68,0.12)', border: 'none', borderRadius: 8, padding: '3px 8px', cursor: 'pointer', fontFamily: 'var(--font-sans)' }}
+                      >Confirmar</button>
+                      <button
+                        onClick={() => setConfirmId(null)}
+                        style={{ fontSize: 11, color: 'var(--color-text-tertiary)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-sans)' }}
+                      >Cancelar</button>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => setConfirmId(item.id)}
+                      style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4, color: 'var(--color-text-tertiary)', flexShrink: 0, opacity: 0.6, display: 'flex', alignItems: 'center', transition: 'opacity 120ms' }}
+                      onMouseEnter={e => (e.currentTarget.style.opacity = '1')}
+                      onMouseLeave={e => (e.currentTarget.style.opacity = '0.6')}
+                      title="Remover entrada"
+                    >
+                      <Trash2 size={13} />
+                    </button>
+                  )}
                 </div>
               ))}
             </React.Fragment>
@@ -582,11 +614,27 @@ function DivisoesSection({ balanceHidden = false }: { balanceHidden?: boolean })
 
   const isDormant = incomeSources.length === 0
 
-  // Helper pct usado
+  const expectedIncome = useAppStore(selectExpectedMonthlyIncome)
+
+  // Orçamento mensal esperado da divisão = % da renda esperada
+  const expectedBudget = (cx: typeof divisoes[0]) => (cx.percentage / 100) * expectedIncome
+
+  // Mês atual no formato YYYY-MM (filtro para pct usado e total de despesas)
+  const currentMonth = new Date().toISOString().slice(0, 7)
+
+  // Helper pct usado — filtra somente movimentos do mês atual (consistente com DivisaoDetalhe)
   const calcPct = (cx: typeof divisoes[0]) => {
-    const totalIn  = cx.movements.filter(m => m.type === 'income').reduce((s, m) => s + m.amount, 0)
-    const totalOut = cx.movements.filter(m => m.type === 'expense').reduce((s, m) => s + Math.abs(m.amount), 0)
+    const mvsMes   = cx.movements.filter(m => m.date.startsWith(currentMonth))
+    const totalIn  = mvsMes.filter(m => m.type === 'income').reduce((s, m) => s + m.amount, 0)
+    const totalOut = mvsMes.filter(m => m.type !== 'income').reduce((s, m) => s + Math.abs(m.amount), 0)
     return totalIn > 0 ? Math.min(100, (totalOut / totalIn) * 100) : 0
+  }
+
+  // Retorna total de despesas do mês atual para exibir nos cards
+  const calcTotalOut = (cx: typeof divisoes[0]) => {
+    return cx.movements
+      .filter(m => m.date.startsWith(currentMonth) && m.type !== 'income')
+      .reduce((s, m) => s + Math.abs(m.amount), 0)
   }
 
   // Se divisões ainda não foram criadas (rarissimo), mostra placeholder mínimo
@@ -634,10 +682,13 @@ function DivisoesSection({ balanceHidden = false }: { balanceHidden?: boolean })
         {essencial && (() => {
           const { Icon, color } = getDivisaoIcon(essencial.id)
           const pct    = calcPct(essencial)
-          const totalIn = essencial.movements.filter(m => m.type === 'income').reduce((s, m) => s + m.amount, 0)
+          const spent  = calcTotalOut(essencial)
+          const mvsMes = essencial.movements.filter(m => m.date.startsWith(currentMonth))
+          const totalIn = mvsMes.filter(m => m.type === 'income').reduce((s, m) => s + m.amount, 0)
+          const hasMes = totalIn > 0 || spent > 0
           return (
             <button
-              onClick={() => navigate(`/relatorios/${essencial.id}`)}
+              onClick={() => navigate(`/divisao/${essencial.id.replace('cx-', '')}`)}
               className="card card-interactive"
               style={{
                 display: 'flex', alignItems: 'center', gap: 14,
@@ -679,15 +730,34 @@ function DivisoesSection({ balanceHidden = false }: { balanceHidden?: boolean })
                     {DORMANT_TAG['cx-essencial']}
                   </p>
                 ) : (
-                  <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, marginBottom: 6 }}>
-                    <p style={{ fontSize: 18, fontWeight: 700, color: 'var(--color-text-primary)', margin: 0 }}>
-                      {balanceHidden ? <span style={{ letterSpacing: 2 }}>{mask}</span> : formatCurrency(essencial.balance)}
-                    </p>
-                    {totalIn > 0 && (
-                      <span style={{
-                        fontSize: 10, fontWeight: 600,
-                        color: pct >= 80 ? 'var(--color-danger)' : pct >= 50 ? 'var(--color-warning)' : 'var(--color-text-tertiary)',
-                      }}>{Math.round(pct)}% usado</span>
+                  <div style={{ marginBottom: 6 }}>
+                    {/* Linha principal: balance livre */}
+                    <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
+                      <p style={{ fontSize: 18, fontWeight: 700, color: 'var(--color-text-primary)', margin: 0 }}>
+                        {balanceHidden ? <span style={{ letterSpacing: 2 }}>{mask}</span> : formatCurrency(essencial.balance)}
+                      </p>
+                      <span style={{ fontSize: 10, fontWeight: 500, color: 'var(--color-text-tertiary)' }}>livre</span>
+                    </div>
+                    {/* Linha secundária: gasto do mês */}
+                    {hasMes && (
+                      <p style={{ fontSize: 11, fontWeight: 500, color: 'var(--color-text-secondary)', margin: '2px 0 0', lineHeight: 1.3 }}>
+                        {balanceHidden ? mask : `-${formatCurrency(spent)} gasto`}
+                        {totalIn > 0 ? (
+                          <span style={{
+                            marginLeft: 5,
+                            color: pct >= 80 ? 'var(--color-danger)' : pct >= 50 ? 'var(--color-warning)' : 'var(--color-text-tertiary)',
+                            fontWeight: 600,
+                          }}>· {Math.round(pct)}%
+                            <span style={{ fontWeight: 400, color: 'var(--color-text-tertiary)', marginLeft: 3 }}>
+                              de {balanceHidden ? mask : formatCurrency(totalIn)}
+                            </span>
+                          </span>
+                        ) : expectedIncome > 0 && (
+                          <span style={{ marginLeft: 5, color: 'var(--color-text-tertiary)', fontWeight: 400 }}>
+                            · meta {balanceHidden ? mask : formatCurrency(expectedBudget(essencial))}
+                          </span>
+                        )}
+                      </p>
                     )}
                   </div>
                 )}
@@ -727,13 +797,16 @@ function DivisoesSection({ balanceHidden = false }: { balanceHidden?: boolean })
           `}</style>
           {others.slice(0, 4).map((cx) => {
             const { Icon, color } = getDivisaoIcon(cx.id)
-            const pct    = calcPct(cx)
-            const totalIn = cx.movements.filter(m => m.type === 'income').reduce((s, m) => s + m.amount, 0)
+            const pct     = calcPct(cx)
+            const spent   = calcTotalOut(cx)
+            const mvsMes  = cx.movements.filter(m => m.date.startsWith(currentMonth))
+            const totalIn = mvsMes.filter(m => m.type === 'income').reduce((s, m) => s + m.amount, 0)
+            const hasMes  = totalIn > 0 || spent > 0
 
             return (
               <button
                 key={cx.id}
-                onClick={() => navigate(`/relatorios/${cx.id}`)}
+                onClick={() => navigate(`/divisao/${cx.id.replace('cx-', '')}`)}
                 className="card card-interactive home-divisoes-grid-item"
                 style={{
                   textAlign: 'left', cursor: 'pointer',
@@ -771,15 +844,34 @@ function DivisoesSection({ balanceHidden = false }: { balanceHidden?: boolean })
                     {DORMANT_TAG[cx.id] ?? 'Aguardando.'}
                   </p>
                 ) : (
-                  <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, marginBottom: 8 }}>
-                    <p style={{ fontSize: 14, fontWeight: 700, color: 'var(--color-text-primary)', margin: 0 }}>
-                      {balanceHidden ? <span style={{ letterSpacing: 2 }}>{mask}</span> : formatCurrency(cx.balance)}
-                    </p>
-                    {totalIn > 0 && (
-                      <span style={{
-                        fontSize: 10, fontWeight: 600,
-                        color: pct >= 80 ? 'var(--color-danger)' : pct >= 50 ? 'var(--color-warning)' : 'var(--color-text-tertiary)',
-                      }}>{Math.round(pct)}% usado</span>
+                  <div style={{ marginBottom: 8 }}>
+                    {/* Balance livre + label */}
+                    <div style={{ display: 'flex', alignItems: 'baseline', gap: 5 }}>
+                      <p style={{ fontSize: 14, fontWeight: 700, color: 'var(--color-text-primary)', margin: 0 }}>
+                        {balanceHidden ? <span style={{ letterSpacing: 2 }}>{mask}</span> : formatCurrency(cx.balance)}
+                      </p>
+                      <span style={{ fontSize: 9, fontWeight: 500, color: 'var(--color-text-tertiary)' }}>livre</span>
+                    </div>
+                    {/* Gasto do mês + % + orçamento total */}
+                    {hasMes && (
+                      <p style={{ fontSize: 10, fontWeight: 500, color: 'var(--color-text-secondary)', margin: '2px 0 0', lineHeight: 1.2 }}>
+                        {balanceHidden ? mask : `-${formatCurrency(spent)}`}
+                        {totalIn > 0 ? (
+                          <span style={{
+                            marginLeft: 4,
+                            color: pct >= 80 ? 'var(--color-danger)' : pct >= 50 ? 'var(--color-warning)' : 'var(--color-text-tertiary)',
+                            fontWeight: 600,
+                          }}>· {Math.round(pct)}%
+                            <span style={{ fontWeight: 400, color: 'var(--color-text-tertiary)', marginLeft: 2 }}>
+                              /{balanceHidden ? mask : formatCurrency(totalIn)}
+                            </span>
+                          </span>
+                        ) : expectedIncome > 0 && (
+                          <span style={{ marginLeft: 4, color: 'var(--color-text-tertiary)', fontWeight: 400 }}>
+                            meta {balanceHidden ? mask : formatCurrency(expectedBudget(cx))}
+                          </span>
+                        )}
+                      </p>
                     )}
                   </div>
                 )}
