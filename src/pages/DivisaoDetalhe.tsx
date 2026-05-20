@@ -48,7 +48,7 @@ function useCountUp(target: number, duration = 700): number {
 type DivisaoType = NonNullable<ReturnType<typeof useAppStore.getState>['divisoes'][number]>
 
 function DivisaoHeroMobile({
-  divisao, color, Icon, expectedBal, totalLancadoMes, pctMes,
+  divisao, color, Icon, expectedBal, totalLancadoMes, pctMes, totalIncomeMes,
 }: {
   divisao: DivisaoType
   color: string
@@ -56,6 +56,7 @@ function DivisaoHeroMobile({
   expectedBal: number
   totalLancadoMes: number
   pctMes: number
+  totalIncomeMes: number
 }) {
   // Inject orb-pulse keyframes once
   React.useEffect(() => {
@@ -425,6 +426,7 @@ export default function DivisaoDetalhe() {
             expectedBal={expectedBal}
             totalLancadoMes={totalLancadoMes}
             pctMes={pctMes}
+            totalIncomeMes={totalIncomeMes}
           />
         </>
       ) : (
