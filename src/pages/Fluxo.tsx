@@ -28,6 +28,64 @@ type FluxoItem =
   | { type: 'variavel'; data: SaidaVariavel }
   | { type: 'entrada';  data: Entrada }
 
+/**
+ * Retorna a data real YYYY-MM-DD de um item realizado.
+ * Para fixas: usa a data de pagamento real (payments[yearMonth]), senão monta com dueDay.
+ * Para variáveis/entradas: usa o campo date.
+ */
+function getDayKey(item: FluxoItem, yearMonth: string): string {
+  if (item.type === 'fixa') {
+    const paidDate = item.data.payments?.[item.instanceMonth || yearMonth]
+    if (paidDate) return paidDate
+    const ym = item.instanceMonth || yearMonth
+    return `${ym}-${String(item.data.dueDay).padStart(2, '0')}`
+  }
+  return (item.data as SaidaVariavel | Entrada).date
+}
+
+/**
+ * DayDivider — separador de dia estilo extrato bancário.
+ * Mostra a data à esquerda e o saldo ao fim daquele dia à direita.
+ * Design ultrafino: nenhum fundo, apenas linha + tipografia 11px.
+ */
+function DayDivider({ dateStr, balance }: { dateStr: string; balance: number }) {
+  const d = new Date(dateStr + 'T12:00:00')
+  const today = new Date()
+  today.setHours(12, 0, 0, 0)
+  const diffDays = Math.round((d.getTime() - today.getTime()) / 86400000)
+  let label: string
+  if (diffDays === 0)       label = 'Hoje'
+  else if (diffDays === -1) label = 'Ontem'
+  else {
+    const monthStr = d.toLocaleDateString('pt-BR', { month: 'short' }).replace('.', '')
+    label = `${d.getDate().toString().padStart(2, '0')} ${monthStr.charAt(0).toUpperCase() + monthStr.slice(1)}`
+  }
+
+
+  return (
+    <div style={{
+      display: 'flex', alignItems: 'center', gap: 8,
+      padding: '8px 16px 4px',
+    }}>
+      <span style={{
+        fontSize: 11, fontWeight: 600, letterSpacing: '0.04em',
+        color: 'var(--color-text-tertiary)', flexShrink: 0, lineHeight: 1,
+      }}>{label}</span>
+      <div style={{ flex: 1, height: 1, background: 'var(--color-border)', opacity: 0.6 }} />
+      <span style={{
+        fontSize: 10, fontWeight: 500, letterSpacing: '0.03em',
+        color: 'var(--color-text-tertiary)', flexShrink: 0, lineHeight: 1,
+        opacity: 0.7,
+      }}>Saldo</span>
+      <span style={{
+        fontSize: 11, fontWeight: 700, letterSpacing: '0.02em',
+        color: 'var(--color-text-primary)', flexShrink: 0, lineHeight: 1,
+        opacity: 0.9,
+      }}>{formatCurrency(balance)}</span>
+    </div>
+  )
+}
+
 // --- Componentes de Item ------------------------------------------------------
 
 const PAYMENT_LABELS: Record<string, string> = {
@@ -765,50 +823,92 @@ export default function Fluxo() {
           </div>
         )}
 
-        {realized.length > 0 && (
-          <div ref={realizedRef}>
-            <SectionLabel
-              icon={<TrendingUp size={12} />}
-              count={realized.length}
-              collapsed={realizedCollapsed}
-              onClick={() => setRealizedCollapsed(v => !v)}
-            >Lançamentos do mês</SectionLabel>
-            <AnimatePresence initial={false}>
-              {!realizedCollapsed && (
-                <motion.div
-                  key="realized-section"
-                  initial={{ height: 0, opacity: 0, filter: 'blur(4px)' }}
-                  animate={{ height: 'auto', opacity: 1, filter: 'blur(0px)' }}
-                  exit={{ height: 0, opacity: 0, filter: 'blur(4px)' }}
-                  transition={{ duration: 0.22, ease: 'easeOut' }}
-                  style={{ overflow: 'hidden' }}
-                >
-                  {realized.map((item, i) => {
-                    const isLast = i === realized.length - 1
-                    if (item.type === 'fixa') {
+        {realized.length > 0 && (() => {
+          // Agrupa realized por dia (data real de pagamento)
+          const dayGroups: { dateStr: string; items: FluxoItem[] }[] = []
+          const dayMap = new Map<string, FluxoItem[]>()
+          realized.forEach(item => {
+            const key = getDayKey(item, yearMonth)
+            if (!dayMap.has(key)) {
+              dayMap.set(key, [])
+              dayGroups.push({ dateStr: key, items: dayMap.get(key)! })
+            }
+            dayMap.get(key)!.push(item)
+          })
+
+          // Saldo atual total das divisões (reflete o estado real após todos os lançamentos)
+          const currentTotalBalance = divisoes.reduce((sum, d) => sum + d.balance, 0)
+
+          // Calcula o saldo ao fim de cada dia caminhando para trás no tempo:
+          // O saldo de amanhã = saldo de hoje + delta de amanhã
+          // Logo: saldo de hoje = saldo de amanhã − delta de amanhã
+          let runningBalance = currentTotalBalance
+          const dayEndingBalances = dayGroups.map(({ items: dayItems }) => {
+            const endBalance = runningBalance
+            const dayDelta = dayItems.reduce((acc, item) => {
+              if (item.type === 'entrada')  return acc + (item.data as Entrada).amount
+              if (item.type === 'variavel') return acc - (item.data as SaidaVariavel).amount
+              if (item.type === 'fixa')     return acc - getEffectiveAmount(item.data, item.instanceMonth || yearMonth)
+              return acc
+            }, 0)
+            runningBalance -= dayDelta // retrocede no tempo para o saldo do dia anterior
+            return endBalance
+          })
+
+          return (
+            <div ref={realizedRef}>
+              <SectionLabel
+                icon={<TrendingUp size={12} />}
+                count={realized.length}
+                collapsed={realizedCollapsed}
+                onClick={() => setRealizedCollapsed(v => !v)}
+              >Lançamentos do mês</SectionLabel>
+              <AnimatePresence initial={false}>
+                {!realizedCollapsed && (
+                  <motion.div
+                    key="realized-section"
+                    initial={{ height: 0, opacity: 0, filter: 'blur(4px)' }}
+                    animate={{ height: 'auto', opacity: 1, filter: 'blur(0px)' }}
+                    exit={{ height: 0, opacity: 0, filter: 'blur(4px)' }}
+                    transition={{ duration: 0.22, ease: 'easeOut' }}
+                    style={{ overflow: 'hidden' }}
+                  >
+                    {dayGroups.map(({ dateStr, items: dayItems }, groupIdx) => {
+                      const isLastGroup = groupIdx === dayGroups.length - 1
+
                       return (
-                        <FixaItem 
-                          key={`${item.data.id}-${item.instanceMonth}`} 
-                          sf={item.data} 
-                          yearMonth={item.instanceMonth || yearMonth} 
-                          isLast={isLast} 
-                          onPress={setActionSf} 
-                        />
+                        <div key={dateStr}>
+                          <DayDivider dateStr={dateStr} balance={dayEndingBalances[groupIdx]} />
+                          {dayItems.map((item, i) => {
+                            const isLast = isLastGroup && i === dayItems.length - 1
+                            if (item.type === 'fixa') {
+                              return (
+                                <FixaItem
+                                  key={`${item.data.id}-${item.instanceMonth}`}
+                                  sf={item.data}
+                                  yearMonth={item.instanceMonth || yearMonth}
+                                  isLast={isLast}
+                                  onPress={setActionSf}
+                                />
+                              )
+                            }
+                            if (item.type === 'variavel') {
+                              return <VariavelItem key={`v-${item.data.id}`} sv={item.data as SaidaVariavel} isLast={isLast} onPress={setActionSv} />
+                            }
+                            if (item.type === 'entrada') {
+                              return <EntradaItem key={`e-${item.data.id}`} e={item.data as Entrada} isLast={isLast} onPress={setActionEntrada} />
+                            }
+                            return null
+                          })}
+                        </div>
                       )
-                    }
-                    if (item.type === 'variavel') {
-                      return <VariavelItem key={`v-${item.data.id}`} sv={item.data as SaidaVariavel} isLast={isLast} onPress={setActionSv} />
-                    }
-                    if (item.type === 'entrada') {
-                      return <EntradaItem key={`e-${item.data.id}`} e={item.data as Entrada} isLast={isLast} onPress={setActionEntrada} />
-                    }
-                    return null
-                  })}
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-        )}
+                    })}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          )
+        })()}
       </>
     )
   }
