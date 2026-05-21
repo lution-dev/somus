@@ -62,9 +62,16 @@ export function FirebaseSyncProvider({ children }: FirebaseSyncProviderProps) {
         // whose date has already passed. This fixes lançamentos created as future
         // that were never deducted from the balance.
         if (!cancelled) {
-          const { autoConfirmPastPending } = useAppStore.getState()
+          const { autoConfirmPastPending, fixPhantomBalances } = useAppStore.getState()
           autoConfirmPastPending()
           log('autoConfirmPastPending executed after remote sync')
+
+          // Detect and correct phantom balances (balance > sum of movements).
+          // This is a self-healing mechanism: if Firestore has stale/inflated
+          // balances from a historical bug, they are corrected here and the fix
+          // is persisted back to Firestore via the Zustand → Firestore subscriber.
+          fixPhantomBalances()
+          log('fixPhantomBalances executed after remote sync')
         }
       } catch (err) {
         console.warn('[Somus] Migration error (using local state):', err)

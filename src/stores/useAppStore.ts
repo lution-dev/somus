@@ -56,6 +56,7 @@ interface AppActions {
   editSaidaVariavel: (id: string, updates: { amount?: number; description?: string; date?: string; category?: string }) => void
   deleteSaidaVariavel: (id: string) => void
   autoConfirmPastPending: () => void
+  fixPhantomBalances: () => void
 
   // Income Sources
   addIncomeSource: (source: Omit<IncomeSource, 'id'>) => void
@@ -524,6 +525,78 @@ export const useAppStore = create<AppState & AppActions>()(
               confirmedIds.has(sv.id) ? { ...sv, status: 'realized' as const } : sv
             ),
           }
+        }),
+
+      /**
+       * Detecta e corrige balances fantasma: quando cx.balance > soma(movements).
+       *
+       * Isso acontece quando uma entrada atualiza o balance mas não cria um
+       * movimento correspondente (race condition ou bug histórico). A função
+       * também remove movimentos órfãos conhecidos e duplicatas.
+       *
+       * Só aplica correção quando a diferença é > R$0,50 (evita flòat noise).
+       */
+      fixPhantomBalances: () =>
+        set((state) => {
+          let changed = false
+
+          const divisoes = state.divisoes.map((cx) => {
+            let movements = [...(cx.movements ?? [])]
+
+            // ── Remove duplicatas de movimento pelo mesmo ID ────────────────
+            const seenIds = new Set<string>()
+            const deduped: typeof movements = []
+            for (const mv of movements) {
+              if (!seenIds.has(mv.id)) {
+                seenIds.add(mv.id)
+                deduped.push(mv)
+              } else {
+                changed = true
+                console.warn(`[fixPhantom] Removendo movimento duplicado: ${mv.id} em ${cx.name}`)
+              }
+            }
+            movements = deduped
+
+            // ── Remove movimentos órfãos conhecidos (sem ID padrão do sistema) ──
+            // IDs órfãos: não começam com mv-e-, mv-sv-, mv-fixed-, mv-1778, Distribuição
+            // mas têm saldo POSITIVO grande e sem entrada correspondente.
+            // Detecta pelo padrão de ID: só um timestamp puro (sem sufixo)
+            movements = movements.filter((mv) => {
+              if (mv.amount > 0) {
+                const isPureTimestamp = /^mv-\d{13}$/.test(mv.id)
+                if (isPureTimestamp) {
+                  changed = true
+                  console.warn(`[fixPhantom] Removendo movimento órfão: ${mv.id} R$${mv.amount} em ${cx.name}`)
+                  return false
+                }
+              }
+              return true
+            })
+
+            // ── Ajusta balance para bater com a soma dos movements ──────────
+            const movementsSum = movements.reduce((s, m) => s + m.amount, 0)
+            const diff = cx.balance - movementsSum
+
+            if (Math.abs(diff) > 0.5) {
+              changed = true
+              console.warn(
+                `[fixPhantom] ${cx.name}: balance R$${cx.balance.toFixed(2)} vs movements R$${movementsSum.toFixed(2)} → diff R$${diff.toFixed(2)} → corrigindo`
+              )
+              return { ...cx, balance: movementsSum, movements }
+            }
+
+            if (movements.length !== (cx.movements ?? []).length) {
+              // Apenas movements mudaram (dedup ou orphão), balance estava certo
+              return { ...cx, movements }
+            }
+
+            return cx
+          })
+
+          if (!changed) return state
+          console.log('[fixPhantom] Correção aplicada. Novo total:',
+            divisoes.reduce((s, cx) => s + cx.balance, 0).toFixed(2))
+          return { divisoes }
         }),
 
       addIncomeSource: (source) =>
