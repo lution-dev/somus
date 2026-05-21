@@ -67,11 +67,21 @@ export function FirebaseSyncProvider({ children }: FirebaseSyncProviderProps) {
           log('autoConfirmPastPending executed after remote sync')
 
           // Detect and correct phantom balances (balance > sum of movements).
-          // This is a self-healing mechanism: if Firestore has stale/inflated
-          // balances from a historical bug, they are corrected here and the fix
-          // is persisted back to Firestore via the Zustand → Firestore subscriber.
+          // fixPhantomBalances updates Zustand synchronously. We then immediately
+          // persist to Firestore so the correction survives the next onSnapshot
+          // (which would otherwise overwrite it with the old stale Firestore data).
+          const stateBeforeFix = useAppStore.getState() as AppState
           fixPhantomBalances()
-          log('fixPhantomBalances executed after remote sync')
+          const stateAfterFix = useAppStore.getState() as AppState
+
+          if (stateAfterFix.divisoes !== stateBeforeFix.divisoes) {
+            log('fixPhantomBalances made corrections → persisting to Firestore immediately')
+            const { saveStateToFirestore } = await import('../lib/firestoreService')
+            await saveStateToFirestore(uid, stateAfterFix)
+            log('Corrected state saved to Firestore')
+          } else {
+            log('fixPhantomBalances: no corrections needed')
+          }
         }
       } catch (err) {
         console.warn('[Somus] Migration error (using local state):', err)
