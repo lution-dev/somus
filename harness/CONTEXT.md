@@ -1,8 +1,8 @@
 # CONTEXT.md — Somus
 > Estado atual do projeto. Atualizado ao final de cada sessão.
 
-**Última atualização:** 2026-05-19
-**Status geral:** ✅ Onboarding v2 Premium + Layout Login Ultrawide + Sidebar Minimalista + Filtros Fluxo-style + Documentação Completa
+**Última atualização:** 2026-05-25
+**Status geral:** ✅ Integridade de dados financeiros auditada e hardened — fixPhantomBalances + fixSaidaFixaPaymentAmounts + DATA_INTEGRITY.md
 
 ## O Que É
 App de planejamento financeiro para casais com renda variável. Mobile-first, dark mode only. Resolve o problema de apps que exigem renda fixa no início do mês — o Somus permite lançar entradas incrementais conforme caem e distribui automaticamente por divisões (método Nati Arcuri adaptado).
@@ -135,7 +135,15 @@ src/
 | 2026-05-12 | Pré-salvar partnerCode no Firestore ao entrar no Step5 | Link funciona antes do host completar o onboarding |
 | 2026-05-12 | selectCurrentDivisoes com fallback de userId | Divisões nunca ficam invisíveis após re-login com uid diferente |
 | 2026-05-12 | Empty State Estruturado (Calm Technology) | Eliminar sensação de "produto não iniciado"; método Somus sempre visível |
-| 2026-05-12 | migrationService.ts SECURITY check | Descartar estado local de sessão anterior (userId diferente) para evitar vazamento de dados |
+| 2026-05-21 | `fixPhantomBalances` no ciclo de sync | Balance inflado por entradas sem movement correspondente + duplicatas; corrige e persiste no Firestore imediatamente |
+| 2026-05-25 | `markSaidaFixaPaid` usa `effectiveAmount` | `sf.amount` pode ser 0 em faturas variáveis; usar `monthlyAmountOverrides ?? sf.amount` é obrigatório |
+| 2026-05-25 | `markSaidaFixaUnpaid` usa cascata de fallback | Restaurar balance com o valor real do sv existente, não com `sf.amount` |
+| 2026-05-25 | `editSaidaFixaForMonth` propaga delta quando mês pago | Editar valor de mês já pago deve atualizar sv + movement + balance com o delta |
+| 2026-05-25 | `fixSaidaFixaPaymentAmounts` no ciclo de sync | Detecta sv-fixed com amount errado e corrige sv + movement + balance antes do Firestore sobrescrever |
+| 2026-05-25 | `DATA_INTEGRITY.md` como documento permanente | Regras, invariantes, IDs de movements, checklist para novas features — leitura obrigatória antes de mexer em qualquer função financeira |
 
 ## Bloqueios
 Nenhum.
+
+## Leitura Obrigatória
+- [harness/DATA_INTEGRITY.md](./DATA_INTEGRITY.md) — antes de mexer em qualquer função que toque em `balance`, `movements`, `saidasFixas` ou `saidasVariaveis`.
