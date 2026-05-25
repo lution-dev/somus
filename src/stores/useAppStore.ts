@@ -57,6 +57,7 @@ interface AppActions {
   deleteSaidaVariavel: (id: string) => void
   autoConfirmPastPending: () => void
   fixPhantomBalances: () => void
+  fixSaidaFixaPaymentAmounts: () => void
 
   // Income Sources
   addIncomeSource: (source: Omit<IncomeSource, 'id'>) => void
@@ -672,6 +673,87 @@ export const useAppStore = create<AppState & AppActions>()(
           console.log('[fixPhantom] Correção aplicada. Novo total:',
             divisoes.reduce((s, cx) => s + cx.balance, 0).toFixed(2))
           return { divisoes }
+        }),
+
+      /**
+       * Detecta e corrige pagamentos de saidasFixas lançados com amount errado.
+       *
+       * Caso típico: saidaFixa variável (ex: Fatura Inter) tem sf.amount=0
+       * mas o valor real do mês está em monthlyAmountOverrides. A versão
+       * antiga de markSaidaFixaPaid usava sf.amount, gerando sv e movement
+       * com R$0 em vez do valor correto — sem alterar o balance.
+       *
+       * Para cada sv com padrão sv-fixed-sf-X-YYYY-MM:
+       *   1. Encontra saidaFixa sf-X
+       *   2. Calcula effectiveAmount = monthlyAmountOverrides[YYYY-MM] ?? sf.amount
+       *   3. Se sv.amount !== effectiveAmount, corrige sv + movement + balance
+       */
+      fixSaidaFixaPaymentAmounts: () =>
+        set((state) => {
+          let changed = false
+
+          // Parse dos svIds que vieram de markSaidaFixaPaid
+          const fixedSvPattern = /^sv-fixed-(sf-.+)-([0-9]{4}-[0-9]{2})$/
+
+          const saidasVariaveis = state.saidasVariaveis.map(sv => {
+            const match = sv.id.match(fixedSvPattern)
+            if (!match) return sv
+
+            const [, sfId, yearMonth] = match
+            const sf = state.saidasFixas.find(s => s.id === sfId)
+            if (!sf) return sv
+
+            const effectiveAmount = sf.monthlyAmountOverrides?.[yearMonth] ?? sf.amount
+            if (Math.abs(sv.amount - effectiveAmount) < 0.01) return sv // já correto
+
+            changed = true
+            console.warn(
+              `[fixSFPayments] ${sf.name} (${yearMonth}): sv.amount R$${sv.amount} → R$${effectiveAmount}`
+            )
+            return { ...sv, amount: effectiveAmount, status: 'realized' as const }
+          })
+
+          let divisoes = state.divisoes
+          if (changed) {
+            // Corrige movements e balances das divisões afetadas
+            divisoes = state.divisoes.map(cx => {
+              let balanceDelta = 0
+              const movements = (cx.movements ?? []).map(mv => {
+                // Movement ID correspondente: mv-fixed-sf-X-YYYY-MM
+                const mvMatch = mv.id.match(/^mv-fixed-(sf-.+)-([0-9]{4}-[0-9]{2})$/)
+                if (!mvMatch) return mv
+
+                const [, sfId, yearMonth] = mvMatch
+                if (cx.id !== (state.saidasFixas.find(s => s.id === sfId)?.divisaoId)) return mv
+
+                const sf = state.saidasFixas.find(s => s.id === sfId)
+                if (!sf) return mv
+
+                const effectiveAmount = sf.monthlyAmountOverrides?.[yearMonth] ?? sf.amount
+                const expectedMvAmount = -effectiveAmount
+
+                if (Math.abs(mv.amount - expectedMvAmount) < 0.01) return mv
+
+                balanceDelta += mv.amount - expectedMvAmount // negativo → reduz balance
+                console.warn(
+                  `[fixSFPayments] Movement ${mv.id}: amount R$${mv.amount} → R$${expectedMvAmount}`
+                )
+                return { ...mv, amount: expectedMvAmount }
+              })
+
+              if (balanceDelta === 0) return cx
+              const newBalance = cx.balance + balanceDelta
+              console.warn(
+                `[fixSFPayments] ${cx.name}: balance R$${cx.balance.toFixed(2)} → R$${newBalance.toFixed(2)}`
+              )
+              return { ...cx, balance: newBalance, movements }
+            })
+          }
+
+          if (!changed) return state
+          console.log('[fixSFPayments] Correção aplicada. Novo total:',
+            divisoes.reduce((s, cx) => s + cx.balance, 0).toFixed(2))
+          return { saidasVariaveis, divisoes }
         }),
 
       addIncomeSource: (source) =>

@@ -62,25 +62,35 @@ export function FirebaseSyncProvider({ children }: FirebaseSyncProviderProps) {
         // whose date has already passed. This fixes lançamentos created as future
         // that were never deducted from the balance.
         if (!cancelled) {
-          const { autoConfirmPastPending, fixPhantomBalances } = useAppStore.getState()
+          const {
+            autoConfirmPastPending,
+            fixPhantomBalances,
+            fixSaidaFixaPaymentAmounts,
+          } = useAppStore.getState()
+
           autoConfirmPastPending()
           log('autoConfirmPastPending executed after remote sync')
 
-          // Detect and correct phantom balances (balance > sum of movements).
-          // fixPhantomBalances updates Zustand synchronously. We then immediately
-          // persist to Firestore so the correction survives the next onSnapshot
-          // (which would otherwise overwrite it with the old stale Firestore data).
+          // Run all self-healing fixes synchronously, then persist once to Firestore.
+          // This ensures corrections survive the next onSnapshot (which would
+          // otherwise overwrite them with the old stale Firestore data).
           const stateBeforeFix = useAppStore.getState() as AppState
-          fixPhantomBalances()
+
+          fixPhantomBalances()        // corrects phantom balance vs movements divergence
+          fixSaidaFixaPaymentAmounts() // corrects sv/movement amounts for variable saidasFixas
+
           const stateAfterFix = useAppStore.getState() as AppState
 
-          if (stateAfterFix.divisoes !== stateBeforeFix.divisoes) {
-            log('fixPhantomBalances made corrections → persisting to Firestore immediately')
+          const divisoesChanged = stateAfterFix.divisoes !== stateBeforeFix.divisoes
+          const svsChanged      = stateAfterFix.saidasVariaveis !== stateBeforeFix.saidasVariaveis
+
+          if (divisoesChanged || svsChanged) {
+            log('Self-healing fixes applied → persisting to Firestore immediately')
             const { saveStateToFirestore } = await import('../lib/firestoreService')
             await saveStateToFirestore(uid, stateAfterFix)
             log('Corrected state saved to Firestore')
           } else {
-            log('fixPhantomBalances: no corrections needed')
+            log('No self-healing corrections needed')
           }
         }
       } catch (err) {
