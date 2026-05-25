@@ -30,8 +30,8 @@ interface AppActions {
 
   // Entradas
   addEntrada: (entrada: Omit<Entrada, 'id'>) => void
-  confirmEntrada: (id: string, confirmationDate: string) => void
-  editEntrada: (id: string, updates: { amount?: number; sourceName?: string; date?: string; note?: string }) => void
+  confirmEntrada: (id: string, confirmationDate: string, confirmedAmount?: number) => void
+  editEntrada: (id: string, updates: { amount?: number; sourceName?: string; date?: string; note?: string; divisaoId?: string }) => void
   deleteEntrada: (id: string) => void
 
   // Divisoes
@@ -52,8 +52,8 @@ interface AppActions {
 
   // Saídas Variáveis
   addSaidaVariavel: (saida: Omit<SaidaVariavel, 'id'>) => void
-  confirmSaidaVariavel: (id: string, confirmationDate: string) => void
-  editSaidaVariavel: (id: string, updates: { amount?: number; description?: string; date?: string; category?: string }) => void
+  confirmSaidaVariavel: (id: string, confirmationDate: string, confirmedAmount?: number) => void
+  editSaidaVariavel: (id: string, updates: { amount?: number; description?: string; date?: string; category?: string; divisaoId?: string }) => void
   deleteSaidaVariavel: (id: string) => void
   autoConfirmPastPending: () => void
   fixPhantomBalances: () => void
@@ -196,23 +196,27 @@ export const useAppStore = create<AppState & AppActions>()(
       },
 
 
-      confirmEntrada: (id, confirmationDate) =>
+      confirmEntrada: (id, confirmationDate, confirmedAmount) =>
         set((state) => {
           const e = state.entradas.find(x => x.id === id)
           if (!e || e.status !== 'pending') return state
 
+          // Se confirmedAmount foi passado, redistribui proporcionalmente entre as divisões
+          const ratio = confirmedAmount !== undefined ? confirmedAmount / e.amount : 1
+
           const updatedDivisoes = state.divisoes.map((cx) => {
             const dist = e.distribution.find(d => d.divisaoId === cx.id)
             if (!dist) return cx
+            const effectiveAmount = confirmedAmount !== undefined ? dist.amount * ratio : dist.amount
             return {
               ...cx,
-              balance: cx.balance + dist.amount,
+              balance: cx.balance + effectiveAmount,
               movements: [
                 ...cx.movements,
                 {
                   id: `mv-${Date.now()}-${cx.id}`,
                   date: confirmationDate,
-                  amount: dist.amount,
+                  amount: effectiveAmount,
                   description: `Distribuição — ${e.sourceName}`,
                   type: 'income' as const,
                 },
@@ -222,7 +226,7 @@ export const useAppStore = create<AppState & AppActions>()(
 
           return {
             entradas: state.entradas.map(x =>
-              x.id === id ? { ...x, status: 'realized' as const, date: confirmationDate } : x
+              x.id === id ? { ...x, status: 'realized' as const, date: confirmationDate, amount: confirmedAmount ?? e.amount } : x
             ),
             divisoes: updatedDivisoes,
           }
@@ -232,7 +236,26 @@ export const useAppStore = create<AppState & AppActions>()(
         set((state) => {
           const e = state.entradas.find(x => x.id === id)
           if (!e) return state
-          const amountDiff = (updates.amount ?? e.amount) - e.amount
+
+          const newAmount = updates.amount ?? e.amount
+          const amountDiff = newAmount - e.amount
+          const newDivisaoId = updates.divisaoId
+
+          // Caso simples: troca de divisão com distribuição única
+          if (newDivisaoId && newDivisaoId !== e.distribution[0]?.divisaoId && e.distribution.length === 1) {
+            const oldDivisaoId = e.distribution[0].divisaoId
+            const oldAmount    = e.distribution[0].amount
+            const newDist = [{ ...e.distribution[0], divisaoId: newDivisaoId, divisaoName: state.divisoes.find(d => d.id === newDivisaoId)?.name ?? newDivisaoId }]
+            return {
+              entradas: state.entradas.map(x => x.id !== id ? x : { ...x, ...updates, distribution: newDist }),
+              divisoes: state.divisoes.map(cx => {
+                if (cx.id === oldDivisaoId) return { ...cx, balance: cx.balance - oldAmount }
+                if (cx.id === newDivisaoId) return { ...cx, balance: cx.balance + (amountDiff !== 0 ? newAmount : oldAmount) }
+                return cx
+              }),
+            }
+          }
+
           return {
             entradas: state.entradas.map(x => x.id !== id ? x : { ...x, ...updates }),
             divisoes: amountDiff !== 0
@@ -297,11 +320,21 @@ export const useAppStore = create<AppState & AppActions>()(
           const yearMonth = targetMonth || date.slice(0, 7)
           const svId = `sv-fixed-${id}-${yearMonth}`
 
+          // Guard: evita pagamento duplicado (sv já existe para este mês)
+          if (state.saidasVariaveis.some(sv => sv.id === svId)) return state
+
+          // Usa o valor efetivo do mês (monthlyAmountOverrides) ou o valor base.
+          // Isso corrige o caso de faturas variáveis (ex: Fatura Inter) onde
+          // sf.amount = 0 mas o valor real do mês está em monthlyAmountOverrides.
+          const effectiveAmount = sf.monthlyAmountOverrides?.[yearMonth] ?? sf.amount
+
+          const mvId = `mv-fixed-${id}-${yearMonth}`
+
           return {
             saidasFixas: state.saidasFixas.map(s =>
-              s.id !== id ? s : { 
-                ...s, 
-                payments: { ...s.payments, [yearMonth]: date } 
+              s.id !== id ? s : {
+                ...s,
+                payments: { ...s.payments, [yearMonth]: date }
               }
             ),
             saidasVariaveis: [
@@ -310,23 +343,24 @@ export const useAppStore = create<AppState & AppActions>()(
                 id: svId,
                 userId: sf.userId,
                 divisaoId: sf.divisaoId,
-                amount: sf.amount,
+                amount: effectiveAmount,
                 description: sf.name,
                 category: sf.category,
                 paymentMethod: sf.paymentMethod,
                 date,
+                status: 'realized',
               } as SaidaVariavel,
             ],
             divisoes: state.divisoes.map(cx =>
               cx.id !== sf.divisaoId ? cx : {
                 ...cx,
-                balance: cx.balance - sf.amount,
+                balance: cx.balance - effectiveAmount,
                 movements: [
-                  ...(cx.movements ?? []),
+                  ...(cx.movements ?? []).filter(m => m.id !== mvId), // evita duplicata de movement
                   {
-                    id: `mv-fixed-${id}-${yearMonth}`,
+                    id: mvId,
                     date,
-                    amount: -sf.amount,
+                    amount: -effectiveAmount,
                     description: sf.name,
                     type: 'expense' as const,
                   },
@@ -335,6 +369,7 @@ export const useAppStore = create<AppState & AppActions>()(
             ),
           }
         }),
+
 
       markSaidaFixaUnpaid: (id, targetMonth) =>
         set((state) => {
@@ -390,25 +425,26 @@ export const useAppStore = create<AppState & AppActions>()(
           }
         }),
 
-      confirmSaidaVariavel: (id, confirmationDate) =>
+      confirmSaidaVariavel: (id, confirmationDate, confirmedAmount) =>
         set((state) => {
           const sv = state.saidasVariaveis.find(s => s.id === id)
           if (!sv || sv.status !== 'pending') return state
+          const finalAmount = confirmedAmount ?? sv.amount
 
           return {
-            saidasVariaveis: state.saidasVariaveis.map(s => 
-              s.id === id ? { ...s, status: 'realized', date: confirmationDate } : s
+            saidasVariaveis: state.saidasVariaveis.map(s =>
+              s.id === id ? { ...s, status: 'realized', date: confirmationDate, amount: finalAmount } : s
             ),
-            divisoes: state.divisoes.map(cx => 
+            divisoes: state.divisoes.map(cx =>
               cx.id !== sv.divisaoId ? cx : {
                 ...cx,
-                balance: cx.balance - sv.amount,
+                balance: cx.balance - finalAmount,
                 movements: [
                   ...(cx.movements ?? []),
                   {
                     id: `mv-${id}-sv`,
                     date: confirmationDate,
-                    amount: -sv.amount,
+                    amount: -finalAmount,
                     description: sv.description,
                     type: 'expense' as const,
                   }
@@ -423,29 +459,68 @@ export const useAppStore = create<AppState & AppActions>()(
           const sv = state.saidasVariaveis.find((s) => s.id === id)
           if (!sv) return state
 
-          const isPending = sv.status === 'pending'
-          
-          // Se o valor mudou e NÃO era pendente, precisamos ajustar o saldo
+          const isPending   = sv.status === 'pending'
+          const newAmount   = updates.amount ?? sv.amount
+          const newDivisaoId = updates.divisaoId
+
+          // Troca de divisão: estorna na antiga e credita na nova
+          if (newDivisaoId && newDivisaoId !== sv.divisaoId && !isPending) {
+            const mvId = `mv-${id}-sv`
+            return {
+              saidasVariaveis: state.saidasVariaveis.map(s =>
+                s.id === id ? { ...s, ...updates } : s
+              ),
+              divisoes: state.divisoes.map(cx => {
+                if (cx.id === sv.divisaoId) {
+                  // Estorna na divisão antiga
+                  return {
+                    ...cx,
+                    balance: cx.balance + sv.amount,
+                    movements: (cx.movements ?? []).filter(mv => mv.id !== mvId),
+                  }
+                }
+                if (cx.id === newDivisaoId) {
+                  // Lança na divisão nova
+                  return {
+                    ...cx,
+                    balance: cx.balance - newAmount,
+                    movements: [
+                      ...(cx.movements ?? []),
+                      {
+                        id: mvId,
+                        date: updates.date ?? sv.date,
+                        amount: -newAmount,
+                        description: updates.description ?? sv.description,
+                        type: 'expense' as const,
+                      },
+                    ],
+                  }
+                }
+                return cx
+              }),
+            }
+          }
+
+          // Sem troca de divisão — lógica original
           let nextDivisoes = state.divisoes
           if (!isPending && updates.amount !== undefined && updates.amount !== sv.amount) {
             const diff = updates.amount - sv.amount
-            nextDivisoes = state.divisoes.map(cx => 
+            nextDivisoes = state.divisoes.map(cx =>
               cx.id !== sv.divisaoId ? cx : {
                 ...cx,
                 balance: cx.balance - diff,
-                movements: (cx.movements ?? []).map(mv => 
+                movements: (cx.movements ?? []).map(mv =>
                   mv.id === `mv-${id}-sv` ? { ...mv, amount: -updates.amount!, date: updates.date ?? mv.date } : mv
                 )
               }
             )
           } else if (!isPending && (updates.date || updates.description)) {
-            // Atualiza o movimento se mudou data ou descrição
-            nextDivisoes = state.divisoes.map(cx => 
+            nextDivisoes = state.divisoes.map(cx =>
               cx.id !== sv.divisaoId ? cx : {
                 ...cx,
-                movements: (cx.movements ?? []).map(mv => 
-                  mv.id === `mv-${id}-sv` ? { 
-                    ...mv, 
+                movements: (cx.movements ?? []).map(mv =>
+                  mv.id === `mv-${id}-sv` ? {
+                    ...mv,
                     date: updates.date ?? mv.date,
                     description: updates.description ?? mv.description
                   } : mv

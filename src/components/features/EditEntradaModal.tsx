@@ -5,6 +5,8 @@ import { formatCurrency } from '../../lib/calculations'
 import { Dialog, DialogFooter, Button, Input } from '../ui'
 import type { Entrada } from '../../types'
 import { useCurrencyInput } from '../../hooks/useCurrencyInput'
+import { getDivisaoIcon } from '../../lib/icons'
+import { Check, ChevronDown } from 'lucide-react'
 
 interface Props {
   open: boolean
@@ -19,9 +21,15 @@ export default function EditEntradaModal({ open, onClose, entrada }: Props) {
   const [sourceFocused, setSourceFocused]   = useState(false)
   const [date, setDate]                     = useState('')
   const [note, setNote]                     = useState('')
+  const [divisaoId, setDivisaoId]           = useState('')
+  const [divisaoOpen, setDivisaoOpen]       = useState(false)
 
   const incomeSources = useAppStore(useShallow(selectCurrentIncomeSources))
+  const divisoes      = useAppStore(useShallow(s => s.divisoes))
   const editEntrada   = useAppStore(s => s.editEntrada)
+
+  // Distribuição simples = permite troca de divisão
+  const isSimpleDistribution = (entrada?.distribution?.length ?? 0) === 1
 
   // Pré-preenche ao abrir
   useEffect(() => {
@@ -32,7 +40,9 @@ export default function EditEntradaModal({ open, onClose, entrada }: Props) {
       setSourceId(match?.id ?? '')
       setDate(entrada.date)
       setNote(entrada.note ?? '')
+      setDivisaoId(entrada.distribution?.[0]?.divisaoId ?? '')
       setSourceFocused(false)
+      setDivisaoOpen(false)
     }
   }, [open, entrada])
 
@@ -62,14 +72,19 @@ export default function EditEntradaModal({ open, onClose, entrada }: Props) {
   function handleSave() {
     if (!isValid || !entrada) return
     const src = incomeSources.find(s => s.id === sourceId)
+    const originalDivisaoId = entrada.distribution?.[0]?.divisaoId
     editEntrada(entrada.id, {
       amount:     numAmount,
       sourceName: src?.name ?? sourceText.trim(),
       date,
       note:       note || undefined,
+      // Só envia divisaoId se mudou e a distribuição é simples
+      divisaoId:  isSimpleDistribution && divisaoId !== originalDivisaoId ? divisaoId : undefined,
     })
     onClose()
   }
+
+  const selectedDivisao = divisoes.find(d => d.id === divisaoId)
 
   if (!entrada) return null
 
@@ -144,6 +159,94 @@ export default function EditEntradaModal({ open, onClose, entrada }: Props) {
           </div>
         )}
       </div>
+
+      {/* Divisão — só exibe quando distribuição é simples (1 divisão) */}
+      {isSimpleDistribution && (
+        <div style={{ marginBottom: 12, position: 'relative' }}>
+          <label className="section-label" style={{ display: 'block', marginBottom: 6, fontSize: 12 }}>
+            Divisão de destino
+          </label>
+          <button
+            type="button"
+            onClick={() => setDivisaoOpen(v => !v)}
+            style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              width: '100%', padding: '10px 14px',
+              fontSize: 14, fontFamily: 'var(--font-sans)',
+              background: 'var(--color-bg-tertiary)',
+              border: `1px solid ${selectedDivisao ? selectedDivisao.color + '60' : 'var(--color-border)'}`,
+              borderRadius: 12, cursor: 'pointer',
+              color: 'var(--color-text-primary)',
+              textAlign: 'left',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              {selectedDivisao && (() => {
+                const { Icon, color } = getDivisaoIcon(selectedDivisao.id)
+                return (
+                  <div style={{
+                    width: 26, height: 26, borderRadius: 8, flexShrink: 0,
+                    background: `${color}20`,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  }}>
+                    <Icon size={14} style={{ color }} />
+                  </div>
+                )
+              })()}
+              <span style={{ fontWeight: selectedDivisao ? 600 : 400, color: selectedDivisao ? 'var(--color-text-primary)' : 'var(--color-text-tertiary)' }}>
+                {selectedDivisao?.name ?? 'Escolha uma divisão'}
+              </span>
+            </div>
+            <ChevronDown
+              size={16}
+              color="var(--color-text-tertiary)"
+              style={{ transition: 'transform 150ms', transform: divisaoOpen ? 'rotate(180deg)' : 'none' }}
+            />
+          </button>
+          {divisaoOpen && (
+            <div style={{
+              position: 'absolute', left: 0, right: 0, top: '100%',
+              marginTop: 4, zIndex: 50,
+              background: 'var(--color-bg-secondary)',
+              border: '1px solid var(--color-border)',
+              borderRadius: 12, overflow: 'hidden',
+              boxShadow: '0 8px 24px rgba(0,0,0,0.4)',
+            }}>
+              {divisoes.map((d, i) => {
+                const { Icon: DIcon, color: dColor } = getDivisaoIcon(d.id)
+                const isSelected = d.id === divisaoId
+                return (
+                  <button
+                    key={d.id}
+                    onClick={() => { setDivisaoId(d.id); setDivisaoOpen(false) }}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: 10,
+                      width: '100%', padding: '11px 14px',
+                      fontSize: 14, fontFamily: 'var(--font-sans)',
+                      background: isSelected ? `${dColor}15` : 'transparent',
+                      border: 'none', cursor: 'pointer',
+                      color: isSelected ? dColor : 'var(--color-text-primary)',
+                      fontWeight: isSelected ? 600 : 400,
+                      borderBottom: i < divisoes.length - 1 ? '1px solid var(--color-border)' : 'none',
+                      textAlign: 'left',
+                    }}
+                  >
+                    <div style={{
+                      width: 28, height: 28, borderRadius: 8, flexShrink: 0,
+                      background: `${dColor}15`,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    }}>
+                      <DIcon size={15} style={{ color: dColor }} />
+                    </div>
+                    <span style={{ flex: 1 }}>{d.name}</span>
+                    {isSelected && <Check size={14} color={dColor} />}
+                  </button>
+                )
+              })}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Data */}
       <div style={{ marginBottom: 12 }}>

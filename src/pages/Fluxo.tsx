@@ -1252,7 +1252,8 @@ export default function Fluxo() {
         open={!!confirmPaySv}
         onClose={() => setConfirmPaySv(null)}
         costName={confirmPaySv?.description}
-        onConfirm={(date) => { if (confirmPaySv) useAppStore.getState().confirmSaidaVariavel(confirmPaySv.id, date); setConfirmPaySv(null) }}
+        initialAmount={confirmPaySv?.amount}
+        onConfirm={(date, amount) => { if (confirmPaySv) useAppStore.getState().confirmSaidaVariavel(confirmPaySv.id, date, amount); setConfirmPaySv(null) }}
       />
 
       <ConfirmDialog
@@ -1324,7 +1325,9 @@ export default function Fluxo() {
         onClose={() => setConfirmPayEntrada(null)}
         costName={confirmPayEntrada?.sourceName}
         title="Confirmar recebimento"
-        onConfirm={(date) => { if (confirmPayEntrada) useAppStore.getState().confirmEntrada(confirmPayEntrada.id, date); setConfirmPayEntrada(null) }}
+        dateLabel="Quando você recebeu?"
+        initialAmount={confirmPayEntrada?.amount}
+        onConfirm={(date, amount) => { if (confirmPayEntrada) useAppStore.getState().confirmEntrada(confirmPayEntrada.id, date, amount); setConfirmPayEntrada(null) }}
       />
     </div>
   )

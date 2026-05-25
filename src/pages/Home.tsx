@@ -1397,8 +1397,12 @@ export default function Home() {
           ? (useAppStore.getState().entradas.find(e => e.id === confirmPayEntradaId)?.sourceName ?? '')
           : ''
         }
-        onConfirm={(date) => {
-          if (confirmPayEntradaId) useAppStore.getState().confirmEntrada(confirmPayEntradaId, date)
+        initialAmount={confirmPayEntradaId
+          ? useAppStore.getState().entradas.find(e => e.id === confirmPayEntradaId)?.amount
+          : undefined
+        }
+        onConfirm={(date, amount) => {
+          if (confirmPayEntradaId) useAppStore.getState().confirmEntrada(confirmPayEntradaId, date, amount)
           setConfirmPayEntradaId(null)
         }}
       />
