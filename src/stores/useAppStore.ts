@@ -734,7 +734,8 @@ export const useAppStore = create<AppState & AppActions>()(
 
                 if (Math.abs(mv.amount - expectedMvAmount) < 0.01) return mv
 
-                balanceDelta += mv.amount - expectedMvAmount // negativo → reduz balance
+                balanceDelta += expectedMvAmount - mv.amount // negativo → reduz balance
+
                 console.warn(
                   `[fixSFPayments] Movement ${mv.id}: amount R$${mv.amount} → R$${expectedMvAmount}`
                 )
