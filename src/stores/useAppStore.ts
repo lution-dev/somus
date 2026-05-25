@@ -380,6 +380,19 @@ export const useAppStore = create<AppState & AppActions>()(
           const svId = `sv-fixed-${id}-${targetMonth}`
           const mvId = `mv-fixed-${id}-${targetMonth}`
 
+          // Usa o amount do sv existente para restaurar o balance correto.
+          // NÃO usar sf.amount pois pode ser 0 em faturas variáveis (ex: Fatura Inter).
+          // Fallback em cascata: sv.amount → |movement.amount| → override → sf.amount
+          const existingSv = state.saidasVariaveis.find(sv => sv.id === svId)
+          const existingMvAmount = state.divisoes
+            .find(cx => cx.id === sf.divisaoId)
+            ?.movements?.find(mv => mv.id === mvId)?.amount
+          const amountToRestore =
+            existingSv?.amount ??
+            (existingMvAmount !== undefined ? Math.abs(existingMvAmount) : undefined) ??
+            sf.monthlyAmountOverrides?.[targetMonth] ??
+            sf.amount
+
           return {
             saidasFixas: state.saidasFixas.map(s => {
               if (s.id !== id) return s
@@ -391,7 +404,7 @@ export const useAppStore = create<AppState & AppActions>()(
             divisoes: state.divisoes.map(cx =>
               cx.id !== sf.divisaoId ? cx : {
                 ...cx,
-                balance: cx.balance + sf.amount,
+                balance: cx.balance + amountToRestore,
                 movements: (cx.movements ?? []).filter(mv => mv.id !== mvId),
               }
             ),
@@ -835,17 +848,52 @@ export const useAppStore = create<AppState & AppActions>()(
         })),
 
       editSaidaFixaForMonth: (id, yearMonth, amount) =>
-        set((state) => ({
-          saidasFixas: state.saidasFixas.map(sf =>
-            sf.id !== id ? sf : {
-              ...sf,
+        set((state) => {
+          const sf = state.saidasFixas.find(s => s.id === id)
+          if (!sf) return state
+
+          // Atualiza o override mensal na saidaFixa
+          const updatedSaidasFixas = state.saidasFixas.map(s =>
+            s.id !== id ? s : {
+              ...s,
               monthlyAmountOverrides: {
-                ...(sf.monthlyAmountOverrides ?? {}),
+                ...(s.monthlyAmountOverrides ?? {}),
                 [yearMonth]: amount,
               },
             }
-          ),
-        })),
+          )
+
+          // Se o mês já foi pago, propaga o novo valor para sv + movement + balance.
+          // Sem isso, editar o valor após o pagamento deixa os dados inconsistentes.
+          const svId = `sv-fixed-${id}-${yearMonth}`
+          const mvId = `mv-fixed-${id}-${yearMonth}`
+          const existingSv = state.saidasVariaveis.find(sv => sv.id === svId)
+
+          if (!existingSv) {
+            // Mês ainda não pago — só atualiza o override
+            return { saidasFixas: updatedSaidasFixas }
+          }
+
+          // Mês já pago: atualiza sv + movement + cx.balance com a diferença
+          const oldAmount = existingSv.amount
+          const amountDiff = amount - oldAmount // positivo = debitar mais, negativo = devolver
+
+          return {
+            saidasFixas: updatedSaidasFixas,
+            saidasVariaveis: state.saidasVariaveis.map(sv =>
+              sv.id !== svId ? sv : { ...sv, amount }
+            ),
+            divisoes: state.divisoes.map(cx =>
+              cx.id !== sf.divisaoId ? cx : {
+                ...cx,
+                balance: cx.balance - amountDiff,
+                movements: (cx.movements ?? []).map(mv =>
+                  mv.id !== mvId ? mv : { ...mv, amount: -amount }
+                ),
+              }
+            ),
+          }
+        }),
 
       skipSaidaFixaForMonth: (id, yearMonth) =>
         set((state) => ({

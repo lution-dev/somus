@@ -69,7 +69,8 @@ export function getMonthSummary(
 
   const totalExpenses = saidasFixas
     .filter(sf => isPaidForMonth(sf, target))
-    .reduce((sum, sf) => sum + sf.amount, 0)
+    .reduce((sum, sf) => sum + getEffectiveAmount(sf, target), 0)
+
 
   const availableBalance = divisoes.reduce((sum, cx) => sum + cx.balance, 0)
 
