@@ -1374,20 +1374,27 @@ export default function Home() {
         open={!!confirmPayId}
         onClose={() => setConfirmPayId(null)}
         costName={confirmPayId ? (
-          saidasFixasAll.find(s => s.id === confirmPayId)?.name ?? 
+          saidasFixasAll.find(s => s.id === confirmPayId)?.name ??
           useAppStore.getState().saidasVariaveis.find(s => s.id === confirmPayId)?.description ?? ''
         ) : ''}
-        onConfirm={(date) => {
+        amountLabel="Valor pago"
+        initialAmount={confirmPayId ? (() => {
+          const sf = saidasFixasAll.find(s => s.id === confirmPayId)
+          if (sf) return getEffectiveAmount(sf)
+          return useAppStore.getState().saidasVariaveis.find(s => s.id === confirmPayId)?.amount
+        })() : undefined}
+        onConfirm={(date, amount) => {
           if (confirmPayId) {
             if (confirmPayId.startsWith('sv-')) {
-              useAppStore.getState().confirmSaidaVariavel(confirmPayId, date)
+              useAppStore.getState().confirmSaidaVariavel(confirmPayId, date, amount)
             } else {
-              markSaidaFixaPaid(confirmPayId, date)
+              markSaidaFixaPaid(confirmPayId, date, undefined, amount)
             }
           }
           setConfirmPayId(null)
         }}
       />
+
       <ConfirmPaymentModal
         open={!!confirmPayEntradaId}
         onClose={() => setConfirmPayEntradaId(null)}

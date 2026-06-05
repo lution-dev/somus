@@ -12,11 +12,13 @@ interface Props {
   costName?: string
   title?: string
   dateLabel?: string
+  /** Rótulo do campo de valor. Default: 'Valor recebido' */
+  amountLabel?: string
   /** Valor original do lançamento pendente — quando passado, exibe campo de edição de valor */
   initialAmount?: number
 }
 
-export default function ConfirmPaymentModal({ open, onClose, onConfirm, costName, title, dateLabel, initialAmount }: Props) {
+export default function ConfirmPaymentModal({ open, onClose, onConfirm, costName, title, dateLabel, amountLabel, initialAmount }: Props) {
   const today = new Date().toISOString().slice(0, 10)
   const [selectedDate, setSelectedDate] = useState(today)
   const amountInput = useCurrencyInput()
@@ -70,7 +72,7 @@ export default function ConfirmPaymentModal({ open, onClose, onConfirm, costName
               marginBottom: 8,
             }}>
               <DollarSign size={14} />
-              Valor recebido
+              {amountLabel ?? 'Valor recebido'}
             </label>
             <div style={{ position: 'relative' }}>
               <span style={{

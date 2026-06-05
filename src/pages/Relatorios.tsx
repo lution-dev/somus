@@ -5,33 +5,17 @@ import { formatCurrency } from '../lib/calculations'
 import { getDivisaoIcon } from '../lib/icons'
 import { PageHeader } from '../components/ui'
 import UserMenu from '../components/ui/UserMenu'
+import MonthNav from '../components/ui/MonthNav'
 import { useIsMobile } from '../hooks/useIsMobile'
 import { usePartnerData } from '../hooks/usePartnerData'
+import { currentYM, shiftMonth, monthLabel } from '../lib/months'
 import {
-  ChevronLeft, ChevronRight,
   ArrowUpRight, ArrowDownRight,
   TrendingUp, TrendingDown,
   Calendar, AlertTriangle, CheckCircle2, Info,
 } from 'lucide-react'
 
-// ── Month helpers ─────────────────────────────────────────────────────────────
-
-function currentYM(): string {
-  const now = new Date()
-  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
-}
-
-function shiftMonth(ym: string, delta: number): string {
-  const [y, m] = ym.split('-').map(Number)
-  const d = new Date(y, m - 1 + delta, 1)
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
-}
-
-function monthLabel(ym: string): string {
-  const [y, m] = ym.split('-').map(Number)
-  const s = new Date(y, m - 1, 1).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })
-  return s.charAt(0).toUpperCase() + s.slice(1)
-}
+// month helpers imported from src/lib/months.ts
 
 // ── Per-month aggregation ─────────────────────────────────────────────────────
 
@@ -170,9 +154,9 @@ export default function Relatorios() {
             bg={headerBg}
             showLogo
             rightAction={
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                 <MonthNav month={month} today={TODAY} onChange={setMonth} showLabel />
-                <span className="somus-desktop"><UserMenu variant="hero" /></span>
+                <UserMenu variant="hero" />
               </div>
             }
           />
@@ -432,31 +416,7 @@ function SegmentedCtrl({
   )
 }
 
-function MonthNav({ month, today, onChange, showLabel }: { month: string; today: string; onChange: (m: string) => void; showLabel?: boolean }) {
-  const isCurrentMonth = month === today
-  return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-      <button
-        onClick={() => onChange(shiftMonth(month, -1))}
-        style={{ width: 28, height: 28, borderRadius: 8, border: 'none', background: 'rgba(255,255,255,0.06)', cursor: 'pointer', color: 'var(--color-text-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-      >
-        <ChevronLeft size={15} />
-      </button>
-      {showLabel && (
-        <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text-primary)', minWidth: 100, textAlign: 'center' }}>
-          {monthLabel(month)}
-        </span>
-      )}
-      <button
-        onClick={() => !isCurrentMonth && onChange(shiftMonth(month, 1))}
-        style={{ width: 28, height: 28, borderRadius: 8, border: 'none', background: isCurrentMonth ? 'transparent' : 'rgba(255,255,255,0.06)', cursor: isCurrentMonth ? 'default' : 'pointer', color: isCurrentMonth ? 'var(--color-text-tertiary)' : 'var(--color-text-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-        aria-disabled={isCurrentMonth}
-      >
-        <ChevronRight size={15} />
-      </button>
-    </div>
-  )
-}
+// MonthNav imported from src/components/ui/MonthNav.tsx
 
 
 type KpiCardProps = {

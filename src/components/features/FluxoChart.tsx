@@ -13,15 +13,17 @@ import {
 import { useFluxoProjection } from '../../hooks/useFluxoProjection'
 import type { ProjectionDay } from '../../hooks/useFluxoProjection'
 import { formatCurrency, formatCurrencyCompact } from '../../lib/calculations'
+import { monthLabel } from '../../lib/months'
 import { useIsMobile } from '../../hooks/useIsMobile'
 import { TrendingUp, AlertCircle, Info, ChevronDown } from 'lucide-react'
 
-export function FluxoChart({ paidPct, totalFixasPending, totalPagoNoMes }: { 
+export function FluxoChart({ paidPct, totalFixasPending, totalPagoNoMes, month }: { 
   paidPct?: number; 
   totalFixasPending?: number; 
   totalPagoNoMes?: number;
+  month?: string;
 }) {
-  const { days, todayDay, currentTotalBalance, saldoProjetadoFim } = useFluxoProjection()
+  const { days, todayDay, currentTotalBalance, saldoProjetadoFim } = useFluxoProjection(month)
   const isMobile = useIsMobile()
 
   const chartHeight = isMobile ? 160 : 220
@@ -94,7 +96,7 @@ export function FluxoChart({ paidPct, totalFixasPending, totalPagoNoMes }: {
             Resumo do Fluxo
           </h3>
           <p style={{ fontSize: 11, color: 'var(--color-text-tertiary)', margin: 0 }}>
-            Maio 2026
+            {month ? monthLabel(month) : ''}
           </p>
         </div>
         <button

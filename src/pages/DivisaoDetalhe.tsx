@@ -2,7 +2,7 @@ import React, { useState, useMemo, useEffect, useRef } from 'react'
 import { useParams, useLocation } from 'wouter'
 import { useAppStore, selectCurrentSaidasFixas } from '../stores/useAppStore'
 import { useShallow } from 'zustand/react/shallow'
-import { formatCurrency, isPaidThisMonth, getDueDayLabel } from '../lib/calculations'
+import { formatCurrency, isPaidThisMonth, getDueDayLabel, getEffectiveAmount } from '../lib/calculations'
 import { getDivisaoIcon } from '../lib/icons'
 import { PageHeader, SearchBar, groupByMonth, MonthHeader, ConfirmDialog, Breadcrumb } from '../components/ui'
 import ItemActionSheet from '../components/ui/ItemActionSheet'
@@ -1040,8 +1040,10 @@ export default function DivisaoDetalhe() {
         open={!!confirmPaySf}
         onClose={() => setConfirmPaySf(null)}
         costName={confirmPaySf?.name}
-        onConfirm={(date) => {
-          if (confirmPaySf) markSaidaFixaPaid(confirmPaySf.id, date, currentMonth)
+        amountLabel="Valor pago"
+        initialAmount={confirmPaySf ? getEffectiveAmount(confirmPaySf, currentMonth) : undefined}
+        onConfirm={(date, amount) => {
+          if (confirmPaySf) markSaidaFixaPaid(confirmPaySf.id, date, currentMonth, amount)
         }}
       />
     </div>

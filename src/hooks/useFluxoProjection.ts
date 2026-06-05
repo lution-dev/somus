@@ -2,6 +2,7 @@ import { useMemo } from 'react'
 import { useAppStore } from '../stores/useAppStore'
 import { isPaidForMonth, getEffectiveAmount } from '../lib/calculations'
 import { useShallow } from 'zustand/react/shallow'
+import { currentYM } from '../lib/months'
 
 export interface ProjectionDay {
   day: number
@@ -11,7 +12,7 @@ export interface ProjectionDay {
   eventos: { name: string; amount: number }[]
 }
 
-export function useFluxoProjection() {
+export function useFluxoProjection(month?: string) {
   const { divisoes, entradas, saidasVariaveis, saidasFixas } = useAppStore(
     useShallow((s) => ({
       divisoes: s.divisoes,
@@ -23,64 +24,73 @@ export function useFluxoProjection() {
 
   const projection = useMemo(() => {
     const now = new Date()
-    const todayDay = now.getDate()
-    const yearMonth = now.toISOString().slice(0, 7)
-    const lastDayOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate()
+    const TODAY = currentYM()
+    const yearMonth = month ?? TODAY
+    const isPastMonth = yearMonth < TODAY
+
+    // For current month: split at today. For past months: all days are "historical".
+    const todayDay = isPastMonth
+      ? new Date(parseInt(yearMonth.split('-')[0]), parseInt(yearMonth.split('-')[1]), 0).getDate() // last day of month
+      : now.getDate()
+
+    const lastDayOfMonth = new Date(
+      parseInt(yearMonth.split('-')[0]),
+      parseInt(yearMonth.split('-')[1]),
+      0,
+    ).getDate()
 
     const currentTotalBalance = divisoes.reduce((sum, cx) => sum + cx.balance, 0)
 
-    // Entradas e variáveis do mês atual
+    // Entradas e variáveis do mês selecionado
     const monthEntradas = entradas.filter((e) => e.date.startsWith(yearMonth))
     const monthVariaveis = saidasVariaveis.filter((s) => s.date.startsWith(yearMonth))
 
-    // Custos pendentes (Fixos + Variáveis agendadas)
-    const pendingFixas = saidasFixas.filter((f) => !isPaidForMonth(f, yearMonth))
-    const pendingVariaveis = saidasVariaveis.filter(v => v.status === 'pending' && v.date.startsWith(yearMonth))
-    const pendingEntradas = entradas.filter(e => e.status === 'pending' && e.date.startsWith(yearMonth))
+    // Custos pendentes (Fixos + Variáveis agendadas) — only relevant for current month
+    const pendingFixas = isPastMonth ? [] : saidasFixas.filter((f) => !isPaidForMonth(f, yearMonth))
+    const pendingVariaveis = isPastMonth ? [] : saidasVariaveis.filter(v => v.status === 'pending' && v.date.startsWith(yearMonth))
+    const pendingEntradas = isPastMonth ? [] : entradas.filter(e => e.status === 'pending' && e.date.startsWith(yearMonth))
 
     const days: ProjectionDay[] = []
 
-    // 1. Reconstrução do Histórico (1 até hoje)
-    // saldo(hoje) = currentTotalBalance
-    // saldo(d-1) = saldo(d) - entradas(d) + variaveis(d)
-    
+    // 1. Reconstrução do Histórico (1 até hoje/fim do mês)
     let runningBalanceHistory = currentTotalBalance
     const historicalData: Record<number, number> = {}
     historicalData[todayDay] = currentTotalBalance
 
-    // Percorre de hoje para trás para reconstruir o que era o saldo
     for (let d = todayDay - 1; d >= 1; d--) {
       const dayStr = `${yearMonth}-${(d + 1).toString().padStart(2, '0')}`
       const dayEntradas = monthEntradas.filter((e) => e.date === dayStr).reduce((sum, e) => sum + e.amount, 0)
       const dayVariaveis = monthVariaveis
-        .filter((v) => v.date === dayStr && v.status !== 'pending') // Só variáveis REALIZADAS entram no histórico
+        .filter((v) => v.date === dayStr && v.status !== 'pending')
         .reduce((sum, v) => sum + v.amount, 0)
       
       runningBalanceHistory = runningBalanceHistory - dayEntradas + dayVariaveis
       historicalData[d] = runningBalanceHistory
     }
 
-    // 2. Projeção (hoje até fim do mês)
+    // 2. Projeção (só para mês atual)
     let runningBalanceProj = currentTotalBalance
     const projectionData: Record<number, number> = {}
-    projectionData[todayDay] = currentTotalBalance
+    if (!isPastMonth) {
+      projectionData[todayDay] = currentTotalBalance
 
-    for (let d = todayDay + 1; d <= lastDayOfMonth; d++) {
-      const dayFixas = pendingFixas
-        .filter((f) => f.dueDay === d)
-        .reduce((sum, f) => sum + getEffectiveAmount(f, yearMonth), 0)
-      
-      const dayVariaveis = pendingVariaveis
-        .filter(v => parseInt(v.date.split('-')[2]) === d)
-        .reduce((sum, v) => sum + v.amount, 0)
+      for (let d = todayDay + 1; d <= lastDayOfMonth; d++) {
+        const dayFixas = pendingFixas
+          .filter((f) => f.dueDay === d)
+          .reduce((sum, f) => sum + getEffectiveAmount(f, yearMonth), 0)
+        
+        const dayVariaveis = pendingVariaveis
+          .filter(v => parseInt(v.date.split('-')[2]) === d)
+          .reduce((sum, v) => sum + v.amount, 0)
 
-      const dayEntradasPending = pendingEntradas
-        .filter(e => parseInt(e.date.split('-')[2]) === d)
-        .reduce((sum, e) => sum + e.amount, 0)
-      
-      runningBalanceProj += dayEntradasPending
-      runningBalanceProj -= (dayFixas + dayVariaveis)
-      projectionData[d] = runningBalanceProj
+        const dayEntradasPending = pendingEntradas
+          .filter(e => parseInt(e.date.split('-')[2]) === d)
+          .reduce((sum, e) => sum + e.amount, 0)
+        
+        runningBalanceProj += dayEntradasPending
+        runningBalanceProj -= (dayFixas + dayVariaveis)
+        projectionData[d] = runningBalanceProj
+      }
     }
 
     // Montar array final
@@ -96,7 +106,7 @@ export function useFluxoProjection() {
         day: d,
         date: dateStr,
         saldoReal: d <= todayDay ? historicalData[d] : null,
-        saldoProj: d >= todayDay ? projectionData[d] : null,
+        saldoProj: !isPastMonth && d >= todayDay ? projectionData[d] : null,
         eventos,
       })
     }
@@ -105,9 +115,12 @@ export function useFluxoProjection() {
       days,
       todayDay,
       currentTotalBalance,
-      saldoProjetadoFim: projectionData[lastDayOfMonth] ?? currentTotalBalance,
+      saldoProjetadoFim: isPastMonth
+        ? (historicalData[1] ?? currentTotalBalance)
+        : (projectionData[lastDayOfMonth] ?? currentTotalBalance),
     }
-  }, [divisoes, entradas, saidasVariaveis, saidasFixas])
+  }, [divisoes, entradas, saidasVariaveis, saidasFixas, month])
 
   return projection
 }
+

@@ -41,7 +41,7 @@ interface AppActions {
   deleteDivisaoMovement: (divisaoId: string, movementId: string) => void
 
   // Saídas Fixas
-  markSaidaFixaPaid: (id: string, date: string, targetMonth?: string) => void
+  markSaidaFixaPaid: (id: string, date: string, targetMonth?: string, overrideAmount?: number) => void
   markSaidaFixaUnpaid: (id: string, targetMonth: string) => void
   addSaidaFixa: (sf: Omit<SaidaFixa, 'id' | 'payments' | 'startDate'>) => void
   editSaidaFixa: (id: string, updates: Partial<SaidaFixa>) => void
@@ -313,7 +313,7 @@ export const useAppStore = create<AppState & AppActions>()(
 
       setDivisoes: (divisoes) => set({ divisoes }),
 
-      markSaidaFixaPaid: (id, date, targetMonth) =>
+      markSaidaFixaPaid: (id, date, targetMonth, overrideAmount) =>
         set((state) => {
           const sf = state.saidasFixas.find(s => s.id === id)
           if (!sf) return state
@@ -324,10 +324,11 @@ export const useAppStore = create<AppState & AppActions>()(
           // Guard: evita pagamento duplicado (sv já existe para este mês)
           if (state.saidasVariaveis.some(sv => sv.id === svId)) return state
 
-          // Usa o valor efetivo do mês (monthlyAmountOverrides) ou o valor base.
-          // Isso corrige o caso de faturas variáveis (ex: Fatura Inter) onde
-          // sf.amount = 0 mas o valor real do mês está em monthlyAmountOverrides.
-          const effectiveAmount = sf.monthlyAmountOverrides?.[yearMonth] ?? sf.amount
+          // overrideAmount: valor digitado pelo usuário no modal de confirmação.
+          // Tem precedência sobre monthlyAmountOverrides e sf.amount.
+          // Quando fornecido, também é persistido em monthlyAmountOverrides para que
+          // futuras execuções de fixSaidaFixaPaymentAmounts não revertam o valor.
+          const effectiveAmount = overrideAmount ?? sf.monthlyAmountOverrides?.[yearMonth] ?? sf.amount
 
           const mvId = `mv-fixed-${id}-${yearMonth}`
 
@@ -335,7 +336,11 @@ export const useAppStore = create<AppState & AppActions>()(
             saidasFixas: state.saidasFixas.map(s =>
               s.id !== id ? s : {
                 ...s,
-                payments: { ...s.payments, [yearMonth]: date }
+                payments: { ...s.payments, [yearMonth]: date },
+                // Se o usuário confirmou com valor diferente, salva como override do mês
+                ...(overrideAmount !== undefined
+                  ? { monthlyAmountOverrides: { ...(s.monthlyAmountOverrides ?? {}), [yearMonth]: overrideAmount } }
+                  : {}),
               }
             ),
             saidasVariaveis: [
@@ -357,7 +362,7 @@ export const useAppStore = create<AppState & AppActions>()(
                 ...cx,
                 balance: cx.balance - effectiveAmount,
                 movements: [
-                  ...(cx.movements ?? []).filter(m => m.id !== mvId), // evita duplicata de movement
+                  ...(cx.movements ?? []).filter(m => m.id !== mvId),
                   {
                     id: mvId,
                     date,

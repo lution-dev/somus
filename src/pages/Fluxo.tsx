@@ -13,10 +13,12 @@ import ConfirmPaymentModal from '../components/features/ConfirmPaymentModal'
 import EditSaidaVariavelModal from '../components/features/EditSaidaVariavelModal'
 import EditEntradaModal from '../components/features/EditEntradaModal'
 import ItemActionSheet from '../components/ui/ItemActionSheet'
+import MonthNav from '../components/ui/MonthNav'
 import { PageHeader, SearchBar, Dialog, Button, ConfirmDialog } from '../components/ui'
 import UserMenu from '../components/ui/UserMenu'
 import { useIsMobile } from '../hooks/useIsMobile'
 import { getDivisaoIcon } from '../lib/icons'
+import { currentYM, monthLabel } from '../lib/months'
 import { Check, RefreshCw, Plus, Inbox, ArrowUpRight, ArrowDownLeft, CheckCircle2, Pencil, Trash2, XCircle, TrendingUp, AlertCircle, Clock, ChevronDown, Copy, CalendarRange } from 'lucide-react'
 import type { SaidaFixa, SaidaVariavel, Entrada } from '../types'
 import { FluxoChart } from '../components/features/FluxoChart'
@@ -282,8 +284,10 @@ function FixaItem({ sf, isLast, onPress, yearMonth }: {
         open={dateDialogOpen}
         onClose={() => setDateDialogOpen(false)}
         costName={sf.name}
-        onConfirm={(date) => {
-          useAppStore.getState().markSaidaFixaPaid(sf.id, date, yearMonth)
+        amountLabel="Valor pago"
+        initialAmount={effectiveAmount}
+        onConfirm={(date, amount) => {
+          useAppStore.getState().markSaidaFixaPaid(sf.id, date, yearMonth, amount)
           setDateDialogOpen(false)
         }}
       />
@@ -563,7 +567,8 @@ export default function Fluxo() {
     }
   }, [fluxoLancadosOpen, setFluxoLancadosOpen])
 
-  const yearMonth = useMemo(() => new Date().toISOString().slice(0, 7), [])
+  const TODAY = currentYM()
+  const [yearMonth, setYearMonth] = useState(TODAY)
 
   const saidasFixas      = useAppStore(useShallow(selectCurrentSaidasFixas))
   const entradas         = useAppStore(useShallow(selectCurrentEntradas))
@@ -663,7 +668,7 @@ export default function Fluxo() {
   const totalPagoNoMes = totalFixasPaid + totalVariaveis
   const paidPct = Math.round((saidasFixas.filter(sf => isPaidForMonth(sf, yearMonth)).length / (saidasFixas.length || 1)) * 100)
 
-  const currentMonthLabel = new Date().toLocaleString('pt-BR', { month: 'long', year: 'numeric' })
+  const currentMonthLabel = monthLabel(yearMonth)
 
   const renderUnifiedList = () => {
     if (unifiedList.length === 0) return <EmptyState icon={<Inbox size={24} />} label="Nenhum lançamento encontrado" desc="Tente mudar os filtros ou adicione novos lançamentos." />
@@ -922,7 +927,12 @@ export default function Fluxo() {
             title="Fluxo"
             bg={HERO_BG}
             showLogo
-            rightAction={<span className="somus-desktop"><UserMenu variant="hero" /></span>}
+            rightAction={
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <MonthNav month={yearMonth} today={TODAY} onChange={setYearMonth} showLabel />
+                <span className="somus-desktop"><UserMenu variant="hero" /></span>
+              </div>
+            }
           />
           {/* Gradient wrapping FluxoChart — same structure as Home wraps BalanceCard */}
           <div style={{
@@ -933,7 +943,8 @@ export default function Fluxo() {
             <FluxoChart 
               paidPct={paidPct} 
               totalFixasPending={totalFixasPending} 
-              totalPagoNoMes={totalPagoNoMes} 
+              totalPagoNoMes={totalPagoNoMes}
+              month={yearMonth}
             />
           </div>
         </>
@@ -953,6 +964,7 @@ export default function Fluxo() {
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
             <h1 style={{ fontSize: 24, fontWeight: 700, color: 'var(--color-text-primary)', margin: 0 }}>Fluxo de Caixa</h1>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <MonthNav month={yearMonth} today={TODAY} onChange={setYearMonth} showLabel />
               <Button variant="secondary" onClick={() => setDivisaoPicker(true)} style={{ color: 'var(--color-danger)', border: '1px solid rgba(239,68,68,0.2)' }}>
                 <ArrowDownLeft size={16} /> Lançar saída
               </Button>
@@ -970,6 +982,7 @@ export default function Fluxo() {
               paidPct={paidPct}
               totalFixasPending={totalFixasPending}
               totalPagoNoMes={totalPagoNoMes}
+              month={yearMonth}
             />
           </div>
         </>
@@ -1185,7 +1198,9 @@ export default function Fluxo() {
         open={!!confirmPaySf}
         onClose={() => setConfirmPaySf(null)}
         costName={confirmPaySf?.name}
-        onConfirm={(date) => { if (confirmPaySf) markPaid(confirmPaySf.id, date, yearMonth) }}
+        amountLabel="Valor pago"
+        initialAmount={confirmPaySf ? getEffectiveAmount(confirmPaySf, yearMonth) : undefined}
+        onConfirm={(date, amount) => { if (confirmPaySf) markPaid(confirmPaySf.id, date, yearMonth, amount) }}
       />
 
       <ConfirmDialog

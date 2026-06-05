@@ -95,3 +95,10 @@
 | T-ENT-04 | ⬜ todo | Entradas pendentes na seção Pendentes do Fluxo + Action Sheet | Fluxo.tsx |
 | T-ENT-05 | ⬜ todo | Entradas pendentes em ProximosDias + confirmação | Home.tsx |
 | T-ENT-06 | ⬜ todo | Projeção inclui entradas pendentes futuras | useFluxoProjection.ts |
+
+## Sprint Atual — Campo de Valor nos Modais de Confirmação (S-CONFIRM)
+
+| ID | Status | Descrição | Arquivo |
+|----|--------|-----------|---------|
+| T-AD-01 | 🔄 doing | Exibir (e permitir editar) valor no modal de confirmar pagamento de SaidaFixa em todos os call sites | ConfirmPaymentModal.tsx, useAppStore.ts, Fluxo.tsx, Home.tsx, DivisaoDetalhe.tsx |
+
