@@ -930,7 +930,7 @@ export default function Fluxo() {
             rightAction={
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                 <MonthNav month={yearMonth} today={TODAY} onChange={setYearMonth} showLabel />
-                <span className="somus-desktop"><UserMenu variant="hero" /></span>
+                <UserMenu variant="hero" />
               </div>
             }
           />
