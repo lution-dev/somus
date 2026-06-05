@@ -5,7 +5,7 @@ import { useShallow } from 'zustand/react/shallow'
 import { formatCurrency } from '../../lib/calculations'
 import { Dialog, DialogFooter, Button, Input } from '../ui'
 import { getDivisaoIcon } from '../../lib/icons'
-import { Check, AlertCircle, TrendingUp, Layers, ArrowLeft } from 'lucide-react'
+import { Check, AlertCircle, TrendingUp, Layers, ArrowLeft, Repeat2 } from 'lucide-react'
 import { useCurrencyInput } from '../../hooks/useCurrencyInput'
 
 interface Props {
@@ -28,11 +28,17 @@ export default function LancarEntradaModal({ open, onClose, prefill }: Props) {
   const [selectedDivisaoId, setSelectedDivisaoId] = useState('')
   const [descricao, setDescricao]     = useState('')
 
+  // Entrada Fixa state
+  const [isFixa, setIsFixa]           = useState(false)
+  const [dueDay, setDueDay]           = useState(5)
+  const [isVariable, setIsVariable]   = useState(false)
+
   const incomeSources        = useAppStore(useShallow(selectCurrentIncomeSources))
   const entradas             = useAppStore(useShallow(selectCurrentEntradas))
   const divisoes             = useAppStore(useShallow(selectCurrentDivisoes))
   const currentUser          = useAppStore(s => s.currentUser)
   const addEntrada           = useAppStore(s => s.addEntrada)
+  const addEntradaFixa       = useAppStore(s => s.addEntradaFixa)
 
   const suggestedSources = useMemo(() => {
     const usedNames = Array.from(new Set(entradas.map(e => e.sourceName)))
@@ -60,6 +66,7 @@ export default function LancarEntradaModal({ open, onClose, prefill }: Props) {
     setDate(prefill?.date ?? new Date().toISOString().slice(0, 10))
     setSubmitted(false); setSourceFocused(false)
     setSelectedDivisaoId(''); setDescricao('')
+    setIsFixa(false); setDueDay(5); setIsVariable(false)
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open])
 
@@ -83,36 +90,62 @@ export default function LancarEntradaModal({ open, onClose, prefill }: Props) {
   }, [amountInput.numericValue, divisoes])
 
   const total           = amountInput.numericValue
-  const isRendaValid    = total > 0 && (sourceId || sourceText.trim())
-  const isDivisaoValid  = total > 0 && selectedDivisaoId && descricao.trim()
+  const isRendaValid    = total > 0 && (sourceId || sourceText.trim()) && (!isFixa || dueDay >= 1)
+  const isDivisaoValid  = total > 0 && selectedDivisaoId && descricao.trim() && (!isFixa || dueDay >= 1)
   const selectedDivisao = divisoes.find(cx => cx.id === selectedDivisaoId)
   const today           = new Date().toISOString().slice(0, 10)
 
   function handleConfirmRenda() {
     if (!isRendaValid || !currentUser) return
     const src = suggestedSources.find(s => s.id === sourceId)
-    addEntrada({
-      userId: currentUser.id,
-      sourceId: sourceId || `src-custom-${Date.now()}`,
-      sourceName: src?.name ?? sourceText.trim(),
-      amount: total, date, note: note || undefined, distribution,
-    })
+    const name = src?.name ?? sourceText.trim()
+
+    if (isFixa) {
+      addEntradaFixa({
+        userId: currentUser.id,
+        name,
+        amount: total,
+        dueDay,
+        kind: 'distributable',
+        isVariable: isVariable || undefined,
+      })
+    } else {
+      addEntrada({
+        userId: currentUser.id,
+        sourceId: sourceId || `src-custom-${Date.now()}`,
+        sourceName: name,
+        amount: total, date, note: note || undefined, distribution,
+      })
+    }
     setSubmitted(true); setTimeout(onClose, 1200)
   }
 
   function handleConfirmDivisao() {
     if (!isDivisaoValid || !currentUser) return
-    addEntrada({
-      userId:          currentUser.id,
-      sourceId:        `src-direct-${Date.now()}`,
-      sourceName:      descricao.trim(),
-      amount:          total,
-      date,
-      note:            undefined,
-      distribution:    [],
-      kind:            'direct',
-      targetDivisaoId: selectedDivisaoId,
-    })
+
+    if (isFixa) {
+      addEntradaFixa({
+        userId: currentUser.id,
+        name: descricao.trim(),
+        amount: total,
+        dueDay,
+        kind: 'direct',
+        targetDivisaoId: selectedDivisaoId,
+        isVariable: isVariable || undefined,
+      })
+    } else {
+      addEntrada({
+        userId:          currentUser.id,
+        sourceId:        `src-direct-${Date.now()}`,
+        sourceName:      descricao.trim(),
+        amount:          total,
+        date,
+        note:            undefined,
+        distribution:    [],
+        kind:            'direct',
+        targetDivisaoId: selectedDivisaoId,
+      })
+    }
     setSubmitted(true); setTimeout(onClose, 1200)
   }
 
@@ -144,16 +177,18 @@ export default function LancarEntradaModal({ open, onClose, prefill }: Props) {
         {submitted && (
           <motion.div key="success" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}
             style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, padding: '24px 0' }}>
-            <div style={{ width: 64, height: 64, borderRadius: '50%', background: 'rgba(16,185,129,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Check size={32} color="var(--color-success)" strokeWidth={2.5} />
+            <div style={{ width: 64, height: 64, borderRadius: '50%', background: isFixa ? 'rgba(139,92,246,0.15)' : 'rgba(16,185,129,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Check size={32} color={isFixa ? 'var(--color-mirian)' : 'var(--color-success)'} strokeWidth={2.5} />
             </div>
-            <p style={{ fontSize: 18, fontWeight: 700, color: 'var(--color-success)', margin: 0 }}>
-              {step === 'renda' && date > today ? 'Entrada agendada!' : 'Entrada lançada!'}
+            <p style={{ fontSize: 18, fontWeight: 700, color: isFixa ? 'var(--color-mirian)' : 'var(--color-success)', margin: 0 }}>
+              {isFixa ? 'Entrada fixa criada!' : (step === 'renda' && date > today ? 'Entrada agendada!' : 'Entrada lançada!')}
             </p>
             <p style={{ fontSize: 14, color: 'var(--color-text-secondary)', margin: 0 }}>
-              {step === 'divisao-form'
-                ? `Adicionado em ${selectedDivisao?.name}`
-                : date > today ? 'Confirme quando o dinheiro chegar' : 'Divisões atualizadas'}
+              {isFixa
+                ? 'Aparecerá no Fluxo todo mês para confirmar o recebimento'
+                : step === 'divisao-form'
+                  ? `Adicionado em ${selectedDivisao?.name}`
+                  : date > today ? 'Confirme quando o dinheiro chegar' : 'Divisões atualizadas'}
             </p>
           </motion.div>
         )}
@@ -249,12 +284,18 @@ export default function LancarEntradaModal({ open, onClose, prefill }: Props) {
               <Input label="Descrição" placeholder="Ex: Parte Aluguel Mãe, Reembolso..."
                 value={descricao} onChange={e => setDescricao(e.target.value)} />
             </div>
-            <div style={{ marginBottom: 16 }}>
-              <Input label="Data" type="date" value={date} onChange={e => setDate(e.target.value)} />
-            </div>
+
+            {/* Toggle Entrada Fixa */}
+            <FixaToggle isFixa={isFixa} onToggle={setIsFixa} dueDay={dueDay} onDueDayChange={setDueDay} isVariable={isVariable} onVariableToggle={setIsVariable} />
+
+            {!isFixa && (
+              <div style={{ marginBottom: 16 }}>
+                <Input label="Data" type="date" value={date} onChange={e => setDate(e.target.value)} />
+              </div>
+            )}
             <DialogFooter>
               <Button variant="primary" size="md" fullWidth disabled={!isDivisaoValid} onClick={handleConfirmDivisao}>
-                Confirmar — {total > 0 ? formatCurrency(total) : 'R$ 0,00'}
+                {isFixa ? <><Repeat2 size={15} /> Criar entrada fixa</> : `Confirmar — ${total > 0 ? formatCurrency(total) : 'R$ 0,00'}`}
               </Button>
               <Button variant="ghost" size="md" fullWidth onClick={onClose}>Cancelar</Button>
             </DialogFooter>
@@ -295,24 +336,31 @@ export default function LancarEntradaModal({ open, onClose, prefill }: Props) {
               )}
             </div>
 
-            <div style={{ marginBottom: 16 }}>
-              <Input label="Data" type="date" value={date} onChange={e => setDate(e.target.value)} />
-              {date > today && (
-                <p style={{ fontSize: 11, color: 'var(--color-warning)', margin: '4px 0 0', display: 'flex', alignItems: 'center', gap: 4, fontWeight: 500 }}>
-                  <AlertCircle size={12} />
-                  <span>Ficará guardada como recebimento esperado para você confirmar no dia</span>
-                </p>
-              )}
-            </div>
+            {/* Toggle Entrada Fixa */}
+            <FixaToggle isFixa={isFixa} onToggle={setIsFixa} dueDay={dueDay} onDueDayChange={setDueDay} isVariable={isVariable} onVariableToggle={setIsVariable} />
 
-            <div style={{ marginBottom: 16 }}>
-              <Input label="Observação (opcional)" placeholder="Ex: bônus extra, freelance..."
-                value={note} onChange={e => setNote(e.target.value)} />
-            </div>
+            {!isFixa && (
+              <>
+                <div style={{ marginBottom: 16 }}>
+                  <Input label="Data" type="date" value={date} onChange={e => setDate(e.target.value)} />
+                  {date > today && (
+                    <p style={{ fontSize: 11, color: 'var(--color-warning)', margin: '4px 0 0', display: 'flex', alignItems: 'center', gap: 4, fontWeight: 500 }}>
+                      <AlertCircle size={12} />
+                      <span>Ficará guardada como recebimento esperado para você confirmar no dia</span>
+                    </p>
+                  )}
+                </div>
+
+                <div style={{ marginBottom: 16 }}>
+                  <Input label="Observação (opcional)" placeholder="Ex: bônus extra, freelance..."
+                    value={note} onChange={e => setNote(e.target.value)} />
+                </div>
+              </>
+            )}
 
             <DialogFooter>
               <Button variant="primary" size="md" fullWidth disabled={!isRendaValid} onClick={handleConfirmRenda}>
-                Confirmar — {total > 0 ? formatCurrency(total) : 'R$ 0,00'}
+                {isFixa ? <><Repeat2 size={15} /> Criar entrada fixa</> : `Confirmar — ${total > 0 ? formatCurrency(total) : 'R$ 0,00'}`}
               </Button>
               <Button variant="ghost" size="md" fullWidth onClick={onClose}>Cancelar</Button>
             </DialogFooter>
@@ -324,7 +372,136 @@ export default function LancarEntradaModal({ open, onClose, prefill }: Props) {
   )
 }
 
-// ── Intent Card ───────────────────────────────────────────────────────────────
+// ── Fixa Toggle ────────────────────────────────────────────────────────────────
+function FixaToggle({ isFixa, onToggle, dueDay, onDueDayChange, isVariable, onVariableToggle }: {
+  isFixa: boolean
+  onToggle: (v: boolean) => void
+  dueDay: number
+  onDueDayChange: (d: number) => void
+  isVariable: boolean
+  onVariableToggle: (v: boolean) => void
+}) {
+  return (
+    <div style={{ marginBottom: 16 }}>
+      {/* Toggle row */}
+      <button
+        type="button"
+        onClick={() => onToggle(!isFixa)}
+        style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          width: '100%', padding: '12px 14px', borderRadius: 12,
+          border: `1px solid ${isFixa ? 'rgba(139,92,246,0.4)' : 'var(--color-border)'}`,
+          background: isFixa ? 'rgba(139,92,246,0.08)' : 'var(--color-bg-tertiary)',
+          cursor: 'pointer', fontFamily: 'var(--font-sans)',
+          transition: 'all 200ms ease',
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div style={{ width: 32, height: 32, borderRadius: 10, background: isFixa ? 'rgba(139,92,246,0.18)' : 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Repeat2 size={16} color={isFixa ? '#8B5CF6' : 'var(--color-text-tertiary)'} />
+          </div>
+          <div style={{ textAlign: 'left' }}>
+            <p style={{ fontSize: 13, fontWeight: 600, color: isFixa ? '#8B5CF6' : 'var(--color-text-primary)', margin: 0 }}>Entrada fixa</p>
+            <p style={{ fontSize: 11, color: 'var(--color-text-tertiary)', margin: 0 }}>Recorre todo mês, confirma ao receber</p>
+          </div>
+        </div>
+        {/* Toggle pill */}
+        <div style={{
+          width: 36, height: 20, borderRadius: 10, flexShrink: 0,
+          background: isFixa ? '#8B5CF6' : 'rgba(255,255,255,0.1)',
+          position: 'relative', transition: 'background 200ms ease',
+        }}>
+          <div style={{
+            position: 'absolute', top: 2, left: isFixa ? 18 : 2, width: 16, height: 16,
+            borderRadius: '50%', background: '#fff',
+            transition: 'left 200ms ease',
+            boxShadow: '0 1px 3px rgba(0,0,0,0.3)',
+          }} />
+        </div>
+      </button>
+
+      {/* Extra fields when fixa is on */}
+      <AnimatePresence>
+        {isFixa && (
+          <motion.div
+            key="fixa-extra"
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.2, ease: 'easeOut' }}
+            style={{ overflow: 'hidden' }}
+          >
+            <div style={{ paddingTop: 12, display: 'flex', flexDirection: 'column', gap: 12 }}>
+              {/* Dia esperado */}
+              <div>
+                <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--color-text-secondary)', display: 'block', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                  Dia esperado de recebimento
+                </label>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <input
+                    type="number" min={1} max={31} value={dueDay}
+                    onChange={e => onDueDayChange(Math.min(31, Math.max(1, parseInt(e.target.value) || 1)))}
+                    style={{
+                      width: 72, padding: '10px 12px', fontSize: 16, fontWeight: 700,
+                      fontFamily: 'var(--font-sans)', textAlign: 'center',
+                      background: 'var(--color-bg-tertiary)', border: '1px solid rgba(139,92,246,0.3)',
+                      borderRadius: 10, color: 'var(--color-text-primary)', outline: 'none',
+                    }}
+                  />
+                  <span style={{ fontSize: 13, color: 'var(--color-text-secondary)' }}>de cada mês</span>
+                </div>
+              </div>
+
+              {/* Valor variável toggle */}
+              <button
+                type="button"
+                onClick={() => onVariableToggle(!isVariable)}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 10,
+                  padding: '10px 12px', borderRadius: 10,
+                  border: `1px solid ${isVariable ? 'rgba(245,158,11,0.4)' : 'var(--color-border)'}`,
+                  background: isVariable ? 'rgba(245,158,11,0.06)' : 'transparent',
+                  cursor: 'pointer', fontFamily: 'var(--font-sans)',
+                  transition: 'all 200ms ease',
+                }}
+              >
+                <div style={{
+                  width: 28, height: 28, borderRadius: 8,
+                  background: isVariable ? 'rgba(245,158,11,0.15)' : 'rgba(255,255,255,0.05)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                }}>
+                  <AlertCircle size={14} color={isVariable ? '#F59E0B' : 'var(--color-text-tertiary)'} />
+                </div>
+                <div style={{ textAlign: 'left', flex: 1 }}>
+                  <p style={{ fontSize: 12, fontWeight: 600, color: isVariable ? '#F59E0B' : 'var(--color-text-primary)', margin: 0 }}>
+                    Valor variável
+                  </p>
+                  <p style={{ fontSize: 11, color: 'var(--color-text-tertiary)', margin: 0 }}>
+                    O valor muda todo mês (ex: freelance, comissão)
+                  </p>
+                </div>
+                <div style={{
+                  width: 30, height: 17, borderRadius: 9, flexShrink: 0,
+                  background: isVariable ? '#F59E0B' : 'rgba(255,255,255,0.1)',
+                  position: 'relative', transition: 'background 200ms ease',
+                }}>
+                  <div style={{
+                    position: 'absolute', top: 2, left: isVariable ? 14 : 2, width: 13, height: 13,
+                    borderRadius: '50%', background: '#fff',
+                    transition: 'left 200ms ease',
+                    boxShadow: '0 1px 3px rgba(0,0,0,0.3)',
+                  }} />
+                </div>
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  )
+}
+
+// ── Intent Card ────────────────────────────────────────────────────────────────
 function IntentCard({ icon, iconBg, hoverBorder, hoverBg, title, desc, onClick }: {
   icon: React.ReactNode; iconBg: string; hoverBorder: string; hoverBg: string
   title: string; desc: string; onClick: () => void

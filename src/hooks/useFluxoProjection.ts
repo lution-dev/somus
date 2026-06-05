@@ -3,6 +3,7 @@ import { useAppStore } from '../stores/useAppStore'
 import { isPaidForMonth, getEffectiveAmount } from '../lib/calculations'
 import { useShallow } from 'zustand/react/shallow'
 import { currentYM } from '../lib/months'
+import type { SaidaFixa } from '../types'
 
 export interface ProjectionDay {
   day: number
@@ -13,10 +14,11 @@ export interface ProjectionDay {
 }
 
 export function useFluxoProjection(month?: string) {
-  const { divisoes, entradas, saidasVariaveis, saidasFixas } = useAppStore(
+  const { divisoes, entradas, entradasFixas, saidasVariaveis, saidasFixas } = useAppStore(
     useShallow((s) => ({
       divisoes: s.divisoes,
       entradas: s.entradas,
+      entradasFixas: s.entradasFixas ?? [],
       saidasVariaveis: s.saidasVariaveis,
       saidasFixas: s.saidasFixas,
     }))
@@ -49,6 +51,10 @@ export function useFluxoProjection(month?: string) {
     const pendingFixas = isPastMonth ? [] : saidasFixas.filter((f) => !isPaidForMonth(f, yearMonth))
     const pendingVariaveis = isPastMonth ? [] : saidasVariaveis.filter(v => v.status === 'pending' && v.date.startsWith(yearMonth))
     const pendingEntradas = isPastMonth ? [] : entradas.filter(e => e.status === 'pending' && e.date.startsWith(yearMonth))
+    // Entradas fixas não recebidas neste mês (projeto como receita futura no dueDay)
+    const pendingEntradasFixas = isPastMonth ? [] : entradasFixas.filter(ef =>
+      !ef.skippedMonths?.includes(yearMonth) && !isPaidForMonth(ef as unknown as SaidaFixa, yearMonth)
+    )
 
     const days: ProjectionDay[] = []
 
@@ -86,8 +92,12 @@ export function useFluxoProjection(month?: string) {
         const dayEntradasPending = pendingEntradas
           .filter(e => parseInt(e.date.split('-')[2]) === d)
           .reduce((sum, e) => sum + e.amount, 0)
+
+        const dayEntradasFixasPending = pendingEntradasFixas
+          .filter(ef => ef.dueDay === d)
+          .reduce((sum, ef) => sum + getEffectiveAmount(ef as unknown as SaidaFixa, yearMonth), 0)
         
-        runningBalanceProj += dayEntradasPending
+        runningBalanceProj += dayEntradasPending + dayEntradasFixasPending
         runningBalanceProj -= (dayFixas + dayVariaveis)
         projectionData[d] = runningBalanceProj
       }
@@ -99,7 +109,8 @@ export function useFluxoProjection(month?: string) {
       const eventos = [
         ...pendingFixas.filter((f) => f.dueDay === d).map((f) => ({ name: f.name, amount: getEffectiveAmount(f, yearMonth) })),
         ...pendingVariaveis.filter(v => parseInt(v.date.split('-')[2]) === d).map(v => ({ name: v.description, amount: v.amount })),
-        ...pendingEntradas.filter(e => parseInt(e.date.split('-')[2]) === d).map(e => ({ name: `+${e.sourceName}`, amount: e.amount }))
+        ...pendingEntradas.filter(e => parseInt(e.date.split('-')[2]) === d).map(e => ({ name: `+${e.sourceName}`, amount: e.amount })),
+        ...pendingEntradasFixas.filter(ef => ef.dueDay === d).map(ef => ({ name: `+${ef.name}`, amount: getEffectiveAmount(ef as unknown as SaidaFixa, yearMonth) })),
       ]
 
       days.push({
@@ -119,7 +130,7 @@ export function useFluxoProjection(month?: string) {
         ? (historicalData[1] ?? currentTotalBalance)
         : (projectionData[lastDayOfMonth] ?? currentTotalBalance),
     }
-  }, [divisoes, entradas, saidasVariaveis, saidasFixas, month])
+  }, [divisoes, entradas, entradasFixas, saidasVariaveis, saidasFixas, month])
 
   return projection
 }

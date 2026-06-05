@@ -52,6 +52,23 @@ export interface Entrada {
   targetDivisaoId?: string
 }
 
+// ─── Entradas Fixas (Renda Recorrente) ─────────────────────────────────────
+
+export interface EntradaFixa {
+  id: string
+  userId: string
+  name: string                          // ex: "Salário Lidtek", "Freelance Glide"
+  amount: number                        // valor base mensal
+  dueDay: number                        // dia esperado de recebimento (1-31)
+  kind: 'distributable' | 'direct'      // distribui por % ou vai pra 1 divisão
+  targetDivisaoId?: string              // só quando kind='direct'
+  payments: Record<string, string>      // 'YYYY-MM' → 'YYYY-MM-DD' (data real do recebimento)
+  startDate?: string                    // 'YYYY-MM'
+  isVariable?: boolean                  // se true, valor varia todo mês
+  monthlyAmountOverrides?: Record<string, number>  // 'YYYY-MM' → valor override
+  skippedMonths?: string[]              // meses a ignorar
+}
+
 // ─── Divisoes ──────────────────────────────────────────────────────────────
 
 export interface DivisaoMovement {
@@ -150,6 +167,7 @@ export interface AppState {
   viewContext: UserContext
   incomeSources: IncomeSource[]
   entradas: Entrada[]
+  entradasFixas: EntradaFixa[]
   divisoes: Divisao[]
   saidasFixas: SaidaFixa[]
   saidasVariaveis: SaidaVariavel[]

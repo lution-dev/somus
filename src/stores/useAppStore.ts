@@ -5,6 +5,7 @@ import type {
   User,
   IncomeSource,
   Entrada,
+  EntradaFixa,
   Divisao,
   DivisaoMovement,
   SaidaFixa,
@@ -33,6 +34,16 @@ interface AppActions {
   confirmEntrada: (id: string, confirmationDate: string, confirmedAmount?: number) => void
   editEntrada: (id: string, updates: { amount?: number; sourceName?: string; date?: string; note?: string; divisaoId?: string }) => void
   deleteEntrada: (id: string) => void
+
+  // Entradas Fixas (Renda Recorrente)
+  addEntradaFixa: (ef: Omit<EntradaFixa, 'id' | 'payments' | 'startDate'>) => void
+  markEntradaFixaReceived: (id: string, date: string, targetMonth?: string, overrideAmount?: number) => void
+  markEntradaFixaUnreceived: (id: string, targetMonth: string) => void
+  editEntradaFixa: (id: string, updates: Partial<EntradaFixa>) => void
+  editEntradaFixaForMonth: (id: string, yearMonth: string, amount: number) => void
+  skipEntradaFixaForMonth: (id: string, yearMonth: string) => void
+  unskipEntradaFixaForMonth: (id: string, yearMonth: string) => void
+  deleteEntradaFixa: (id: string) => void
 
   // Divisoes
   updateDivisaoBalance: (divisaoId: string, amount: number, description: string) => void
@@ -88,6 +99,7 @@ const getInitialState = (): AppState => ({
   viewContext: 'personal',
   incomeSources: [],
   entradas: [],
+  entradasFixas: [],
   divisoes: [],
   saidasFixas: [],
   saidasVariaveis: [],
@@ -925,6 +937,260 @@ export const useAppStore = create<AppState & AppActions>()(
           saidasFixas: state.saidasFixas.filter(sf => sf.id !== id),
         })),
 
+      // ── Entrada Fixa CRUD (Renda Recorrente) ──
+      addEntradaFixa: (ef) =>
+        set((state) => ({
+          entradasFixas: [
+            ...(state.entradasFixas ?? []),
+            {
+              ...ef,
+              id: `ef-${Date.now()}`,
+              payments: {},
+              startDate: new Date().toISOString().slice(0, 7),
+            },
+          ],
+        })),
+
+      markEntradaFixaReceived: (id, date, targetMonth, overrideAmount) =>
+        set((state) => {
+          const ef = (state.entradasFixas ?? []).find(x => x.id === id)
+          if (!ef) return state
+
+          const yearMonth = targetMonth || date.slice(0, 7)
+          const entradaId = `e-fixed-${id}-${yearMonth}`
+
+          // Guard: evita recebimento duplicado
+          if (state.entradas.some(e => e.id === entradaId)) return state
+
+          const effectiveAmount = overrideAmount ?? ef.monthlyAmountOverrides?.[yearMonth] ?? ef.amount
+          const mvIdPrefix = `mv-efixed-${id}-${yearMonth}`
+
+          // Calcular distribution proporcional (para kind='distributable')
+          const divisoes = state.divisoes
+          const totalPct = divisoes.reduce((s, cx) => s + cx.percentage, 0) || 100
+
+          const distribution = ef.kind === 'distributable'
+            ? divisoes.map(cx => ({
+                divisaoId: cx.id,
+                divisaoName: cx.name,
+                amount: Math.round((effectiveAmount * cx.percentage / totalPct) * 100) / 100,
+                percentage: cx.percentage,
+              }))
+            : []
+
+          // Criar Entrada real
+          const newEntrada: Entrada = {
+            id: entradaId,
+            userId: ef.userId,
+            sourceId: ef.id,
+            sourceName: ef.name,
+            amount: effectiveAmount,
+            date,
+            distribution,
+            status: 'realized',
+            kind: ef.kind,
+            targetDivisaoId: ef.targetDivisaoId,
+          }
+
+          // Atualizar entradasFixas com payments
+          const updatedEntradasFixas = (state.entradasFixas ?? []).map(x =>
+            x.id !== id ? x : {
+              ...x,
+              payments: { ...x.payments, [yearMonth]: date },
+              ...(overrideAmount !== undefined
+                ? { monthlyAmountOverrides: { ...(x.monthlyAmountOverrides ?? {}), [yearMonth]: overrideAmount } }
+                : {}),
+            }
+          )
+
+          // Atualizar divisões
+          let updatedDivisoes: typeof state.divisoes
+          if (ef.kind === 'direct' && ef.targetDivisaoId) {
+            updatedDivisoes = divisoes.map(cx =>
+              cx.id !== ef.targetDivisaoId ? cx : {
+                ...cx,
+                balance: cx.balance + effectiveAmount,
+                movements: [
+                  ...(cx.movements ?? []),
+                  {
+                    id: `${mvIdPrefix}-direct`,
+                    date,
+                    amount: effectiveAmount,
+                    description: ef.name,
+                    type: 'income' as const,
+                  },
+                ],
+              }
+            )
+          } else {
+            updatedDivisoes = divisoes.map(cx => {
+              const dist = distribution.find(d => d.divisaoId === cx.id)
+              if (!dist || dist.amount === 0) return cx
+              return {
+                ...cx,
+                balance: cx.balance + dist.amount,
+                movements: [
+                  ...(cx.movements ?? []),
+                  {
+                    id: `${mvIdPrefix}-${cx.id}`,
+                    date,
+                    amount: dist.amount,
+                    description: `Distribuição — ${ef.name}`,
+                    type: 'income' as const,
+                  },
+                ],
+              }
+            })
+          }
+
+          return {
+            entradasFixas: updatedEntradasFixas,
+            entradas: [...state.entradas, newEntrada],
+            divisoes: updatedDivisoes,
+          }
+        }),
+
+      markEntradaFixaUnreceived: (id, targetMonth) =>
+        set((state) => {
+          const ef = (state.entradasFixas ?? []).find(x => x.id === id)
+          if (!ef) return state
+
+          const yearMonth = targetMonth
+          const entradaId = `e-fixed-${id}-${yearMonth}`
+          const existingEntrada = state.entradas.find(e => e.id === entradaId)
+          if (!existingEntrada) return state
+
+          const effectiveAmount = existingEntrada.amount
+
+          // Reverter divisões
+          let updatedDivisoes: typeof state.divisoes
+          if (ef.kind === 'direct' && ef.targetDivisaoId) {
+            updatedDivisoes = state.divisoes.map(cx =>
+              cx.id !== ef.targetDivisaoId ? cx : {
+                ...cx,
+                balance: cx.balance - effectiveAmount,
+                movements: (cx.movements ?? []).filter(mv => mv.id !== `mv-efixed-${id}-${yearMonth}-direct`),
+              }
+            )
+          } else {
+            updatedDivisoes = state.divisoes.map(cx => {
+              const mvId = `mv-efixed-${id}-${yearMonth}-${cx.id}`
+              const mv = (cx.movements ?? []).find(m => m.id === mvId)
+              if (!mv) return cx
+              return {
+                ...cx,
+                balance: cx.balance - mv.amount,
+                movements: (cx.movements ?? []).filter(m => m.id !== mvId),
+              }
+            })
+          }
+
+          return {
+            entradasFixas: (state.entradasFixas ?? []).map(x =>
+              x.id !== id ? x : {
+                ...x,
+                payments: Object.fromEntries(
+                  Object.entries(x.payments).filter(([ym]) => ym !== yearMonth)
+                ),
+              }
+            ),
+            entradas: state.entradas.filter(e => e.id !== entradaId),
+            divisoes: updatedDivisoes,
+          }
+        }),
+
+      editEntradaFixa: (id, updates) =>
+        set((state) => ({
+          entradasFixas: (state.entradasFixas ?? []).map(ef =>
+            ef.id !== id ? ef : { ...ef, ...updates }
+          ),
+        })),
+
+      editEntradaFixaForMonth: (id, yearMonth, amount) =>
+        set((state) => {
+          const ef = (state.entradasFixas ?? []).find(x => x.id === id)
+          if (!ef) return state
+
+          const updatedEntradasFixas = (state.entradasFixas ?? []).map(x =>
+            x.id !== id ? x : {
+              ...x,
+              monthlyAmountOverrides: { ...(x.monthlyAmountOverrides ?? {}), [yearMonth]: amount },
+            }
+          )
+
+          const entradaId = `e-fixed-${id}-${yearMonth}`
+          const existingEntrada = state.entradas.find(e => e.id === entradaId)
+
+          if (!existingEntrada) {
+            return { entradasFixas: updatedEntradasFixas }
+          }
+
+          // Mês já recebido: atualiza Entrada + movements + balance com diff
+          const oldAmount = existingEntrada.amount
+          const amountDiff = amount - oldAmount
+
+          let updatedDivisoes: typeof state.divisoes
+          if (ef.kind === 'direct' && ef.targetDivisaoId) {
+            const mvId = `mv-efixed-${id}-${yearMonth}-direct`
+            updatedDivisoes = state.divisoes.map(cx =>
+              cx.id !== ef.targetDivisaoId ? cx : {
+                ...cx,
+                balance: cx.balance + amountDiff,
+                movements: (cx.movements ?? []).map(mv =>
+                  mv.id !== mvId ? mv : { ...mv, amount }
+                ),
+              }
+            )
+          } else {
+            const ratio = oldAmount > 0 ? amount / oldAmount : 1
+            updatedDivisoes = state.divisoes.map(cx => {
+              const mvId = `mv-efixed-${id}-${yearMonth}-${cx.id}`
+              const mv = (cx.movements ?? []).find(m => m.id === mvId)
+              if (!mv) return cx
+              const newMvAmount = Math.round(mv.amount * ratio * 100) / 100
+              return {
+                ...cx,
+                balance: cx.balance + (newMvAmount - mv.amount),
+                movements: (cx.movements ?? []).map(m =>
+                  m.id !== mvId ? m : { ...m, amount: newMvAmount }
+                ),
+              }
+            })
+          }
+
+          return {
+            entradasFixas: updatedEntradasFixas,
+            entradas: state.entradas.map(e =>
+              e.id !== entradaId ? e : { ...e, amount }
+            ),
+            divisoes: updatedDivisoes,
+          }
+        }),
+
+      skipEntradaFixaForMonth: (id, yearMonth) =>
+        set((state) => ({
+          entradasFixas: (state.entradasFixas ?? []).map(ef =>
+            ef.id !== id ? ef : {
+              ...ef,
+              skippedMonths: [...(ef.skippedMonths ?? []), yearMonth],
+            }
+          ),
+        })),
+
+      unskipEntradaFixaForMonth: (id, yearMonth) =>
+        set((state) => ({
+          entradasFixas: (state.entradasFixas ?? []).map(ef =>
+            ef.id !== id ? ef : {
+              ...ef,
+              skippedMonths: (ef.skippedMonths ?? []).filter(m => m !== yearMonth),
+            }
+          ),
+        })),
+
+      deleteEntradaFixa: (id) =>
+        set((state) => ({
+          entradasFixas: (state.entradasFixas ?? []).filter(ef => ef.id !== id),
+        })),
       // ── Objetivo Movement CRUD ──
       addObjetivoMovement: (objetivoId, mv) =>
         set((state) => ({
@@ -976,7 +1242,7 @@ export const useAppStore = create<AppState & AppActions>()(
     }),
     {
       name: 'somus-state',
-      version: 15,
+      version: 16,
       migrate: (_persisted: unknown, version: number) => {
         const state = _persisted as Record<string, unknown>
 
@@ -1172,6 +1438,14 @@ export const useAppStore = create<AppState & AppActions>()(
           }
         }
 
+        // v16: add entradasFixas array — no-op, backfill with empty array
+        if (version < 16) {
+          const s = state as Record<string, unknown>
+          if (!Array.isArray(s.entradasFixas)) {
+            s.entradasFixas = []
+          }
+        }
+
         return state as unknown as AppState & AppActions
       },
       partialize: (state) => ({
@@ -1181,6 +1455,7 @@ export const useAppStore = create<AppState & AppActions>()(
         viewContext: state.viewContext,
         incomeSources: state.incomeSources,
         entradas: state.entradas,
+        entradasFixas: state.entradasFixas ?? [],
         divisoes: state.divisoes,
         saidasFixas: state.saidasFixas,
         saidasVariaveis: state.saidasVariaveis,
@@ -1235,6 +1510,14 @@ export const selectCurrentSaidasFixas = (state: AppState) =>
   state.viewContext === 'couple'
     ? state.saidasFixas
     : state.saidasFixas.filter(sf => sf.userId === (state.currentUser?.id ?? ''))
+
+/**
+ * Retorna as entradas fixas (renda recorrente) do usuário atual.
+ */
+export const selectCurrentEntradasFixas = (state: AppState) =>
+  state.viewContext === 'couple'
+    ? (state.entradasFixas ?? [])
+    : (state.entradasFixas ?? []).filter(ef => ef.userId === (state.currentUser?.id ?? ''))
 
 /**
  * Calcula a renda mensal esperada do usuário atual.

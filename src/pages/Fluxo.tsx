@@ -22,13 +22,16 @@ import { currentYM, monthLabel } from '../lib/months'
 import { Check, RefreshCw, Plus, Inbox, ArrowUpRight, ArrowDownLeft, CheckCircle2, Pencil, Trash2, XCircle, TrendingUp, AlertCircle, Clock, ChevronDown, Copy, CalendarRange } from 'lucide-react'
 import type { SaidaFixa, SaidaVariavel, Entrada } from '../types'
 import { FluxoChart } from '../components/features/FluxoChart'
+import { selectCurrentEntradasFixas } from '../stores/useAppStore'
+import type { EntradaFixa } from '../types'
 
 // --- Tipos Locais -------------------------------------------------------------
 
 type FluxoItem =
-  | { type: 'fixa';     data: SaidaFixa;     instanceMonth?: string }
-  | { type: 'variavel'; data: SaidaVariavel }
-  | { type: 'entrada';  data: Entrada }
+  | { type: 'fixa';          data: SaidaFixa;     instanceMonth?: string }
+  | { type: 'variavel';      data: SaidaVariavel }
+  | { type: 'entrada';       data: Entrada }
+  | { type: 'entrada-fixa';  data: EntradaFixa;   instanceMonth?: string }
 
 /**
  * Retorna a data real YYYY-MM-DD de um item realizado.
@@ -39,6 +42,12 @@ function getDayKey(item: FluxoItem, yearMonth: string): string {
   if (item.type === 'fixa') {
     const paidDate = item.data.payments?.[item.instanceMonth || yearMonth]
     if (paidDate) return paidDate
+    const ym = item.instanceMonth || yearMonth
+    return `${ym}-${String(item.data.dueDay).padStart(2, '0')}`
+  }
+  if (item.type === 'entrada-fixa') {
+    const receivedDate = item.data.payments?.[item.instanceMonth || yearMonth]
+    if (receivedDate) return receivedDate
     const ym = item.instanceMonth || yearMonth
     return `${ym}-${String(item.data.dueDay).padStart(2, '0')}`
   }
@@ -479,6 +488,134 @@ function EntradaItem({ e, isLast, onPress }: { e: Entrada; isLast: boolean; onPr
   )
 }
 
+function EntradaFixaItem({ ef, isLast, onConfirm, onUnconfirm, yearMonth }: {
+  ef: EntradaFixa
+  isLast: boolean
+  onConfirm: (ef: EntradaFixa) => void
+  onUnconfirm: (ef: EntradaFixa) => void
+  yearMonth: string
+}) {
+  const received   = isPaidForMonth(ef as unknown as SaidaFixa, yearMonth)
+  const daysUntil  = getDaysUntil(ef.dueDay)
+  const isPastMonth = yearMonth < new Date().toISOString().slice(0, 7)
+  const isUrgent   = !received && !isPastMonth && daysUntil <= 3 && daysUntil >= 0
+  const isOverdue  = !received && (isPastMonth || daysUntil < 0)
+  const isMobile   = useIsMobile()
+
+  const effectiveAmount = getEffectiveAmount(ef as unknown as SaidaFixa, yearMonth)
+
+  const accentColor = received
+    ? 'var(--color-success)'
+    : isOverdue
+    ? 'var(--color-warning)'
+    : isUrgent
+    ? 'var(--color-warning)'
+    : 'var(--color-success)'
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, x: -10 }}
+      animate={{ opacity: 1, x: 0 }}
+      whileHover={{ background: 'rgba(255,255,255,0.03)' }}
+      style={{
+        display: 'flex', alignItems: 'center', gap: 12,
+        padding: '14px 16px',
+        borderBottom: isLast ? 'none' : '1px solid var(--color-border)',
+        cursor: 'default',
+        opacity: received ? 0.85 : 1,
+      }}
+    >
+      {/* Icon */}
+      <div style={{
+        width: 32, height: 32, borderRadius: 10,
+        display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+        background: received ? 'rgba(16,185,129,0.12)' : isOverdue ? 'rgba(245,158,11,0.1)' : 'rgba(16,185,129,0.08)',
+        border: received ? 'none' : `1px solid ${isOverdue ? 'rgba(245,158,11,0.25)' : 'rgba(16,185,129,0.15)'}`,
+      }}>
+        {received
+          ? <ArrowUpRight size={16} color="var(--color-success)" />
+          : <Clock size={16} color={isOverdue ? 'var(--color-warning)' : 'var(--color-success)'} style={{ opacity: 0.75 }} />
+        }
+      </div>
+
+      {/* Content */}
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6, marginBottom: 2 }}>
+          <p style={{
+            fontSize: 14, fontWeight: 600, color: 'var(--color-text-primary)', margin: 0,
+            overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+            textDecoration: received ? 'line-through' : 'none',
+            opacity: received ? 0.7 : 1,
+          }}>{ef.name}</p>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0 }}>
+            {ef.isVariable && (
+              <span style={{ fontSize: 9, fontWeight: 700, color: '#F59E0B', background: 'rgba(245,158,11,0.12)', padding: '1px 5px', borderRadius: 4 }}>VARIÁVEL</span>
+            )}
+            <span style={{ fontSize: 10, fontWeight: 600, color: '#8B5CF6', background: 'rgba(139,92,246,0.12)', padding: '1px 6px', borderRadius: 4 }}>
+              {ef.kind === 'direct' ? 'Renda Direta' : 'Renda'}
+            </span>
+          </div>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+            <span style={{ fontSize: 12, color: isOverdue ? 'var(--color-warning)' : 'var(--color-text-secondary)' }}>
+              {received
+                ? getDueDayLabel(ef.dueDay)
+                : isOverdue
+                ? `Atrasado — dia ${ef.dueDay}`
+                : isUrgent
+                ? daysUntil === 0 ? 'Hoje' : `Em ${daysUntil}d`
+                : getDueDayLabel(ef.dueDay)
+              }
+            </span>
+          </div>
+          <span style={{
+            fontSize: 14, fontWeight: 700, flexShrink: 0,
+            color: accentColor,
+            opacity: !received && !isOverdue ? 0.65 : 1,
+          }}>
+            +{formatCurrency(effectiveAmount)}
+          </span>
+        </div>
+      </div>
+
+      {/* Action */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+        {received ? (
+          <button
+            onClick={() => onUnconfirm(ef)}
+            title="Desfazer recebimento"
+            style={{
+              width: 32, height: 32, borderRadius: 10, border: 'none',
+              background: 'rgba(16,185,129,0.15)', cursor: 'pointer',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}
+          >
+            <CheckCircle2 size={16} color="var(--color-success)" />
+          </button>
+        ) : (
+          <button
+            onClick={() => onConfirm(ef)}
+            title={isMobile ? 'Confirmar recebimento' : undefined}
+            style={{
+              height: 32, borderRadius: 10, border: '1.5px solid rgba(16,185,129,0.3)',
+              background: 'rgba(16,185,129,0.06)', cursor: 'pointer',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              padding: isMobile ? '0 8px' : '0 12px',
+              gap: 6, color: 'var(--color-success)',
+              fontSize: 12, fontWeight: 600, fontFamily: 'var(--font-sans)',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            <Check size={14} color="var(--color-success)" style={{ opacity: 0.8 }} />
+            {!isMobile && 'Confirmar'}
+          </button>
+        )}
+      </div>
+    </motion.div>
+  )
+}
+
 // --- Fluxo Page ---------------------------------------------------------------
 
 export default function Fluxo() {
@@ -570,17 +707,20 @@ export default function Fluxo() {
   const TODAY = currentYM()
   const [yearMonth, setYearMonth] = useState(TODAY)
 
-  const saidasFixas      = useAppStore(useShallow(selectCurrentSaidasFixas))
-  const entradas         = useAppStore(useShallow(selectCurrentEntradas))
-  const saidasVariaveis  = useAppStore(useShallow(s => s.saidasVariaveis))
-  const divisoes         = useAppStore(useShallow(s => s.divisoes))
-  const markPaid         = useAppStore(s => s.markSaidaFixaPaid)
-  const editSaidaFixa    = useAppStore(s => s.editSaidaFixa)
-  const editMonthly      = useAppStore(s => s.editSaidaFixaForMonth)
-  const skipMonthly      = useAppStore(s => s.skipSaidaFixaForMonth)
-  const deleteSaidaFixa  = useAppStore(s => s.deleteSaidaFixa)
+  const saidasFixas          = useAppStore(useShallow(selectCurrentSaidasFixas))
+  const entradasFixas        = useAppStore(useShallow(selectCurrentEntradasFixas))
+  const entradas             = useAppStore(useShallow(selectCurrentEntradas))
+  const saidasVariaveis      = useAppStore(useShallow(s => s.saidasVariaveis))
+  const divisoes             = useAppStore(useShallow(s => s.divisoes))
+  const markPaid             = useAppStore(s => s.markSaidaFixaPaid)
+  const editSaidaFixa        = useAppStore(s => s.editSaidaFixa)
+  const editMonthly          = useAppStore(s => s.editSaidaFixaForMonth)
+  const skipMonthly          = useAppStore(s => s.skipSaidaFixaForMonth)
+  const deleteSaidaFixa      = useAppStore(s => s.deleteSaidaFixa)
   const deleteSaidaVariavel  = useAppStore(s => s.deleteSaidaVariavel)
   const deleteEntrada        = useAppStore(s => s.deleteEntrada)
+  const markReceived         = useAppStore(s => s.markEntradaFixaReceived)
+  const markUnreceived       = useAppStore(s => s.markEntradaFixaUnreceived)
 
   // Realizadas: só do mês atual. Pendentes: qualquer mês (entradas e despesas agendadas futuras)
   const currentMonthEntradas     = useMemo(() => entradas.filter(e => e.date.startsWith(yearMonth) && e.status !== 'pending'), [entradas, yearMonth])
@@ -623,41 +763,60 @@ export default function Fluxo() {
 
     if (filterType === 'all' || filterType === 'entradas') {
       // Realizadas do mês atual
-      currentMonthEntradas.forEach(e => items.push({ type: 'entrada', data: e }))
+      currentMonthEntradas.forEach(e => {
+        // Entradas geradas por EntradaFixa já aparecem como entrada-fixa, não duplicar como 'entrada'
+        if (!e.id.startsWith('e-fixed-')) items.push({ type: 'entrada', data: e })
+      })
       // Pendentes de qualquer mês (agendamentos futuros)
-      allPendingEntradas.forEach(e => items.push({ type: 'entrada', data: e }))
+      allPendingEntradas.forEach(e => {
+        if (!e.id.startsWith('e-fixed-')) items.push({ type: 'entrada', data: e })
+      })
+
+      // Entradas fixas (renda recorrente)
+      entradasFixas.forEach(ef => {
+        if (ef.skippedMonths?.includes(yearMonth)) return
+        const unpaidMonths = getUnpaidMonths(ef as unknown as SaidaFixa, yearMonth)
+        unpaidMonths.forEach(m => items.push({ type: 'entrada-fixa', data: ef, instanceMonth: m }))
+        if (isPaidForMonth(ef as unknown as SaidaFixa, yearMonth)) {
+          items.push({ type: 'entrada-fixa', data: ef, instanceMonth: yearMonth })
+        }
+      })
     }
 
     if (q) {
       items = items.filter(item => {
-        if (item.type === 'fixa')     return item.data.name.toLowerCase().includes(q)
-        if (item.type === 'variavel') return item.data.description.toLowerCase().includes(q)
+        if (item.type === 'fixa')        return item.data.name.toLowerCase().includes(q)
+        if (item.type === 'variavel')    return item.data.description.toLowerCase().includes(q)
+        if (item.type === 'entrada-fixa') return item.data.name.toLowerCase().includes(q)
         return item.data.sourceName.toLowerCase().includes(q)
       })
     }
 
     // Ordenação: pendentes primeiro; pagos por data desc (mais recente no topo)
     items.sort((a, b) => {
-      const aPaid = a.type === 'fixa' 
-        ? isPaidForMonth(a.data, a.instanceMonth || yearMonth) 
-        : (a.type === 'variavel' ? a.data.status !== 'pending' : true)
-      
-      const bPaid = b.type === 'fixa' 
-        ? isPaidForMonth(b.data, b.instanceMonth || yearMonth) 
-        : (b.type === 'variavel' ? b.data.status !== 'pending' : true)
-      
+      const isReceived = (item: FluxoItem): boolean => {
+        if (item.type === 'fixa')        return isPaidForMonth(item.data, item.instanceMonth || yearMonth)
+        if (item.type === 'entrada-fixa') return isPaidForMonth(item.data as unknown as SaidaFixa, item.instanceMonth || yearMonth)
+        if (item.type === 'variavel')    return item.data.status !== 'pending'
+        return true
+      }
+      const getDay = (item: FluxoItem): number => {
+        if (item.type === 'fixa' || item.type === 'entrada-fixa') return item.data.dueDay
+        return parseInt((item.data as SaidaVariavel | Entrada).date.split('-')[2])
+      }
+
+      const aPaid = isReceived(a)
+      const bPaid = isReceived(b)
       if (!aPaid && bPaid)  return -1
       if (aPaid  && !bPaid) return 1
-      
-      const aDay = a.type === 'fixa' ? a.data.dueDay : parseInt(a.data.date.split('-')[2])
-      const bDay = b.type === 'fixa' ? b.data.dueDay : parseInt(b.data.date.split('-')[2])
-      
-      if (aPaid && bPaid) return bDay - aDay  // pagos: mais recentes primeiro
-      return aDay - bDay                      // pendentes: mais próximos primeiro
+      const aDay = getDay(a)
+      const bDay = getDay(b)
+      if (aPaid && bPaid) return bDay - aDay
+      return aDay - bDay
     })
 
     return items
-  }, [saidasFixas, currentMonthVariaveis, allPendingSaidasVariaveis, currentMonthEntradas, allPendingEntradas, filterType, fluxoSearch, yearMonth])
+  }, [saidasFixas, entradasFixas, currentMonthVariaveis, allPendingSaidasVariaveis, currentMonthEntradas, allPendingEntradas, filterType, fluxoSearch, yearMonth])
 
   // Cálculos de resumo
   const nonSkippedFixas = saidasFixas.filter(sf => !sf.skippedMonths?.includes(yearMonth))
@@ -674,21 +833,24 @@ export default function Fluxo() {
     if (unifiedList.length === 0) return <EmptyState icon={<Inbox size={24} />} label="Nenhum lançamento encontrado" desc="Tente mudar os filtros ou adicione novos lançamentos." />
 
     const pending  = unifiedList.filter(item => {
-      if (item.type === 'fixa') return !isPaidForMonth(item.data, item.instanceMonth || yearMonth)
-      if (item.type === 'variavel') return item.data.status === 'pending'
-      if (item.type === 'entrada') return (item.data as Entrada).status === 'pending'
+      if (item.type === 'fixa')        return !isPaidForMonth(item.data, item.instanceMonth || yearMonth)
+      if (item.type === 'variavel')    return item.data.status === 'pending'
+      if (item.type === 'entrada')     return (item.data as Entrada).status === 'pending'
+      if (item.type === 'entrada-fixa') return !isPaidForMonth(item.data as unknown as SaidaFixa, item.instanceMonth || yearMonth)
       return false
     })
     const realized = unifiedList.filter(item => {
-      if (item.type === 'fixa') return isPaidForMonth(item.data, item.instanceMonth || yearMonth)
-      if (item.type === 'variavel') return item.data.status !== 'pending'
-      if (item.type === 'entrada') return (item.data as Entrada).status !== 'pending'
+      if (item.type === 'fixa')        return isPaidForMonth(item.data, item.instanceMonth || yearMonth)
+      if (item.type === 'variavel')    return item.data.status !== 'pending'
+      if (item.type === 'entrada')     return (item.data as Entrada).status !== 'pending'
+      if (item.type === 'entrada-fixa') return isPaidForMonth(item.data as unknown as SaidaFixa, item.instanceMonth || yearMonth)
       return true
     })
 
     // Função utilitária: verifica se um item pendente é do mês atual ou de um mês futuro
     const isFutureMonth = (item: FluxoItem): boolean => {
-      if (item.type === 'fixa') return false // fixas são sempre do contexto mensal atual
+      if (item.type === 'fixa') return false
+      if (item.type === 'entrada-fixa') return false // entradas fixas são sempre do contexto mensal
       const itemDate = (item.data as SaidaVariavel | Entrada).date
       return !itemDate.startsWith(yearMonth)
     }
@@ -756,6 +918,18 @@ export default function Fluxo() {
                           e={item.data as Entrada}
                           isLast={isLast}
                           onPress={setActionEntrada}
+                        />
+                      )
+                    }
+                    if (item.type === 'entrada-fixa') {
+                      return (
+                        <EntradaFixaItem
+                          key={`ef-${item.data.id}-${item.instanceMonth}`}
+                          ef={item.data as EntradaFixa}
+                          yearMonth={item.instanceMonth || yearMonth}
+                          isLast={isLast}
+                          onConfirm={(ef) => markReceived(ef.id, new Date().toISOString().slice(0, 10), item.instanceMonth || yearMonth)}
+                          onUnconfirm={(ef) => markUnreceived(ef.id, item.instanceMonth || yearMonth)}
                         />
                       )
                     }
@@ -851,9 +1025,10 @@ export default function Fluxo() {
           const dayEndingBalances = dayGroups.map(({ items: dayItems }) => {
             const endBalance = runningBalance
             const dayDelta = dayItems.reduce((acc, item) => {
-              if (item.type === 'entrada')  return acc + (item.data as Entrada).amount
-              if (item.type === 'variavel') return acc - (item.data as SaidaVariavel).amount
-              if (item.type === 'fixa')     return acc - getEffectiveAmount(item.data, item.instanceMonth || yearMonth)
+              if (item.type === 'entrada')       return acc + (item.data as Entrada).amount
+              if (item.type === 'entrada-fixa')  return acc + getEffectiveAmount(item.data as unknown as SaidaFixa, item.instanceMonth || yearMonth)
+              if (item.type === 'variavel')      return acc - (item.data as SaidaVariavel).amount
+              if (item.type === 'fixa')          return acc - getEffectiveAmount(item.data, item.instanceMonth || yearMonth)
               return acc
             }, 0)
             runningBalance -= dayDelta // retrocede no tempo para o saldo do dia anterior
@@ -902,6 +1077,18 @@ export default function Fluxo() {
                             }
                             if (item.type === 'entrada') {
                               return <EntradaItem key={`e-${item.data.id}`} e={item.data as Entrada} isLast={isLast} onPress={setActionEntrada} />
+                            }
+                            if (item.type === 'entrada-fixa') {
+                              return (
+                                <EntradaFixaItem
+                                  key={`ef-${item.data.id}-${item.instanceMonth}`}
+                                  ef={item.data as EntradaFixa}
+                                  yearMonth={item.instanceMonth || yearMonth}
+                                  isLast={isLast}
+                                  onConfirm={(ef) => markReceived(ef.id, new Date().toISOString().slice(0, 10), item.instanceMonth || yearMonth)}
+                                  onUnconfirm={(ef) => markUnreceived(ef.id, item.instanceMonth || yearMonth)}
+                                />
+                              )
                             }
                             return null
                           })}

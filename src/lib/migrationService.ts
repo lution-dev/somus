@@ -122,6 +122,7 @@ function getResetState(): AppState {
     viewContext: 'personal',
     incomeSources: [],
     entradas: [],
+    entradasFixas: [],
     divisoes: [],
     saidasFixas: [],
     saidasVariaveis: [],
