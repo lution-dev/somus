@@ -90,8 +90,8 @@ export default function LancarEntradaModal({ open, onClose, prefill }: Props) {
   }, [amountInput.numericValue, divisoes])
 
   const total           = amountInput.numericValue
-  const isRendaValid    = total > 0 && (sourceId || sourceText.trim()) && (!isFixa || dueDay >= 1)
-  const isDivisaoValid  = total > 0 && selectedDivisaoId && descricao.trim() && (!isFixa || dueDay >= 1)
+  const isRendaValid    = (isFixa && isVariable ? true : total > 0) && (sourceId || sourceText.trim()) && (!isFixa || dueDay >= 1)
+  const isDivisaoValid  = (isFixa && isVariable ? true : total > 0) && selectedDivisaoId && descricao.trim() && (!isFixa || dueDay >= 1)
   const selectedDivisao = divisoes.find(cx => cx.id === selectedDivisaoId)
   const today           = new Date().toISOString().slice(0, 10)
 
@@ -275,11 +275,13 @@ export default function LancarEntradaModal({ open, onClose, prefill }: Props) {
               )
             })()}
 
-            <div style={{ marginBottom: 12 }}>
-              <Input label="Valor" prefix="R$" inputMode="numeric" placeholder="0,00"
-                value={amountInput.displayValue} onChange={amountInput.handleChange}
-                style={{ fontSize: 20, fontWeight: 700 }} />
-            </div>
+            {(!isFixa || !isVariable) && (
+              <div style={{ marginBottom: 12 }}>
+                <Input label="Valor" prefix="R$" inputMode="numeric" placeholder="0,00"
+                  value={amountInput.displayValue} onChange={amountInput.handleChange}
+                  style={{ fontSize: 20, fontWeight: 700 }} />
+              </div>
+            )}
             <div style={{ marginBottom: 12 }}>
               <Input label="Descrição" placeholder="Ex: Parte Aluguel Mãe, Reembolso..."
                 value={descricao} onChange={e => setDescricao(e.target.value)} />
@@ -307,11 +309,13 @@ export default function LancarEntradaModal({ open, onClose, prefill }: Props) {
           <motion.div key="renda" initial={slideIn} animate={visible} exit={slideOut} transition={{ duration: 0.18 }}>
             {!prefill && backBtn('intent')}
 
-            <div style={{ marginBottom: 12 }}>
-              <Input label="Valor recebido" prefix="R$" inputMode="numeric" placeholder="0,00"
-                value={amountInput.displayValue} onChange={amountInput.handleChange}
-                style={{ fontSize: 20, fontWeight: 700 }} />
-            </div>
+            {(!isFixa || !isVariable) && (
+              <div style={{ marginBottom: 12 }}>
+                <Input label="Valor recebido" prefix="R$" inputMode="numeric" placeholder="0,00"
+                  value={amountInput.displayValue} onChange={amountInput.handleChange}
+                  style={{ fontSize: 20, fontWeight: 700 }} />
+              </div>
+            )}
 
             <div style={{ marginBottom: 12, position: 'relative' }}>
               <label className="section-label" style={{ display: 'block', marginBottom: 6 }}>Fonte de renda</label>
