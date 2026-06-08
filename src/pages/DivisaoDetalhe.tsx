@@ -21,6 +21,15 @@ import { usePartnerData } from '../hooks/usePartnerData'
 /** Divisões de intenção positiva: alto uso = celebrar, não alertar */
 const CELEBRATE_DIVS = new Set(['cx-dizimo', 'cx-reserva', 'cx-objetivos'])
 
+/** Label do saldo por divisão — reforça a intenção do bolso */
+const DIVISION_BAL_LABEL: Record<string, string> = {
+  'cx-essencial':  'restante',
+  'cx-dizimo':     'a destinar',
+  'cx-reserva':    'a investir',
+  'cx-objetivos':  'a aportar',
+  'cx-educacao':   'a aplicar',
+}
+
 /** Convert hex color + alpha (0-1) to rgba string */
 function hexToRgba(hex: string, alpha: number): string {
   const r = parseInt(hex.slice(1, 3), 16)
@@ -109,8 +118,8 @@ function DivisaoHeroMobile({
   }
 
   const cfg: Record<S, { badge: string; bc: string; bbg: string; copy: string }> = isCelebrate ? {
-    overspent: { badge: 'Além da meta',   bc: 'var(--color-success)',        bbg: 'rgba(16,185,129,0.15)',  copy: celebrateCopy.overspent },
-    high:      { badge: 'Acima da meta',  bc: '#22D3EE',                    bbg: 'rgba(34,211,238,0.10)', copy: celebrateCopy.high },
+    overspent: { badge: 'Além da meta',    bc: 'var(--color-success)',        bbg: 'rgba(16,185,129,0.15)',  copy: celebrateCopy.overspent },
+    high:      { badge: 'Quase completo', bc: '#22D3EE',                    bbg: 'rgba(34,211,238,0.10)', copy: celebrateCopy.high },
     normal:    { badge: 'Em dia',         bc: 'var(--color-success)',        bbg: 'rgba(16,185,129,0.12)', copy: `${Math.round(pctMes)}% do orçamento utilizado este mês.` },
     empty:     { badge: 'Sem lançamentos',bc: 'var(--color-text-secondary)', bbg: 'rgba(255,255,255,0.07)', copy: 'Nenhum lançamento aqui ainda este mês.' },
   } : {
@@ -178,7 +187,7 @@ function DivisaoHeroMobile({
           {formatCurrency(animBal)}
         </p>
         <p style={{ fontSize: 11, color: 'var(--color-text-tertiary)', margin: '5px 0 0', fontWeight: 500 }}>
-          Livre este mês
+          {DIVISION_BAL_LABEL[divisao.id] ?? 'no bolso'}
         </p>
       </div>
 

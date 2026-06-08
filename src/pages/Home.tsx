@@ -62,6 +62,15 @@ const pillBtn = (accent: string, bg: string): React.CSSProperties => ({
 // Divisões de "intenção positiva" — alto uso = celebrar, não alertar
 const CELEBRATE_DIVS = new Set(['cx-dizimo', 'cx-reserva', 'cx-objetivos'])
 
+// Label contextual do saldo restante por divisão — reforça a intenção do bolso
+const LABEL_RESTANTE: Record<string, string> = {
+  'cx-essencial':  'restante',
+  'cx-dizimo':     'a destinar',
+  'cx-reserva':    'a investir',
+  'cx-objetivos':  'a aportar',
+  'cx-educacao':   'a aplicar',
+}
+
 // ─── BalanceCard ─────────────────────────────────────────────────────────────
 
 function BalanceCard({
@@ -670,9 +679,9 @@ function DivisoesSection({ balanceHidden = false }: { balanceHidden?: boolean })
     // 3. Essencial/Educação em alto uso — alerta
     const alertHigh = divisoes.find(cx => !CELEBRATE_DIVS.has(cx.id) && rawPct(cx) >= 0.85)
     if (alertHigh) return `${alertHigh.name} está quase no limite. Fique de olho.`
-    // 4. Dízimo/LF/Objetivos em alto uso — celebra
+    // 4. Dízimo/LF/Objetivos em alto uso — celebra (mas ainda não passou de 100%)
     const celebHigh = divisoes.find(cx => CELEBRATE_DIVS.has(cx.id) && rawPct(cx) >= 0.85)
-    if (celebHigh) return `${celebHigh.name} acima da meta este mês. Bom trabalho!`
+    if (celebHigh) return `${celebHigh.name} quase completo este mês. Bom ritmo!`
     return `${capitalized} está tranquilo.`
   }, [divisoes, currentMonth, isDormant])
 
@@ -857,7 +866,7 @@ function DivisoesSection({ balanceHidden = false }: { balanceHidden?: boolean })
                       <p style={{ fontSize: 18, fontWeight: 700, color: 'var(--color-text-primary)', margin: 0 }}>
                         {balanceHidden ? <span style={{ letterSpacing: 2 }}>{mask}</span> : formatCurrency(totalIn > 0 ? totalIn - spent : essencial.balance)}
                       </p>
-                      <span style={{ fontSize: 10, fontWeight: 500, color: 'var(--color-text-tertiary)' }}>livre</span>
+                      <span style={{ fontSize: 10, fontWeight: 500, color: 'var(--color-text-tertiary)' }}>{LABEL_RESTANTE['cx-essencial']}</span>
                     </div>
                     {/* Linha secundária: gasto do mês */}
                     {hasMes && (
@@ -979,7 +988,7 @@ function DivisoesSection({ balanceHidden = false }: { balanceHidden?: boolean })
                       <p style={{ fontSize: 14, fontWeight: 700, color: 'var(--color-text-primary)', margin: 0 }}>
                         {balanceHidden ? <span style={{ letterSpacing: 2 }}>{mask}</span> : formatCurrency(totalIn > 0 ? totalIn - spent : cx.balance)}
                       </p>
-                      <span style={{ fontSize: 9, fontWeight: 500, color: 'var(--color-text-tertiary)' }}>livre</span>
+                      <span style={{ fontSize: 9, fontWeight: 500, color: 'var(--color-text-tertiary)' }}>{LABEL_RESTANTE[cx.id] ?? 'restante'}</span>
                     </div>
                     {/* Gasto do mês + % + orçamento total */}
                     {hasMes && (
