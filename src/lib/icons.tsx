@@ -32,18 +32,20 @@ function EssencialIcon({ size = 32, color = '#2384FF', style, className }: Brand
 }
 
 // ── Liberdade Financeira — flowing upward curve: growth, momentum, freedom
-// Refined: smoother bezier, proportionally balanced arrowhead
 function LiberdadeIcon({ size = 32, color = '#4DE2E2', style, className }: BrandIconProps) {
   const c = style?.color ?? color
   return (
-    <svg width={size} height={size} viewBox="10 16 44 32" fill="none" xmlns="http://www.w3.org/2000/svg" style={style} className={className}>
-      {/* Main curve — cubic bezier for smooth Somus flow */}
+    <svg width={size} height={size} viewBox="0 0 512 342" fill="none" xmlns="http://www.w3.org/2000/svg" style={style} className={className}>
+      {/* Main curve */}
       <path
-        d="M13 42C18 42 20 30 26 30C32 30 32 42 38 42C44 42 46 22 51 18"
-        stroke={c} strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"
+        d="M13.9636 327.364C72.1454 327.364 95.4182 187.727 165.236 187.727C235.055 187.727 235.055 327.364 304.873 327.364C374.691 327.364 397.964 94.6363 456.145 48.0908"
+        stroke={c} strokeWidth="27.9273" strokeLinecap="round" strokeLinejoin="round"
       />
-      {/* Arrowhead — proportional 6x6 */}
-      <path d="M46.5 22L51 18L55 22.5" stroke={c} strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"/>
+      {/* Arrowhead */}
+      <path
+        d="M402.363 42.7258L468.895 20.7739L490.847 87.3062"
+        stroke={c} strokeWidth="27.9273" strokeLinecap="round" strokeLinejoin="round"
+      />
     </svg>
   )
 }
