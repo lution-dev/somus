@@ -51,21 +51,20 @@ function LiberdadeIcon({ size = 32, color = '#4DE2E2', style, className }: Brand
 }
 
 // ── Objetivos — precision target: focus, direction, achievement
-// Refined: 3-ring target with inner dot for fintech precision feel
 function ObjetivosIcon({ size = 32, color = '#9B6BFF', style, className }: BrandIconProps) {
   const c = style?.color ?? color
   return (
-    <svg width={size} height={size} viewBox="10 10 44 44" fill="none" xmlns="http://www.w3.org/2000/svg" style={style} className={className}>
+    <svg width={size} height={size} viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg" style={style} className={className}>
       {/* Outer ring */}
-      <circle cx="32" cy="32" r="20" stroke={c} strokeWidth="2.2"/>
+      <path d="M256 488.727C384.532 488.727 488.727 384.532 488.727 256C488.727 127.468 384.532 23.2727 256 23.2727C127.468 23.2727 23.2727 127.468 23.2727 256C23.2727 384.532 127.468 488.727 256 488.727Z" stroke={c} strokeWidth="25.6"/>
       {/* Mid ring */}
-      <circle cx="32" cy="32" r="11" stroke={c} strokeWidth="2.2" opacity="0.55"/>
+      <path opacity="0.55" d="M256 384C326.692 384 384 326.692 384 256C384 185.308 326.692 128 256 128C185.308 128 128 185.308 128 256C128 326.692 185.308 384 256 384Z" stroke={c} strokeWidth="25.6"/>
       {/* Inner dot — solid */}
-      <circle cx="32" cy="32" r="3.5" fill={c}/>
+      <path d="M256 296.727C278.493 296.727 296.727 278.493 296.727 256C296.727 233.507 278.493 215.273 256 215.273C233.507 215.273 215.273 233.507 215.273 256C215.273 278.493 233.507 296.727 256 296.727Z" fill={c}/>
       {/* Diagonal sight line */}
-      <path d="M39.5 24.5L49 16" stroke={c} strokeWidth="2.2" strokeLinecap="round"/>
-      {/* Arrowhead nub */}
-      <path d="M45.5 16.5L49 16L48.5 19.5" stroke={c} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M306 202L473 53" stroke={c} strokeWidth="25.6" strokeLinecap="round"/>
+      {/* Arrowhead */}
+      <path d="M413 45.8571L489 35L478.143 111" stroke={c} strokeWidth="25.6" strokeLinecap="round" strokeLinejoin="round"/>
     </svg>
   )
 }

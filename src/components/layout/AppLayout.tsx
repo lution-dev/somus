@@ -281,6 +281,13 @@ export function AppLayout({ children }: AppLayoutProps) {
   const [location] = useLocation()
   const isTabRoute = getDepth(location) === 0
 
+  // Reset scroll position on every route change.
+  // The actual scroll container is <main overflowY:auto> inside this layout — not window.
+  useEffect(() => {
+    mainRef.current?.scrollTo({ top: 0, behavior: 'instant' })
+    document.querySelector<HTMLElement>('.somus-desktop main')?.scrollTo({ top: 0, behavior: 'instant' })
+  }, [location])
+
   return (
     <>
       {/* CSS responsivo injetado */}

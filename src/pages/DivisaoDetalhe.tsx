@@ -305,11 +305,6 @@ export default function DivisaoDetalhe() {
   const [highlightCustos, setHighlightCustos] = useState(false)
   const custosRef = useRef<HTMLDivElement>(null)
 
-  // Scroll para o topo ao entrar em qualquer divisão
-  useEffect(() => {
-    window.scrollTo({ top: 0, behavior: 'instant' })
-  }, [id])
-
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
     if (params.get('from') === 'fluxo' && isEssencial) {
