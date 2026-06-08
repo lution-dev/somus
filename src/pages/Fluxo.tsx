@@ -12,6 +12,7 @@ import EditMonthlyAmountModal from '../components/features/EditMonthlyAmountModa
 import ConfirmPaymentModal from '../components/features/ConfirmPaymentModal'
 import EditSaidaVariavelModal from '../components/features/EditSaidaVariavelModal'
 import EditEntradaModal from '../components/features/EditEntradaModal'
+import EditEntradaFixaModal from '../components/features/EditEntradaFixaModal'
 import ItemActionSheet from '../components/ui/ItemActionSheet'
 import MonthNav from '../components/ui/MonthNav'
 import { PageHeader, SearchBar, Dialog, Button, ConfirmDialog } from '../components/ui'
@@ -488,11 +489,12 @@ function EntradaItem({ e, isLast, onPress }: { e: Entrada; isLast: boolean; onPr
   )
 }
 
-function EntradaFixaItem({ ef, isLast, onConfirm, onUnconfirm, yearMonth }: {
+function EntradaFixaItem({ ef, isLast, onConfirm, onUnconfirm, onPress, yearMonth }: {
   ef: EntradaFixa
   isLast: boolean
   onConfirm: (ef: EntradaFixa) => void
   onUnconfirm: (ef: EntradaFixa) => void
+  onPress: (ef: EntradaFixa) => void
   yearMonth: string
 }) {
   const received   = isPaidForMonth(ef as unknown as SaidaFixa, yearMonth)
@@ -517,11 +519,12 @@ function EntradaFixaItem({ ef, isLast, onConfirm, onUnconfirm, yearMonth }: {
       initial={{ opacity: 0, x: -10 }}
       animate={{ opacity: 1, x: 0 }}
       whileHover={{ background: 'rgba(255,255,255,0.03)' }}
+      onClick={() => onPress(ef)}
       style={{
         display: 'flex', alignItems: 'center', gap: 12,
         padding: '14px 16px',
         borderBottom: isLast ? 'none' : '1px solid var(--color-border)',
-        cursor: 'default',
+        cursor: 'pointer',
         opacity: received ? 0.85 : 1,
       }}
     >
@@ -630,8 +633,8 @@ export default function Fluxo() {
   const [editSf, setEditSf] = useState<SaidaFixa | null>(null)
   const [editMonthlySf, setEditMonthlySf] = useState<SaidaFixa | null>(null)
   const [confirmPaySf, setConfirmPaySf] = useState<SaidaFixa | null>(null)
-  const [pendingCollapsed, setPendingCollapsed] = useState(false)
-  const [realizedCollapsed, setRealizedCollapsed] = useState(false)
+  const [pendingCollapsed, setPendingCollapsedLocal] = [useNavStore(s => s.fluxoPendingCollapsed), useNavStore(s => s.setFluxoPendingCollapsed)]
+  const [realizedCollapsed, setRealizedCollapsedLocal] = [useNavStore(s => s.fluxoRealizedCollapsed), useNavStore(s => s.setFluxoRealizedCollapsed)]
   // futureCollapsed is driven by NavStore so FutureHint in Home can open it directly
   const fluxoFutureOpen      = useNavStore(s => s.fluxoFutureOpen)
   const setFluxoFutureOpen   = useNavStore(s => s.setFluxoFutureOpen)
@@ -658,6 +661,11 @@ export default function Fluxo() {
   const [editEntradaOpen, setEditEntradaOpen]           = useState(false)
   const [confirmDeleteEntrada, setConfirmDeleteEntrada] = useState(false)
   const [confirmPayEntrada, setConfirmPayEntrada]       = useState<Entrada | null>(null)
+  // EntradaFixa actions
+  const [actionEf, setActionEf]                         = useState<EntradaFixa | null>(null)
+  const [editEf, setEditEf]                             = useState<EntradaFixa | null>(null)
+  const [confirmDeleteEf, setConfirmDeleteEf]           = useState<EntradaFixa | null>(null)
+  const [confirmSkipEf, setConfirmSkipEf]               = useState<EntradaFixa | null>(null)
   // Duplicate state
   const [despesaPrefill, setDespesaPrefill] = useState<{ description?: string; amount?: number; paymentMethod?: string; subcategory?: string; date?: string } | null>(null)
   const [entradaPrefill, setEntradaPrefill] = useState<{ sourceName: string; amount: number; note?: string; date?: string } | null>(null)
@@ -694,7 +702,7 @@ export default function Fluxo() {
   // Quando vem da Home após lançar, abre a seção "Lançamentos do mês" e faz scroll
   useEffect(() => {
     if (fluxoLancadosOpen) {
-      setRealizedCollapsed(false)
+      setRealizedCollapsedLocal(false)
       setFluxoLancadosOpen(false)
       requestAnimationFrame(() => {
         setTimeout(() => {
@@ -721,6 +729,9 @@ export default function Fluxo() {
   const deleteEntrada        = useAppStore(s => s.deleteEntrada)
   const markReceived         = useAppStore(s => s.markEntradaFixaReceived)
   const markUnreceived       = useAppStore(s => s.markEntradaFixaUnreceived)
+  const editEntradaFixaBase  = useAppStore(s => s.editEntradaFixa)
+  const skipEntradaFixa      = useAppStore(s => s.skipEntradaFixaForMonth)
+  const deleteEntradaFixa    = useAppStore(s => s.deleteEntradaFixa)
 
   // Realizadas: só do mês atual. Pendentes: qualquer mês (entradas e despesas agendadas futuras)
   const currentMonthEntradas     = useMemo(() => entradas.filter(e => e.date.startsWith(yearMonth) && e.status !== 'pending'), [entradas, yearMonth])
@@ -875,7 +886,7 @@ export default function Fluxo() {
             <SectionLabel
               icon={<Clock size={12} />}
               collapsed={pendingCollapsed}
-              onClick={() => setPendingCollapsed(v => !v)}
+              onClick={() => setPendingCollapsedLocal(!pendingCollapsed)}
               extra={<StatusBadge status={getPendingStatus(pendingThisMonth)} />}
             >Pendentes</SectionLabel>
             <AnimatePresence initial={false}>
@@ -928,6 +939,7 @@ export default function Fluxo() {
                           ef={item.data as EntradaFixa}
                           yearMonth={item.instanceMonth || yearMonth}
                           isLast={isLast}
+                          onPress={setActionEf}
                           onConfirm={(ef) => markReceived(ef.id, new Date().toISOString().slice(0, 10), item.instanceMonth || yearMonth)}
                           onUnconfirm={(ef) => markUnreceived(ef.id, item.instanceMonth || yearMonth)}
                         />
@@ -1041,7 +1053,7 @@ export default function Fluxo() {
                 icon={<TrendingUp size={12} />}
                 count={realized.length}
                 collapsed={realizedCollapsed}
-                onClick={() => setRealizedCollapsed(v => !v)}
+                onClick={() => setRealizedCollapsedLocal(!realizedCollapsed)}
               >Lançamentos do mês</SectionLabel>
               <AnimatePresence initial={false}>
                 {!realizedCollapsed && (
@@ -1085,6 +1097,7 @@ export default function Fluxo() {
                                   ef={item.data as EntradaFixa}
                                   yearMonth={item.instanceMonth || yearMonth}
                                   isLast={isLast}
+                                  onPress={setActionEf}
                                   onConfirm={(ef) => markReceived(ef.id, new Date().toISOString().slice(0, 10), item.instanceMonth || yearMonth)}
                                   onUnconfirm={(ef) => markUnreceived(ef.id, item.instanceMonth || yearMonth)}
                                 />
@@ -1530,6 +1543,57 @@ export default function Fluxo() {
         dateLabel="Quando você recebeu?"
         initialAmount={confirmPayEntrada?.amount}
         onConfirm={(date, amount) => { if (confirmPayEntrada) useAppStore.getState().confirmEntrada(confirmPayEntrada.id, date, amount); setConfirmPayEntrada(null) }}
+      />
+
+      {/* ── Entrada Fixa: Action Sheet ── */}
+      <ItemActionSheet
+        open={!!actionEf}
+        onClose={() => setActionEf(null)}
+        title={actionEf?.name ?? ''}
+        subtitle={actionEf
+          ? (actionEf.isVariable ? 'Valor variável' : formatCurrency(getEffectiveAmount(actionEf as unknown as SaidaFixa, yearMonth))) + ' · Dia ' + actionEf?.dueDay
+          : ''
+        }
+        actions={actionEf ? [
+          ...(isPaidForMonth(actionEf as unknown as SaidaFixa, yearMonth)
+            ? [{ label: 'Desmarcar recebimento', icon: XCircle, color: 'var(--color-warning)', onClick: () => { markUnreceived(actionEf.id, yearMonth); setActionEf(null) } }]
+            : [
+                { label: 'Confirmar recebimento', icon: CheckCircle2, color: 'var(--color-success)', onClick: () => { markReceived(actionEf.id, new Date().toISOString().slice(0, 10), yearMonth); setActionEf(null) } },
+                { label: 'Pular este mês', icon: XCircle, color: 'var(--color-warning)', onClick: () => { setConfirmSkipEf(actionEf); setActionEf(null) } },
+              ]
+          ),
+          { label: 'Editar renda fixa', icon: Pencil, color: 'var(--color-accent-primary)', onClick: () => { setEditEf(actionEf); setActionEf(null) } },
+          { label: 'Excluir permanentemente', icon: Trash2, color: 'var(--color-danger)', onClick: () => { setConfirmDeleteEf(actionEf); setActionEf(null) } },
+        ] : []}
+      />
+
+      {editEf && (
+        <EditEntradaFixaModal
+          open={!!editEf}
+          onClose={() => setEditEf(null)}
+          entradaFixa={editEf}
+          onSave={(updates) => { editEntradaFixaBase(editEf.id, updates); setEditEf(null) }}
+        />
+      )}
+
+      <ConfirmDialog
+        open={!!confirmSkipEf}
+        onClose={() => setConfirmSkipEf(null)}
+        onConfirm={() => { if (confirmSkipEf) skipEntradaFixa(confirmSkipEf.id, yearMonth) }}
+        title="Pular este mês?"
+        description={`A renda "${confirmSkipEf?.name}" não será esperada este mês, mas continuará aparecendo nos próximos.`}
+        confirmLabel="Pular mês"
+        variant="warning"
+      />
+
+      <ConfirmDialog
+        open={!!confirmDeleteEf}
+        onClose={() => setConfirmDeleteEf(null)}
+        onConfirm={() => { if (confirmDeleteEf) deleteEntradaFixa(confirmDeleteEf.id) }}
+        title="Excluir renda fixa?"
+        description={`Isso removerá "${confirmDeleteEf?.name}" de TODOS os meses. Esta ação não pode ser desfeita.`}
+        confirmLabel="Excluir"
+        variant="danger"
       />
     </div>
   )

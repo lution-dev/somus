@@ -196,6 +196,38 @@ export default function ObjetivoCard({ obj, onNavigate, onAction, accentColor = 
                 {isComplete ? 'Próximos passos →' : formatCurrency(remaining)}
               </p>
             </div>
+
+            {/* Frase de prazo — "Você chega lá em..." */}
+            {!isComplete && (() => {
+              if (obj.targetDate) {
+                const target = new Date(obj.targetDate + 'T12:00:00')
+                const today = new Date(); today.setHours(0, 0, 0, 0)
+                const monthsLeft = Math.round((target.getTime() - today.getTime()) / (1000 * 60 * 60 * 24 * 30.44))
+                if (monthsLeft <= 0) return (
+                  <p style={{ fontSize: compact ? 9 : 11, color: 'var(--color-warning)', margin: '6px 0 0', fontStyle: 'italic', lineHeight: 1.4 }}>
+                    O prazo original passou. Vale redefinir.
+                  </p>
+                )
+                const formatted = target.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })
+                return (
+                  <p style={{ fontSize: compact ? 9 : 11, color: 'var(--color-text-tertiary)', margin: '6px 0 0', fontStyle: 'italic', lineHeight: 1.4 }}>
+                    Você chega lá em {formatted}.
+                  </p>
+                )
+              }
+              if (obj.monthsToAchieve && obj.currentAmount < obj.targetAmount) {
+                const base = obj.createdAt ? new Date(obj.createdAt) : new Date()
+                const endDate = new Date(base)
+                endDate.setMonth(endDate.getMonth() + obj.monthsToAchieve)
+                const formatted = endDate.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })
+                return (
+                  <p style={{ fontSize: compact ? 9 : 11, color: 'var(--color-text-tertiary)', margin: '6px 0 0', fontStyle: 'italic', lineHeight: 1.4 }}>
+                    Você chega lá em {formatted}.
+                  </p>
+                )
+              }
+              return null
+            })()}
           </div>
         </div>
       </button>

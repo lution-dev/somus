@@ -16,6 +16,11 @@ interface NavStore {
   /** Controla abertura automática da seção "Lançados" no Fluxo (vindo da Home) */
   fluxoLancadosOpen: boolean
   setFluxoLancadosOpen: (open: boolean) => void
+  /** Persiste o estado de collapse das seções Pendentes e Lançamentos no Fluxo */
+  fluxoPendingCollapsed: boolean
+  setFluxoPendingCollapsed: (v: boolean) => void
+  fluxoRealizedCollapsed: boolean
+  setFluxoRealizedCollapsed: (v: boolean) => void
 }
 
 export const useNavStore = create<NavStore>()(set => ({
@@ -25,4 +30,8 @@ export const useNavStore = create<NavStore>()(set => ({
   triggerFluxoFuturePulse: () => set(s => ({ fluxoFuturePulse: s.fluxoFuturePulse + 1 })),
   fluxoLancadosOpen: false,
   setFluxoLancadosOpen: (open) => set({ fluxoLancadosOpen: open }),
+  fluxoPendingCollapsed: false,
+  setFluxoPendingCollapsed: (v) => set({ fluxoPendingCollapsed: v }),
+  fluxoRealizedCollapsed: false,
+  setFluxoRealizedCollapsed: (v) => set({ fluxoRealizedCollapsed: v }),
 }))

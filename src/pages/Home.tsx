@@ -603,16 +603,26 @@ function DivisoesSection({ balanceHidden = false }: { balanceHidden?: boolean })
   const incomeSources = useAppStore(useShallow(s => s.incomeSources.filter(src => src.userId === (s.currentUser?.id ?? ''))))
   const mask = '•••'
 
-  // Taglines filosóficos por divisão (empty state)
+  // Taglines por divisão (estado dormant)
   const DORMANT_TAG: Record<string, string> = {
-    'cx-essencial':  'O que sustenta sua rotina.',
-    'cx-objetivos':  'O que você quer construir.',
-    'cx-reserva':    'Seu futuro com mais tranquilidade.',
-    'cx-dizimo':     'Generosidade como hábito.',
-    'cx-educacao':   'O fermento da vida financeira.',
+    'cx-essencial':  'O que sustenta a sua vida.',
+    'cx-objetivos':  'O que você está construindo.',
+    'cx-reserva':    'Dinheiro trabalhando enquanto você vive.',
+    'cx-dizimo':     'Generosidade como parte da construção.',
+    'cx-educacao':   'O fermento da sua vida financeira.',
+  }
+
+  // Propósito da divisão — subtítulo sempre visível
+  const DIVISION_PURPOSE: Record<string, string> = {
+    'cx-essencial':  'O que sustenta a sua vida.',
+    'cx-objetivos':  'O que você está construindo.',
+    'cx-reserva':    'Dinheiro trabalhando enquanto você vive.',
+    'cx-dizimo':     'Generosidade como parte da construção.',
+    'cx-educacao':   'O fermento da sua vida financeira.',
   }
 
   const isDormant = incomeSources.length === 0
+  const [surplusDismissed, setSurplusDismissed] = useState(false)
 
   const expectedIncome = useAppStore(selectExpectedMonthlyIncome)
 
@@ -636,6 +646,43 @@ function DivisoesSection({ balanceHidden = false }: { balanceHidden?: boolean })
       .filter(m => m.date.startsWith(currentMonth) && m.type !== 'income')
       .reduce((s, m) => s + Math.abs(m.amount), 0)
   }
+
+  // Frase de status inteligente do mês
+  const statusPhrase = useMemo((): string | null => {
+    if (isDormant) return null
+    const hasAnyMovement = divisoes.some(cx =>
+      cx.movements.some(m => m.date.startsWith(currentMonth))
+    )
+    if (!hasAnyMovement) return null
+    const monthName = new Date().toLocaleString('pt-BR', { month: 'long' })
+    const capitalized = monthName.charAt(0).toUpperCase() + monthName.slice(1)
+    const overspent = divisoes.find(cx => {
+      const mvs = cx.movements.filter(m => m.date.startsWith(currentMonth))
+      const totalIn  = mvs.filter(m => m.type === 'income').reduce((s, m) => s + m.amount, 0)
+      const totalOut = mvs.filter(m => m.type !== 'income').reduce((s, m) => s + Math.abs(m.amount), 0)
+      return totalIn > 0 && totalOut >= totalIn
+    })
+    if (overspent) return `${overspent.name} passou do limite este mês.`
+    const highUsage = divisoes.find(cx => {
+      const mvs = cx.movements.filter(m => m.date.startsWith(currentMonth))
+      const totalIn  = mvs.filter(m => m.type === 'income').reduce((s, m) => s + m.amount, 0)
+      const totalOut = mvs.filter(m => m.type !== 'income').reduce((s, m) => s + Math.abs(m.amount), 0)
+      return totalIn > 0 && (totalOut / totalIn) >= 0.85 && (totalOut / totalIn) < 1
+    })
+    if (highUsage) return `${highUsage.name} está quase no limite. Fique de olho.`
+    return `${capitalized} está tranquilo.`
+  }, [divisoes, currentMonth, isDormant])
+
+  // Surplus do Essencial — detecta quando Essencial ficou abaixo do orçamento
+  const essencialDataForSurplus = divisoes.find(cx => cx.id === 'cx-essencial')
+  const essencialSurplus = useMemo((): number => {
+    if (!essencialDataForSurplus || isDormant) return 0
+    const mvs = essencialDataForSurplus.movements.filter(m => m.date.startsWith(currentMonth))
+    const totalIn  = mvs.filter(m => m.type === 'income').reduce((s, m) => s + m.amount, 0)
+    const totalOut = mvs.filter(m => m.type !== 'income').reduce((s, m) => s + Math.abs(m.amount), 0)
+    if (totalIn === 0 || totalOut >= totalIn * 0.85) return 0
+    return totalIn - totalOut
+  }, [essencialDataForSurplus, currentMonth, isDormant])
 
   // Se divisões ainda não foram criadas (rarissimo), mostra placeholder mínimo
   if (divisoes.length === 0) return (
@@ -671,12 +718,76 @@ function DivisoesSection({ balanceHidden = false }: { balanceHidden?: boolean })
         </p>
       </div>
 
+      {/* Frase de status inteligente */}
+      {statusPhrase && (
+        <p style={{ fontSize: 12, color: 'var(--color-text-tertiary)', margin: '-6px 0 12px', fontStyle: 'italic', lineHeight: 1.4 }}>
+          {statusPhrase}
+        </p>
+      )}
+
       <div style={{
         display: 'flex', flexDirection: 'column', gap: 12,
         opacity: isDormant ? 0.65 : 1,
         transition: 'opacity 0.8s ease',
         filter: isDormant ? 'saturate(0.55)' : 'saturate(1)',
       }}>
+
+        {/* ── Surplus do Essencial — "O que fazer com o que sobrou" ── */}
+        {essencialSurplus > 0 && !surplusDismissed && (
+          <div style={{
+            background: 'rgba(16,185,129,0.06)',
+            border: '1px solid rgba(16,185,129,0.15)',
+            borderRadius: 'var(--radius-card)',
+            padding: 16,
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 6 }}>
+              <div>
+                <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text-primary)', margin: '0 0 2px' }}>
+                  Você ficou abaixo do Essencial.
+                </p>
+                <p style={{ fontSize: 12, color: 'var(--color-text-secondary)', margin: 0, lineHeight: 1.4 }}>
+                  {balanceHidden ? mask : formatCurrency(essencialSurplus)} disponíveis — você viveu dentro dos seus meios.
+                </p>
+              </div>
+              <button
+                onClick={() => setSurplusDismissed(true)}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4, color: 'var(--color-text-tertiary)', flexShrink: 0 }}
+              >
+                <X size={14} />
+              </button>
+            </div>
+            <p style={{ fontSize: 11, color: 'var(--color-text-tertiary)', margin: '0 0 10px' }}>
+              O que fazer com o que sobrou?
+            </p>
+            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+              {others.slice(0, 4).map(cx => {
+                const { Icon: CxIcon, color: cxColor } = getDivisaoIcon(cx.id)
+                return (
+                  <button
+                    key={cx.id}
+                    onClick={() => navigate(`/divisao/${cx.id.replace('cx-', '')}`)}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: 5,
+                      padding: '5px 10px', borderRadius: 20,
+                      fontSize: 11, fontWeight: 600,
+                      background: `${cxColor}15`, color: cxColor,
+                      border: `1px solid ${cxColor}25`,
+                      cursor: 'pointer', fontFamily: 'var(--font-sans)',
+                    }}
+                  >
+                    <CxIcon size={11} /> {cx.name}
+                  </button>
+                )
+              })}
+            </div>
+            <button
+              onClick={() => setSurplusDismissed(true)}
+              style={{ marginTop: 10, fontSize: 11, color: 'var(--color-text-tertiary)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-sans)', padding: 0 }}
+            >
+              Decidir depois
+            </button>
+          </div>
+        )}
 
         {/* ── Featured: Essencial (55%) ── */}
         {essencial && (() => {
@@ -725,6 +836,13 @@ function DivisoesSection({ balanceHidden = false }: { balanceHidden?: boolean })
                   }}>{essencial.percentage}%</span>
                 </div>
 
+                {/* Purpose tagline */}
+                {!isDormant && DIVISION_PURPOSE[essencial.id] && (
+                  <p style={{ fontSize: 11, color: 'var(--color-text-tertiary)', margin: '0 0 4px', fontStyle: 'italic', lineHeight: 1.4 }}>
+                    {DIVISION_PURPOSE[essencial.id]}
+                  </p>
+                )}
+
                 {isDormant ? (
                   <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.3)', margin: '0 0 8px', fontStyle: 'italic', lineHeight: 1.4 }}>
                     {DORMANT_TAG['cx-essencial']}
@@ -734,7 +852,7 @@ function DivisoesSection({ balanceHidden = false }: { balanceHidden?: boolean })
                     {/* Linha principal: balance livre */}
                     <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
                       <p style={{ fontSize: 18, fontWeight: 700, color: 'var(--color-text-primary)', margin: 0 }}>
-                        {balanceHidden ? <span style={{ letterSpacing: 2 }}>{mask}</span> : formatCurrency(essencial.balance)}
+                        {balanceHidden ? <span style={{ letterSpacing: 2 }}>{mask}</span> : formatCurrency(totalIn > 0 ? totalIn - spent : essencial.balance)}
                       </p>
                       <span style={{ fontSize: 10, fontWeight: 500, color: 'var(--color-text-tertiary)' }}>livre</span>
                     </div>
@@ -838,6 +956,13 @@ function DivisoesSection({ balanceHidden = false }: { balanceHidden?: boolean })
                   }}>{cx.percentage}%</span>
                 </div>
 
+                {/* Purpose tagline */}
+                {!isDormant && DIVISION_PURPOSE[cx.id] && (
+                  <p style={{ fontSize: 10, color: 'var(--color-text-tertiary)', margin: '0 0 4px', fontStyle: 'italic', lineHeight: 1.4 }}>
+                    {DIVISION_PURPOSE[cx.id]}
+                  </p>
+                )}
+
                 {/* Valor ou tagline dormant */}
                 {isDormant ? (
                   <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.25)', margin: '4px 0 8px', fontStyle: 'italic', lineHeight: 1.4 }}>
@@ -848,7 +973,7 @@ function DivisoesSection({ balanceHidden = false }: { balanceHidden?: boolean })
                     {/* Balance livre + label */}
                     <div style={{ display: 'flex', alignItems: 'baseline', gap: 5 }}>
                       <p style={{ fontSize: 14, fontWeight: 700, color: 'var(--color-text-primary)', margin: 0 }}>
-                        {balanceHidden ? <span style={{ letterSpacing: 2 }}>{mask}</span> : formatCurrency(cx.balance)}
+                        {balanceHidden ? <span style={{ letterSpacing: 2 }}>{mask}</span> : formatCurrency(totalIn > 0 ? totalIn - spent : cx.balance)}
                       </p>
                       <span style={{ fontSize: 9, fontWeight: 500, color: 'var(--color-text-tertiary)' }}>livre</span>
                     </div>

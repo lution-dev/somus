@@ -78,14 +78,22 @@ function DivisaoHeroMobile({
   const delta = totalLancadoMes - lastMonthLancado
   const hasDelta = lastMonthLancado > 0
 
+  const DIVISION_PURPOSE: Record<string, string> = {
+    'cx-essencial':  'O que sustenta a sua vida.',
+    'cx-objetivos':  'O que você está construindo.',
+    'cx-dizimo':     'Generosidade como parte da construção.',
+    'cx-educacao':   'O fermento da sua vida financeira.',
+    'cx-reserva':    'Dinheiro trabalhando enquanto você vive.',
+  }
+
   // State machine: pctMes = expenses/income (0% = zerado, 100% = estourado)
   type S = 'overspent' | 'high' | 'normal' | 'empty'
   const state: S = totalLancadoMes === 0 ? 'empty' : pctMes >= 100 ? 'overspent' : pctMes >= 75 ? 'high' : 'normal'
   const cfg: Record<S, { badge: string; bc: string; bbg: string; copy: string }> = {
-    overspent: { badge: 'Limite atingido', bc: 'var(--color-danger)',   bbg: 'rgba(239,68,68,0.13)',    copy: 'Gastos ultrapassaram a renda recebida este mes' },
-    high:      { badge: 'Alto uso',        bc: 'var(--color-warning)',  bbg: 'rgba(245,158,11,0.13)',   copy: `${Math.round(pctMes)}% da renda recebida ja utilizada` },
-    normal:    { badge: 'Em dia',          bc: 'var(--color-success)',  bbg: 'rgba(16,185,129,0.12)',   copy: `${Math.round(pctMes)}% da renda recebida utilizada este mes` },
-    empty:     { badge: 'Sem gastos',      bc: 'var(--color-text-secondary)', bbg: 'rgba(255,255,255,0.07)', copy: 'Nenhum gasto registrado este mes' },
+    overspent: { badge: 'Acima do limite', bc: 'var(--color-danger)',        bbg: 'rgba(239,68,68,0.13)',    copy: 'Os gastos passaram do que entrou este mês. Vale entender o que pesou.' },
+    high:      { badge: 'Alto uso',        bc: 'var(--color-warning)',       bbg: 'rgba(245,158,11,0.13)',   copy: 'Você está usando boa parte deste bolso. Fique de olho antes do fim do mês.' },
+    normal:    { badge: 'Em dia',          bc: 'var(--color-success)',       bbg: 'rgba(16,185,129,0.12)',   copy: `${Math.round(pctMes)}% do orçamento utilizado este mês.` },
+    empty:     { badge: 'Sem gastos',      bc: 'var(--color-text-secondary)',bbg: 'rgba(255,255,255,0.07)', copy: 'Nenhum lançamento aqui ainda este mês.' },
   }
   const c = cfg[state]
 
@@ -127,11 +135,18 @@ function DivisaoHeroMobile({
       </div>
 
       {/* State badge */}
-      <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 14, position: 'relative', zIndex: 1 }}>
+      <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 10, position: 'relative', zIndex: 1 }}>
         <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.04em', padding: '3px 12px', borderRadius: 999, background: c.bbg, color: c.bc, border: `1px solid ${c.bc}30` }}>
           {c.badge}
         </span>
       </div>
+
+      {/* Propósito da divisão — subtexto discreto */}
+      {DIVISION_PURPOSE[divisao.id] && (
+        <p style={{ textAlign: 'center', fontSize: 12, color: 'var(--color-text-tertiary)', margin: '-2px 0 12px', fontStyle: 'italic', position: 'relative', zIndex: 1, lineHeight: 1.4 }}>
+          {DIVISION_PURPOSE[divisao.id]}
+        </p>
+      )}
 
       {/* Big balance number */}
       <div style={{ textAlign: 'center', marginBottom: 14, position: 'relative', zIndex: 1 }}>
