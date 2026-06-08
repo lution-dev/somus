@@ -59,6 +59,9 @@ const pillBtn = (accent: string, bg: string): React.CSSProperties => ({
   whiteSpace: 'nowrap',
 })
 
+// Divisões de "intenção positiva" — alto uso = celebrar, não alertar
+const CELEBRATE_DIVS = new Set(['cx-dizimo', 'cx-reserva', 'cx-objetivos'])
+
 // ─── BalanceCard ─────────────────────────────────────────────────────────────
 
 function BalanceCard({
@@ -643,7 +646,7 @@ function DivisoesSection({ balanceHidden = false }: { balanceHidden?: boolean })
       .reduce((s, m) => s + Math.abs(m.amount), 0)
   }
 
-  // Frase de status inteligente do mês
+  // Frase de status inteligente do mês (celebra vs alerta por tipo de divisão)
   const statusPhrase = useMemo((): string | null => {
     if (isDormant) return null
     const hasAnyMovement = divisoes.some(cx =>
@@ -652,20 +655,24 @@ function DivisoesSection({ balanceHidden = false }: { balanceHidden?: boolean })
     if (!hasAnyMovement) return null
     const monthName = new Date().toLocaleString('pt-BR', { month: 'long' })
     const capitalized = monthName.charAt(0).toUpperCase() + monthName.slice(1)
-    const overspent = divisoes.find(cx => {
+    const rawPct = (cx: typeof divisoes[0]) => {
       const mvs = cx.movements.filter(m => m.date.startsWith(currentMonth))
       const totalIn  = mvs.filter(m => m.type === 'income').reduce((s, m) => s + m.amount, 0)
       const totalOut = mvs.filter(m => m.type !== 'income').reduce((s, m) => s + Math.abs(m.amount), 0)
-      return totalIn > 0 && totalOut >= totalIn
-    })
-    if (overspent) return `${overspent.name} passou do limite este mês.`
-    const highUsage = divisoes.find(cx => {
-      const mvs = cx.movements.filter(m => m.date.startsWith(currentMonth))
-      const totalIn  = mvs.filter(m => m.type === 'income').reduce((s, m) => s + m.amount, 0)
-      const totalOut = mvs.filter(m => m.type !== 'income').reduce((s, m) => s + Math.abs(m.amount), 0)
-      return totalIn > 0 && (totalOut / totalIn) >= 0.85 && (totalOut / totalIn) < 1
-    })
-    if (highUsage) return `${highUsage.name} está quase no limite. Fique de olho.`
+      return totalIn > 0 ? totalOut / totalIn : 0
+    }
+    // 1. Essencial/Educação estourados — alerta
+    const alertOver = divisoes.find(cx => !CELEBRATE_DIVS.has(cx.id) && rawPct(cx) >= 1)
+    if (alertOver) return `${alertOver.name} passou do limite este mês.`
+    // 2. Dízimo/LF/Objetivos além da meta — celebra
+    const celebOver = divisoes.find(cx => CELEBRATE_DIVS.has(cx.id) && rawPct(cx) >= 1)
+    if (celebOver) return `${celebOver.name} foi além da meta! Você está indo além. ✨`
+    // 3. Essencial/Educação em alto uso — alerta
+    const alertHigh = divisoes.find(cx => !CELEBRATE_DIVS.has(cx.id) && rawPct(cx) >= 0.85)
+    if (alertHigh) return `${alertHigh.name} está quase no limite. Fique de olho.`
+    // 4. Dízimo/LF/Objetivos em alto uso — celebra
+    const celebHigh = divisoes.find(cx => CELEBRATE_DIVS.has(cx.id) && rawPct(cx) >= 0.85)
+    if (celebHigh) return `${celebHigh.name} acima da meta este mês. Bom trabalho!`
     return `${capitalized} está tranquilo.`
   }, [divisoes, currentMonth, isDormant])
 
@@ -916,6 +923,7 @@ function DivisoesSection({ balanceHidden = false }: { balanceHidden?: boolean })
             const mvsMes  = cx.movements.filter(m => m.date.startsWith(currentMonth))
             const totalIn = mvsMes.filter(m => m.type === 'income').reduce((s, m) => s + m.amount, 0)
             const hasMes  = totalIn > 0 || spent > 0
+            const isCelebrate = CELEBRATE_DIVS.has(cx.id)
 
             return (
               <button
@@ -980,7 +988,9 @@ function DivisoesSection({ balanceHidden = false }: { balanceHidden?: boolean })
                         {totalIn > 0 ? (
                           <span style={{
                             marginLeft: 4,
-                            color: pct >= 80 ? 'var(--color-danger)' : pct >= 50 ? 'var(--color-warning)' : 'var(--color-text-tertiary)',
+                            color: isCelebrate
+                            ? (pct >= 80 ? 'var(--color-success)' : pct >= 50 ? 'var(--color-accent-electric)' : 'var(--color-text-tertiary)')
+                            : (pct >= 80 ? 'var(--color-danger)' : pct >= 50 ? 'var(--color-warning)' : 'var(--color-text-tertiary)'),
                             fontWeight: 600,
                           }}>· {Math.round(pct)}%
                             <span style={{ fontWeight: 400, color: 'var(--color-text-tertiary)', marginLeft: 2 }}>

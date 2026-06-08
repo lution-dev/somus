@@ -18,6 +18,9 @@ import ConfirmPaymentModal from '../components/features/ConfirmPaymentModal'
 import type { DivisaoMovement, SaidaFixa, Objetivo } from '../types'
 import { usePartnerData } from '../hooks/usePartnerData'
 
+/** Divisões de intenção positiva: alto uso = celebrar, não alertar */
+const CELEBRATE_DIVS = new Set(['cx-dizimo', 'cx-reserva', 'cx-objetivos'])
+
 /** Convert hex color + alpha (0-1) to rgba string */
 function hexToRgba(hex: string, alpha: number): string {
   const r = parseInt(hex.slice(1, 3), 16)
@@ -89,7 +92,28 @@ function DivisaoHeroMobile({
   // State machine: pctMes = expenses/income (0% = zerado, 100% = estourado)
   type S = 'overspent' | 'high' | 'normal' | 'empty'
   const state: S = totalLancadoMes === 0 ? 'empty' : pctMes >= 100 ? 'overspent' : pctMes >= 75 ? 'high' : 'normal'
-  const cfg: Record<S, { badge: string; bc: string; bbg: string; copy: string }> = {
+  const isCelebrate = CELEBRATE_DIVS.has(divisao.id)
+
+  // Mensagens de celebração por divisão para estados de alto uso
+  const celebrateCopy: Record<'overspent' | 'high', string> = {
+    overspent: divisao.id === 'cx-dizimo'
+      ? 'Você foi além do planejado em generosidade. Isso transforma.'
+      : divisao.id === 'cx-reserva'
+        ? 'Mais do que o esperado investido este mês. Continue assim.'
+        : 'Você foi além! Seus objetivos estão avançando mais rápido.',
+    high: divisao.id === 'cx-dizimo'
+      ? 'Você está dando acima do planejado este mês. Generosidade em ação.'
+      : divisao.id === 'cx-reserva'
+        ? 'Você está investindo mais que o planejado. Seu futuro agradece.'
+        : 'Você está colocando mais do que o planejado nos seus objetivos.',
+  }
+
+  const cfg: Record<S, { badge: string; bc: string; bbg: string; copy: string }> = isCelebrate ? {
+    overspent: { badge: 'Além da meta',   bc: 'var(--color-success)',        bbg: 'rgba(16,185,129,0.15)',  copy: celebrateCopy.overspent },
+    high:      { badge: 'Acima da meta',  bc: '#22D3EE',                    bbg: 'rgba(34,211,238,0.10)', copy: celebrateCopy.high },
+    normal:    { badge: 'Em dia',         bc: 'var(--color-success)',        bbg: 'rgba(16,185,129,0.12)', copy: `${Math.round(pctMes)}% do orçamento utilizado este mês.` },
+    empty:     { badge: 'Sem lançamentos',bc: 'var(--color-text-secondary)', bbg: 'rgba(255,255,255,0.07)', copy: 'Nenhum lançamento aqui ainda este mês.' },
+  } : {
     overspent: { badge: 'Acima do limite', bc: 'var(--color-danger)',        bbg: 'rgba(239,68,68,0.13)',    copy: 'Os gastos passaram do que entrou este mês. Vale entender o que pesou.' },
     high:      { badge: 'Alto uso',        bc: 'var(--color-warning)',       bbg: 'rgba(245,158,11,0.13)',   copy: 'Você está usando boa parte deste bolso. Fique de olho antes do fim do mês.' },
     normal:    { badge: 'Em dia',          bc: 'var(--color-success)',       bbg: 'rgba(16,185,129,0.12)',   copy: `${Math.round(pctMes)}% do orçamento utilizado este mês.` },
@@ -106,7 +130,7 @@ function DivisaoHeroMobile({
   React.useEffect(() => { const t = setTimeout(() => setBarW(pctMes), 150); return () => clearTimeout(t) }, [pctMes])
 
   const barGrad = pctMes >= 100
-    ? 'var(--color-success)'
+    ? (isCelebrate ? 'linear-gradient(90deg, var(--color-success), #22D3EE)' : 'var(--color-danger)')
     : `linear-gradient(90deg, ${hexToRgba(color, 0.65)}, ${color})`
 
   return (
@@ -405,7 +429,13 @@ export default function DivisaoDetalhe() {
   }
   const desktopPurpose = DESKTOP_DIVISION_PURPOSE[divisao.id] ?? null
   const desktopState = totalLancadoMes === 0 ? 'empty' : pctMes >= 100 ? 'overspent' : pctMes >= 75 ? 'high' : 'normal'
-  const desktopBadge = {
+  const isCelebrate = CELEBRATE_DIVS.has(divisao.id)
+  const desktopBadge = isCelebrate ? {
+    overspent: { text: 'Além da meta',  color: 'var(--color-success)', bg: 'rgba(16,185,129,0.15)' },
+    high:      { text: 'Acima da meta', color: '#22D3EE',              bg: 'rgba(34,211,238,0.10)' },
+    normal:    { text: 'Em dia',        color: 'var(--color-success)', bg: 'rgba(16,185,129,0.12)' },
+    empty:     { text: 'Sem gastos',    color: 'var(--color-text-secondary)', bg: 'rgba(255,255,255,0.07)' },
+  }[desktopState] : {
     overspent: { text: 'Acima do limite', color: 'var(--color-danger)',        bg: 'rgba(239,68,68,0.13)' },
     high:      { text: 'Alto uso',        color: 'var(--color-warning)',       bg: 'rgba(245,158,11,0.13)' },
     normal:    { text: 'Em dia',          color: 'var(--color-success)',       bg: 'rgba(16,185,129,0.12)' },
