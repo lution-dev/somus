@@ -31,6 +31,14 @@ const PAYMENT_METHODS: { value: PaymentMethod; label: string }[] = [
   { value: 'auto_debit', label: 'Débito automático' },
 ]
 
+const DIVISAO_SUCCESS_COPY: Record<string, string> = {
+  'cx-essencial':  'Consciência é o primeiro passo.',
+  'cx-objetivos':  'Cada real conta no caminho ao objetivo.',
+  'cx-dizimo':     'Dar com intenção faz toda a diferença.',
+  'cx-educacao':   'Investimento em você. Vale cada centavo.',
+  'cx-reserva':    'Seu futuro agradece.',
+}
+
 export default function LancarDespesaModal({ open, onClose, divisaoId, divisaoName, prefill }: Props) {
   const [description, setDescription] = useState('')
   const amountInput = useCurrencyInput()
@@ -102,6 +110,11 @@ export default function LancarDespesaModal({ open, onClose, divisaoId, divisaoNa
             <p style={{ fontSize: 14, color: 'var(--color-text-secondary)', margin: 0 }}>
               {date > new Date().toISOString().slice(0, 10) ? 'Ela aparecerá como pendente na data.' : 'Saldo da divisão atualizado'}
             </p>
+            {date <= new Date().toISOString().slice(0, 10) && DIVISAO_SUCCESS_COPY[divisaoId] && (
+              <p style={{ fontSize: 12, color: 'var(--color-text-tertiary)', margin: '2px 0 0', fontStyle: 'italic' }}>
+                {DIVISAO_SUCCESS_COPY[divisaoId]}
+              </p>
+            )}
           </motion.div>
         ) : (
           <motion.div key="form" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>

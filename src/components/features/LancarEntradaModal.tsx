@@ -190,6 +190,11 @@ export default function LancarEntradaModal({ open, onClose, prefill }: Props) {
                   ? `Adicionado em ${selectedDivisao?.name}`
                   : date > today ? 'Confirme quando o dinheiro chegar' : 'Divisões atualizadas'}
             </p>
+            {!isFixa && step === 'renda' && date <= today && (
+              <p style={{ fontSize: 12, color: 'var(--color-text-tertiary)', margin: '2px 0 0', fontStyle: 'italic' }}>
+                Método em ação. Cada divisão já sabe o que fazer.
+              </p>
+            )}
           </motion.div>
         )}
 

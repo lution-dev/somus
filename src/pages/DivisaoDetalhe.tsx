@@ -245,6 +245,13 @@ function getHorizon(obj: import('../types').Objetivo): 'short' | 'medium' | 'lon
   return 'long'
 }
 
+// Momentos educacionais por divisão — card dismissível antes das tabs
+const EDUCATIONAL_NOTES: Record<string, string> = {
+  'cx-educacao': 'Invista em cursos, livros, mentorias ou certificações. Cada real aqui multiplica o que você é capaz de gerar.',
+  'cx-reserva':  'Coloque este dinheiro para trabalhar: renda fixa, CDB, Tesouro Direto ou fundos conservadores. Ele cresce enquanto você vive.',
+  'cx-dizimo':   'Generosidade com intenção transforma. Dar com consciência é diferente de dar por obrigação — é parte do método.',
+}
+
 export default function DivisaoDetalhe() {
   // Accepts both /relatorios/:id (cx-essencial) and /divisao/:slug (essencial)
   const rawParams = useParams<{ id?: string; slug?: string }>()
@@ -262,6 +269,7 @@ export default function DivisaoDetalhe() {
   const [despesaOpen, setDespesaOpen] = useState(false)
   const [addSfOpen, setAddSfOpen] = useState(false)
   const [addObjetivoOpen, setAddObjetivoOpen] = useState(false)
+  const [eduDismissed, setEduDismissed] = useState(false)
 
   // Action sheet state
   const [actionItem, setActionItem] = useState<{ type: 'movement' | 'custo'; item: DivisaoMovement | SaidaFixa } | null>(null)
@@ -559,6 +567,30 @@ export default function DivisaoDetalhe() {
       )}
 
       <div style={{ padding: isMobile ? '0 16px' : 0 }}>
+
+      {/* Momento educacional — só para cx-educacao, cx-reserva, cx-dizimo */}
+      {!eduDismissed && EDUCATIONAL_NOTES[id] && (
+        <div style={{
+          display: 'flex', alignItems: 'flex-start', gap: 10,
+          padding: '10px 14px', borderRadius: 12,
+          background: hexToRgba(color, 0.06),
+          border: `1px solid ${hexToRgba(color, 0.18)}`,
+          borderLeft: `3px solid ${hexToRgba(color, 0.5)}`,
+          marginBottom: 14,
+        }}>
+          <Info size={15} style={{ color, flexShrink: 0, marginTop: 1 }} />
+          <p style={{ fontSize: 12, color: 'var(--color-text-secondary)', margin: 0, lineHeight: 1.55, flex: 1 }}>
+            {EDUCATIONAL_NOTES[id]}
+          </p>
+          <button
+            onClick={() => setEduDismissed(true)}
+            aria-label="Fechar dica"
+            style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, flexShrink: 0, color: 'var(--color-text-tertiary)', lineHeight: 1 }}
+          >
+            <XCircle size={14} />
+          </button>
+        </div>
+      )}
 
       {/* Tabs (Essencial, Objetivos e outras divisões) */}
       {(isEssencial || isObjetivos) ? (

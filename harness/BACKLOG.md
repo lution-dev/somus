@@ -102,3 +102,9 @@
 |----|--------|-----------|---------|
 | T-AD-01 | 🔄 doing | Exibir (e permitir editar) valor no modal de confirmar pagamento de SaidaFixa em todos os call sites | ConfirmPaymentModal.tsx, useAppStore.ts, Fluxo.tsx, Home.tsx, DivisaoDetalhe.tsx |
 
+## Sprint Atual — Storytelling P3 (S-STORY3)
+
+| ID | Status | Descrição | Arquivo |
+|----|--------|-----------|---------|
+| T-STORY3-01 | 🔄 doing | Momentos educacionais: card dismissível em cx-educacao, cx-reserva, cx-dizimo | DivisaoDetalhe.tsx |
+| T-STORY3-02 | ⬜ todo | Copy narrativo nas telas de sucesso: LancarDespesa (por divisão) + LancarEntrada | LancarDespesaModal.tsx, LancarEntradaModal.tsx |
