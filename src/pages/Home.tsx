@@ -28,7 +28,6 @@ import {
   ArrowUpRight,
   ChevronDown,
   Wallet,
-  History,
   AlertCircle,
   Eye,
   EyeOff,
@@ -64,10 +63,10 @@ const pillBtn = (accent: string, bg: string): React.CSSProperties => ({
 
 function BalanceCard({
   total, totalIncome, expectedIncome,
-  onLancar, onLancarDespesa, onHistorico, balanceHidden, onToggleHidden,
+  onLancar, onLancarDespesa, balanceHidden, onToggleHidden,
 }: {
   total: number; totalIncome: number; expectedIncome: number
-  onLancar: () => void; onLancarDespesa: () => void; onHistorico: () => void
+  onLancar: () => void; onLancarDespesa: () => void
   balanceHidden: boolean; onToggleHidden: () => void
 }) {
   const remaining = Math.max(0, expectedIncome - totalIncome)
@@ -130,9 +129,6 @@ function BalanceCard({
         </button>
         <button onClick={onLancarDespesa} style={pillBtn('#f87171', 'rgba(248,113,113,0.12)')}>
           <TrendingDown size={14} strokeWidth={2.5} /> Despesa
-        </button>
-        <button onClick={onHistorico} style={pillBtn('var(--color-text-secondary)', 'var(--color-bg-tertiary)')}>
-          <History size={14} /> Histórico
         </button>
       </div>
     </div>
@@ -1369,7 +1365,6 @@ export default function Home() {
               expectedIncome={expectedIncome}
               onLancar={() => setLancarOpen(true)}
               onLancarDespesa={handleOpenDespesaFromHome}
-              onHistorico={() => setHistoricoOpen(true)}
               balanceHidden={balanceHidden}
               onToggleHidden={toggleBalanceHidden}
             />
@@ -1410,7 +1405,6 @@ export default function Home() {
               expectedIncome={expectedIncome}
               onLancar={() => setLancarOpen(true)}
               onLancarDespesa={handleOpenDespesaFromHome}
-              onHistorico={() => setHistoricoOpen(true)}
               balanceHidden={balanceHidden}
               onToggleHidden={toggleBalanceHidden}
             />

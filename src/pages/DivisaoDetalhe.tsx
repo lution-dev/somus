@@ -164,7 +164,7 @@ function DivisaoHeroMobile({
           {divisao.percentage}% da renda
         </span>
         <span style={{ fontSize: 11, fontWeight: 600, padding: '4px 11px', borderRadius: 999, background: 'rgba(255,255,255,0.06)', color: 'var(--color-text-secondary)', border: '1px solid rgba(255,255,255,0.10)' }}>
-          Meta {formatCurrency(expectedBal)}
+          Orçamento {formatCurrency(expectedBal)}
         </span>
       </div>
 
@@ -210,7 +210,7 @@ function DivisaoHeroMobile({
               background: 'rgba(255,255,255,0.05)',
               border: '1px solid rgba(255,255,255,0.08)',
             }}>
-              <p style={{ fontSize: 9, color: 'var(--color-text-tertiary)', margin: 0, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Falta usar</p>
+              <p style={{ fontSize: 9, color: 'var(--color-text-tertiary)', margin: 0, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Disponível</p>
               <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--color-success)', margin: 0, lineHeight: 1.2 }}>
                 {formatCurrency(totalIncomeMes - totalLancadoMes)}
               </p>
@@ -225,6 +225,24 @@ function DivisaoHeroMobile({
       </div>
     </div>
   )
+}
+
+// ─── Horizon helper (módulo-level para reusar em agrupamento) ─────────────────
+function getHorizon(obj: import('../types').Objetivo): 'short' | 'medium' | 'long' | 'none' {
+  let months: number | null = null
+  if (obj.targetDate) {
+    const target = new Date(obj.targetDate + 'T12:00:00')
+    const today = new Date(); today.setHours(0, 0, 0, 0)
+    months = Math.round((target.getTime() - today.getTime()) / (1000 * 60 * 60 * 24 * 30.44))
+  } else if (obj.monthsToAchieve) {
+    const base = obj.createdAt ? new Date(obj.createdAt) : new Date()
+    const end = new Date(base); end.setMonth(end.getMonth() + obj.monthsToAchieve)
+    months = Math.max(0, Math.round((end.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24 * 30.44)))
+  }
+  if (months === null || months < 0) return 'none'
+  if (months <= 24) return 'short'
+  if (months <= 84) return 'medium'
+  return 'long'
 }
 
 export default function DivisaoDetalhe() {
@@ -311,13 +329,24 @@ export default function DivisaoDetalhe() {
     const seen = new Set<string>(own.map(o => o.id))
     const merged = [...own]
     for (const o of partnerObjetivos) {
-      if (!seen.has(o.id)) {
-        seen.add(o.id)
-        merged.push(o)
-      }
+      if (!seen.has(o.id)) { seen.add(o.id); merged.push(o) }
     }
     return merged
   }, [objetivos, currentUser, partnerObjetivos])
+
+  // Agrupamento por horizonte (Curto/Médio/Longo/Sem prazo)
+  const horizonGroups = useMemo(() => {
+    const groups = { short: [] as typeof myObjetivos, medium: [] as typeof myObjetivos, long: [] as typeof myObjetivos, none: [] as typeof myObjetivos }
+    for (const obj of myObjetivos) groups[getHorizon(obj)].push(obj)
+    return groups
+  }, [myObjetivos])
+
+  const horizonConfig = useMemo(() => [
+    { key: 'short',  label: 'PRÓXIMOS 2 ANOS',    objs: horizonGroups.short  },
+    { key: 'medium', label: 'DE 2 A 7 ANOS',       objs: horizonGroups.medium },
+    { key: 'long',   label: 'PARA O LONGO PRAZO',  objs: horizonGroups.long   },
+    { key: 'none',   label: 'SEM PRAZO DEFINIDO',  objs: horizonGroups.none   },
+  ].filter(g => g.objs.length > 0), [horizonGroups])
 
   const isMobile = useIsMobile()
 
@@ -605,17 +634,41 @@ export default function DivisaoDetalhe() {
               <p style={{ fontSize: 14, color: 'var(--color-text-secondary)', margin: 0 }}>Nenhum objetivo ainda</p>
               <p style={{ fontSize: 12, color: 'var(--color-text-tertiary)', margin: 0 }}>Crie seu primeiro objetivo financeiro</p>
             </div>
-          ) : (
+          ) : horizonConfig.length <= 1 ? (
+            // Grupo único ou sem horizonte — renderiza flat (sem header de grupo)
             <div style={{ display: 'grid', gridTemplateColumns: myObjetivos.length === 1 ? '1fr' : '1fr 1fr', gap: 12 }}>
               {myObjetivos.map(obj => (
-                <ObjetivoCard 
-                  key={obj.id} 
-                  obj={obj} 
+                <ObjetivoCard
+                  key={obj.id}
+                  obj={obj}
                   accentColor={color}
                   onNavigate={(id) => navigate(`/casal/objetivo/${id}`)}
                   onAction={setObjetivoActionTarget}
                   compact={isMobile}
                 />
+              ))}
+            </div>
+          ) : (
+            // Múltiplos horizontes — renderiza com headers de grupo
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+              {horizonConfig.map(group => (
+                <div key={group.key}>
+                  <p style={{ fontSize: 10, fontWeight: 700, color: 'var(--color-text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 8px' }}>
+                    {group.label}
+                  </p>
+                  <div style={{ display: 'grid', gridTemplateColumns: group.objs.length === 1 ? '1fr' : '1fr 1fr', gap: 12 }}>
+                    {group.objs.map(obj => (
+                      <ObjetivoCard
+                        key={obj.id}
+                        obj={obj}
+                        accentColor={color}
+                        onNavigate={(id) => navigate(`/casal/objetivo/${id}`)}
+                        onAction={setObjetivoActionTarget}
+                        compact={isMobile}
+                      />
+                    ))}
+                  </div>
+                </div>
               ))}
             </div>
           )}

@@ -32,6 +32,32 @@ export default function ObjetivoCard({ obj, onNavigate, onAction, accentColor = 
       ? `linear-gradient(90deg, ${finalAccent}, #22D3EEaa)`
       : finalAccent
 
+  // Horizonte temporal — Só no modo não-compact
+  const horizonLabel = (() => {
+    if (isComplete) return null
+    let months: number | null = null
+    if (obj.targetDate) {
+      const target = new Date(obj.targetDate + 'T12:00:00')
+      const today = new Date(); today.setHours(0, 0, 0, 0)
+      months = Math.round((target.getTime() - today.getTime()) / (1000 * 60 * 60 * 24 * 30.44))
+    } else if (obj.monthsToAchieve) {
+      const base = obj.createdAt ? new Date(obj.createdAt) : new Date()
+      const end = new Date(base); end.setMonth(end.getMonth() + obj.monthsToAchieve)
+      months = Math.max(0, Math.round((end.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24 * 30.44)))
+    }
+    if (months === null || months <= 0) return null
+    if (months <= 24) return 'Curto prazo'
+    if (months <= 84) return 'Médio prazo'
+    return 'Longo prazo'
+  })()
+
+  // Encorajamento baseado no progresso
+  const encorajamento = isComplete ? null
+    : pct >= 75 ? 'Você está quase lá.'
+    : pct >= 40 ? 'Bom ritmo. Continue assim.'
+    : pct > 0   ? 'Cada aporte conta.'
+    : null
+
   return (
     <div style={{ position: 'relative' }}>
       <button
@@ -131,6 +157,16 @@ export default function ObjetivoCard({ obj, onNavigate, onAction, accentColor = 
 
         {/* Footer do card */}
         <div style={{ padding: compact ? '10px 12px 12px' : '14px 16px 16px' }}>
+
+          {/* Horizon badge — só no modo full */}
+          {!compact && horizonLabel && (
+            <div style={{ marginBottom: 6 }}>
+              <span style={{ fontSize: 10, fontWeight: 600, padding: '1px 7px', borderRadius: 6, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)', color: 'var(--color-text-tertiary)' }}>
+                {horizonLabel}
+              </span>
+            </div>
+          )}
+
           {/* Barra de progresso */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
             <div style={{
@@ -152,6 +188,13 @@ export default function ObjetivoCard({ obj, onNavigate, onAction, accentColor = 
               </span>
             )}
           </div>
+
+          {/* Encorajamento — só no modo full */}
+          {!compact && encorajamento && (
+            <p style={{ fontSize: 11, color: 'var(--color-text-tertiary)', margin: '0 0 6px', lineHeight: 1.4, fontStyle: 'italic' }}>
+              {encorajamento}
+            </p>
+          )}
 
           {/* Dados — 2 linhas fixas para manter altura igual */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: compact ? 3 : 4 }}>
