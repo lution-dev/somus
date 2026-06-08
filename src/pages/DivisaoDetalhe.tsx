@@ -358,6 +358,23 @@ export default function DivisaoDetalhe() {
   // pctMes = gastos / renda recebida no mês (= "X% usado", igual à home card)
   const pctMes = totalIncomeMes > 0 ? Math.min(100, (totalLancadoMes / totalIncomeMes) * 100) : 0
 
+  // Desktop: estado da divisão (espelhado do DivisaoHeroMobile)
+  const DESKTOP_DIVISION_PURPOSE: Record<string, string> = {
+    'cx-essencial':  'O que sustenta a sua vida.',
+    'cx-objetivos':  'O que você está construindo.',
+    'cx-dizimo':     'Generosidade como parte da construção.',
+    'cx-educacao':   'O fermento da sua vida financeira.',
+    'cx-reserva':    'Dinheiro trabalhando enquanto você vive.',
+  }
+  const desktopPurpose = DESKTOP_DIVISION_PURPOSE[divisao.id] ?? null
+  const desktopState = totalLancadoMes === 0 ? 'empty' : pctMes >= 100 ? 'overspent' : pctMes >= 75 ? 'high' : 'normal'
+  const desktopBadge = {
+    overspent: { text: 'Acima do limite', color: 'var(--color-danger)',        bg: 'rgba(239,68,68,0.13)' },
+    high:      { text: 'Alto uso',        color: 'var(--color-warning)',       bg: 'rgba(245,158,11,0.13)' },
+    normal:    { text: 'Em dia',          color: 'var(--color-success)',       bg: 'rgba(16,185,129,0.12)' },
+    empty:     { text: 'Sem gastos',      color: 'var(--color-text-secondary)',bg: 'rgba(255,255,255,0.07)' },
+  }[desktopState]
+
   const PAYMENT_LABELS: Record<string, string> = {
     pix: 'Pix',
     debit: 'Débito',
@@ -475,6 +492,39 @@ export default function DivisaoDetalhe() {
           <p style={{ fontSize: 12, color: 'var(--color-text-secondary)', margin: '4px 0 0 4px' }}>
             {divisao.percentage}% da renda esperada
           </p>
+          </div>
+
+          {/* Desktop compact stats bar — espelha o DivisaoHeroMobile */}
+          <div style={{
+            display: 'flex', alignItems: 'center', gap: 14,
+            padding: '9px 14px', borderRadius: 12,
+            background: 'rgba(255,255,255,0.04)',
+            border: '1px solid rgba(255,255,255,0.07)',
+            position: 'relative', zIndex: 1, flexWrap: 'wrap',
+          }}>
+            {/* Purpose tagline */}
+            {desktopPurpose && (
+              <p style={{ fontSize: 12, color: 'var(--color-text-tertiary)', fontStyle: 'italic', margin: 0, flex: 1, minWidth: 120, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                {desktopPurpose}
+              </p>
+            )}
+            {/* State badge */}
+            <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.04em', padding: '3px 10px', borderRadius: 999, background: desktopBadge.bg, color: desktopBadge.color, border: `1px solid ${desktopBadge.color}30`, flexShrink: 0 }}>
+              {desktopBadge.text}
+            </span>
+            {/* Progress bar */}
+            {totalIncomeMes > 0 && (
+              <div style={{ width: 100, height: 4, background: 'rgba(255,255,255,0.08)', borderRadius: 999, flexShrink: 0, overflow: 'hidden' }}>
+                <div style={{ height: '100%', width: `${Math.min(pctMes, 100)}%`, background: pctMes >= 100 ? 'var(--color-danger)' : `linear-gradient(90deg, ${hexToRgba(color, 0.7)}, ${color})`, borderRadius: 999, transition: 'width 600ms ease' }} />
+              </div>
+            )}
+            {/* Disponível este mês */}
+            {totalIncomeMes > 0 && (
+              <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                <p style={{ fontSize: 10, color: 'var(--color-text-tertiary)', margin: 0, textTransform: 'uppercase', letterSpacing: '0.04em' }}>disponível</p>
+                <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--color-text-primary)', margin: 0 }}>{formatCurrency(totalIncomeMes - totalLancadoMes)}</p>
+              </div>
+            )}
           </div>
         </>
       )}
