@@ -131,8 +131,10 @@ function DivisaoHeroMobile({
   const c = cfg[state]
 
   // Animated numbers
-  const animBal     = useCountUp(divisao.balance,    700)
-  const animLancado = useCountUp(totalLancadoMes,    600)
+  // displayBal = restante do mês (igual ao que a Home mostra no card) — não o saldo acumulado
+  const displayBal  = totalIncomeMes > 0 ? totalIncomeMes - totalLancadoMes : divisao.balance
+  const animBal     = useCountUp(displayBal,       700)
+  const animLancado = useCountUp(totalLancadoMes,  600)
 
   // Spring progress bar
   const [barW, setBarW] = React.useState(0)
@@ -236,19 +238,6 @@ function DivisaoHeroMobile({
         {/* Contextual copy + falta */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
           <p style={{ fontSize: 12, color: 'var(--color-text-secondary)', margin: 0, lineHeight: 1.45, flex: 1 }}>{c.copy}</p>
-          {totalIncomeMes > 0 && pctMes < 100 && (
-            <div style={{
-              flexShrink: 0, textAlign: 'right',
-              padding: '4px 10px', borderRadius: 8,
-              background: 'rgba(255,255,255,0.05)',
-              border: '1px solid rgba(255,255,255,0.08)',
-            }}>
-              <p style={{ fontSize: 9, color: 'var(--color-text-tertiary)', margin: 0, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Disponível</p>
-              <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--color-success)', margin: 0, lineHeight: 1.2 }}>
-                {formatCurrency(totalIncomeMes - totalLancadoMes)}
-              </p>
-            </div>
-          )}
         </div>
         {hasDelta && (
           <p style={{ fontSize: 11, color: 'var(--color-text-tertiary)', margin: '6px 0 0' }}>
