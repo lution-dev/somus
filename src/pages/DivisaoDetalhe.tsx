@@ -350,6 +350,7 @@ export default function DivisaoDetalhe() {
       .filter(src => src.userId === (s.currentUser?.id ?? ''))
       .reduce((sum, src) => sum + (src.expectedAmount ?? 0), 0)
   )
+  const balanceHidden = useAppStore(s => s.balanceHidden)
 
   const { partnerObjetivos } = usePartnerData()
 
@@ -416,6 +417,18 @@ export default function DivisaoDetalhe() {
   const totalLancadoMes = lancamentosMes.reduce((s, mv) => s + Math.abs(mv.amount), 0)
   // pctMes = gastos / renda recebida no mês (= "X% usado", igual à home card)
   const pctMes = totalIncomeMes > 0 ? Math.min(100, (totalLancadoMes / totalIncomeMes) * 100) : 0
+
+  // Delta vs. mês anterior — compartilhado entre mobile hero e desktop KPI row
+  const lastMonthStr = useMemo(() => {
+    const d = new Date(); d.setMonth(d.getMonth() - 1); return d.toISOString().slice(0, 7)
+  }, [])
+  const lastMonthLancado = useMemo(() =>
+    (divisao.movements ?? []).filter(mv => mv.type !== 'income' && mv.date.startsWith(lastMonthStr))
+      .reduce((s, mv) => s + Math.abs(mv.amount), 0)
+  , [divisao.movements, lastMonthStr])
+  const delta = totalLancadoMes - lastMonthLancado
+  const hasDelta = lastMonthLancado > 0
+  const mask = '•••••'
 
   // Desktop: estado da divisão (espelhado do DivisaoHeroMobile)
   const DESKTOP_DIVISION_PURPOSE: Record<string, string> = {
@@ -590,6 +603,90 @@ export default function DivisaoDetalhe() {
                 <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--color-text-primary)', margin: 0 }}>{formatCurrency(totalIncomeMes - totalLancadoMes)}</p>
               </div>
             )}
+          </div>
+
+          {/* ── Desktop KPI cards row ── */}
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: `repeat(${hasDelta ? 4 : 3}, 1fr)`,
+            gap: 12, marginTop: 14,
+            position: 'relative', zIndex: 1,
+          }}>
+
+            {/* KPI 1: Gasto este mês */}
+            <div style={{
+              padding: '14px 16px', borderRadius: 'var(--radius-card)',
+              background: `radial-gradient(ellipse at 8% -15%, ${color}20 0%, transparent 55%), var(--color-bg-secondary)`,
+              border: `1px solid ${hexToRgba(color, 0.20)}`,
+              boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.05)',
+            }}>
+              <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.06em', color: 'var(--color-text-tertiary)', textTransform: 'uppercase', margin: '0 0 7px' }}>
+                Gasto este mês
+              </p>
+              <p style={{ fontSize: 22, fontWeight: 700, color: 'var(--color-text-primary)', margin: '0 0 4px', lineHeight: 1 }}>
+                {balanceHidden ? mask : formatCurrency(totalLancadoMes)}
+              </p>
+              <p style={{ fontSize: 11, color: 'var(--color-text-secondary)', margin: 0 }}>
+                {totalIncomeMes > 0 ? `${pctMes.toFixed(0)}% do recebido este mês` : 'sem entrada registrada'}
+              </p>
+            </div>
+
+            {/* KPI 2: vs. mês anterior */}
+            {hasDelta && (
+              <div style={{
+                padding: '14px 16px', borderRadius: 'var(--radius-card)',
+                background: `radial-gradient(ellipse at 8% -15%, ${delta < 0 ? 'rgba(16,185,129' : 'rgba(239,68,68'},.15) 0%, transparent 55%), var(--color-bg-secondary)`,
+                border: `1px solid ${delta < 0 ? 'rgba(16,185,129,0.20)' : 'rgba(239,68,68,0.20)'}`,
+                boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.05)',
+              }}>
+                <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.06em', color: 'var(--color-text-tertiary)', textTransform: 'uppercase', margin: '0 0 7px' }}>
+                  vs. mês anterior
+                </p>
+                <p style={{ fontSize: 22, fontWeight: 700, color: delta < 0 ? 'var(--color-success)' : 'var(--color-danger)', margin: '0 0 4px', lineHeight: 1 }}>
+                  {balanceHidden ? mask : `${delta < 0 ? '-' : '+'}${formatCurrency(Math.abs(delta))}`}
+                </p>
+                <p style={{ fontSize: 11, color: 'var(--color-text-secondary)', margin: 0 }}>
+                  Ant.: {balanceHidden ? mask : formatCurrency(lastMonthLancado)}
+                </p>
+              </div>
+            )}
+
+            {/* KPI 3: Orçamento mensal */}
+            <div style={{
+              padding: '14px 16px', borderRadius: 'var(--radius-card)',
+              background: 'var(--color-bg-secondary)',
+              border: '1px solid var(--color-border)',
+              boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.03)',
+            }}>
+              <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.06em', color: 'var(--color-text-tertiary)', textTransform: 'uppercase', margin: '0 0 7px' }}>
+                Orçamento / mês
+              </p>
+              <p style={{ fontSize: 22, fontWeight: 700, color: 'var(--color-text-primary)', margin: '0 0 4px', lineHeight: 1 }}>
+                {balanceHidden ? mask : formatCurrency(expectedBal)}
+              </p>
+              <p style={{ fontSize: 11, color: 'var(--color-text-secondary)', margin: 0 }}>
+                {divisao.percentage}% da renda esperada
+              </p>
+            </div>
+
+            {/* KPI 4: Disponível */}
+            <div style={{
+              padding: '14px 16px', borderRadius: 'var(--radius-card)',
+              background: 'var(--color-bg-secondary)',
+              border: '1px solid var(--color-border)',
+              boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.03)',
+            }}>
+              <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.06em', color: 'var(--color-text-tertiary)', textTransform: 'uppercase', margin: '0 0 7px' }}>
+                Disponível
+              </p>
+              <p style={{ fontSize: 22, fontWeight: 700, color: 'var(--color-text-primary)', margin: '0 0 4px', lineHeight: 1 }}>
+                {balanceHidden ? mask : formatCurrency(totalIncomeMes > 0 ? totalIncomeMes - totalLancadoMes : expectedBal - totalLancadoMes)}
+              </p>
+              <p style={{ fontSize: 11, color: 'var(--color-text-secondary)', margin: 0 }}>
+                {totalIncomeMes > 0 ? `de ${balanceHidden ? mask : formatCurrency(totalIncomeMes)} recebido` : 'estimado este mês'}
+              </p>
+            </div>
+
           </div>
         </>
       )}
