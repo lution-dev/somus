@@ -922,13 +922,13 @@ function DivisoesSection({ balanceHidden = false }: { balanceHidden?: boolean })
                 border: 'none', fontFamily: 'var(--font-sans)',
             background: isDormant
                   ? 'rgba(255,255,255,0.03)'
-                  : `linear-gradient(135deg, ${color}12 0%, var(--color-bg-secondary) 60%)`,
+                  : `linear-gradient(135deg, ${color}2E 0%, var(--color-bg-secondary) 55%)`,
                 borderWidth: 1, borderStyle: 'solid',
-                borderColor: isDormant ? 'rgba(255,255,255,0.06)' : 'var(--color-border)',
+                borderColor: isDormant ? 'rgba(255,255,255,0.06)' : `${color}30`,
                 borderRadius: 'var(--radius-card)',
                 padding: 16,
                 overflow: 'hidden',
-                boxShadow: isDormant ? 'none' : `inset 80px 60px 120px ${color}08, inset 0 1px 0 rgba(255,255,255,0.04)`,
+                boxShadow: isDormant ? 'none' : `inset 120px 100px 180px ${color}18, 0 4px 20px ${color}10, inset 0 1px 0 rgba(255,255,255,0.06)`,
                 transition: 'all 0.6s ease',
               }}
             >
