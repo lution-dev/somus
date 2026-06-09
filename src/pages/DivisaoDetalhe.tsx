@@ -642,7 +642,7 @@ export default function DivisaoDetalhe() {
           <div style={{
             display: 'grid',
             gridTemplateColumns: `repeat(${hasDelta ? 4 : 3}, 1fr)`,
-            gap: 12, marginTop: 14,
+            gap: 12, marginTop: 14, marginBottom: 20,
             position: 'relative', zIndex: 1,
           }}>
 
