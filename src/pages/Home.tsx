@@ -632,6 +632,8 @@ function DivisoesSection({ balanceHidden = false }: { balanceHidden?: boolean })
   const isDormant = incomeSources.length === 0
   const [surplusDismissed, setSurplusDismissed] = useState(false)
 
+  const saidasFixas = useAppStore(useShallow(selectCurrentSaidasFixas))
+
   const expectedIncome = useAppStore(selectExpectedMonthlyIncome)
 
   // Orçamento mensal esperado da divisão = % da renda esperada
@@ -696,6 +698,18 @@ function DivisoesSection({ balanceHidden = false }: { balanceHidden?: boolean })
     return totalIn - totalOut
   }, [essencialDataForSurplus, currentMonth, isDormant])
 
+  // Condições para mostrar surplus — evita falso-positivo antes do mês fechar
+  const essencialCustosFixos = saidasFixas.filter(sf => sf.divisaoId === 'cx-essencial')
+  const allEssencialCustosPaid = essencialCustosFixos.length > 0 &&
+    essencialCustosFixos.every(sf => isPaidThisMonth(sf))
+  const hasNoCustosFixos = essencialCustosFixos.length === 0
+  const pendingCustosFixos = essencialCustosFixos.filter(sf => !isPaidThisMonth(sf))
+  const isLateMonth = new Date().getDate() >= 25
+  // Surplus real: todos os custos fixos pagos OU final do mês
+  const showEssencialSurplus = essencialSurplus > 0 && (allEssencialCustosPaid || isLateMonth)
+  // Nudge: surplus existe mas ainda não é seguro confirmar
+  const showSurplusNudge = essencialSurplus > 0 && !showEssencialSurplus && !surplusDismissed
+
   // Se divisões ainda não foram criadas (rarissimo), mostra placeholder mínimo
   if (divisoes.length === 0) return (
     <div style={{
@@ -744,8 +758,8 @@ function DivisoesSection({ balanceHidden = false }: { balanceHidden?: boolean })
         filter: isDormant ? 'saturate(0.55)' : 'saturate(1)',
       }}>
 
-        {/* ── Surplus do Essencial — "O que fazer com o que sobrou" ── */}
-        {essencialSurplus > 0 && !surplusDismissed && (
+        {/* ── Surplus do Essencial — só quando mês está realmente fechado ou é final do mês ── */}
+        {showEssencialSurplus && !surplusDismissed && (
           <div style={{
             background: 'rgba(16,185,129,0.06)',
             border: '1px solid rgba(16,185,129,0.15)',
@@ -755,7 +769,7 @@ function DivisoesSection({ balanceHidden = false }: { balanceHidden?: boolean })
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 6 }}>
               <div>
                 <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text-primary)', margin: '0 0 2px' }}>
-                  Você ficou abaixo do Essencial.
+                  {allEssencialCustosPaid ? 'Tudo pago. Você ficou abaixo do Essencial.' : 'Você ficou abaixo do Essencial.'}
                 </p>
                 <p style={{ fontSize: 12, color: 'var(--color-text-secondary)', margin: 0, lineHeight: 1.4 }}>
                   {balanceHidden ? mask : formatCurrency(essencialSurplus)} disponíveis — você viveu dentro dos seus meios.
@@ -768,9 +782,7 @@ function DivisoesSection({ balanceHidden = false }: { balanceHidden?: boolean })
                 <X size={14} />
               </button>
             </div>
-            <p style={{ fontSize: 11, color: 'var(--color-text-tertiary)', margin: '0 0 10px' }}>
-              O que fazer com o que sobrou?
-            </p>
+            <p style={{ fontSize: 11, color: 'var(--color-text-tertiary)', margin: '0 0 10px' }}>O que fazer com o que sobrou?</p>
             <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
               {others.slice(0, 4).map(cx => {
                 const { Icon: CxIcon, color: cxColor } = getDivisaoIcon(cx.id)
@@ -797,6 +809,61 @@ function DivisoesSection({ balanceHidden = false }: { balanceHidden?: boolean })
               style={{ marginTop: 10, fontSize: 11, color: 'var(--color-text-tertiary)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-sans)', padding: 0 }}
             >
               Decidir depois
+            </button>
+          </div>
+        )}
+
+        {/* ── Nudge: mês em andamento — surplus existe mas não confirmado ainda ── */}
+        {showSurplusNudge && (
+          <div style={{
+            background: 'rgba(255,255,255,0.03)',
+            border: '1px solid rgba(255,255,255,0.08)',
+            borderLeft: '3px solid rgba(16,185,129,0.40)',
+            borderRadius: 'var(--radius-card)',
+            padding: '12px 14px',
+            display: 'flex', alignItems: 'flex-start', gap: 10,
+          }}>
+            <div style={{ flex: 1 }}>
+              {hasNoCustosFixos ? (
+                <>
+                  <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--color-text-primary)', margin: '0 0 2px' }}>
+                    Cadastre seus custos fixos
+                  </p>
+                  <p style={{ fontSize: 11, color: 'var(--color-text-secondary)', margin: '0 0 8px', lineHeight: 1.45 }}>
+                    Para saber se você realmente fechou abaixo do Essencial, adicione suas contas fixas. O app calcula sozinho.
+                  </p>
+                  <button
+                    onClick={() => navigate('/divisao/essencial')}
+                    style={{
+                      fontSize: 11, fontWeight: 600, padding: '4px 10px', borderRadius: 99,
+                      background: 'rgba(16,185,129,0.12)', color: 'var(--color-success)',
+                      border: '1px solid rgba(16,185,129,0.25)', cursor: 'pointer', fontFamily: 'var(--font-sans)',
+                    }}
+                  >
+                    Ir para o Essencial →
+                  </button>
+                </>
+              ) : (
+                <>
+                  <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--color-text-primary)', margin: '0 0 2px' }}>
+                    Mês em andamento
+                  </p>
+                  <p style={{ fontSize: 11, color: 'var(--color-text-secondary)', margin: 0, lineHeight: 1.45 }}>
+                    {balanceHidden ? mask : formatCurrency(essencialSurplus)} de margem até agora — finalize os custos fixos para confirmar.
+                    {pendingCustosFixos.length > 0 && (
+                      <span style={{ color: 'var(--color-text-tertiary)' }}>
+                        {' '}Faltam: {pendingCustosFixos.slice(0, 2).map(sf => sf.name).join(', ')}{pendingCustosFixos.length > 2 ? ` +${pendingCustosFixos.length - 2}` : ''}.
+                      </span>
+                    )}
+                  </p>
+                </>
+              )}
+            </div>
+            <button
+              onClick={() => setSurplusDismissed(true)}
+              style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, flexShrink: 0, color: 'var(--color-text-tertiary)', marginTop: 1 }}
+            >
+              <X size={13} />
             </button>
           </div>
         )}
