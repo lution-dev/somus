@@ -761,55 +761,68 @@ function DivisoesSection({ balanceHidden = false }: { balanceHidden?: boolean })
         {/* ── Surplus do Essencial — só quando mês está realmente fechado ou é final do mês ── */}
         {showEssencialSurplus && !surplusDismissed && (
           <div style={{
-            background: 'rgba(16,185,129,0.06)',
-            border: '1px solid rgba(16,185,129,0.15)',
+            background: 'linear-gradient(135deg, rgba(16,185,129,0.09) 0%, rgba(255,255,255,0.02) 65%)',
+            border: '1px solid rgba(16,185,129,0.18)',
             borderRadius: 'var(--radius-card)',
             padding: 16,
+            position: 'relative',
+            overflow: 'hidden',
+            backdropFilter: 'blur(8px)',
+            WebkitBackdropFilter: 'blur(8px)',
+            boxShadow: '0 2px 16px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.05)',
           }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 6 }}>
-              <div>
-                <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text-primary)', margin: '0 0 2px' }}>
-                  {allEssencialCustosPaid ? 'Tudo pago. Você ficou abaixo do Essencial.' : 'Você ficou abaixo do Essencial.'}
-                </p>
-                <p style={{ fontSize: 12, color: 'var(--color-text-secondary)', margin: 0, lineHeight: 1.4 }}>
-                  {balanceHidden ? mask : formatCurrency(essencialSurplus)} disponíveis — você viveu dentro dos seus meios.
-                </p>
+            {/* Radial ambient glow — liquid glass */}
+            <div style={{
+              position: 'absolute', top: 0, left: 0,
+              width: 180, height: 100, pointerEvents: 'none',
+              background: 'radial-gradient(ellipse at 10% 0%, rgba(16,185,129,0.25) 0%, transparent 70%)',
+            }} />
+            <div style={{ position: 'relative', zIndex: 1 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 6 }}>
+                <div>
+                  <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text-primary)', margin: '0 0 2px' }}>
+                    {allEssencialCustosPaid ? 'Tudo pago. Você ficou abaixo do Essencial.' : 'Você ficou abaixo do Essencial.'}
+                  </p>
+                  <p style={{ fontSize: 12, color: 'var(--color-text-secondary)', margin: 0, lineHeight: 1.4 }}>
+                    {balanceHidden ? mask : formatCurrency(essencialSurplus)} disponíveis — você viveu dentro dos seus meios.
+                  </p>
+                </div>
+                <button
+                  onClick={() => setSurplusDismissed(true)}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4, color: 'var(--color-text-tertiary)', flexShrink: 0 }}
+                >
+                  <X size={14} />
+                </button>
+              </div>
+              <p style={{ fontSize: 11, color: 'var(--color-text-tertiary)', margin: '0 0 10px' }}>O que fazer com o que sobrou?</p>
+              <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                {others.slice(0, 4).map(cx => {
+                  const { Icon: CxIcon, color: cxColor } = getDivisaoIcon(cx.id)
+                  return (
+                    <button
+                      key={cx.id}
+                      onClick={() => navigate(`/divisao/${cx.id.replace('cx-', '')}`)}
+                      style={{
+                        display: 'flex', alignItems: 'center', gap: 5,
+                        padding: '5px 10px', borderRadius: 20,
+                        fontSize: 11, fontWeight: 600,
+                        background: `${cxColor}15`, color: cxColor,
+                        border: `1px solid ${cxColor}25`,
+                        cursor: 'pointer', fontFamily: 'var(--font-sans)',
+                      }}
+                    >
+                      <CxIcon size={11} /> {cx.name}
+                    </button>
+                  )
+                })}
               </div>
               <button
                 onClick={() => setSurplusDismissed(true)}
-                style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4, color: 'var(--color-text-tertiary)', flexShrink: 0 }}
+                style={{ marginTop: 10, fontSize: 11, color: 'var(--color-text-tertiary)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-sans)', padding: 0 }}
               >
-                <X size={14} />
+                Decidir depois
               </button>
             </div>
-            <p style={{ fontSize: 11, color: 'var(--color-text-tertiary)', margin: '0 0 10px' }}>O que fazer com o que sobrou?</p>
-            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-              {others.slice(0, 4).map(cx => {
-                const { Icon: CxIcon, color: cxColor } = getDivisaoIcon(cx.id)
-                return (
-                  <button
-                    key={cx.id}
-                    onClick={() => navigate(`/divisao/${cx.id.replace('cx-', '')}`)}
-                    style={{
-                      display: 'flex', alignItems: 'center', gap: 5,
-                      padding: '5px 10px', borderRadius: 20,
-                      fontSize: 11, fontWeight: 600,
-                      background: `${cxColor}15`, color: cxColor,
-                      border: `1px solid ${cxColor}25`,
-                      cursor: 'pointer', fontFamily: 'var(--font-sans)',
-                    }}
-                  >
-                    <CxIcon size={11} /> {cx.name}
-                  </button>
-                )
-              })}
-            </div>
-            <button
-              onClick={() => setSurplusDismissed(true)}
-              style={{ marginTop: 10, fontSize: 11, color: 'var(--color-text-tertiary)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-sans)', padding: 0 }}
-            >
-              Decidir depois
-            </button>
           </div>
         )}
 
@@ -907,14 +920,15 @@ function DivisoesSection({ balanceHidden = false }: { balanceHidden?: boolean })
                 display: 'flex', alignItems: 'center', gap: 14,
                 textAlign: 'left', cursor: 'pointer', width: '100%',
                 border: 'none', fontFamily: 'var(--font-sans)',
-                background: isDormant
+            background: isDormant
                   ? 'rgba(255,255,255,0.03)'
-                  : 'var(--color-bg-secondary)',
+                  : `linear-gradient(135deg, ${color}12 0%, var(--color-bg-secondary) 60%)`,
                 borderWidth: 1, borderStyle: 'solid',
                 borderColor: isDormant ? 'rgba(255,255,255,0.06)' : 'var(--color-border)',
                 borderRadius: 'var(--radius-card)',
                 padding: 16,
-                boxShadow: isDormant ? 'none' : undefined,
+                overflow: 'hidden',
+                boxShadow: isDormant ? 'none' : `inset 80px 60px 120px ${color}08, inset 0 1px 0 rgba(255,255,255,0.04)`,
                 transition: 'all 0.6s ease',
               }}
             >
@@ -1032,11 +1046,13 @@ function DivisoesSection({ balanceHidden = false }: { balanceHidden?: boolean })
                 style={{
                   textAlign: 'left', cursor: 'pointer',
                   border: 'none', fontFamily: 'var(--font-sans)',
-                  background: isDormant ? 'rgba(255,255,255,0.025)' : 'var(--color-bg-secondary)',
+                  background: isDormant ? 'rgba(255,255,255,0.025)' : `linear-gradient(135deg, ${color}0D 0%, var(--color-bg-secondary) 60%)`,
                   borderWidth: 1, borderStyle: 'solid',
                   borderColor: isDormant ? 'rgba(255,255,255,0.05)' : 'var(--color-border)',
                   borderRadius: 'var(--radius-card)',
                   padding: 14,
+                  overflow: 'hidden',
+                  boxShadow: isDormant ? 'none' : `inset 60px 50px 100px ${color}08, inset 0 1px 0 rgba(255,255,255,0.03)`,
                   transition: 'all 0.6s ease',
                 }}
               >

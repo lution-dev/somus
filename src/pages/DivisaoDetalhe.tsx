@@ -599,26 +599,38 @@ export default function DivisaoDetalhe() {
       {/* Momento educacional — só para cx-educacao, cx-reserva, cx-dizimo */}
       {!eduDismissed && EDUCATIONAL_NOTES[id] && (
         <div style={{
-          display: 'flex', alignItems: 'flex-start', gap: 10,
-          padding: '10px 14px', borderRadius: 12,
-          background: hexToRgba(color, 0.06),
+          padding: '12px 14px', borderRadius: 12,
+          background: `linear-gradient(135deg, ${hexToRgba(color, 0.09)} 0%, rgba(255,255,255,0.02) 65%)`,
           border: `1px solid ${hexToRgba(color, 0.18)}`,
-          borderLeft: `3px solid ${hexToRgba(color, 0.5)}`,
           marginBottom: 14,
+          position: 'relative',
+          overflow: 'hidden',
+          backdropFilter: 'blur(8px)',
+          WebkitBackdropFilter: 'blur(8px)',
+          boxShadow: `0 2px 12px rgba(0,0,0,0.14), inset 0 1px 0 rgba(255,255,255,0.05)`,
         }}>
-          <Info size={15} style={{ color, flexShrink: 0, marginTop: 1 }} />
-          <p style={{ fontSize: 12, color: 'var(--color-text-secondary)', margin: 0, lineHeight: 1.55, flex: 1 }}>
-            {EDUCATIONAL_NOTES[id]}
-          </p>
-          <button
-            onClick={() => setEduDismissed(true)}
-            aria-label="Fechar dica"
-            style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, flexShrink: 0, color: 'var(--color-text-tertiary)', lineHeight: 1 }}
-          >
-            <XCircle size={14} />
-          </button>
+          {/* Radial ambient glow — liquid glass */}
+          <div style={{
+            position: 'absolute', top: 0, left: 0,
+            width: 120, height: 70, pointerEvents: 'none',
+            background: `radial-gradient(ellipse at 15% 0%, ${hexToRgba(color, 0.22)} 0%, transparent 70%)`,
+          }} />
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, position: 'relative', zIndex: 1 }}>
+            <Info size={15} style={{ color, flexShrink: 0, marginTop: 1 }} />
+            <p style={{ fontSize: 12, color: 'var(--color-text-secondary)', margin: 0, lineHeight: 1.55, flex: 1 }}>
+              {EDUCATIONAL_NOTES[id]}
+            </p>
+            <button
+              onClick={() => setEduDismissed(true)}
+              aria-label="Fechar dica"
+              style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, flexShrink: 0, color: 'var(--color-text-tertiary)', lineHeight: 1 }}
+            >
+              <XCircle size={14} />
+            </button>
+          </div>
         </div>
       )}
+
 
       {/* Tabs (Essencial, Objetivos e outras divisões) */}
       {(isEssencial || isObjetivos) ? (
