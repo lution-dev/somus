@@ -17,6 +17,7 @@ import AddObjetivoModal from '../components/features/AddObjetivoModal'
 import ConfirmPaymentModal from '../components/features/ConfirmPaymentModal'
 import type { DivisaoMovement, SaidaFixa, Objetivo } from '../types'
 import { usePartnerData } from '../hooks/usePartnerData'
+import { useBalanceHidden } from '../hooks/useBalanceHidden'
 
 /** Divisões de intenção positiva: alto uso = celebrar, não alertar */
 const CELEBRATE_DIVS = new Set(['cx-dizimo', 'cx-reserva', 'cx-objetivos'])
@@ -350,7 +351,7 @@ export default function DivisaoDetalhe() {
       .filter(src => src.userId === (s.currentUser?.id ?? ''))
       .reduce((sum, src) => sum + (src.expectedAmount ?? 0), 0)
   )
-  const balanceHidden = useAppStore(s => s.balanceHidden)
+  const { hidden: balanceHidden } = useBalanceHidden()
 
   const { partnerObjetivos } = usePartnerData()
 
