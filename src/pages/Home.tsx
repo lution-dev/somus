@@ -816,57 +816,80 @@ function DivisoesSection({ balanceHidden = false }: { balanceHidden?: boolean })
         {/* ── Nudge: mês em andamento — surplus existe mas não confirmado ainda ── */}
         {showSurplusNudge && (
           <div style={{
-            background: 'rgba(255,255,255,0.03)',
-            border: '1px solid rgba(255,255,255,0.08)',
-            borderLeft: '3px solid rgba(16,185,129,0.40)',
+            background: 'linear-gradient(135deg, rgba(16,185,129,0.08) 0%, rgba(255,255,255,0.02) 65%)',
+            border: '1px solid rgba(16,185,129,0.16)',
             borderRadius: 'var(--radius-card)',
-            padding: '12px 14px',
-            display: 'flex', alignItems: 'flex-start', gap: 10,
+            padding: '14px 16px',
+            backdropFilter: 'blur(8px)',
+            WebkitBackdropFilter: 'blur(8px)',
+            boxShadow: '0 2px 16px rgba(0,0,0,0.18), inset 0 1px 0 rgba(255,255,255,0.05)',
+            position: 'relative',
+            overflow: 'hidden',
           }}>
-            <div style={{ flex: 1 }}>
-              {hasNoCustosFixos ? (
-                <>
-                  <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--color-text-primary)', margin: '0 0 2px' }}>
-                    Cadastre seus custos fixos
-                  </p>
-                  <p style={{ fontSize: 11, color: 'var(--color-text-secondary)', margin: '0 0 8px', lineHeight: 1.45 }}>
-                    Para saber se você realmente fechou abaixo do Essencial, adicione suas contas fixas. O app calcula sozinho.
-                  </p>
-                  <button
-                    onClick={() => navigate('/divisao/essencial')}
-                    style={{
-                      fontSize: 11, fontWeight: 600, padding: '4px 10px', borderRadius: 99,
-                      background: 'rgba(16,185,129,0.12)', color: 'var(--color-success)',
-                      border: '1px solid rgba(16,185,129,0.25)', cursor: 'pointer', fontFamily: 'var(--font-sans)',
-                    }}
-                  >
-                    Ir para o Essencial →
-                  </button>
-                </>
-              ) : (
-                <>
-                  <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--color-text-primary)', margin: '0 0 2px' }}>
-                    Mês em andamento
-                  </p>
-                  <p style={{ fontSize: 11, color: 'var(--color-text-secondary)', margin: 0, lineHeight: 1.45 }}>
-                    {balanceHidden ? mask : formatCurrency(essencialSurplus)} de margem até agora — finalize os custos fixos para confirmar.
-                    {pendingCustosFixos.length > 0 && (
-                      <span style={{ color: 'var(--color-text-tertiary)' }}>
-                        {' '}Faltam: {pendingCustosFixos.slice(0, 2).map(sf => sf.name).join(', ')}{pendingCustosFixos.length > 2 ? ` +${pendingCustosFixos.length - 2}` : ''}.
-                      </span>
-                    )}
-                  </p>
-                </>
-              )}
+            {/* Radial ambient glow — liquid glass signature */}
+            <div style={{
+              position: 'absolute', top: 0, left: 0,
+              width: 120, height: 70, pointerEvents: 'none',
+              background: 'radial-gradient(ellipse at 15% 0%, rgba(16,185,129,0.20) 0%, transparent 75%)',
+            }} />
+
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, position: 'relative', zIndex: 1 }}>
+              {/* Status indicator — pulsing dot (no left border) */}
+              <div style={{
+                width: 7, height: 7, borderRadius: '50%',
+                background: 'var(--color-success)',
+                boxShadow: '0 0 7px rgba(16,185,129,0.55)',
+                flexShrink: 0, marginTop: 5,
+                animation: 'somusOrbPulse 2.8s ease-in-out infinite',
+              }} />
+
+              <div style={{ flex: 1 }}>
+                {hasNoCustosFixos ? (
+                  <>
+                    <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--color-text-primary)', margin: '0 0 2px' }}>
+                      Cadastre seus custos fixos
+                    </p>
+                    <p style={{ fontSize: 11, color: 'var(--color-text-secondary)', margin: '0 0 9px', lineHeight: 1.45 }}>
+                      Para saber se você realmente fechou abaixo do Essencial, adicione suas contas fixas. O app calcula sozinho.
+                    </p>
+                    <button
+                      onClick={() => navigate('/divisao/essencial')}
+                      style={{
+                        fontSize: 11, fontWeight: 600, padding: '4px 10px', borderRadius: 99,
+                        background: 'rgba(16,185,129,0.12)', color: 'var(--color-success)',
+                        border: '1px solid rgba(16,185,129,0.22)', cursor: 'pointer', fontFamily: 'var(--font-sans)',
+                      }}
+                    >
+                      Ir para o Essencial →
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--color-text-primary)', margin: '0 0 2px' }}>
+                      Mês em andamento
+                    </p>
+                    <p style={{ fontSize: 11, color: 'var(--color-text-secondary)', margin: 0, lineHeight: 1.45 }}>
+                      {balanceHidden ? mask : formatCurrency(essencialSurplus)} de margem até agora — finalize os custos fixos para confirmar.
+                      {pendingCustosFixos.length > 0 && (
+                        <span style={{ color: 'var(--color-text-tertiary)' }}>
+                          {' '}Faltam: {pendingCustosFixos.slice(0, 2).map(sf => sf.name).join(', ')}{pendingCustosFixos.length > 2 ? ` +${pendingCustosFixos.length - 2}` : ''}.
+                        </span>
+                      )}
+                    </p>
+                  </>
+                )}
+              </div>
+
+              <button
+                onClick={() => setSurplusDismissed(true)}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, flexShrink: 0, color: 'var(--color-text-tertiary)', marginTop: 1 }}
+              >
+                <X size={13} />
+              </button>
             </div>
-            <button
-              onClick={() => setSurplusDismissed(true)}
-              style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, flexShrink: 0, color: 'var(--color-text-tertiary)', marginTop: 1 }}
-            >
-              <X size={13} />
-            </button>
           </div>
         )}
+
 
         {/* ── Featured: Essencial (55%) ── */}
         {essencial && (() => {
