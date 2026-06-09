@@ -552,59 +552,102 @@ export default function DivisaoDetalhe() {
             zIndex: 0,
           }} />
 
-          <div style={{ paddingTop: 28, marginBottom: 20, position: 'relative', zIndex: 1 }}>
-          <Breadcrumb items={[
-            { label: 'Relatórios', href: '/relatorios' },
-            {
-              label: divisao.name,
-              icon: (
-                <div style={{
-                  width: 20, height: 20, borderRadius: 6, flexShrink: 0,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  background: hexToRgba(color, 0.15),
-                }}>
-                  <Icon size={12} style={{ color }} />
-                </div>
-              ),
-            },
-          ]} />
-          <p style={{ fontSize: 12, color: 'var(--color-text-secondary)', margin: '4px 0 0 4px' }}>
-            {divisao.percentage}% da renda esperada
-          </p>
+          <div style={{ paddingTop: 20, marginBottom: 16, position: 'relative', zIndex: 1 }}>
+            <Breadcrumb items={[
+              { label: 'Relatórios', href: '/relatorios' },
+              {
+                label: divisao.name,
+                icon: (
+                  <div style={{
+                    width: 20, height: 20, borderRadius: 6, flexShrink: 0,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    background: hexToRgba(color, 0.15),
+                  }}>
+                    <Icon size={12} style={{ color }} />
+                  </div>
+                ),
+              },
+            ]} />
           </div>
 
-          {/* Desktop compact stats bar — espelha o DivisaoHeroMobile */}
+          {/* Desktop Hero Card — substitui o compact bar */}
           <div style={{
-            display: 'flex', alignItems: 'center', gap: 14,
-            padding: '9px 14px', borderRadius: 12,
-            background: 'rgba(255,255,255,0.04)',
-            border: '1px solid rgba(255,255,255,0.07)',
-            position: 'relative', zIndex: 1, flexWrap: 'wrap',
+            padding: '20px 24px',
+            borderRadius: 'var(--radius-card)',
+            background: `radial-gradient(ellipse at 8% -20%, ${color}28 0%, transparent 50%), var(--color-bg-secondary)`,
+            border: `1px solid ${hexToRgba(color, 0.22)}`,
+            boxShadow: `inset 0 1px 0 rgba(255,255,255,0.06)`,
+            position: 'relative', zIndex: 1, overflow: 'hidden',
+            display: 'flex', alignItems: 'center', gap: 20,
           }}>
-            {/* Purpose tagline */}
-            {desktopPurpose && (
-              <p style={{ fontSize: 12, color: 'var(--color-text-tertiary)', fontStyle: 'italic', margin: 0, flex: 1, minWidth: 120, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                {desktopPurpose}
+            {/* Radial ambient glow */}
+            <div style={{
+              position: 'absolute', top: 0, left: 0,
+              width: 220, height: 130, pointerEvents: 'none',
+              background: `radial-gradient(ellipse at 10% 0%, ${hexToRgba(color, 0.20)} 0%, transparent 65%)`,
+            }} />
+
+            {/* Ícone da divisão */}
+            <div style={{
+              width: 56, height: 56, borderRadius: 18, flexShrink: 0,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              background: hexToRgba(color, 0.15),
+              border: `1px solid ${hexToRgba(color, 0.25)}`,
+              position: 'relative', zIndex: 1,
+            }}>
+              <Icon size={30} style={{ color }} />
+            </div>
+
+            {/* Centro: nome + badge + tagline + progress */}
+            <div style={{ flex: 1, minWidth: 0, position: 'relative', zIndex: 1 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: desktopPurpose ? 3 : 10 }}>
+                <p style={{ fontSize: 22, fontWeight: 700, color: 'var(--color-text-primary)', margin: 0, lineHeight: 1 }}>
+                  {divisao.name}
+                </p>
+                <span style={{
+                  fontSize: 11, fontWeight: 700, letterSpacing: '0.04em',
+                  padding: '3px 10px', borderRadius: 999, flexShrink: 0,
+                  background: desktopBadge.bg, color: desktopBadge.color,
+                  border: `1px solid ${desktopBadge.color}30`,
+                }}>
+                  {desktopBadge.text}
+                </span>
+              </div>
+              {desktopPurpose && (
+                <p style={{ fontSize: 13, color: 'var(--color-text-secondary)', fontStyle: 'italic', margin: '0 0 14px', lineHeight: 1.4 }}>
+                  {desktopPurpose}
+                </p>
+              )}
+              {totalIncomeMes > 0 && (
+                <div>
+                  <div style={{ height: 6, background: 'rgba(255,255,255,0.08)', borderRadius: 999, overflow: 'hidden' }}>
+                    <div style={{
+                      height: '100%', width: `${Math.min(pctMes, 100)}%`, borderRadius: 999,
+                      background: pctMes >= 100 ? 'var(--color-danger)' : `linear-gradient(90deg, ${hexToRgba(color, 0.6)}, ${color})`,
+                      transition: 'width 600ms ease',
+                    }} />
+                  </div>
+                  <p style={{ fontSize: 11, color: 'var(--color-text-tertiary)', margin: '5px 0 0', lineHeight: 1 }}>
+                    {pctMes.toFixed(0)}% do orçamento utilizado este mês
+                  </p>
+                </div>
+              )}
+            </div>
+
+            {/* Direita: saldo disponível */}
+            <div style={{ textAlign: 'right', flexShrink: 0, position: 'relative', zIndex: 1 }}>
+              <p style={{ fontSize: 10, fontWeight: 700, color: 'var(--color-text-tertiary)', margin: '0 0 5px', textTransform: 'uppercase', letterSpacing: '0.07em' }}>
+                {DIVISION_BAL_LABEL[divisao.id] ?? 'disponível'}
               </p>
-            )}
-            {/* State badge */}
-            <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.04em', padding: '3px 10px', borderRadius: 999, background: desktopBadge.bg, color: desktopBadge.color, border: `1px solid ${desktopBadge.color}30`, flexShrink: 0 }}>
-              {desktopBadge.text}
-            </span>
-            {/* Progress bar */}
-            {totalIncomeMes > 0 && (
-              <div style={{ width: 100, height: 4, background: 'rgba(255,255,255,0.08)', borderRadius: 999, flexShrink: 0, overflow: 'hidden' }}>
-                <div style={{ height: '100%', width: `${Math.min(pctMes, 100)}%`, background: pctMes >= 100 ? 'var(--color-danger)' : `linear-gradient(90deg, ${hexToRgba(color, 0.7)}, ${color})`, borderRadius: 999, transition: 'width 600ms ease' }} />
-              </div>
-            )}
-            {/* Disponível este mês */}
-            {totalIncomeMes > 0 && (
-              <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                <p style={{ fontSize: 10, color: 'var(--color-text-tertiary)', margin: 0, textTransform: 'uppercase', letterSpacing: '0.04em' }}>disponível</p>
-                <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--color-text-primary)', margin: 0 }}>{formatCurrency(totalIncomeMes - totalLancadoMes)}</p>
-              </div>
-            )}
+              <p style={{ fontSize: 28, fontWeight: 700, color: 'var(--color-text-primary)', margin: '0 0 3px', lineHeight: 1 }}>
+                {balanceHidden ? mask : formatCurrency(totalIncomeMes > 0 ? totalIncomeMes - totalLancadoMes : expectedBal)}
+              </p>
+              <p style={{ fontSize: 11, color: 'var(--color-text-secondary)', margin: 0 }}>
+                {divisao.percentage}% da renda
+              </p>
+            </div>
           </div>
+
 
           {/* ── Desktop KPI cards row ── */}
           <div style={{
