@@ -552,21 +552,10 @@ export default function DivisaoDetalhe() {
             zIndex: 0,
           }} />
 
-          <div style={{ paddingTop: 20, marginBottom: 16, position: 'relative', zIndex: 1 }}>
+          <div style={{ paddingTop: 16, marginBottom: 12, position: 'relative', zIndex: 1, opacity: 0.55 }}>
             <Breadcrumb items={[
               { label: 'Relatórios', href: '/relatorios' },
-              {
-                label: divisao.name,
-                icon: (
-                  <div style={{
-                    width: 20, height: 20, borderRadius: 6, flexShrink: 0,
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    background: hexToRgba(color, 0.15),
-                  }}>
-                    <Icon size={12} style={{ color }} />
-                  </div>
-                ),
-              },
+              { label: divisao.name },
             ]} />
           </div>
 
