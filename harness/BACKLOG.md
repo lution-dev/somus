@@ -33,6 +33,16 @@
 | T-INVITE-B4 | ✅ done | handleFinish gerava partnerCode novo diferente do compartilhado → usa ref | Onboarding.tsx |
 | T-INVITE-B5 | ✅ done | Link inválido antes de completar onboarding → pré-salva no Firestore ao chegar no Step5 | Onboarding.tsx |
 
+## Ad-hoc — UI/UX Fixes (pós-MVP)
+
+#### T-AD-13: Loop infinito splash → tela inicial (controllerchange reload)
+**Tipo:** Bug crítico
+**Root cause:** `controllerchange` listener em App.tsx chama `window.location.reload()`. Com `skipWaiting + clientsClaim` no workbox, o SW novo assume controle imediatamente ao registrar — disparando `controllerchange` no boot. Isso causa reload imediato, que registra o SW novamente, que dispara controllerchange novamente → loop infinito.
+**Critérios:**
+- [ ] Remover o listener `controllerchange` + `window.location.reload()` do App.tsx — o `skipWaiting + clientsClaim` já garante ativação automática sem reload manual
+- [ ] Manter `registration.update()` e `setInterval` apenas para checar novas versões (sem recarregar)
+**Status:** 🔄 Em progresso
+
 ## Sprint Concluído — UX/UI Polish & Parity (S-POLISH)
 
 | ID | Status | Descrição | Arquivo |
