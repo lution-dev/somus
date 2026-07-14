@@ -14,24 +14,12 @@ if (import.meta.env.DEV) {
 // Libera o PWA em devices que mantiveram o manifest antigo em cache (portrait)
 // sem precisar reinstalar o aplicativo.
 function unlockOrientation() {
-  const s = window.screen as any
-  if (s.orientation) {
-    // Tenta destravar (remove locks programáticos)
-    if (typeof s.orientation.unlock === 'function') {
-      try { s.orientation.unlock() } catch (err) {}
+  if (window.screen && window.screen.orientation && typeof window.screen.orientation.unlock === 'function') {
+    try {
+      window.screen.orientation.unlock()
+    } catch (err) {
+      // Ignora erro
     }
-    // O pulo do gato: para sobrepor o manifesto (WebAPK no Android), precisamos forçar 'any'
-    if (typeof s.orientation.lock === 'function') {
-      try { s.orientation.lock('any').catch(() => {}) } catch (err) {}
-    }
-  }
-  // Fallbacks antigos
-  if (typeof s.unlockOrientation === 'function') {
-    try { s.unlockOrientation() } catch (err) {}
-  } else if (typeof s.mozUnlockOrientation === 'function') {
-    try { s.mozUnlockOrientation() } catch (err) {}
-  } else if (typeof s.msUnlockOrientation === 'function') {
-    try { s.msUnlockOrientation() } catch (err) {}
   }
 }
 // Tenta no boot
@@ -41,9 +29,11 @@ const handleGesture = () => {
   unlockOrientation()
   window.removeEventListener('click', handleGesture)
   window.removeEventListener('touchstart', handleGesture)
+  window.removeEventListener('pointerdown', handleGesture)
 }
 window.addEventListener('click', handleGesture, { once: true })
 window.addEventListener('touchstart', handleGesture, { once: true })
+window.addEventListener('pointerdown', handleGesture, { once: true })
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
