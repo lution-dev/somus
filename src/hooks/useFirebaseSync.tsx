@@ -64,6 +64,7 @@ export function FirebaseSyncProvider({ children }: FirebaseSyncProviderProps) {
         if (!cancelled) {
           const {
             autoConfirmPastPending,
+            fixEntradasMovements,
             fixPhantomBalances,
             fixSaidaFixaPaymentAmounts,
           } = useAppStore.getState()
@@ -76,15 +77,17 @@ export function FirebaseSyncProvider({ children }: FirebaseSyncProviderProps) {
           // otherwise overwrite them with the old stale Firestore data).
           const stateBeforeFix = useAppStore.getState() as AppState
 
-          fixPhantomBalances()        // corrects phantom balance vs movements divergence
+          fixEntradasMovements()       // recreates missing/stale movements from realized entradas
+          fixPhantomBalances()         // corrects phantom balance vs movements divergence
           fixSaidaFixaPaymentAmounts() // corrects sv/movement amounts for variable saidasFixas
 
           const stateAfterFix = useAppStore.getState() as AppState
 
           const divisoesChanged = stateAfterFix.divisoes !== stateBeforeFix.divisoes
+          const entradasChanged = stateAfterFix.entradas !== stateBeforeFix.entradas
           const svsChanged      = stateAfterFix.saidasVariaveis !== stateBeforeFix.saidasVariaveis
 
-          if (divisoesChanged || svsChanged) {
+          if (divisoesChanged || entradasChanged || svsChanged) {
             log('Self-healing fixes applied → persisting to Firestore immediately')
             const { saveStateToFirestore } = await import('../lib/firestoreService')
             await saveStateToFirestore(uid, stateAfterFix)

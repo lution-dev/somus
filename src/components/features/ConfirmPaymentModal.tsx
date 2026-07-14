@@ -3,6 +3,7 @@ import { Dialog } from '../ui'
 import { CalendarDays, CheckCircle2, DollarSign } from 'lucide-react'
 import { useCurrencyInput } from '../../hooks/useCurrencyInput'
 import { formatCurrency } from '../../lib/calculations'
+import { todayBR } from '../../lib/months'
 
 interface Props {
   open: boolean
@@ -19,7 +20,7 @@ interface Props {
 }
 
 export default function ConfirmPaymentModal({ open, onClose, onConfirm, costName, title, dateLabel, amountLabel, initialAmount }: Props) {
-  const today = new Date().toISOString().slice(0, 10)
+  const today = todayBR()
   const [selectedDate, setSelectedDate] = useState(today)
   const amountInput = useCurrencyInput()
 

@@ -1,4 +1,5 @@
 import type { Divisao, DivisaoDistributionItem, SaidaFixa, Entrada, MonthSummary } from '../types'
+import { todayBR, currentYM } from './months'
 
 // ─── Formatação ─────────────────────────────────────────────────────────────
 
@@ -61,7 +62,7 @@ export function getMonthSummary(
   expectedMonthlyIncome: number,
   month?: string   // 'YYYY-MM', defaults to current
 ): MonthSummary {
-  const target = month || new Date().toISOString().slice(0, 7)
+  const target = month || currentYM()
 
   const totalIncome = entradas
     .filter(e => e.date.startsWith(target) && e.status !== 'pending' && e.kind !== 'direct')
@@ -86,11 +87,11 @@ export function getMonthSummary(
 // ─── Data helpers ────────────────────────────────────────────────────────────
 
 export function isToday(dateStr: string): boolean {
-  return dateStr === new Date().toISOString().slice(0, 10)
+  return dateStr === todayBR()
 }
 
 export function isFuture(dateStr: string): boolean {
-  return dateStr > new Date().toISOString().slice(0, 10)
+  return dateStr > todayBR()
 }
 
 export function getDaysUntil(day: number): number {
@@ -118,8 +119,7 @@ export const isPaidForMonth = (sf: SaidaFixa, yearMonth: string) => {
 }
 
 export const isPaidThisMonth = (sf: SaidaFixa) => {
-  const currentMonth = new Date().toISOString().slice(0, 7)
-  return isPaidForMonth(sf, currentMonth)
+  return isPaidForMonth(sf, currentYM())
 }
 
 /**
@@ -161,7 +161,7 @@ export function getUnpaidMonths(sf: SaidaFixa, currentYearMonth: string): string
  * Caso contrário, usa o valor base (sf.amount).
  */
 export function getEffectiveAmount(sf: SaidaFixa, yearMonth?: string): number {
-  const ym = yearMonth ?? new Date().toISOString().slice(0, 7)
+  const ym = yearMonth ?? currentYM()
   return sf.monthlyAmountOverrides?.[ym] ?? sf.amount
 }
 

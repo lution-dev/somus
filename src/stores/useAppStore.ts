@@ -17,6 +17,7 @@ import type {
 } from '../types'
 import { DIVISAO_ORDER, DIVISAO_INFO } from '../lib/divisoes'
 import { DIVISAO_ICONS } from '../lib/icons'
+import { todayBR, currentYM } from '../lib/months'
 
 // ─── Actions ─────────────────────────────────────────────────────────────────
 
@@ -67,6 +68,7 @@ interface AppActions {
   editSaidaVariavel: (id: string, updates: { amount?: number; description?: string; date?: string; category?: string; divisaoId?: string }) => void
   deleteSaidaVariavel: (id: string) => void
   autoConfirmPastPending: () => void
+  fixEntradasMovements: () => void
   fixPhantomBalances: () => void
   fixSaidaFixaPaymentAmounts: () => void
 
@@ -106,6 +108,168 @@ const getInitialState = (): AppState => ({
   objetivos: [],
 })
 
+const roundCents = (value: number): number => Math.round((value + Number.EPSILON) * 100) / 100
+
+const sumAmounts = (items: { amount: number }[]): number =>
+  roundCents(items.reduce((sum, item) => sum + item.amount, 0))
+
+const entradaDirectMovementId = (entradaId: string): string => `mv-${entradaId}-direct`
+
+const entradaDistributionMovementId = (entradaId: string, divisaoId: string): string =>
+  `mv-${entradaId}-cx-${divisaoId.replace(/^cx-/, '')}`
+
+const isManualEntrada = (entrada: Entrada): boolean =>
+  !entrada.id.startsWith('e-fixed-')
+
+const isRealizedEntrada = (entrada: Entrada): boolean =>
+  entrada.status !== 'pending'
+
+const normalizeEntradaDistribution = (
+  entrada: Entrada,
+  divisoes: Divisao[]
+): DivisaoDistributionItem[] => {
+  if (entrada.kind === 'direct') return []
+
+  const sourceDistribution = entrada.distribution?.length
+    ? entrada.distribution
+    : divisoes.map((cx) => ({
+        divisaoId: cx.id,
+        divisaoName: cx.name,
+        percentage: cx.percentage,
+        amount: 0,
+      }))
+
+  if (sourceDistribution.length === 0) return []
+
+  const totalPct = sourceDistribution.reduce((sum, dist) => sum + (dist.percentage || 0), 0)
+  const currentTotal = sumAmounts(sourceDistribution)
+  if (Math.abs(currentTotal - entrada.amount) <= 0.01 || totalPct <= 0) {
+    return sourceDistribution.map((dist) => ({
+      ...dist,
+      divisaoName: divisoes.find((cx) => cx.id === dist.divisaoId)?.name ?? dist.divisaoName,
+      amount: roundCents(dist.amount),
+    }))
+  }
+
+  let remaining = roundCents(entrada.amount)
+  return sourceDistribution.map((dist, index) => {
+    const isLast = index === sourceDistribution.length - 1
+    const amount = isLast
+      ? remaining
+      : roundCents(entrada.amount * (dist.percentage || 0) / totalPct)
+    remaining = roundCents(remaining - amount)
+
+    return {
+      ...dist,
+      divisaoName: divisoes.find((cx) => cx.id === dist.divisaoId)?.name ?? dist.divisaoName,
+      amount,
+    }
+  })
+}
+
+const normalizeEntradaForMovements = (entrada: Entrada, divisoes: Divisao[]): Entrada => ({
+  ...entrada,
+  distribution: normalizeEntradaDistribution(entrada, divisoes),
+})
+
+const isMovementLinkedToEntrada = (
+  movement: DivisaoMovement,
+  divisaoId: string,
+  entrada: Entrada
+): boolean => {
+  if (movement.type !== 'income') return false
+
+  if (entrada.kind === 'direct') {
+    if (divisaoId !== entrada.targetDivisaoId) return false
+    return (
+      movement.id === entradaDirectMovementId(entrada.id) ||
+      (movement.date === entrada.date && movement.description === entrada.sourceName)
+    )
+  }
+
+  const dist = entrada.distribution.find((item) => item.divisaoId === divisaoId)
+  if (!dist) return false
+
+  const timestampId = entrada.id.replace(/^e-/, '')
+  const legacyIds = new Set([
+    entradaDistributionMovementId(entrada.id, divisaoId),
+    `mv-${entrada.id}-${divisaoId}`,
+    `mv-${entrada.id}-cx-${divisaoId}`,
+    `mv-${timestampId}-${divisaoId}`,
+  ])
+
+  return (
+    legacyIds.has(movement.id) ||
+    (
+      movement.date === entrada.date &&
+      movement.description === `Distribuição — ${entrada.sourceName}`
+    )
+  )
+}
+
+const buildEntradaMovements = (
+  entrada: Entrada,
+  divisoes: Divisao[]
+): Record<string, DivisaoMovement[]> => {
+  if (!isManualEntrada(entrada) || !isRealizedEntrada(entrada)) return {}
+
+  if (entrada.kind === 'direct' && entrada.targetDivisaoId) {
+    return {
+      [entrada.targetDivisaoId]: [{
+        id: entradaDirectMovementId(entrada.id),
+        date: entrada.date,
+        amount: roundCents(entrada.amount),
+        description: entrada.sourceName,
+        type: 'income',
+      }],
+    }
+  }
+
+  const normalized = normalizeEntradaForMovements(entrada, divisoes)
+  return normalized.distribution.reduce<Record<string, DivisaoMovement[]>>((acc, dist) => {
+    if (dist.amount === 0) return acc
+    acc[dist.divisaoId] = [
+      ...(acc[dist.divisaoId] ?? []),
+      {
+        id: entradaDistributionMovementId(entrada.id, dist.divisaoId),
+        date: normalized.date,
+        amount: roundCents(dist.amount),
+        description: `Distribuição — ${normalized.sourceName}`,
+        type: 'income',
+      },
+    ]
+    return acc
+  }, {})
+}
+
+const applyEntradaMovementSync = (
+  divisoes: Divisao[],
+  entradasToRemove: Entrada[],
+  entradasToApply: Entrada[]
+): Divisao[] => {
+  const expectedByDivisao = entradasToApply.reduce<Record<string, DivisaoMovement[]>>((acc, entrada) => {
+    const expected = buildEntradaMovements(entrada, divisoes)
+    for (const [divisaoId, movements] of Object.entries(expected)) {
+      acc[divisaoId] = [...(acc[divisaoId] ?? []), ...movements]
+    }
+    return acc
+  }, {})
+
+  const linkedEntradas = [...entradasToRemove, ...entradasToApply]
+
+  return divisoes.map((cx) => {
+    const preservedMovements = (cx.movements ?? []).filter((movement) =>
+      !linkedEntradas.some((entrada) => isMovementLinkedToEntrada(movement, cx.id, entrada))
+    )
+    const movements = [
+      ...preservedMovements,
+      ...(expectedByDivisao[cx.id] ?? []),
+    ]
+    const balance = roundCents(movements.reduce((sum, movement) => sum + movement.amount, 0))
+    return { ...cx, balance, movements }
+  })
+}
+
 // ─── Store ────────────────────────────────────────────────────────────────────
 
 export const useAppStore = create<AppState & AppActions>()(
@@ -131,7 +295,7 @@ export const useAppStore = create<AppState & AppActions>()(
             ...src, id: `src-${Date.now()}-${i}`,
           }))
           const saidasFixas = initial.saidasFixas.map((sf, i) => ({
-            ...sf, id: `sf-${Date.now()}-${i}`, payments: {}, startDate: new Date().toISOString().slice(0, 7)
+            ...sf, id: `sf-${Date.now()}-${i}`, payments: {}, startDate: currentYM()
           }))
           const objetivos = initial.objetivos.map((obj, i) => ({
             ...obj, id: `obj-${Date.now()}-${i}`,
@@ -144,66 +308,38 @@ export const useAppStore = create<AppState & AppActions>()(
 
       addEntrada: (entrada) => {
         const id = `e-${Date.now()}`
-        const today = new Date().toISOString().slice(0, 10)
+        const today = todayBR()
         const isFuture = entrada.date > today
         const status: 'realized' | 'pending' = isFuture ? 'pending' : 'realized'
-        const newEntrada: Entrada = { ...entrada, id, status }
+        const newEntradaBase: Entrada = { ...entrada, id, status }
 
         // ── kind === 'direct': vai só para uma divisão específica ──────────
         if (entrada.kind === 'direct' && entrada.targetDivisaoId) {
-          const divisaoId = entrada.targetDivisaoId
-          set((state) => ({
-            entradas: [...state.entradas, newEntrada],
-            divisoes: isFuture ? state.divisoes : state.divisoes.map((cx) =>
-              cx.id !== divisaoId ? cx : {
-                ...cx,
-                balance: cx.balance + entrada.amount,
-                movements: [
-                  ...cx.movements,
-                  {
-                    id: `mv-${id}-direct`,
-                    date: entrada.date,
-                    amount: entrada.amount,
-                    description: entrada.sourceName,
-                    type: 'income' as const,
-                  },
-                ],
-              }
-            ),
-          }))
+          set((state) => {
+            const newEntrada = normalizeEntradaForMovements(newEntradaBase, state.divisoes)
+            return {
+              entradas: [...state.entradas, newEntrada],
+              divisoes: isFuture
+                ? state.divisoes
+                : applyEntradaMovementSync(state.divisoes, [], [newEntrada]),
+            }
+          })
           return
         }
 
         // ── kind === 'distributable' (default): distribui por todas as divisões ──
         if (isFuture) {
           set((state) => ({
-            entradas: [...state.entradas, newEntrada],
+            entradas: [...state.entradas, normalizeEntradaForMovements(newEntradaBase, state.divisoes)],
           }))
           return
         }
 
         set((state) => {
-          const updatedDivisoes = state.divisoes.map((cx) => {
-            const dist = entrada.distribution.find(d => d.divisaoId === cx.id)
-            if (!dist) return cx
-            return {
-              ...cx,
-              balance: cx.balance + dist.amount,
-              movements: [
-                ...cx.movements,
-                {
-                  id: `mv-${Date.now()}-${cx.id}`,
-                  date: entrada.date,
-                  amount: dist.amount,
-                  description: `Distribuição — ${entrada.sourceName}`,
-                  type: 'income' as const,
-                },
-              ],
-            }
-          })
+          const newEntrada = normalizeEntradaForMovements(newEntradaBase, state.divisoes)
           return {
             entradas: [...state.entradas, newEntrada],
-            divisoes: updatedDivisoes,
+            divisoes: applyEntradaMovementSync(state.divisoes, [], [newEntrada]),
           }
         })
       },
@@ -214,34 +350,18 @@ export const useAppStore = create<AppState & AppActions>()(
           const e = state.entradas.find(x => x.id === id)
           if (!e || e.status !== 'pending') return state
 
-          // Se confirmedAmount foi passado, redistribui proporcionalmente entre as divisões
-          const ratio = confirmedAmount !== undefined ? confirmedAmount / e.amount : 1
-
-          const updatedDivisoes = state.divisoes.map((cx) => {
-            const dist = e.distribution.find(d => d.divisaoId === cx.id)
-            if (!dist) return cx
-            const effectiveAmount = confirmedAmount !== undefined ? dist.amount * ratio : dist.amount
-            return {
-              ...cx,
-              balance: cx.balance + effectiveAmount,
-              movements: [
-                ...cx.movements,
-                {
-                  id: `mv-${Date.now()}-${cx.id}`,
-                  date: confirmationDate,
-                  amount: effectiveAmount,
-                  description: `Distribuição — ${e.sourceName}`,
-                  type: 'income' as const,
-                },
-              ],
-            }
-          })
+          const confirmedEntrada = normalizeEntradaForMovements({
+            ...e,
+            status: 'realized' as const,
+            date: confirmationDate,
+            amount: confirmedAmount ?? e.amount,
+          }, state.divisoes)
 
           return {
             entradas: state.entradas.map(x =>
-              x.id === id ? { ...x, status: 'realized' as const, date: confirmationDate, amount: confirmedAmount ?? e.amount } : x
+              x.id === id ? confirmedEntrada : x
             ),
-            divisoes: updatedDivisoes,
+            divisoes: applyEntradaMovementSync(state.divisoes, [e], [confirmedEntrada]),
           }
         }),
 
@@ -250,37 +370,40 @@ export const useAppStore = create<AppState & AppActions>()(
           const e = state.entradas.find(x => x.id === id)
           if (!e) return state
 
-          const newAmount = updates.amount ?? e.amount
-          const amountDiff = newAmount - e.amount
-          const newDivisaoId = updates.divisaoId
+          const shouldMoveDirect =
+            updates.divisaoId &&
+            (e.kind === 'direct' || e.targetDivisaoId)
 
-          // Caso simples: troca de divisão com distribuição única
-          if (newDivisaoId && newDivisaoId !== e.distribution[0]?.divisaoId && e.distribution.length === 1) {
-            const oldDivisaoId = e.distribution[0].divisaoId
-            const oldAmount    = e.distribution[0].amount
-            const newDist = [{ ...e.distribution[0], divisaoId: newDivisaoId, divisaoName: state.divisoes.find(d => d.id === newDivisaoId)?.name ?? newDivisaoId }]
-            return {
-              entradas: state.entradas.map(x => x.id !== id ? x : { ...x, ...updates, distribution: newDist }),
-              divisoes: state.divisoes.map(cx => {
-                if (cx.id === oldDivisaoId) return { ...cx, balance: cx.balance - oldAmount }
-                if (cx.id === newDivisaoId) return { ...cx, balance: cx.balance + (amountDiff !== 0 ? newAmount : oldAmount) }
-                return cx
-              }),
-            }
+          const shouldMoveSingleDistribution =
+            updates.divisaoId &&
+            !shouldMoveDirect &&
+            e.distribution.length === 1 &&
+            updates.divisaoId !== e.distribution[0]?.divisaoId
+
+          const nextEntradaBase: Entrada = {
+            ...e,
+            ...updates,
+            ...(shouldMoveDirect
+              ? { kind: 'direct' as const, targetDivisaoId: updates.divisaoId, distribution: [] }
+              : {}),
+            ...(shouldMoveSingleDistribution
+              ? {
+                  distribution: [{
+                    ...e.distribution[0],
+                    divisaoId: updates.divisaoId!,
+                    divisaoName: state.divisoes.find(d => d.id === updates.divisaoId)?.name ?? updates.divisaoId!,
+                  }],
+                }
+              : {}),
           }
+          delete (nextEntradaBase as { divisaoId?: string }).divisaoId
+
+          const nextEntrada = normalizeEntradaForMovements(nextEntradaBase, state.divisoes)
 
           return {
-            entradas: state.entradas.map(x => x.id !== id ? x : { ...x, ...updates }),
-            divisoes: amountDiff !== 0
-              ? state.divisoes.map(cx => {
-                  const dist = e.distribution.find(d => d.divisaoId === cx.id)
-                  if (!dist) return cx
-                  const ratio = dist.amount / e.amount
-                  return {
-                    ...cx,
-                    balance: cx.balance + amountDiff * ratio,
-                  }
-                })
+            entradas: state.entradas.map(x => x.id !== id ? x : nextEntrada),
+            divisoes: isRealizedEntrada(e) || isRealizedEntrada(nextEntrada)
+              ? applyEntradaMovementSync(state.divisoes, [e], isRealizedEntrada(nextEntrada) ? [nextEntrada] : [])
               : state.divisoes,
           }
         }),
@@ -291,15 +414,9 @@ export const useAppStore = create<AppState & AppActions>()(
           if (!e) return state
           return {
             entradas: state.entradas.filter(x => x.id !== id),
-            divisoes: state.divisoes.map(cx => {
-              const dist = e.distribution.find(d => d.divisaoId === cx.id)
-              if (!dist) return cx
-              return {
-                ...cx,
-                balance: cx.balance - dist.amount,
-                movements: (cx.movements ?? []).filter(mv => mv.description !== `Distribuição — ${e.sourceName}`),
-              }
-            }),
+            divisoes: isRealizedEntrada(e)
+              ? applyEntradaMovementSync(state.divisoes, [e], [])
+              : state.divisoes,
           }
         }),
 
@@ -313,7 +430,7 @@ export const useAppStore = create<AppState & AppActions>()(
                 ...cx.movements,
                 {
                   id: `mv-${Date.now()}`,
-                  date: new Date().toISOString().slice(0, 10),
+                  date: todayBR(),
                   amount,
                   description,
                   type: amount > 0 ? 'income' as const : 'expense' as const,
@@ -591,7 +708,7 @@ export const useAppStore = create<AppState & AppActions>()(
       // Corrige lançamentos que foram criados como futuros mas agora são passados/hoje.
       autoConfirmPastPending: () =>
         set((state) => {
-          const today = new Date().toISOString().slice(0, 10)
+          const today = todayBR()
           const toConfirm = state.saidasVariaveis.filter(
             sv => sv.status === 'pending' && sv.date <= today
           )
@@ -631,6 +748,41 @@ export const useAppStore = create<AppState & AppActions>()(
               confirmedIds.has(sv.id) ? { ...sv, status: 'realized' as const } : sv
             ),
           }
+        }),
+
+      /**
+       * Recria/corrige movements de Entradas manuais realizadas a partir da
+       * própria Entrada. Isso cobre dados antigos em que `balance` foi editado,
+       * mas o histórico ficou ausente ou com valor defasado.
+       */
+      fixEntradasMovements: () =>
+        set((state) => {
+          const entradas = state.entradas.map((entrada) =>
+            isManualEntrada(entrada) && isRealizedEntrada(entrada)
+              ? normalizeEntradaForMovements(entrada, state.divisoes)
+              : entrada
+          )
+
+          const entradasToSync = entradas.filter((entrada) =>
+            isManualEntrada(entrada) && isRealizedEntrada(entrada)
+          )
+
+          const divisoes = applyEntradaMovementSync(
+            state.divisoes,
+            entradasToSync,
+            entradasToSync
+          )
+
+          const changed =
+            JSON.stringify(entradas) !== JSON.stringify(state.entradas) ||
+            JSON.stringify(divisoes) !== JSON.stringify(state.divisoes)
+
+          if (!changed) return state
+
+          console.log('[fixEntradas] Movements de Entradas corrigidos. Novo total:',
+            divisoes.reduce((sum, cx) => sum + cx.balance, 0).toFixed(2))
+
+          return { entradas, divisoes }
         }),
 
       /**
@@ -847,12 +999,12 @@ export const useAppStore = create<AppState & AppActions>()(
       addSaidaFixa: (sf) =>
         set((state) => ({
           saidasFixas: [
-            ...state.saidasFixas, 
-            { 
-              ...sf, 
-              id: `sf-${Date.now()}`, 
-              payments: {}, 
-              startDate: new Date().toISOString().slice(0, 7) 
+            ...state.saidasFixas,
+            {
+              ...sf,
+              id: `sf-${Date.now()}`,
+              payments: {},
+              startDate: currentYM()
             }
           ],
         })),
@@ -946,7 +1098,7 @@ export const useAppStore = create<AppState & AppActions>()(
               ...ef,
               id: `ef-${Date.now()}`,
               payments: {},
-              startDate: new Date().toISOString().slice(0, 7),
+              startDate: currentYM(),
             },
           ],
         })),

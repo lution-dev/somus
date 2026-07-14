@@ -1,8 +1,8 @@
 # CONTEXT.md — Somus
 > Estado atual do projeto. Atualizado ao final de cada sessão.
 
-**Última atualização:** 2026-05-25
-**Status geral:** ✅ Integridade de dados financeiros auditada e hardened — fixPhantomBalances + fixSaidaFixaPaymentAmounts + DATA_INTEGRITY.md
+**Última atualização:** 2026-07-14
+**Status geral:** ✅ Integridade de dados financeiros hardened — Entradas, movements e balances sincronizados com auto-cura
 
 ## O Que É
 App de planejamento financeiro para casais com renda variável. Mobile-first, dark mode only. Resolve o problema de apps que exigem renda fixa no início do mês — o Somus permite lançar entradas incrementais conforme caem e distribui automaticamente por divisões (método Nati Arcuri adaptado).
@@ -141,6 +141,7 @@ src/
 | 2026-05-25 | `editSaidaFixaForMonth` propaga delta quando mês pago | Editar valor de mês já pago deve atualizar sv + movement + balance com o delta |
 | 2026-05-25 | `fixSaidaFixaPaymentAmounts` no ciclo de sync | Detecta sv-fixed com amount errado e corrige sv + movement + balance antes do Firestore sobrescrever |
 | 2026-05-25 | `DATA_INTEGRITY.md` como documento permanente | Regras, invariantes, IDs de movements, checklist para novas features — leitura obrigatória antes de mexer em qualquer função financeira |
+| 2026-07-14 | `fixEntradasMovements` antes de `fixPhantomBalances` | Recriar/corrigir histórico de Entradas realizadas antes de reconciliar `balance = sum(movements)`, evitando perda de saldo conciliado |
 
 ## Bloqueios
 Nenhum.

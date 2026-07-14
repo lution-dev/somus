@@ -5,6 +5,7 @@ import { formatCurrency } from '../../lib/calculations'
 import { RefreshCw, Camera, Trash2 } from 'lucide-react'
 import { useCurrencyInput } from '../../hooks/useCurrencyInput'
 import ImageCropPicker from '../ui/ImageCropPicker'
+import { todayBR } from '../../lib/months'
 
 interface Props {
   open: boolean
@@ -25,7 +26,7 @@ export default function AddObjetivoModal({ open, onClose, defaultIsCouple = fals
   const [name, setName]             = useState('')
   const amountInput                 = useCurrencyInput()
   const [months, setMonths]         = useState('')
-  const [startDate, setStartDate]   = useState(new Date().toISOString().slice(0, 10))
+  const [startDate, setStartDate]   = useState(todayBR())
   const [imageUrl, setImageUrl]     = useState<string | undefined>(undefined)
   const [cropSrc, setCropSrc]       = useState<string | null>(null)
 
@@ -41,14 +42,14 @@ export default function AddObjetivoModal({ open, onClose, defaultIsCouple = fals
         setName(editTarget.name)
         amountInput.setValue(editTarget.targetAmount)
         setMonths(String(editTarget.monthsToAchieve ?? ''))
-        setStartDate(editTarget.startDate ?? editTarget.createdAt ?? new Date().toISOString().slice(0, 10))
+        setStartDate(editTarget.startDate ?? editTarget.createdAt ?? todayBR())
         setImageUrl(editTarget.imageUrl)
       } else {
         setIsCouple(defaultIsCouple)
         setName('')
         amountInput.reset()
         setMonths('')
-        setStartDate(new Date().toISOString().slice(0, 10))
+        setStartDate(todayBR())
         setImageUrl(undefined)
       }
     }
@@ -100,7 +101,7 @@ export default function AddObjetivoModal({ open, onClose, defaultIsCouple = fals
         emoji: '🎯',
         currentAmount: 0,
         movements: [],
-        createdAt: new Date().toISOString().slice(0, 10),
+        createdAt: todayBR(),
         startDate,
       } as any)
     }

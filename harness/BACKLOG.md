@@ -35,6 +35,17 @@
 
 ## Ad-hoc — UI/UX Fixes (pós-MVP)
 
+#### T-AD-14: Bug de conciliação de Entradas → movements órfãos/ausentes
+**Tipo:** Bug crítico de integridade financeira
+**Root cause:** `editEntrada` atualizava `balance` sem atualizar `movements`/`distribution`; `addEntrada` e `confirmEntrada` ainda geravam IDs não rastreáveis em alguns fluxos; `deleteEntrada` removia movements por descrição. Ao rodar `fixPhantomBalances`, o app confiava na soma dos movements e rebaixava o saldo conciliado.
+**Critérios:**
+- [x] Padronizar IDs de movements de Entradas (`mv-{entradaId}-cx-{slugDaDivisao}` / `mv-{entradaId}-direct`) em add/confirm/edit/delete
+- [x] Criar auto-cura idempotente para Entradas realizadas, recomputando distribution quando necessário e recriando/corrigindo movements ausentes
+- [x] Rodar auto-cura antes de `fixPhantomBalances` no ciclo de sync
+- [x] Atualizar documentação de integridade
+- [x] Sensores (`npx tsc --noEmit`, `npm run build`)
+**Status:** ✅ done
+
 #### T-AD-13: Loop infinito splash → tela inicial (controllerchange reload)
 **Tipo:** Bug crítico
 **Root cause:** `controllerchange` listener em App.tsx chama `window.location.reload()`. Com `skipWaiting + clientsClaim` no workbox, o SW novo assume controle imediatamente ao registrar — disparando `controllerchange` no boot. Isso causa reload imediato, que registra o SW novamente, que dispara controllerchange novamente → loop infinito.
@@ -65,6 +76,12 @@
 | T-DOC-06 | ✅ done | Atualizar DESIGN.md — tokens CSS var não documentados, componentes novos faltando | harness/DESIGN.md |
 | T-DOC-07 | ✅ done | Atualizar CONTEXT.md — novos hooks (usePartnerData, useCurrencyInput) e useNavStore ausentes | harness/CONTEXT.md |
 | T-DOC-08 | ✅ done | Atualizar SPEC.md — SPEC usa nomenclatura antiga (Caixinhas/Livre), divergente do código atual | harness/SPEC.md |
+
+## Sprint Atual — Timezone Fix (S-TZ)
+
+| ID | Status | Descrição | Arquivo |
+|----|--------|-----------|---------|
+| T-TZ-01 | 🔄 doing | Substituir `new Date().toISOString()` por `todayBR()`/`currentYM()` em 10 arquivos para corrigir virada de dia às 21h (UTC-3) | ConfirmPaymentModal, LancarDespesaModal, LancarEntradaModal, AddObjetivoModal, LancarObjetivoModal, UsarObjetivoModal, DivisaoDetalhe, Home, ObjetivoDetalhe, Fluxo |
 
 ## Próximas fases
 

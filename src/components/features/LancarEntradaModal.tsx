@@ -7,6 +7,7 @@ import { Dialog, DialogFooter, Button, Input } from '../ui'
 import { getDivisaoIcon } from '../../lib/icons'
 import { Check, AlertCircle, TrendingUp, Layers, ArrowLeft, Repeat2 } from 'lucide-react'
 import { useCurrencyInput } from '../../hooks/useCurrencyInput'
+import { todayBR } from '../../lib/months'
 
 interface Props {
   open: boolean
@@ -22,7 +23,7 @@ export default function LancarEntradaModal({ open, onClose, prefill }: Props) {
   const [sourceId, setSourceId]       = useState('')
   const [sourceText, setSourceText]   = useState('')
   const [sourceFocused, setSourceFocused] = useState(false)
-  const [date, setDate]               = useState(new Date().toISOString().slice(0, 10))
+  const [date, setDate]               = useState(todayBR())
   const [note, setNote]               = useState('')
   const [submitted, setSubmitted]     = useState(false)
   const [selectedDivisaoId, setSelectedDivisaoId] = useState('')
@@ -63,7 +64,7 @@ export default function LancarEntradaModal({ open, onClose, prefill }: Props) {
       amountInput.reset()
       setSourceId(''); setSourceText(''); setNote('')
     }
-    setDate(prefill?.date ?? new Date().toISOString().slice(0, 10))
+    setDate(prefill?.date ?? todayBR())
     setSubmitted(false); setSourceFocused(false)
     setSelectedDivisaoId(''); setDescricao('')
     setIsFixa(false); setDueDay(5); setIsVariable(false)
@@ -93,7 +94,7 @@ export default function LancarEntradaModal({ open, onClose, prefill }: Props) {
   const isRendaValid    = (isFixa && isVariable ? true : total > 0) && (sourceId || sourceText.trim()) && (!isFixa || dueDay >= 1)
   const isDivisaoValid  = (isFixa && isVariable ? true : total > 0) && selectedDivisaoId && descricao.trim() && (!isFixa || dueDay >= 1)
   const selectedDivisao = divisoes.find(cx => cx.id === selectedDivisaoId)
-  const today           = new Date().toISOString().slice(0, 10)
+  const today           = todayBR()
 
   function handleConfirmRenda() {
     if (!isRendaValid || !currentUser) return

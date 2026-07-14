@@ -7,6 +7,7 @@ import { Dialog, DialogFooter, Button, Input } from '../ui'
 import { Check, ChevronDown, AlertCircle } from 'lucide-react'
 import type { PaymentMethod } from '../../types'
 import { useCurrencyInput } from '../../hooks/useCurrencyInput'
+import { todayBR } from '../../lib/months'
 
 interface Props {
   open: boolean
@@ -44,7 +45,7 @@ export default function LancarDespesaModal({ open, onClose, divisaoId, divisaoNa
   const amountInput = useCurrencyInput()
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod | ''>('')
   const [pmOpen, setPmOpen] = useState(false)
-  const [date, setDate] = useState(new Date().toISOString().slice(0, 10))
+  const [date, setDate] = useState(todayBR())
   const [subcategory, setSubcategory] = useState('')
   const [submitted, setSubmitted] = useState(false)
 
@@ -59,7 +60,7 @@ export default function LancarDespesaModal({ open, onClose, divisaoId, divisaoNa
       if (prefill?.amount) amountInput.setValue(prefill.amount)
       else amountInput.reset()
       setPaymentMethod((prefill?.paymentMethod as PaymentMethod | '') ?? '')
-      setDate(prefill?.date ?? new Date().toISOString().slice(0, 10))
+      setDate(prefill?.date ?? todayBR())
       setSubcategory(prefill?.subcategory ?? '')
       setSubmitted(false)
       setPmOpen(false)
@@ -105,12 +106,12 @@ export default function LancarDespesaModal({ open, onClose, divisaoId, divisaoNa
               <Check size={32} color="var(--color-success)" strokeWidth={2.5} />
             </div>
             <p style={{ fontSize: 18, fontWeight: 700, color: 'var(--color-success)', margin: 0 }}>
-              {date > new Date().toISOString().slice(0, 10) ? 'Despesa agendada!' : 'Despesa lançada!'}
+              {date > todayBR() ? 'Despesa agendada!' : 'Despesa lançada!'}
             </p>
             <p style={{ fontSize: 14, color: 'var(--color-text-secondary)', margin: 0 }}>
-              {date > new Date().toISOString().slice(0, 10) ? 'Ela aparecerá como pendente na data.' : 'Saldo da divisão atualizado'}
+              {date > todayBR() ? 'Ela aparecerá como pendente na data.' : 'Saldo da divisão atualizado'}
             </p>
-            {date <= new Date().toISOString().slice(0, 10) && DIVISAO_SUCCESS_COPY[divisaoId] && (
+            {date <= todayBR() && DIVISAO_SUCCESS_COPY[divisaoId] && (
               <p style={{ fontSize: 12, color: 'var(--color-text-tertiary)', margin: '2px 0 0', fontStyle: 'italic' }}>
                 {DIVISAO_SUCCESS_COPY[divisaoId]}
               </p>
@@ -225,7 +226,7 @@ export default function LancarDespesaModal({ open, onClose, divisaoId, divisaoNa
                 value={date}
                 onChange={e => setDate(e.target.value)}
               />
-              {date > new Date().toISOString().slice(0, 10) && (
+              {date > todayBR() && (
                 <p style={{
                   fontSize: 11,
                   color: 'var(--color-warning)',

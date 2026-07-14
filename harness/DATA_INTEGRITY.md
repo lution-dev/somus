@@ -55,7 +55,7 @@ Se esse invariante quebrar, `fixPhantomBalances` detecta e corrige na próxima s
 ### IDs de movements: padrões obrigatórios
 | Origem | Padrão do ID |
 |--------|-------------|
-| `addEntrada` (distribuível) | `mv-{entradaId}-cx-{divisaoId}` |
+| `addEntrada` / `confirmEntrada` (distribuível) | `mv-{entradaId}-cx-{slugDaDivisao}` |
 | `addEntrada` (direct) | `mv-{entradaId}-direct` |
 | `markSaidaFixaPaid` | `mv-fixed-{sfId}-{YYYY-MM}` |
 | `addSaidaVariavel` | `mv-sv-{svId}-sv` → CORRETO: `mv-{svId}-sv` |
@@ -109,18 +109,25 @@ if (state.saidasVariaveis.some(sv => sv.id === svId)) return state  // no-op
 
 ## Mecanismos de Auto-Correção (Self-Healing)
 
-O `useFirebaseSync.tsx` roda três funções de correção **após cada sync com o Firebase**, antes de `setSyncReady`:
+O `useFirebaseSync.tsx` roda quatro funções de correção **após cada sync com o Firebase**, antes de `setSyncReady`:
 
 ### 1. `autoConfirmPastPending()`
 Confirma `saidasVariaveis` com `status: 'pending'` cuja data já passou. Cria o movement e debita o balance.
 
-### 2. `fixPhantomBalances()`
+### 2. `fixEntradasMovements()`
+Roda **antes** de `fixPhantomBalances()`. Para cada Entrada manual realizada:
+- Recalcula `distribution` quando `entrada.amount` não bate com a soma distribuída
+- Recria/corrige movements com ID rastreável (`mv-{entradaId}-cx-{slugDaDivisao}` ou `mv-{entradaId}-direct`)
+- Atualiza `cx.balance` a partir da soma dos movements corrigidos
+- Ignora Entradas pendentes e Entradas geradas por `EntradaFixa` (`e-fixed-*`)
+
+### 3. `fixPhantomBalances()`
 Detecta quando `cx.balance !== sum(cx.movements)` (diff > R$0,50) e:
 - Remove movements duplicados (mesmo ID)
 - Remove movements órfãos (income com ID puro de timestamp: `^mv-\d{13}$`)
 - Ajusta `cx.balance = sum(movements)`
 
-### 3. `fixSaidaFixaPaymentAmounts()`
+### 4. `fixSaidaFixaPaymentAmounts()`
 Detecta `sv-fixed-*` com `sv.amount` diferente de `getEffectiveAmount(sf, yearMonth)` e:
 - Corrige `sv.amount`
 - Corrige `movement.amount`
@@ -137,6 +144,7 @@ Antes de implementar qualquer feature que envolva dinheiro, confirme:
 - [ ] Estou usando `getEffectiveAmount(sf, yearMonth)` e não `sf.amount` diretamente?
 - [ ] Toda mudança em `cx.balance` tem um `movement` correspondente com mesmo valor?
 - [ ] O ID do movement segue o padrão documentado acima?
+- [ ] Ao editar uma `Entrada`, `distribution`, `movement.amount` e `cx.balance` mudam juntos?
 - [ ] A operação inversa (desfazer) usa o valor real salvo, não recalcula?
 - [ ] Há guard contra double-execution?
 - [ ] O `status` da `SaidaVariavel` está sendo setado explicitamente (`'realized'` ou `'pending'`)?
@@ -154,3 +162,4 @@ Antes de implementar qualquer feature que envolva dinheiro, confirme:
 | 2026-05-25 | `markSaidaFixaUnpaid` usava `sf.amount=0` → R$0 estornado | Balance não restaurado ao desmarcar | Cascata de fallback via `existingSv.amount` |
 | 2026-05-25 | `editSaidaFixaForMonth` não propagava mudança se mês pago | sv/movement/balance inconsistentes | Propagação de delta |
 | 2026-05-25 | `getMonthSummary` usava `sf.amount` em totalExpenses | Resumo do mês mostrava valor errado | `getEffectiveAmount(sf, target)` |
+| 2026-07-14 | `editEntrada` alterava `balance` sem atualizar `distribution`/`movements`; `Comissão Glide` ficou sem movements | Saldo conciliado rebaixado por `fixPhantomBalances` no reload | `fixEntradasMovements` + IDs rastreáveis + edit/delete sincronizados |
