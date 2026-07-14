@@ -10,6 +10,26 @@ if (import.meta.env.DEV) {
   window.__somusStore = useAppStore
 }
 
+// ── PWA Screen Orientation Unlock ──
+// Libera o PWA em devices que mantiveram o manifest antigo em cache (portrait)
+// sem precisar reinstalar o aplicativo.
+function unlockOrientation() {
+  if (screen.orientation && typeof screen.orientation.unlock === 'function') {
+    try {
+      screen.orientation.unlock()
+    } catch (err) {
+      // Ignora erro silenciamente se não for suportado ou barrado
+    }
+  }
+}
+// Tenta no boot
+unlockOrientation()
+// Retenta no primeiro gesto (necessário em alguns Androids)
+window.addEventListener('pointerdown', function onFirstTouch() {
+  unlockOrientation()
+  window.removeEventListener('pointerdown', onFirstTouch)
+}, { once: true })
+
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <App />
