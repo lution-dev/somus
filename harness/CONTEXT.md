@@ -144,6 +144,7 @@ src/
 | 2026-05-25 | `DATA_INTEGRITY.md` como documento permanente | Regras, invariantes, IDs de movements, checklist para novas features — leitura obrigatória antes de mexer em qualquer função financeira |
 | 2026-07-14 | `fixEntradasMovements` antes de `fixPhantomBalances` | Recriar/corrigir histórico de Entradas realizadas antes de reconciliar `balance = sum(movements)`, evitando perda de saldo conciliado |
 | 2026-07-21 | EntradaFixa confirma via ConfirmPaymentModal | Parity com SaidaFixa: botão Confirmar e Action Sheet abrem modal de valor+data; `markEntradaFixaReceived` já aceitava overrideAmount |
+| 2026-07-21 | Lançamentos do mês ordenados por data de pagamento desc | `dayGroups.sort` + sort de pagos via `getDayKey` (não `dueDay`) — Hoje acima de Ontem; saldo do DayDivider depende dessa ordem |
 
 ## Bloqueios
 Nenhum.
