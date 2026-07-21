@@ -489,14 +489,13 @@ function EntradaItem({ e, isLast, onPress }: { e: Entrada; isLast: boolean; onPr
   )
 }
 
-function EntradaFixaItem({ ef, isLast, onConfirm, onUnconfirm, onPress, yearMonth }: {
+function EntradaFixaItem({ ef, isLast, onPress, yearMonth }: {
   ef: EntradaFixa
   isLast: boolean
-  onConfirm: (ef: EntradaFixa) => void
-  onUnconfirm: (ef: EntradaFixa) => void
   onPress: (ef: EntradaFixa) => void
   yearMonth: string
 }) {
+  const [dateDialogOpen, setDateDialogOpen] = useState(false)
   const received   = isPaidForMonth(ef as unknown as SaidaFixa, yearMonth)
   const daysUntil  = getDaysUntil(ef.dueDay)
   const isPastMonth = yearMonth < new Date().toISOString().slice(0, 7)
@@ -586,7 +585,10 @@ function EntradaFixaItem({ ef, isLast, onConfirm, onUnconfirm, onPress, yearMont
       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
         {received ? (
           <button
-            onClick={() => onUnconfirm(ef)}
+            onClick={(e) => {
+              e.stopPropagation()
+              useAppStore.getState().markEntradaFixaUnreceived(ef.id, yearMonth)
+            }}
             title="Desfazer recebimento"
             style={{
               width: 32, height: 32, borderRadius: 10, border: 'none',
@@ -598,7 +600,10 @@ function EntradaFixaItem({ ef, isLast, onConfirm, onUnconfirm, onPress, yearMont
           </button>
         ) : (
           <button
-            onClick={() => onConfirm(ef)}
+            onClick={(e) => {
+              e.stopPropagation()
+              setDateDialogOpen(true)
+            }}
             title={isMobile ? 'Confirmar recebimento' : undefined}
             style={{
               height: 32, borderRadius: 10, border: '1.5px solid rgba(16,185,129,0.3)',
@@ -615,6 +620,20 @@ function EntradaFixaItem({ ef, isLast, onConfirm, onUnconfirm, onPress, yearMont
           </button>
         )}
       </div>
+
+      <ConfirmPaymentModal
+        open={dateDialogOpen}
+        onClose={() => setDateDialogOpen(false)}
+        title="Confirmar recebimento"
+        dateLabel="Quando você recebeu?"
+        amountLabel="Valor recebido"
+        costName={ef.name}
+        initialAmount={effectiveAmount}
+        onConfirm={(date, amount) => {
+          useAppStore.getState().markEntradaFixaReceived(ef.id, date, yearMonth, amount)
+          setDateDialogOpen(false)
+        }}
+      />
     </motion.div>
   )
 }
@@ -666,6 +685,7 @@ export default function Fluxo() {
   const [editEf, setEditEf]                             = useState<EntradaFixa | null>(null)
   const [confirmDeleteEf, setConfirmDeleteEf]           = useState<EntradaFixa | null>(null)
   const [confirmSkipEf, setConfirmSkipEf]               = useState<EntradaFixa | null>(null)
+  const [confirmPayEf, setConfirmPayEf]                 = useState<EntradaFixa | null>(null)
   // Duplicate state
   const [despesaPrefill, setDespesaPrefill] = useState<{ description?: string; amount?: number; paymentMethod?: string; subcategory?: string; date?: string } | null>(null)
   const [entradaPrefill, setEntradaPrefill] = useState<{ sourceName: string; amount: number; note?: string; date?: string } | null>(null)
@@ -940,8 +960,6 @@ export default function Fluxo() {
                           yearMonth={item.instanceMonth || yearMonth}
                           isLast={isLast}
                           onPress={setActionEf}
-                          onConfirm={(ef) => markReceived(ef.id, new Date().toISOString().slice(0, 10), item.instanceMonth || yearMonth)}
-                          onUnconfirm={(ef) => markUnreceived(ef.id, item.instanceMonth || yearMonth)}
                         />
                       )
                     }
@@ -1098,8 +1116,6 @@ export default function Fluxo() {
                                   yearMonth={item.instanceMonth || yearMonth}
                                   isLast={isLast}
                                   onPress={setActionEf}
-                                  onConfirm={(ef) => markReceived(ef.id, new Date().toISOString().slice(0, 10), item.instanceMonth || yearMonth)}
-                                  onUnconfirm={(ef) => markUnreceived(ef.id, item.instanceMonth || yearMonth)}
                                 />
                               )
                             }
@@ -1558,7 +1574,7 @@ export default function Fluxo() {
           ...(isPaidForMonth(actionEf as unknown as SaidaFixa, yearMonth)
             ? [{ label: 'Desmarcar recebimento', icon: XCircle, color: 'var(--color-warning)', onClick: () => { markUnreceived(actionEf.id, yearMonth); setActionEf(null) } }]
             : [
-                { label: 'Confirmar recebimento', icon: CheckCircle2, color: 'var(--color-success)', onClick: () => { markReceived(actionEf.id, new Date().toISOString().slice(0, 10), yearMonth); setActionEf(null) } },
+                { label: 'Confirmar recebimento', icon: CheckCircle2, color: 'var(--color-success)', onClick: () => { setConfirmPayEf(actionEf); setActionEf(null) } },
                 { label: 'Pular este mês', icon: XCircle, color: 'var(--color-warning)', onClick: () => { setConfirmSkipEf(actionEf); setActionEf(null) } },
               ]
           ),
@@ -1575,6 +1591,20 @@ export default function Fluxo() {
           onSave={(updates) => { editEntradaFixaBase(editEf.id, updates); setEditEf(null) }}
         />
       )}
+
+      <ConfirmPaymentModal
+        open={!!confirmPayEf}
+        onClose={() => setConfirmPayEf(null)}
+        title="Confirmar recebimento"
+        dateLabel="Quando você recebeu?"
+        amountLabel="Valor recebido"
+        costName={confirmPayEf?.name}
+        initialAmount={confirmPayEf ? getEffectiveAmount(confirmPayEf as unknown as SaidaFixa, yearMonth) : undefined}
+        onConfirm={(date, amount) => {
+          if (confirmPayEf) markReceived(confirmPayEf.id, date, yearMonth, amount)
+          setConfirmPayEf(null)
+        }}
+      />
 
       <ConfirmDialog
         open={!!confirmSkipEf}

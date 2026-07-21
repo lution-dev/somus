@@ -1,5 +1,5 @@
 ## MEMÓRIA GLOBAL LIDTEK
-> Task: Integrar Firebase (Firestore + Storage + Auth) no Somus - substituir localStorage por cloud sync, upload de imagens para objetivos
+> Task: Fluxo — marcar recebimento de entrada recorrente abre modal (valor+data) como saída recorrente
 > Tokens injetados: ~197 de 900 máx
 
 ### Regras Globais
@@ -12,6 +12,7 @@
 **Somus** — Somus
 Projeto Somus conectado à memória global Lidtek em 2026-04-29. Harness v2.
 
-### Sem memórias relevantes para esta task ainda.
+### Aprendizados recentes
+- [peso 8] Fluxo EntradaFixa: confirmar recebimento deve abrir ConfirmPaymentModal (valor+data), igual SaidaFixa — nunca markReceived direto com today.
 
 ---

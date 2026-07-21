@@ -35,6 +35,16 @@
 
 ## Ad-hoc — UI/UX Fixes (pós-MVP)
 
+#### T-AD-15: Entrada recorrente no Fluxo — modal de valor+data ao confirmar recebimento
+**Tipo:** Bug / parity UX
+**Root cause:** Ao marcar recebimento de `EntradaFixa`, o Fluxo chama `markEntradaFixaReceived` direto com a data de hoje, sem abrir `ConfirmPaymentModal`. Saídas recorrentes já abrem o modal para digitar valor e data.
+**Critérios:**
+- [x] Botão Confirmar em `EntradaFixaItem` abre `ConfirmPaymentModal` (valor editável + data)
+- [x] Action Sheet "Confirmar recebimento" também abre o mesmo modal
+- [x] Passa `overrideAmount` e data escolhida para `markEntradaFixaReceived`
+- [x] Sensores (`npx tsc --noEmit`, `npm run build`)
+**Status:** ✅ done
+
 #### T-AD-14: Bug de conciliação de Entradas → movements órfãos/ausentes
 **Tipo:** Bug crítico de integridade financeira
 **Root cause:** `editEntrada` atualizava `balance` sem atualizar `movements`/`distribution`; `addEntrada` e `confirmEntrada` ainda geravam IDs não rastreáveis em alguns fluxos; `deleteEntrada` removia movements por descrição. Ao rodar `fixPhantomBalances`, o app confiava na soma dos movements e rebaixava o saldo conciliado.

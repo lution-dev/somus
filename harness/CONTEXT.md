@@ -1,8 +1,8 @@
 # CONTEXT.md — Somus
 > Estado atual do projeto. Atualizado ao final de cada sessão.
 
-**Última atualização:** 2026-07-14
-**Status geral:** ✅ Integridade de dados financeiros hardened — Entradas, movements e balances sincronizados com auto-cura
+**Última atualização:** 2026-07-21
+**Status geral:** ✅ Fluxo — recebimento de entrada recorrente abre modal (valor+data), parity com saída fixa
 
 ## O Que É
 App de planejamento financeiro para casais com renda variável. Mobile-first, dark mode only. Resolve o problema de apps que exigem renda fixa no início do mês — o Somus permite lançar entradas incrementais conforme caem e distribui automaticamente por divisões (método Nati Arcuri adaptado).
@@ -48,6 +48,7 @@ src/
     layout/AppLayout.tsx      # Shell com BottomNav (mobile) + Sidebar (desktop)
     features/
       LancarEntradaModal.tsx  # Modal core de entrada
+      ConfirmPaymentModal.tsx # Modal de confirmação (valor+data) — saídas E entradas fixas
       FluxoChart.tsx          # Gráfico Recharts de projeção
   hooks/
     useAuth.ts                # Firebase Google Auth (popup only — redirect bloqueado por 3rd-party cookies)
@@ -65,7 +66,7 @@ src/
   pages/
     Onboarding.tsx            # Wizard 5 steps + orchestrador + dissolve cinematic
     Home.tsx                  # Dashboard com Empty State Estruturado (dormant/ativo)
-    Fluxo.tsx                 # Saídas Fixas + agendamento de variáveis
+    Fluxo.tsx                 # Saídas Fixas + agendamento de variáveis + Entradas Fixas (modal ao confirmar)
     DivisaoDetalhe.tsx        # Detalhe de divisão + movimentações
     Relatorios.tsx            # Gráficos e histórico
     Casal.tsx                 # Modo casal + gerenciamento de parceiro
@@ -142,6 +143,7 @@ src/
 | 2026-05-25 | `fixSaidaFixaPaymentAmounts` no ciclo de sync | Detecta sv-fixed com amount errado e corrige sv + movement + balance antes do Firestore sobrescrever |
 | 2026-05-25 | `DATA_INTEGRITY.md` como documento permanente | Regras, invariantes, IDs de movements, checklist para novas features — leitura obrigatória antes de mexer em qualquer função financeira |
 | 2026-07-14 | `fixEntradasMovements` antes de `fixPhantomBalances` | Recriar/corrigir histórico de Entradas realizadas antes de reconciliar `balance = sum(movements)`, evitando perda de saldo conciliado |
+| 2026-07-21 | EntradaFixa confirma via ConfirmPaymentModal | Parity com SaidaFixa: botão Confirmar e Action Sheet abrem modal de valor+data; `markEntradaFixaReceived` já aceitava overrideAmount |
 
 ## Bloqueios
 Nenhum.
