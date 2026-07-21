@@ -35,6 +35,15 @@
 
 ## Ad-hoc — UI/UX Fixes (pós-MVP)
 
+#### T-AD-16: Fluxo — Lançamentos do mês fora de ordem por data de pagamento
+**Tipo:** Bug UX
+**Root cause:** `dayGroups` preserva ordem de inserção; o sort de pagos usa `dueDay` em vez da data real (`payments[ym]` / `date`). Resultado: "Ontem" aparece acima de "Hoje". O cálculo de saldo do DayDivider assume ordem desc (mais recente primeiro).
+**Critérios:**
+- [x] Ordenar `dayGroups` por `dateStr` descendente (Hoje → Ontem → …)
+- [x] Sort de itens pagos em `unifiedList` usa data de pagamento (`getDayKey`), não `dueDay`
+- [x] Sensores (`npx tsc --noEmit`, `npm run build`)
+**Status:** ✅ done
+
 #### T-AD-15: Entrada recorrente no Fluxo — modal de valor+data ao confirmar recebimento
 **Tipo:** Bug / parity UX
 **Root cause:** Ao marcar recebimento de `EntradaFixa`, o Fluxo chama `markEntradaFixaReceived` direto com a data de hoje, sem abrir `ConfirmPaymentModal`. Saídas recorrentes já abrem o modal para digitar valor e data.

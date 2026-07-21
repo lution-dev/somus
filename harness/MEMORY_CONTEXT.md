@@ -1,5 +1,5 @@
 ## MEMÓRIA GLOBAL LIDTEK
-> Task: Fluxo — marcar recebimento de entrada recorrente abre modal (valor+data) como saída recorrente
+> Task: Fluxo — ordenar Lançamentos do mês por data de pagamento (Hoje antes de Ontem)
 > Tokens injetados: ~197 de 900 máx
 
 ### Regras Globais
@@ -13,6 +13,7 @@
 Projeto Somus conectado à memória global Lidtek em 2026-04-29. Harness v2.
 
 ### Aprendizados recentes
+- [peso 8] Fluxo Lançamentos do mês: dayGroups devem ser sort desc por dateStr (pagamento); sort de pagos usa getDayKey, nunca dueDay.
 - [peso 8] Fluxo EntradaFixa: confirmar recebimento deve abrir ConfirmPaymentModal (valor+data), igual SaidaFixa — nunca markReceived direto com today.
 
 ---

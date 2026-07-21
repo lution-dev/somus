@@ -2,7 +2,7 @@
 > Estado atual do projeto. Atualizado ao final de cada sessão.
 
 **Última atualização:** 2026-07-21
-**Status geral:** ✅ Fluxo — recebimento de entrada recorrente abre modal (valor+data), parity com saída fixa
+**Status geral:** ✅ Fluxo — Lançamentos do mês ordenados por data de pagamento (mais recente no topo)
 
 ## O Que É
 App de planejamento financeiro para casais com renda variável. Mobile-first, dark mode only. Resolve o problema de apps que exigem renda fixa no início do mês — o Somus permite lançar entradas incrementais conforme caem e distribui automaticamente por divisões (método Nati Arcuri adaptado).

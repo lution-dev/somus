@@ -823,7 +823,7 @@ export default function Fluxo() {
       })
     }
 
-    // Ordenação: pendentes primeiro; pagos por data desc (mais recente no topo)
+    // Ordenação: pendentes primeiro (por dueDay asc); pagos por data de pagamento desc
     items.sort((a, b) => {
       const isReceived = (item: FluxoItem): boolean => {
         if (item.type === 'fixa')        return isPaidForMonth(item.data, item.instanceMonth || yearMonth)
@@ -831,7 +831,7 @@ export default function Fluxo() {
         if (item.type === 'variavel')    return item.data.status !== 'pending'
         return true
       }
-      const getDay = (item: FluxoItem): number => {
+      const getPendingDay = (item: FluxoItem): number => {
         if (item.type === 'fixa' || item.type === 'entrada-fixa') return item.data.dueDay
         return parseInt((item.data as SaidaVariavel | Entrada).date.split('-')[2])
       }
@@ -840,10 +840,11 @@ export default function Fluxo() {
       const bPaid = isReceived(b)
       if (!aPaid && bPaid)  return -1
       if (aPaid  && !bPaid) return 1
-      const aDay = getDay(a)
-      const bDay = getDay(b)
-      if (aPaid && bPaid) return bDay - aDay
-      return aDay - bDay
+      if (aPaid && bPaid) {
+        // Data real de pagamento/recebimento — mais recente no topo
+        return getDayKey(b, yearMonth).localeCompare(getDayKey(a, yearMonth))
+      }
+      return getPendingDay(a) - getPendingDay(b)
     })
 
     return items
@@ -1044,6 +1045,9 @@ export default function Fluxo() {
             }
             dayMap.get(key)!.push(item)
           })
+
+          // Extrato bancário: mais recente no topo (necessário p/ cálculo de saldo abaixo)
+          dayGroups.sort((a, b) => b.dateStr.localeCompare(a.dateStr))
 
           // Saldo atual total das divisões (reflete o estado real após todos os lançamentos)
           const currentTotalBalance = divisoes.reduce((sum, d) => sum + d.balance, 0)
