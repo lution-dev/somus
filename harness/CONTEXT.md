@@ -148,11 +148,8 @@ src/
 | 2026-08-05 | Commit + push sempre em `main`, sem PR | Deploy Vercel de `main`; sobrescreve defaults de cloud agent (feature branch / ManagePullRequest) |
 | 2026-08-05 | Conciliação mensal via extrato (pré-Open Finance) | Multi-banco (99Pay/Inter/Nubank/Itaú/Santander); PDF+OFX+CSV; banner Brand Book; dismiss 3 dias; matching + mini-form; lançamento diário permanece. |
 | 2026-08-05 | Extrato: matched = só identifica, nunca relança | Unmatched primeiro na revisão; matched colapsado no fim; import payload só unmatched (anti-duplicata). |
-<<<<<<< HEAD
 | 2026-08-05 | `npm run dev` libera 1619 antes do Vite | Evita "Port already in use" com processo residual; `strictPort: false` como fallback |
-=======
 | 2026-08-05 | Extrato UX brand + responsive | Upload/revisão com hero atmosférico, glass dropzone+drag&drop, layout desktop ≠ mobile; banner Home em tom calmo azul. |
->>>>>>> 650e1ce (feat(T-EXTRATO-19): UX Extrato brand + responsive desktop/mobile)
 
 ## Bloqueios
 Nenhum.

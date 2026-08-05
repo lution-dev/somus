@@ -1,19 +1,17 @@
 # Changelog — Somus
 
-<<<<<<< HEAD
+## [2026-08-05] S-EXTRATO — UX brand + responsive (upload/revisão)
+**Autor:** IA (Cloud Agent)
+**Tasks:**
+- T-EXTRATO-19: ExtratoUpload + ExtratoRevisao + banner alinhados ao Brand Book/DESIGN (hero, glass, desktop ≠ mobile) ✅
+**Sensores:** `npx tsc --noEmit` ✅ · `npm run build` ✅ · `npm run test:extrato` ✅ (20)
+
 ## [2026-08-05] DX — free-port no npm run dev
 **Autor:** IA (Cloud Agent)
 **Tasks:**
 - T-AD-18: `scripts/free-port.mjs` + `strictPort: false` — evita Port 1619 already in use ✅
 **Commits:** 8e08284
 **Sensores:** `npx tsc --noEmit` ✅ · `npm run build` ✅
-=======
-## [2026-08-05] S-EXTRATO — UX brand + responsive (upload/revisão)
-**Autor:** IA (Cloud Agent)
-**Tasks:**
-- T-EXTRATO-19: ExtratoUpload + ExtratoRevisao + banner alinhados ao Brand Book/DESIGN (hero, glass, desktop ≠ mobile) ✅
-**Sensores:** `npx tsc --noEmit` ✅ · `npm run build` ✅ · `npm run test:extrato` ✅ (20)
->>>>>>> 650e1ce (feat(T-EXTRATO-19): UX Extrato brand + responsive desktop/mobile)
 
 ## [2026-08-05] S-EXTRATO — unmatched first / matched nunca relança
 **Autor:** IA (Cloud Agent)
