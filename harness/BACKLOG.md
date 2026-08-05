@@ -102,6 +102,49 @@
 |----|--------|-----------|---------|
 | T-TZ-01 | 🔄 doing | Substituir `new Date().toISOString()` por `todayBR()`/`currentYM()` em 10 arquivos para corrigir virada de dia às 21h (UTC-3) | ConfirmPaymentModal, LancarDespesaModal, LancarEntradaModal, AddObjetivoModal, LancarObjetivoModal, UsarObjetivoModal, DivisaoDetalhe, Home, ObjetivoDetalhe, Fluxo |
 
+## Sprint Proposto — Extrato Bancário / Conciliação Mensal (S-EXTRATO)
+> Status: **⏳ aguardando aprovação** · Plano completo: [`harness/plans/extrato-bancario.md`](./plans/extrato-bancario.md)  
+> Objetivo: lembrete mensal na Home + upload OFX/CSV + matching com lançamentos existentes + mini-form só para o que falta. PDF e e-mail ficam no futuro.
+
+### Sprint A — Fundação + lembrete
+| ID | Status | Descrição | Arquivo |
+|----|--------|-----------|---------|
+| T-EXTRATO-01 | ⬜ pending | Tipos `BankTransaction` / `StatementReconciliation` + AppState + migrate persist v16 | types/index.ts, useAppStore.ts |
+| T-EXTRATO-02 | ⬜ pending | Helpers `previousYM()` / `hasReconciliation(ym)` | lib/calculations.ts ou lib/statement/ |
+| T-EXTRATO-03 | ⬜ pending | Banner Home: “Envie o extrato de {mês anterior}” | ExtratoReminderBanner.tsx, Home.tsx |
+| T-EXTRATO-04 | ⬜ pending | Rotas stub `/extrato` e `/extrato/revisao` | App.tsx, ExtratoUpload.tsx |
+
+### Sprint B — Parsers
+| ID | Status | Descrição | Arquivo |
+|----|--------|-----------|---------|
+| T-EXTRATO-05 | ⬜ pending | Parser OFX/OFC → `BankTransaction[]` + fixtures | lib/statement/parseOfx.ts |
+| T-EXTRATO-06 | ⬜ pending | Parser CSV BR (`;`/`,` + dd/mm/yyyy) | lib/statement/parseCsv.ts |
+| T-EXTRATO-07 | ⬜ pending | Upload UI → parse → navega revisão com state | ExtratoUpload.tsx |
+
+### Sprint C — Matching + import
+| ID | Status | Descrição | Arquivo |
+|----|--------|-----------|---------|
+| T-EXTRATO-08 | ⬜ pending | Matching puro (fixa/EntradaFixa/Entrada/SV) | lib/statement/matchTransactions.ts |
+| T-EXTRATO-09 | ⬜ pending | Tela revisão: matched (badge) / unmatched / ignore | ExtratoRevisao.tsx |
+| T-EXTRATO-10 | ⬜ pending | Mini-form unmatched: valor, nome, divisão, data(auto) | ExtratoImportForm.tsx |
+| T-EXTRATO-11 | ⬜ pending | Action `importStatementTransactions` (DATA_INTEGRITY) | useAppStore.ts |
+| T-EXTRATO-12 | ⬜ pending | Persistir reconciliation → banner some + sync Firestore | useAppStore.ts, Home |
+| T-EXTRATO-13 | ⬜ pending | Atualizar SPEC/DESIGN/CONTEXT + changelog | harness/ |
+
+### Futuro (fora do v1)
+| ID | Prioridade | Descrição |
+|----|-----------|-----------|
+| T-EXTRATO-FUT-01 | média | E-mail lembrete início do mês |
+| T-EXTRATO-FUT-02 | baixa | Parser PDF piloto (banco a definir) |
+| T-EXTRATO-FUT-03 | baixa | Open Finance |
+| T-EXTRATO-FUT-04 | baixa | Sugestão vincular unmatched → saída fixa |
+
+**Dependências:** 01→02→03; 01→04; 05+06→07→08→09→10→11→12→13
+
+**Ambiguidades abertas (ver plano):** banco piloto · PDF no v1? · default de créditos · dismiss do banner · cartão vs CC · lançamento diário permanece (recomendado: sim)
+
+---
+
 ## Próximas fases
 
 | ID | Prioridade | Descrição |

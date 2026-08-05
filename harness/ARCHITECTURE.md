@@ -147,9 +147,13 @@ useFirebaseSync (Provider)
 /objetivos/:id     → ObjetivoDetalhe
 /convite/:code     → InviteAccept (link de parceiro)
 /perfil            → Perfil
+/extrato           → ExtratoUpload (S-EXTRATO — planejado)
+/extrato/revisao   → ExtratoRevisao (S-EXTRATO — planejado)
 ```
 
 **Guard de onboarding:** `App.tsx` redireciona para `/` se `!isOnboarded` em qualquer rota protegida.
+
+> **Planejado:** S-EXTRATO — ver `harness/plans/extrato-bancario.md`.
 
 ---
 

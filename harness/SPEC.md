@@ -26,6 +26,7 @@
 | RN07 | Saldos externos (99 Pago, Mercado Pago, Rico) = atualização manual no MVP. |
 | RN08 | Dízimo = prioridade máxima. Sempre **primeiro** na distribuição (`calculateDistribution`). |
 | RN09 | Despesas variáveis com data futura não abatem saldo imediatamente (Agendamento). Confirmação manual. |
+| RN10 | **Conciliação mensal via extrato (pré-Open Finance).** No início do mês o app lembra de enviar o extrato do mês anterior (OFX/CSV). Transações já lançadas aparecem só como “já adicionado”; as demais abrem mini-form (valor, nome, divisão; data vem do extrato). Lançamento diário continua permitido — o extrato é complemento, não substituto. Ver `harness/plans/extrato-bancario.md`. |
 
 ## Divisões (Método Nati Arcuri Adaptado)
 

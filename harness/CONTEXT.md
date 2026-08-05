@@ -1,8 +1,8 @@
 # CONTEXT.md — Somus
 > Estado atual do projeto. Atualizado ao final de cada sessão.
 
-**Última atualização:** 2026-07-21
-**Status geral:** ✅ Fluxo — Lançamentos do mês ordenados por data de pagamento (mais recente no topo)
+**Última atualização:** 2026-08-05
+**Status geral:** ⏳ Plano S-EXTRATO aguardando aprovação — importação de extrato bancário (OFX/CSV) + matching + lembrete Home
 
 ## O Que É
 App de planejamento financeiro para casais com renda variável. Mobile-first, dark mode only. Resolve o problema de apps que exigem renda fixa no início do mês — o Somus permite lançar entradas incrementais conforme caem e distribui automaticamente por divisões (método Nati Arcuri adaptado).
@@ -145,9 +145,14 @@ src/
 | 2026-07-14 | `fixEntradasMovements` antes de `fixPhantomBalances` | Recriar/corrigir histórico de Entradas realizadas antes de reconciliar `balance = sum(movements)`, evitando perda de saldo conciliado |
 | 2026-07-21 | EntradaFixa confirma via ConfirmPaymentModal | Parity com SaidaFixa: botão Confirmar e Action Sheet abrem modal de valor+data; `markEntradaFixaReceived` já aceitava overrideAmount |
 | 2026-07-21 | Lançamentos do mês ordenados por data de pagamento desc | `dayGroups.sort` + sort de pagos via `getDayKey` (não `dueDay`) — Hoje acima de Ontem; saldo do DayDivider depende dessa ordem |
+| 2026-08-05 | Conciliação mensal via extrato (pré-Open Finance) | Em vez de depender só de lançamento no ato: banner no início do mês pede OFX/CSV do mês anterior; matching marca o que já existe; mini-form só no que falta. PDF/e-mail/Open Finance ficam fora do v1. |
 
 ## Bloqueios
 Nenhum.
 
+## Em planejamento
+- **S-EXTRATO** — Conciliação mensal por extrato (OFX/CSV), banner na Home, tela de matching. Plano: [`harness/plans/extrato-bancario.md`](./plans/extrato-bancario.md). Aguardando aprovação do inventário antes de codar.
+
 ## Leitura Obrigatória
 - [harness/DATA_INTEGRITY.md](./DATA_INTEGRITY.md) — antes de mexer em qualquer função que toque em `balance`, `movements`, `saidasFixas` ou `saidasVariaveis`.
+- [harness/plans/extrato-bancario.md](./plans/extrato-bancario.md) — antes de implementar S-EXTRATO.

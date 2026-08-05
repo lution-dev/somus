@@ -1,5 +1,5 @@
 ## MEMÓRIA GLOBAL LIDTEK
-> Task: Fluxo — ordenar Lançamentos do mês por data de pagamento (Hoje antes de Ontem)
+> Task: Plano — Importação de extrato bancário (PDF/CSV/OFX) + matching com lançamentos + lembrete mensal na Home
 > Tokens injetados: ~197 de 900 máx
 
 ### Regras Globais
