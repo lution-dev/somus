@@ -16,6 +16,7 @@ import { getDivisaoIcon } from '../lib/icons'
 import {
   matchTransactions,
   suggestName,
+  shouldSuggestIgnore,
   EXTRATO_DRAFT_KEY,
   type ExtratoDraft,
   type MatchResult,
@@ -84,7 +85,7 @@ export default function ExtratoRevisao() {
       if (m.status !== 'unmatched') continue
       const tx = m.transaction
       init[tx.id] = {
-        ignored: false,
+        ignored: shouldSuggestIgnore(tx),
         name: suggestName(tx.description),
         amount: Math.abs(tx.amount),
         date: tx.date,

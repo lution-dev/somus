@@ -159,12 +159,13 @@ Bump de persist: **v16** (migração no-op: array vazio).
 
 ## Algoritmo de matching
 
-Ordem (primeira vitória):
+**Inteligência principal: valor + data.** Nome é bônus (bancos como 99Pay só trazem `PIX PAGAMENTO`).
 
-1. Saída fixa paga no mês — `|amount|` ≈ effectiveAmount (±R$0,50) + fuzzy nome  
-2. Entrada fixa recebida no mês — mesma lógica  
-3. Entrada avulsa realized — amount + date (±2 dias) + fuzzy `sourceName`  
-4. Saída variável realized — amount + date (±2 dias) + fuzzy `description`
+1. Candidatos com `|amount|` ≈ lançamento (±R$0,50) e data ±3 dias  
+2. Score: valor exato + data exata + (opcional) fuzzy nome  
+3. Memo genérico (PIX/TED/PAGAM…) **não exige** nome igual  
+4. Melhor candidato unused vence (1↔1); sf↔sv-fixed e ef↔e-fixed sincronizam  
+5. Match = só leitura na UI (“Já na sua base”)
 
 Match = **somente leitura** na UI. Não altera o lançamento existente.
 
