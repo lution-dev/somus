@@ -1,8 +1,10 @@
 import { useEffect, useMemo, useState, type CSSProperties } from 'react'
 import { useLocation } from 'wouter'
-import { Check, EyeOff } from 'lucide-react'
+import { motion } from 'framer-motion'
+import { Check, EyeOff, ChevronLeft } from 'lucide-react'
 import { useShallow } from 'zustand/react/shallow'
 import { PageHeader, Button } from '../components/ui'
+import { useIsMobile } from '../hooks/useIsMobile'
 import {
   useAppStore,
   selectCurrentDivisoes,
@@ -24,22 +26,26 @@ import {
 } from '../lib/statement'
 import type { StatementImportItem } from '../types'
 
+const HERO_BG = '#001442'
+const ease = [0.25, 0.46, 0.45, 0.94] as const
+
 interface RowState {
   ignored: boolean
   name: string
   amount: number
   date: string
-  /** income only */
   incomeKind: 'distributable' | 'direct'
   divisaoId: string
 }
 
 export default function ExtratoRevisao() {
   const [, navigate] = useLocation()
+  const isMobile = useIsMobile()
   const [draft, setDraft] = useState<ExtratoDraft | null>(null)
   const [rows, setRows] = useState<Record<string, RowState>>({})
   const [saving, setSaving] = useState(false)
   const [done, setDone] = useState(false)
+  const [showMatched, setShowMatched] = useState(false)
 
   const currentUser = useAppStore(s => s.currentUser)
   const divisoes = useAppStore(useShallow(selectCurrentDivisoes))
@@ -100,17 +106,12 @@ export default function ExtratoRevisao() {
 
   const matched = matches.filter(m => m.status === 'matched')
   const unmatched = matches.filter(m => m.status === 'unmatched')
-  const [showMatched, setShowMatched] = useState(false)
-
   const pendingCount = unmatched.filter(m => !rows[m.transaction.id]?.ignored).length
 
   function updateRow(id: string, patch: Partial<RowState>) {
     setRows(prev => ({ ...prev, [id]: { ...prev[id], ...patch } }))
   }
 
-  /**
-   * Só unmatched entram no import. Matched = já na base, nunca relança (evita duplicar).
-   */
   function buildImportItems(): StatementImportItem[] {
     return buildImportItemsFromMatches(matches, rows)
   }
@@ -120,7 +121,6 @@ export default function ExtratoRevisao() {
     setSaving(true)
 
     const items = buildImportItems()
-
     importStatementTransactions(items)
 
     const imported = items.filter(i => !i.ignored).length
@@ -147,7 +147,11 @@ export default function ExtratoRevisao() {
 
   if (!draft) {
     return (
-      <div style={{ padding: 32, color: 'var(--color-text-tertiary)', fontSize: 14 }}>
+      <div style={{
+        padding: isMobile ? 32 : '48px 0',
+        color: 'var(--color-text-tertiary)',
+        fontSize: 14,
+      }}>
         Carregando…
       </div>
     )
@@ -155,56 +159,176 @@ export default function ExtratoRevisao() {
 
   if (done) {
     return (
-      <div style={{ padding: '48px 24px', textAlign: 'center' }}>
-        <div style={{
-          width: 56, height: 56, borderRadius: 16, margin: '0 auto 16px',
-          background: 'rgba(16,185,129,0.12)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-        }}>
-          <Check size={28} color="var(--color-success)" />
-        </div>
-        <h2 style={{ fontSize: 20, fontWeight: 600, color: 'var(--color-text-primary)', margin: '0 0 8px' }}>
-          Extrato organizado
-        </h2>
-        <p style={{ fontSize: 14, color: 'var(--color-text-secondary)', margin: '0 0 24px', lineHeight: 1.5 }}>
-          O que faltava entrou na sua base. O que já estava continua como estava.
-        </p>
-        <Button onClick={() => navigate('/home')}>Voltar pra Home</Button>
+      <div style={{
+        position: 'relative',
+        minHeight: isMobile ? undefined : '60vh',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: isMobile ? '64px 24px' : '80px 0',
+        textAlign: 'center',
+      }}>
+        {!isMobile && (
+          <div
+            aria-hidden
+            style={{
+              position: 'absolute', top: 0, left: 0, right: 0, height: 360,
+              background: 'radial-gradient(circle at 50% -40px, #10B981 0%, transparent 68%)',
+              opacity: 0.08, pointerEvents: 'none',
+            }}
+          />
+        )}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.94 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.4, ease }}
+          style={{ position: 'relative', zIndex: 1, maxWidth: 400 }}
+        >
+          <div style={{
+            width: 64, height: 64, borderRadius: 18, margin: '0 auto 20px',
+            background: 'rgba(16,185,129,0.12)',
+            border: '1px solid rgba(16,185,129,0.22)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.08)',
+          }}>
+            <Check size={28} color="var(--color-success)" strokeWidth={2} />
+          </div>
+          <h2 style={{
+            fontSize: isMobile ? 22 : 26, fontWeight: 600,
+            color: 'var(--color-text-primary)', margin: '0 0 10px',
+            fontFamily: 'var(--font-display)', letterSpacing: '-0.02em',
+          }}>
+            Extrato organizado
+          </h2>
+          <p style={{
+            fontSize: 14, color: 'var(--color-text-secondary)',
+            margin: '0 0 28px', lineHeight: 1.55,
+          }}>
+            O que faltava entrou na sua base. O que já estava continua como estava.
+          </p>
+          <Button onClick={() => navigate('/home')}>Voltar pra Home</Button>
+        </motion.div>
       </div>
     )
   }
 
   const mesNome = monthNameLong(draft.yearMonth)
+  const metaLine = [
+    mesNome,
+    draft.sourceLabel,
+    draft.fileName,
+  ].filter(Boolean).join(' · ')
 
   return (
-    <div style={{ paddingBottom: 100 }}>
-      <PageHeader title="Revisar extrato" back backTo="/extrato" />
+    <div style={{
+      position: 'relative',
+      paddingBottom: isMobile ? 110 : 48,
+      minHeight: isMobile ? undefined : '100%',
+    }}>
+      {!isMobile && (
+        <div
+          aria-hidden
+          style={{
+            position: 'absolute',
+            top: 0, left: 0, right: 0, height: 380,
+            background: 'radial-gradient(circle at 50% -40px, #3B82F6 0%, transparent 68%)',
+            opacity: 0.1,
+            pointerEvents: 'none',
+            zIndex: 0,
+          }}
+        />
+      )}
 
-      <div style={{ padding: '8px 16px 0' }}>
-        <p style={{ fontSize: 13, color: 'var(--color-text-secondary)', margin: '0 0 4px' }}>
-          {mesNome}
-          {draft.sourceLabel ? ` · ${draft.sourceLabel}` : ''}
-          {' · '}
-          {draft.fileName}
-        </p>
-        <p style={{ fontSize: 14, color: 'var(--color-text-primary)', fontWeight: 500, margin: '0 0 8px' }}>
-          {pendingCount} pra lançar
-          {matched.length > 0 ? ` · ${matched.length} já na base (não relança)` : ''}
-        </p>
-        <p style={{ fontSize: 12, color: 'var(--color-text-tertiary)', margin: '0 0 20px', lineHeight: 1.45 }}>
-          Em cima só o que ainda não está no Somus. O que já bateu fica no final, só pra conferir.
-        </p>
+      {isMobile ? (
+        <>
+          <PageHeader title="Revisar extrato" back backTo="/extrato" bg={HERO_BG} />
+          <div style={{
+            background: `linear-gradient(to bottom, ${HERO_BG} 0%, transparent 100%)`,
+            padding: '4px 20px 20px',
+          }}>
+            <p style={{
+              fontSize: 12, color: 'rgba(148,163,184,0.9)', margin: '0 0 8px',
+              overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+            }}>
+              {metaLine}
+            </p>
+            <h1 style={{
+              fontSize: 22, fontWeight: 600, letterSpacing: '-0.02em',
+              color: 'var(--color-text-primary)', margin: '0 0 6px',
+              fontFamily: 'var(--font-display)',
+            }}>
+              {pendingCount} pra lançar
+            </h1>
+            <p style={{
+              fontSize: 13, color: 'rgba(226,232,240,0.68)', margin: 0, lineHeight: 1.45,
+            }}>
+              {matched.length > 0
+                ? `${matched.length} já na base ficam no final. Sem relançar.`
+                : 'Só o que ainda não está no Somus.'}
+            </p>
+          </div>
+        </>
+      ) : (
+        <div style={{ paddingTop: 36, marginBottom: 8, position: 'relative', zIndex: 1 }}>
+          <button
+            type="button"
+            onClick={() => navigate('/extrato')}
+            style={{
+              display: 'inline-flex', alignItems: 'center', gap: 6,
+              background: 'none', border: 'none', cursor: 'pointer',
+              color: 'var(--color-text-tertiary)', fontSize: 13, fontWeight: 500,
+              fontFamily: 'var(--font-sans)', padding: 0, marginBottom: 20,
+            }}
+          >
+            <ChevronLeft size={16} strokeWidth={2} />
+            Extrato
+          </button>
+          <p style={{
+            fontSize: 13, color: 'var(--color-text-tertiary)', margin: '0 0 8px',
+          }}>
+            {metaLine}
+          </p>
+          <h1 style={{
+            fontSize: 28, fontWeight: 600, letterSpacing: '-0.025em',
+            color: 'var(--color-text-primary)', margin: '0 0 8px',
+            fontFamily: 'var(--font-display)',
+          }}>
+            {pendingCount} pra lançar
+            {matched.length > 0 ? (
+              <span style={{
+                fontWeight: 500, fontSize: 18, color: 'var(--color-text-tertiary)',
+                marginLeft: 12,
+              }}>
+                · {matched.length} já na base
+              </span>
+            ) : null}
+          </h1>
+          <p style={{
+            fontSize: 14, color: 'var(--color-text-secondary)', margin: 0, lineHeight: 1.5,
+            maxWidth: 480,
+          }}>
+            Em cima só o que ainda não está no Somus. O que já bateu fica no final, só pra conferir.
+          </p>
+        </div>
+      )}
 
-        {/* 1º: só o que NÃO bate — único bloco editável / importável */}
+      <div style={{
+        position: 'relative',
+        zIndex: 1,
+        padding: isMobile ? '8px 16px 0' : '20px 0 0',
+        maxWidth: isMobile ? undefined : 720,
+        width: '100%',
+      }}>
+        {/* 1º: unmatched */}
         {unmatched.length > 0 && (
           <section style={{ marginBottom: 28 }}>
-            <h3 style={{
-              fontSize: 12, fontWeight: 600, letterSpacing: '0.04em', textTransform: 'uppercase',
-              color: 'var(--color-text-tertiary)', margin: '0 0 12px',
+            <h3 style={sectionLabelStyle}>Pra lançar</h3>
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: isMobile ? '1fr' : unmatched.length > 1 ? '1fr 1fr' : '1fr',
+              gap: isMobile ? 12 : 14,
             }}>
-              Pra lançar
-            </h3>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               {unmatched.map(m => {
                 const tx = m.transaction
                 const row = rows[tx.id]
@@ -215,17 +339,27 @@ export default function ExtratoRevisao() {
                   <div
                     key={tx.id}
                     style={{
-                      padding: 14, borderRadius: 14,
-                      background: 'rgba(255,255,255,0.04)',
+                      padding: isMobile ? 14 : 18,
+                      borderRadius: 16,
+                      background: 'rgba(255,255,255,0.035)',
+                      backdropFilter: 'blur(12px)',
                       border: row.ignored
-                        ? '1px solid rgba(255,255,255,0.06)'
-                        : '1px solid rgba(255,255,255,0.1)',
+                        ? '1px solid rgba(255,255,255,0.05)'
+                        : '1px solid rgba(255,255,255,0.09)',
+                      boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.05)',
                       opacity: row.ignored ? 0.55 : 1,
+                      gridColumn: !isMobile && unmatched.length > 1 && isIncome && row.incomeKind === 'direct'
+                        ? '1 / -1'
+                        : undefined,
                     }}
                   >
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+                    <div style={{
+                      display: 'flex', justifyContent: 'space-between',
+                      alignItems: 'center', marginBottom: 12,
+                    }}>
                       <span style={{
-                        fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em',
+                        fontSize: 11, fontWeight: 600, textTransform: 'uppercase',
+                        letterSpacing: '0.04em',
                         color: isIncome ? 'var(--color-success)' : 'var(--color-danger)',
                       }}>
                         {isIncome ? 'Entrada' : 'Saída'}
@@ -254,7 +388,12 @@ export default function ExtratoRevisao() {
                           style={inputStyle}
                         />
 
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginTop: 10 }}>
+                        <div style={{
+                          display: 'grid',
+                          gridTemplateColumns: '1fr 1fr',
+                          gap: 10,
+                          marginTop: 10,
+                        }}>
                           <div>
                             <label style={labelStyle}>Valor</label>
                             <input
@@ -326,14 +465,18 @@ export default function ExtratoRevisao() {
         )}
 
         {unmatched.length === 0 && matched.length > 0 && (
-          <p style={{ fontSize: 14, color: 'var(--color-text-secondary)', lineHeight: 1.5, marginBottom: 24 }}>
+          <p style={{
+            fontSize: 14, color: 'var(--color-text-secondary)',
+            lineHeight: 1.55, marginBottom: 24,
+            padding: isMobile ? 0 : '8px 0',
+          }}>
             Tudo nesse extrato já estava na sua base. Nada novo pra lançar. Pode confirmar pra marcar o mês como organizado.
           </p>
         )}
 
-        {/* 2º: já reconhecidos — final da lista, só leitura, nunca importam */}
+        {/* 2º: matched — final, colapsado */}
         {matched.length > 0 && (
-          <section style={{ marginBottom: 28, opacity: 0.85 }}>
+          <section style={{ marginBottom: 28, opacity: 0.9 }}>
             <button
               type="button"
               onClick={() => setShowMatched(v => !v)}
@@ -343,10 +486,7 @@ export default function ExtratoRevisao() {
                 padding: '0 0 12px', fontFamily: 'var(--font-sans)',
               }}
             >
-              <h3 style={{
-                fontSize: 12, fontWeight: 600, letterSpacing: '0.04em', textTransform: 'uppercase',
-                color: 'var(--color-text-tertiary)', margin: 0,
-              }}>
+              <h3 style={{ ...sectionLabelStyle, margin: 0 }}>
                 Já na sua base · {matched.length} (não mexe)
               </h3>
               <span style={{ fontSize: 12, color: 'var(--color-text-tertiary)' }}>
@@ -354,7 +494,11 @@ export default function ExtratoRevisao() {
               </span>
             </button>
             {showMatched && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr',
+                gap: 8,
+              }}>
                 {matched.map(m => (
                   <div
                     key={m.transaction.id}
@@ -362,21 +506,28 @@ export default function ExtratoRevisao() {
                       display: 'flex', alignItems: 'center', gap: 12,
                       padding: '12px 14px', borderRadius: 12,
                       background: 'rgba(16,185,129,0.06)',
-                      border: '1px solid rgba(16,185,129,0.18)',
+                      border: '1px solid rgba(16,185,129,0.16)',
                       pointerEvents: 'none',
                     }}
                   >
                     <Check size={16} color="var(--color-success)" style={{ flexShrink: 0 }} />
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <p style={{ margin: 0, fontSize: 14, fontWeight: 500, color: 'var(--color-text-primary)' }}>
+                      <p style={{
+                        margin: 0, fontSize: 14, fontWeight: 500,
+                        color: 'var(--color-text-primary)',
+                        overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                      }}>
                         {m.linkedEntity?.label ?? m.transaction.description}
                       </p>
-                      <p style={{ margin: '2px 0 0', fontSize: 12, color: 'var(--color-text-tertiary)' }}>
+                      <p style={{
+                        margin: '2px 0 0', fontSize: 12, color: 'var(--color-text-tertiary)',
+                        overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                      }}>
                         {m.transaction.description} · já lançado
                       </p>
                     </div>
                     <span style={{
-                      fontSize: 14, fontWeight: 600,
+                      fontSize: 14, fontWeight: 600, flexShrink: 0,
                       color: m.transaction.amount >= 0 ? 'var(--color-success)' : 'var(--color-danger)',
                     }}>
                       {formatCurrency(Math.abs(m.transaction.amount))}
@@ -387,26 +538,40 @@ export default function ExtratoRevisao() {
             )}
           </section>
         )}
+
+        {/* Desktop / tablet CTA in-flow — não atravessa a sidebar */}
+        {!isMobile && (
+          <div style={{
+            position: 'sticky',
+            bottom: 0,
+            padding: '20px 0 8px',
+            background: 'linear-gradient(to top, var(--color-bg-primary) 55%, transparent)',
+            zIndex: 20,
+          }}>
+            <Button fullWidth disabled={saving} onClick={handleConfirm}>
+              {pendingCount > 0
+                ? `Confirmar ${pendingCount} lançamento${pendingCount === 1 ? '' : 's'}`
+                : 'Marcar mês como organizado'}
+            </Button>
+          </div>
+        )}
       </div>
 
-      <div style={{
-        position: 'fixed', bottom: 0, left: 0, right: 0,
-        padding: '12px 16px calc(12px + env(safe-area-inset-bottom))',
-        background: 'linear-gradient(to top, var(--color-bg-primary) 60%, transparent)',
-        zIndex: 40,
-      }}>
-        <div style={{ maxWidth: 480, margin: '0 auto' }}>
-          <Button
-            fullWidth
-            disabled={saving}
-            onClick={handleConfirm}
-          >
+      {/* Mobile: fixed bottom bar within phone chrome */}
+      {isMobile && (
+        <div style={{
+          position: 'fixed', bottom: 0, left: 0, right: 0,
+          padding: '12px 16px calc(12px + env(safe-area-inset-bottom))',
+          background: 'linear-gradient(to top, var(--color-bg-primary) 60%, transparent)',
+          zIndex: 40,
+        }}>
+          <Button fullWidth disabled={saving} onClick={handleConfirm}>
             {pendingCount > 0
               ? `Confirmar ${pendingCount} lançamento${pendingCount === 1 ? '' : 's'}`
               : 'Marcar mês como organizado'}
           </Button>
         </div>
-      </div>
+      )}
     </div>
   )
 }
@@ -467,6 +632,15 @@ function DivisaoPicker({
       })}
     </div>
   )
+}
+
+const sectionLabelStyle: CSSProperties = {
+  fontSize: 12,
+  fontWeight: 600,
+  letterSpacing: '0.04em',
+  textTransform: 'uppercase',
+  color: 'var(--color-text-tertiary)',
+  margin: '0 0 12px',
 }
 
 const labelStyle: CSSProperties = {

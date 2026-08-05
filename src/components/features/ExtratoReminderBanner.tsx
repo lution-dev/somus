@@ -1,8 +1,9 @@
-import { useState } from 'react'
+import { useState, type CSSProperties } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useLocation } from 'wouter'
 import { FileText, X } from 'lucide-react'
 import { useAppStore } from '../../stores/useAppStore'
+import { useIsMobile } from '../../hooks/useIsMobile'
 import { previousYM, monthNameLong, todayBR } from '../../lib/months'
 import { EXTRATO_DISMISS_PREFIX } from '../../lib/statement'
 
@@ -31,6 +32,7 @@ function dismissForDays(yearMonth: string, days = DISMISS_DAYS) {
  */
 export default function ExtratoReminderBanner() {
   const [, navigate] = useLocation()
+  const isMobile = useIsMobile()
   const yearMonth = previousYM()
   const userId = useAppStore(s => s.currentUser?.id ?? '')
   const reconciliations = useAppStore(s => s.statementReconciliations ?? [])
@@ -59,62 +61,66 @@ export default function ExtratoReminderBanner() {
         exit={{ opacity: 0, y: -4 }}
         transition={{ duration: 0.35, ease: [0.25, 0.46, 0.45, 0.94] }}
         style={{
-          background: 'rgba(255,255,255,0.04)',
-          backdropFilter: 'blur(12px)',
-          WebkitBackdropFilter: 'blur(12px)',
-          border: '1px solid rgba(245,158,11,0.22)',
+          background: 'rgba(255,255,255,0.035)',
+          backdropFilter: 'blur(16px) saturate(160%)',
+          WebkitBackdropFilter: 'blur(16px) saturate(160%)',
+          border: '1px solid rgba(59,130,246,0.18)',
           borderRadius: 16,
-          padding: '18px 16px',
+          padding: isMobile ? '16px' : '18px 20px',
           marginTop: 16,
           marginBottom: 0,
+          boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.06)',
+          maxWidth: isMobile ? undefined : 720,
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14 }}>
+        <div style={{
+          display: 'flex',
+          alignItems: isMobile ? 'flex-start' : 'center',
+          gap: isMobile ? 14 : 18,
+          flexWrap: isMobile ? undefined : 'nowrap',
+        }}>
           <div style={{
             width: 40, height: 40, borderRadius: 12,
-            background: 'rgba(245,158,11,0.12)',
+            background: 'rgba(59,130,246,0.12)',
+            border: '1px solid rgba(59,130,246,0.2)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             flexShrink: 0,
           }}>
-            <FileText size={20} color="var(--color-warning)" />
+            <FileText size={18} color="var(--color-accent-blue-light)" strokeWidth={1.75} />
           </div>
           <div style={{ flex: 1, minWidth: 0 }}>
             <p style={{
               fontSize: 14, fontWeight: 600, color: 'var(--color-text-primary)',
-              margin: '0 0 4px',
+              margin: '0 0 4px', letterSpacing: '-0.01em',
             }}>
               Organizar o mês passado
             </p>
             <p style={{
               fontSize: 13, color: 'var(--color-text-secondary)',
-              margin: '0 0 12px', lineHeight: 1.5,
+              margin: isMobile ? '0 0 14px' : '0', lineHeight: 1.5,
+              maxWidth: 520,
             }}>
-              Quando quiser, envie o extrato de {mesNome} em PDF, OFX ou CSV. De qualquer banco. A Somus reconhece o que já está na sua base e ajuda a completar o resto.
+              Quando quiser, envie o extrato de {mesNome}. A Somus reconhece o que já está na base e ajuda a completar o resto.
             </p>
-            <p style={{
-              fontSize: 11, color: 'var(--color-text-tertiary)',
-              margin: '0 0 14px',
-            }}>
-              Aceitos: PDF, OFX, OFC ou CSV. Conta corrente.
-            </p>
+            {isMobile && (
+              <button
+                type="button"
+                onClick={() => navigate('/extrato')}
+                style={ctaStyle}
+              >
+                Enviar extrato
+              </button>
+            )}
+          </div>
+          {!isMobile && (
             <button
               type="button"
               onClick={() => navigate('/extrato')}
-              style={{
-                background: 'rgba(245,158,11,0.2)',
-                color: '#FBBF24',
-                border: '1px solid rgba(245,158,11,0.35)',
-                borderRadius: 10,
-                padding: '9px 18px',
-                fontSize: 13,
-                fontWeight: 600,
-                cursor: 'pointer',
-                fontFamily: 'var(--font-sans)',
-              }}
+              style={{ ...ctaStyle, flexShrink: 0 }}
             >
               Enviar extrato
             </button>
-          </div>
+          )}
           <button
             type="button"
             aria-label="Dispensar por agora"
@@ -122,6 +128,7 @@ export default function ExtratoReminderBanner() {
             style={{
               background: 'none', border: 'none', cursor: 'pointer',
               color: 'var(--color-text-tertiary)', padding: 4, flexShrink: 0,
+              alignSelf: isMobile ? 'flex-start' : 'center',
             }}
           >
             <X size={16} />
@@ -130,4 +137,16 @@ export default function ExtratoReminderBanner() {
       </motion.div>
     </AnimatePresence>
   )
+}
+
+const ctaStyle: CSSProperties = {
+  background: 'rgba(59,130,246,0.18)',
+  color: 'var(--color-accent-blue-light)',
+  border: '1px solid rgba(59,130,246,0.32)',
+  borderRadius: 10,
+  padding: '9px 16px',
+  fontSize: 13,
+  fontWeight: 600,
+  cursor: 'pointer',
+  fontFamily: 'var(--font-sans)',
 }

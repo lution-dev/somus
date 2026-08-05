@@ -1,7 +1,9 @@
-import { useRef, useState } from 'react'
+import { useCallback, useRef, useState, type DragEvent, type ReactNode } from 'react'
 import { useLocation } from 'wouter'
-import { Upload, AlertCircle } from 'lucide-react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { Upload, AlertCircle, FileText, CheckCircle2, ChevronLeft } from 'lucide-react'
 import { PageHeader } from '../components/ui'
+import { useIsMobile } from '../hooks/useIsMobile'
 import {
   parseCsvDetailed,
   parseOfxDetailed,
@@ -15,11 +17,18 @@ import {
 import { previousYM, monthNameLong } from '../lib/months'
 import type { BankTransaction } from '../types'
 
+const HERO_BG = '#001442'
+const FORMATS = ['PDF', 'OFX', 'OFC', 'CSV'] as const
+
+const ease = [0.25, 0.46, 0.45, 0.94] as const
+
 export default function ExtratoUpload() {
   const [, navigate] = useLocation()
+  const isMobile = useIsMobile()
   const inputRef = useRef<HTMLInputElement>(null)
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+  const [dragging, setDragging] = useState(false)
   const yearMonth = previousYM()
   const mesNome = monthNameLong(yearMonth)
 
@@ -81,32 +90,131 @@ export default function ExtratoUpload() {
       setError(e instanceof Error ? e.message : 'Não deu pra ler esse arquivo.')
     } finally {
       setLoading(false)
+      setDragging(false)
     }
   }
 
+  const onDragEnter = useCallback((e: DragEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    if (!loading) setDragging(true)
+  }, [loading])
+
+  const onDragOver = useCallback((e: DragEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+  }, [])
+
+  const onDragLeave = useCallback((e: DragEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    if (e.currentTarget === e.target) setDragging(false)
+  }, [])
+
+  const onDrop = useCallback((e: DragEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setDragging(false)
+    if (loading) return
+    const f = e.dataTransfer.files?.[0]
+    if (f) void handleFile(f)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loading])
+
   return (
-    <div style={{ paddingBottom: 40 }}>
-      <PageHeader title="Extrato" back backTo="/home" />
+    <div style={{
+      minHeight: isMobile ? undefined : '100%',
+      paddingBottom: isMobile ? 48 : 56,
+      position: 'relative',
+    }}>
+      {/* Desktop atmospheric glow */}
+      {!isMobile && (
+        <div
+          aria-hidden
+          style={{
+            position: 'absolute',
+            top: 0, left: 0, right: 0, height: 420,
+            background: 'radial-gradient(circle at 50% -40px, #3B82F6 0%, transparent 68%)',
+            opacity: 0.11,
+            pointerEvents: 'none',
+            zIndex: 0,
+          }}
+        />
+      )}
 
-      <div style={{ padding: '8px 16px 24px' }}>
-        <h1 style={{
-          fontSize: 22, fontWeight: 600, color: 'var(--color-text-primary)',
-          margin: '8px 0 8px',
-        }}>
-          Trazer o extrato pra base
-        </h1>
-        <p style={{
-          fontSize: 14, color: 'var(--color-text-secondary)', lineHeight: 1.5,
-          margin: '0 0 8px',
-        }}>
-          Extrato da conta corrente de {mesNome}, de qualquer banco. Em PDF, OFX ou CSV. Sem fatura de cartão.
-        </p>
-        <p style={{
-          fontSize: 12, color: 'var(--color-text-tertiary)', margin: '0 0 24px',
-        }}>
-          Aceitos: PDF, OFX, OFC ou CSV. Ex.: 99Pay, Inter, Nubank, Itaú, Santander.
-        </p>
+      {isMobile ? (
+        <>
+          <PageHeader title="Extrato" back backTo="/home" bg={HERO_BG} />
+          <div style={{
+            background: `linear-gradient(to bottom, ${HERO_BG} 0%, transparent 100%)`,
+            padding: '4px 20px 28px',
+          }}>
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, ease }}
+            >
+              <p className="section-label" style={{ margin: '0 0 8px', color: 'rgba(147,197,253,0.75)' }}>
+                Conta corrente · {mesNome}
+              </p>
+              <h1 style={{
+                fontSize: 26, fontWeight: 600, letterSpacing: '-0.02em',
+                color: 'var(--color-text-primary)', margin: '0 0 10px',
+                fontFamily: 'var(--font-display)', lineHeight: 1.2,
+              }}>
+                Trazer o extrato pra base
+              </h1>
+              <p style={{
+                fontSize: 14, color: 'rgba(226,232,240,0.72)', lineHeight: 1.55,
+                margin: 0, maxWidth: 340,
+              }}>
+                A Somus reconhece o que já está lançado e ajuda a completar só o que falta.
+              </p>
+            </motion.div>
+          </div>
+        </>
+      ) : (
+        <div style={{ paddingTop: 36, marginBottom: 8, position: 'relative', zIndex: 1 }}>
+          <button
+            type="button"
+            onClick={() => navigate('/home')}
+            style={{
+              display: 'inline-flex', alignItems: 'center', gap: 6,
+              background: 'none', border: 'none', cursor: 'pointer',
+              color: 'var(--color-text-tertiary)', fontSize: 13, fontWeight: 500,
+              fontFamily: 'var(--font-sans)', padding: 0, marginBottom: 20,
+            }}
+          >
+            <ChevronLeft size={16} strokeWidth={2} />
+            Home
+          </button>
+          <p className="section-label" style={{ margin: '0 0 10px' }}>
+            Conta corrente · {mesNome}
+          </p>
+          <h1 style={{
+            fontSize: 28, fontWeight: 600, letterSpacing: '-0.025em',
+            color: 'var(--color-text-primary)', margin: '0 0 10px',
+            fontFamily: 'var(--font-display)', lineHeight: 1.2,
+          }}>
+            Trazer o extrato pra base
+          </h1>
+          <p style={{
+            fontSize: 15, color: 'var(--color-text-secondary)', lineHeight: 1.55,
+            margin: 0, maxWidth: 440,
+          }}>
+            A Somus reconhece o que já está lançado e ajuda a completar só o que falta.
+          </p>
+        </div>
+      )}
 
+      {/* Focused column — never stretches full desktop width like a phone strip */}
+      <div style={{
+        position: 'relative',
+        zIndex: 1,
+        padding: isMobile ? '0 16px' : '24px 0 0',
+        maxWidth: isMobile ? undefined : 640,
+        width: '100%',
+      }}>
         <input
           ref={inputRef}
           type="file"
@@ -119,54 +227,228 @@ export default function ExtratoUpload() {
           }}
         />
 
-        <button
+        <motion.button
           type="button"
           disabled={loading}
           onClick={() => inputRef.current?.click()}
+          onDragEnter={onDragEnter}
+          onDragOver={onDragOver}
+          onDragLeave={onDragLeave}
+          onDrop={onDrop}
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.45, delay: 0.06, ease }}
+          whileHover={loading || isMobile ? undefined : { scale: 1.005 }}
+          whileTap={loading ? undefined : { scale: 0.995 }}
           style={{
             width: '100%',
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
             justifyContent: 'center',
-            gap: 12,
-            padding: '48px 24px',
-            borderRadius: 16,
-            border: '1px dashed rgba(255,255,255,0.18)',
-            background: 'rgba(255,255,255,0.03)',
+            gap: 14,
+            padding: isMobile ? '44px 24px' : '64px 40px',
+            minHeight: isMobile ? 200 : 260,
+            borderRadius: 20,
+            border: dragging
+              ? '1.5px solid rgba(59,130,246,0.55)'
+              : '1px dashed rgba(255,255,255,0.16)',
+            background: dragging
+              ? 'rgba(59,130,246,0.10)'
+              : 'rgba(255,255,255,0.035)',
+            backdropFilter: 'blur(20px) saturate(160%)',
+            WebkitBackdropFilter: 'blur(20px) saturate(160%)',
+            boxShadow: dragging
+              ? 'inset 0 1px 0 rgba(255,255,255,0.10), 0 0 0 4px rgba(59,130,246,0.08)'
+              : 'inset 0 1px 0 rgba(255,255,255,0.06), 0 8px 32px rgba(0,0,0,0.18)',
             cursor: loading ? 'wait' : 'pointer',
             color: 'var(--color-text-secondary)',
             fontFamily: 'var(--font-sans)',
+            transition: 'border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease',
+            outline: 'none',
           }}
         >
           <div style={{
-            width: 56, height: 56, borderRadius: 16,
-            background: 'rgba(59,130,246,0.12)',
+            width: isMobile ? 56 : 64,
+            height: isMobile ? 56 : 64,
+            borderRadius: 18,
+            background: loading
+              ? 'rgba(59,130,246,0.18)'
+              : 'linear-gradient(145deg, rgba(59,130,246,0.18) 0%, rgba(37,99,235,0.08) 100%)',
+            border: '1px solid rgba(59,130,246,0.22)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
+            boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.1)',
           }}>
-            <Upload size={24} color="var(--color-accent-primary)" />
+            {loading ? (
+              <motion.div
+                animate={{ rotate: 360 }}
+                transition={{ duration: 1.1, repeat: Infinity, ease: 'linear' }}
+                style={{
+                  width: 22, height: 22, borderRadius: '50%',
+                  border: '2px solid rgba(59,130,246,0.25)',
+                  borderTopColor: 'var(--color-accent-primary)',
+                }}
+              />
+            ) : (
+              <Upload size={isMobile ? 22 : 26} color="var(--color-accent-primary)" strokeWidth={1.75} />
+            )}
           </div>
-          <span style={{ fontSize: 15, fontWeight: 600, color: 'var(--color-text-primary)' }}>
-            {loading ? 'Lendo arquivo…' : 'Escolher arquivo'}
-          </span>
-          <span style={{ fontSize: 12, color: 'var(--color-text-tertiary)' }}>
-            PDF · OFX · OFC · CSV
-          </span>
-        </button>
 
-        {error && (
-          <div style={{
-            display: 'flex', gap: 10, alignItems: 'flex-start',
-            marginTop: 16, padding: '12px 14px', borderRadius: 12,
-            background: 'rgba(239,68,68,0.08)',
-            border: '1px solid rgba(239,68,68,0.2)',
-          }}>
-            <AlertCircle size={16} color="var(--color-danger)" style={{ flexShrink: 0, marginTop: 2 }} />
-            <p style={{ margin: 0, fontSize: 13, color: 'var(--color-text-secondary)', lineHeight: 1.45 }}>
-              {error}
-            </p>
+          <div style={{ textAlign: 'center' }}>
+            <span style={{
+              display: 'block',
+              fontSize: isMobile ? 15 : 17,
+              fontWeight: 600,
+              color: 'var(--color-text-primary)',
+              letterSpacing: '-0.01em',
+              marginBottom: 6,
+            }}>
+              {loading
+                ? 'Lendo o arquivo…'
+                : dragging
+                  ? 'Solte pra continuar'
+                  : isMobile
+                    ? 'Escolher arquivo'
+                    : 'Arraste o extrato aqui'}
+            </span>
+            {!loading && (
+              <span style={{
+                display: 'block',
+                fontSize: 13,
+                color: 'var(--color-text-tertiary)',
+                lineHeight: 1.45,
+              }}>
+                {isMobile
+                  ? 'PDF · OFX · OFC · CSV'
+                  : 'Ou clique pra selecionar · PDF, OFX, OFC ou CSV'}
+              </span>
+            )}
           </div>
-        )}
+        </motion.button>
+
+        {/* Format chips — quiet, not a pill cluster of marketing */}
+        <div style={{
+          display: 'flex',
+          flexWrap: 'wrap',
+          gap: 8,
+          marginTop: 16,
+          justifyContent: isMobile ? 'center' : 'flex-start',
+        }}>
+          {FORMATS.map(f => (
+            <span
+              key={f}
+              style={{
+                fontSize: 11,
+                fontWeight: 600,
+                letterSpacing: '0.04em',
+                color: 'var(--color-text-tertiary)',
+                padding: '5px 10px',
+                borderRadius: 8,
+                background: 'rgba(255,255,255,0.03)',
+                border: '1px solid rgba(255,255,255,0.06)',
+              }}
+            >
+              {f}
+            </span>
+          ))}
+        </div>
+
+        <AnimatePresence>
+          {error && (
+            <motion.div
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -4 }}
+              transition={{ duration: 0.25 }}
+              style={{
+                display: 'flex', gap: 10, alignItems: 'flex-start',
+                marginTop: 16, padding: '14px 16px', borderRadius: 14,
+                background: 'rgba(239,68,68,0.08)',
+                border: '1px solid rgba(239,68,68,0.2)',
+                backdropFilter: 'blur(8px)',
+              }}
+            >
+              <AlertCircle size={16} color="var(--color-danger)" style={{ flexShrink: 0, marginTop: 2 }} />
+              <p style={{ margin: 0, fontSize: 13, color: 'var(--color-text-secondary)', lineHeight: 1.5 }}>
+                {error}
+              </p>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* What happens next — one calm section */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5, delay: 0.18 }}
+          style={{
+            marginTop: isMobile ? 28 : 36,
+            padding: isMobile ? '18px 16px' : '22px 24px',
+            borderRadius: 16,
+            background: 'rgba(255,255,255,0.03)',
+            border: '1px solid rgba(255,255,255,0.07)',
+            backdropFilter: 'blur(12px)',
+          }}
+        >
+          <p style={{
+            fontSize: 12, fontWeight: 600, letterSpacing: '0.04em', textTransform: 'uppercase',
+            color: 'var(--color-text-tertiary)', margin: '0 0 14px',
+          }}>
+            Como funciona
+          </p>
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr',
+            gap: isMobile ? 14 : 20,
+          }}>
+            <HintRow
+              icon={<FileText size={16} color="var(--color-accent-blue-light)" />}
+              title="De qualquer banco"
+              body="99Pay, Inter, Nubank, Itaú, Santander e outros. Só conta corrente, sem fatura de cartão."
+            />
+            <HintRow
+              icon={<CheckCircle2 size={16} color="var(--color-success)" />}
+              title="Sem duplicar"
+              body="O que já está na base fica só pra conferir. Você lança apenas o que ainda falta."
+            />
+          </div>
+        </motion.div>
+      </div>
+    </div>
+  )
+}
+
+function HintRow({
+  icon,
+  title,
+  body,
+}: {
+  icon: ReactNode
+  title: string
+  body: string
+}) {
+  return (
+    <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+      <div style={{
+        width: 32, height: 32, borderRadius: 10, flexShrink: 0,
+        background: 'rgba(255,255,255,0.04)',
+        border: '1px solid rgba(255,255,255,0.06)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+      }}>
+        {icon}
+      </div>
+      <div>
+        <p style={{
+          margin: '0 0 4px', fontSize: 13, fontWeight: 600,
+          color: 'var(--color-text-primary)',
+        }}>
+          {title}
+        </p>
+        <p style={{
+          margin: 0, fontSize: 12.5, color: 'var(--color-text-tertiary)', lineHeight: 1.5,
+        }}>
+          {body}
+        </p>
       </div>
     </div>
   )

@@ -125,6 +125,17 @@
 > Público: qualquer banco (99Pay, Inter, Nubank, Itaú, Santander, genérico) · Formatos: **PDF + OFX/CSV**  
 > Lib PDF: `pdfjs-dist`. Estratégia: detectar banco → layouts específicos → fallback genérico.
 
+#### T-EXTRATO-19: UX/UI Extrato — brand + responsive (upload + revisão)
+**Tipo:** Design / UX
+**Root cause:** Tela de upload (e revisão) esticavam layout mobile no desktop/tablet; sem hero atmosférico, drop zone pobre, footer fixo atravessando sidebar, hierarquia fraca vs Brand Book/DESIGN.
+**Critérios:**
+- [x] ExtratoUpload: hero seamless, glass dropzone, drag&drop desktop, tipografia calma Brand Book
+- [x] Layout distinto mobile / tablet / desktop (PageHeader só mobile; título desktop; coluna focada)
+- [x] ExtratoRevisao: mesmo shell responsivo; CTA sticky sem cobrir sidebar; grid 2 col no desktop
+- [x] Banner Home alinhado tom calmo (azul, sem urgência âmbar)
+- [x] Sensores `tsc` + `build` + `test:extrato`
+**Status:** ✅ done
+
 #### T-EXTRATO-18: Unmatched primeiro · matched no fim e nunca relança
 **Tipo:** Bug / anti-duplicata UX
 **Root cause:** Revisão misturava matched (já na base) com o que falta lançar; risco de relançar o que o match já reconheceu → duplicata.

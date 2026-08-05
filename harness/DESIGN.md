@@ -230,6 +230,7 @@ Este é o **padrão obrigatório** para todas as telas com hero/contexto de cor.
 |---|---|---|
 | Home | `#001442` | Azul Lucas |
 | Fluxo | `#001442` | Azul Lucas |
+| Extrato / Revisar | `#001442` | Azul Lucas (organização calma) |
 | Casal | `#150D27` | Roxo casal |
 | Relatórios | dinâmico | `#001442` / `#150D27` / `#2D0A1A` conforme `reportCtx` |
 | DivisaoDetalhe | `#001442` | Azul padrão |
