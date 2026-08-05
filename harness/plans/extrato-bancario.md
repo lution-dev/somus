@@ -104,16 +104,14 @@ Regras (`somus_complete_brand_book_master.md` §7-8):
 ## Classificação entrada / saída + mini-form
 
 1. Parser define sinal: `amount > 0` → **entrada**; `amount < 0` → **saída**
-2. Matching tenta achar lançamento existente (sem sobrescrever)
-3. Se **matched** → só badge “Já na sua base”
-4. Se **unmatched entrada** → pergunta:
-   - Renda (distribui nas divisões por %) **ou**
-   - Direto numa divisão
+2. Matching tenta achar lançamento existente (valor + data ±3 dias; memo genérico não bloqueia)
+3. Se **matched** → só identifica (“Já na sua base”); vai pro **final** da lista; **não entra no import**
+4. Se **unmatched** → aparece **primeiro**; único que pode ser lançado:
+   - entrada → renda (distributable) **ou** direto numa divisão
+   - saída → qual divisão
    - + valor, nome, data (default extrato)
-5. Se **unmatched saída** → pergunta:
-   - Qual divisão
-   - + valor, nome, data (default extrato)
-6. Opção **Ignorar** (ex.: transferência entre contas)
+5. Opção **Ignorar** (ex.: transferência entre contas / rendimento miúdo)
+6. Confirmar grava **apenas** unmatched (via `buildImportItemsFromMatches`) — evita duplicar o que já bateu
 
 ## Modelo de dados (proposto)
 
