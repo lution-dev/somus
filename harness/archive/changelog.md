@@ -1,5 +1,12 @@
 # Changelog — Somus
 
+## [2026-08-05] S-EXTRATO — unmatched first / matched nunca relança
+**Autor:** IA (Cloud Agent)
+**Tasks:**
+- T-EXTRATO-18: revisão puxa só o que não bate; matched no fim (colapsado, só leitura); import anti-duplicata ✅
+**Commits:** (este)
+**Sensores:** `npm run test:extrato` ✅ (20) · `npx tsc --noEmit` ✅ · `npm run build` ✅
+
 ## [2026-08-05] S-EXTRATO — suite E2E das regras
 **Autor:** IA (Cloud Agent)
 **Tasks:**

@@ -11,6 +11,8 @@
  * 7. 1 linha do extrato ↔ 1 lançamento (sem duplicar)
  * 8. Rendimento miúdo sugere ignorar
  * 9. Multi-banco (fixtures Inter/Itaú/Nubank/Santander/99Pay)
+ * 10. Matched = só identifica, NUNCA entra no import (anti-duplicata);
+ *     revisão mostra unmatched primeiro e matched no final
  *
  * Obrigatório rodar após qualquer mudança em src/lib/statement ou Extrato*.
  */
@@ -24,6 +26,11 @@ import {
   shouldSuggestIgnore,
   isGenericBankMemo,
 } from './matchTransactions'
+import {
+  buildImportItemsFromMatches,
+  orderMatchesForReview,
+  assertNoMatchedInImport,
+} from './buildImportItems'
 import { useAppStore } from '../../stores/useAppStore'
 import type { BankTransaction, Entrada, SaidaFixa, SaidaVariavel, StatementImportItem } from '../../types'
 
@@ -346,6 +353,100 @@ describe('S-EXTRATO E2E — regras do produto', () => {
       })
       const recs = useAppStore.getState().statementReconciliations
       expect(recs.some(r => r.yearMonth === '2026-07' && r.userId === 'u1')).toBe(true)
+    })
+  })
+
+  describe('RN: matched só identifica — nunca relança (anti-duplicata)', () => {
+    it('import payload traz só unmatched; matched fica de fora', () => {
+      const txs: BankTransaction[] = [
+        {
+          id: 'tx-match',
+          date: '2026-07-10',
+          amount: -50,
+          description: 'PIX PAGAMENTO',
+        },
+        {
+          id: 'tx-new',
+          date: '2026-07-12',
+          amount: -80,
+          description: 'PIX PAGAMENTO',
+        },
+      ]
+      const matches = matchTransactions({
+        yearMonth: '2026-07',
+        transactions: txs,
+        entradas: [],
+        entradasFixas: [],
+        saidasFixas: [],
+        saidasVariaveis: [{
+          id: 'sv-ja',
+          userId: 'u1',
+          divisaoId: 'cx-essencial',
+          amount: 50,
+          description: 'Farmácia',
+          category: 'saude',
+          paymentMethod: 'pix',
+          date: '2026-07-10',
+          status: 'realized',
+        }],
+      })
+
+      const { unmatched, matched } = orderMatchesForReview(matches)
+      expect(matched).toHaveLength(1)
+      expect(matched[0].transaction.id).toBe('tx-match')
+      expect(unmatched).toHaveLength(1)
+      expect(unmatched[0].transaction.id).toBe('tx-new')
+
+      const items = buildImportItemsFromMatches(matches, {
+        'tx-new': { name: 'Mercado', divisaoId: 'cx-essencial' },
+      })
+      expect(items).toHaveLength(1)
+      expect(items[0].transactionId).toBe('tx-new')
+      expect(assertNoMatchedInImport(matches, items)).toBe(true)
+
+      // Se alguém incluísse matched no payload, o assert falharia
+      const bad: StatementImportItem[] = [
+        ...items,
+        {
+          transactionId: 'tx-match',
+          date: '2026-07-10',
+          amount: 50,
+          name: 'Farmácia de novo',
+          direction: 'expense',
+          divisaoId: 'cx-essencial',
+        },
+      ]
+      expect(assertNoMatchedInImport(matches, bad)).toBe(false)
+    })
+
+    it('cenário real 99Pay: com mês quase todo lançado, import só puxa o que falta', () => {
+      const r = parseStatementTextDetailed(FIX('sample-99pay.txt'))
+      const material = r.transactions.filter(
+        t => t.date.startsWith('2026-07') && Math.abs(t.amount) >= 10,
+      )
+      const sim = julyLaunchesFromStatement(material)
+      // Deixa 2 saídas de fora de propósito → devem vir unmatched e no import
+      const skip = new Set(sim.saidasVariaveis.slice(0, 2).map(s => s.id))
+      const saidasVariaveis = sim.saidasVariaveis.filter(s => !skip.has(s.id))
+
+      const matches = matchTransactions({
+        yearMonth: '2026-07',
+        transactions: material,
+        entradas: sim.entradas,
+        entradasFixas: [],
+        saidasFixas: [],
+        saidasVariaveis,
+      })
+      const { unmatched, matched } = orderMatchesForReview(matches)
+      expect(matched.length).toBe(material.length - 2)
+      expect(unmatched.length).toBe(2)
+
+      const items = buildImportItemsFromMatches(matches)
+      expect(items).toHaveLength(2)
+      expect(items.every(i => unmatched.some(u => u.transaction.id === i.transactionId))).toBe(true)
+      expect(assertNoMatchedInImport(matches, items)).toBe(true)
+      // Matched nunca vira item de import
+      expect(items.every(i => !matched.some(m => m.transaction.id === i.transactionId))).toBe(true)
     })
   })
 })

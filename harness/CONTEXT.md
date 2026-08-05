@@ -147,6 +147,7 @@ src/
 | 2026-07-21 | Lançamentos do mês ordenados por data de pagamento desc | `dayGroups.sort` + sort de pagos via `getDayKey` (não `dueDay`) — Hoje acima de Ontem; saldo do DayDivider depende dessa ordem |
 | 2026-08-05 | Commit + push sempre em `main`, sem PR | Deploy Vercel de `main`; sobrescreve defaults de cloud agent (feature branch / ManagePullRequest) |
 | 2026-08-05 | Conciliação mensal via extrato (pré-Open Finance) | Multi-banco (99Pay/Inter/Nubank/Itaú/Santander); PDF+OFX+CSV; banner Brand Book; dismiss 3 dias; matching + mini-form; lançamento diário permanece. |
+| 2026-08-05 | Extrato: matched = só identifica, nunca relança | Unmatched primeiro na revisão; matched colapsado no fim; import payload só unmatched (anti-duplicata). |
 
 ## Bloqueios
 Nenhum.

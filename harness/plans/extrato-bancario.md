@@ -33,11 +33,12 @@ Início do mês (se extrato do mês anterior ainda não reconciliado)
   Upload OFX/OFC ou CSV (99Pay · conta corrente)
         │
         ▼
-  Tela de conciliação
-  ├── ✅ Já na base (matched) → badge, sem editar
-  ├── ⬜ Crédito unmatched → mini-form: renda OU divisão + valor/nome/data
-  └── ⬜ Débito unmatched  → mini-form: qual divisão + valor/nome/data
-        │  confirmar
+  Tela de conciliação (ordem importa — anti-duplicata)
+  ├── ⬜ Unmatched primeiro (único bloco editável / importável)
+  │     · crédito → mini-form: renda OU divisão + valor/nome/data
+  │     · débito  → mini-form: qual divisão + valor/nome/data
+  └── ✅ Matched no final (colapsado, só leitura, NUNCA relança)
+        │  confirmar → import só unmatched
         ▼
   Grava via store (DATA_INTEGRITY) → marca mês reconciliado → banner some
 ```

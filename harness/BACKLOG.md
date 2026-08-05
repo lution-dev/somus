@@ -115,6 +115,16 @@
 > Público: qualquer banco (99Pay, Inter, Nubank, Itaú, Santander, genérico) · Formatos: **PDF + OFX/CSV**  
 > Lib PDF: `pdfjs-dist`. Estratégia: detectar banco → layouts específicos → fallback genérico.
 
+#### T-EXTRATO-18: Unmatched primeiro · matched no fim e nunca relança
+**Tipo:** Bug / anti-duplicata UX
+**Root cause:** Revisão misturava matched (já na base) com o que falta lançar; risco de relançar o que o match já reconheceu → duplicata.
+**Critérios:**
+- [x] UI: unmatched (editável) primeiro; matched no final, colapsado, só leitura
+- [x] Import payload = só unmatched (`buildImportItemsFromMatches`)
+- [x] E2E: matched nunca entra no import; ordem unmatched→matched
+- [x] Sensores `test:extrato` + `tsc` + `build`
+**Status:** ✅ done
+
 #### T-EXTRATO-17: Suite E2E obrigatória das regras do extrato
 **Tipo:** Qualidade
 **Critérios:**

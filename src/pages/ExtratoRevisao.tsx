@@ -17,6 +17,7 @@ import {
   matchTransactions,
   suggestName,
   shouldSuggestIgnore,
+  buildImportItemsFromMatches,
   EXTRATO_DRAFT_KEY,
   type ExtratoDraft,
   type MatchResult,
@@ -99,6 +100,7 @@ export default function ExtratoRevisao() {
 
   const matched = matches.filter(m => m.status === 'matched')
   const unmatched = matches.filter(m => m.status === 'unmatched')
+  const [showMatched, setShowMatched] = useState(false)
 
   const pendingCount = unmatched.filter(m => !rows[m.transaction.id]?.ignored).length
 
@@ -106,25 +108,18 @@ export default function ExtratoRevisao() {
     setRows(prev => ({ ...prev, [id]: { ...prev[id], ...patch } }))
   }
 
+  /**
+   * Só unmatched entram no import. Matched = já na base, nunca relança (evita duplicar).
+   */
+  function buildImportItems(): StatementImportItem[] {
+    return buildImportItemsFromMatches(matches, rows)
+  }
+
   function handleConfirm() {
     if (!draft || !currentUser) return
     setSaving(true)
 
-    const items: StatementImportItem[] = unmatched.map(m => {
-      const tx = m.transaction
-      const row = rows[tx.id]
-      const isIncome = tx.amount > 0
-      return {
-        transactionId: tx.id,
-        date: row?.date ?? tx.date,
-        amount: row?.amount ?? Math.abs(tx.amount),
-        name: row?.name ?? tx.description,
-        direction: isIncome ? 'income' : 'expense',
-        incomeKind: isIncome ? (row?.incomeKind ?? 'distributable') : undefined,
-        divisaoId: (!isIncome || row?.incomeKind === 'direct') ? row?.divisaoId : undefined,
-        ignored: row?.ignored ?? false,
-      }
-    })
+    const items = buildImportItems()
 
     importStatementTransactions(items)
 
@@ -192,52 +187,17 @@ export default function ExtratoRevisao() {
           {' · '}
           {draft.fileName}
         </p>
-        <p style={{ fontSize: 14, color: 'var(--color-text-primary)', fontWeight: 500, margin: '0 0 20px' }}>
-          {matched.length} já na base · {pendingCount} pra lançar
+        <p style={{ fontSize: 14, color: 'var(--color-text-primary)', fontWeight: 500, margin: '0 0 8px' }}>
+          {pendingCount} pra lançar
+          {matched.length > 0 ? ` · ${matched.length} já na base (não relança)` : ''}
+        </p>
+        <p style={{ fontSize: 12, color: 'var(--color-text-tertiary)', margin: '0 0 20px', lineHeight: 1.45 }}>
+          Em cima só o que ainda não está no Somus. O que já bateu fica no final, só pra conferir.
         </p>
 
-        {matched.length > 0 && (
-          <section style={{ marginBottom: 28 }}>
-            <h3 style={{
-              fontSize: 12, fontWeight: 600, letterSpacing: '0.04em', textTransform: 'uppercase',
-              color: 'var(--color-text-tertiary)', margin: '0 0 12px',
-            }}>
-              Já na sua base
-            </h3>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              {matched.map(m => (
-                <div
-                  key={m.transaction.id}
-                  style={{
-                    display: 'flex', alignItems: 'center', gap: 12,
-                    padding: '12px 14px', borderRadius: 12,
-                    background: 'rgba(16,185,129,0.06)',
-                    border: '1px solid rgba(16,185,129,0.18)',
-                  }}
-                >
-                  <Check size={16} color="var(--color-success)" style={{ flexShrink: 0 }} />
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <p style={{ margin: 0, fontSize: 14, fontWeight: 500, color: 'var(--color-text-primary)' }}>
-                      {m.linkedEntity?.label ?? m.transaction.description}
-                    </p>
-                    <p style={{ margin: '2px 0 0', fontSize: 12, color: 'var(--color-text-tertiary)' }}>
-                      {m.transaction.description}
-                    </p>
-                  </div>
-                  <span style={{
-                    fontSize: 14, fontWeight: 600,
-                    color: m.transaction.amount >= 0 ? 'var(--color-success)' : 'var(--color-danger)',
-                  }}>
-                    {formatCurrency(Math.abs(m.transaction.amount))}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </section>
-        )}
-
+        {/* 1º: só o que NÃO bate — único bloco editável / importável */}
         {unmatched.length > 0 && (
-          <section>
+          <section style={{ marginBottom: 28 }}>
             <h3 style={{
               fontSize: 12, fontWeight: 600, letterSpacing: '0.04em', textTransform: 'uppercase',
               color: 'var(--color-text-tertiary)', margin: '0 0 12px',
@@ -366,9 +326,66 @@ export default function ExtratoRevisao() {
         )}
 
         {unmatched.length === 0 && matched.length > 0 && (
-          <p style={{ fontSize: 14, color: 'var(--color-text-secondary)', lineHeight: 1.5 }}>
-            Tudo nesse extrato já estava na sua base. Pode confirmar pra marcar o mês como organizado.
+          <p style={{ fontSize: 14, color: 'var(--color-text-secondary)', lineHeight: 1.5, marginBottom: 24 }}>
+            Tudo nesse extrato já estava na sua base. Nada novo pra lançar. Pode confirmar pra marcar o mês como organizado.
           </p>
+        )}
+
+        {/* 2º: já reconhecidos — final da lista, só leitura, nunca importam */}
+        {matched.length > 0 && (
+          <section style={{ marginBottom: 28, opacity: 0.85 }}>
+            <button
+              type="button"
+              onClick={() => setShowMatched(v => !v)}
+              style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                width: '100%', background: 'none', border: 'none', cursor: 'pointer',
+                padding: '0 0 12px', fontFamily: 'var(--font-sans)',
+              }}
+            >
+              <h3 style={{
+                fontSize: 12, fontWeight: 600, letterSpacing: '0.04em', textTransform: 'uppercase',
+                color: 'var(--color-text-tertiary)', margin: 0,
+              }}>
+                Já na sua base · {matched.length} (não mexe)
+              </h3>
+              <span style={{ fontSize: 12, color: 'var(--color-text-tertiary)' }}>
+                {showMatched ? 'ocultar' : 'ver'}
+              </span>
+            </button>
+            {showMatched && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {matched.map(m => (
+                  <div
+                    key={m.transaction.id}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: 12,
+                      padding: '12px 14px', borderRadius: 12,
+                      background: 'rgba(16,185,129,0.06)',
+                      border: '1px solid rgba(16,185,129,0.18)',
+                      pointerEvents: 'none',
+                    }}
+                  >
+                    <Check size={16} color="var(--color-success)" style={{ flexShrink: 0 }} />
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <p style={{ margin: 0, fontSize: 14, fontWeight: 500, color: 'var(--color-text-primary)' }}>
+                        {m.linkedEntity?.label ?? m.transaction.description}
+                      </p>
+                      <p style={{ margin: '2px 0 0', fontSize: 12, color: 'var(--color-text-tertiary)' }}>
+                        {m.transaction.description} · já lançado
+                      </p>
+                    </div>
+                    <span style={{
+                      fontSize: 14, fontWeight: 600,
+                      color: m.transaction.amount >= 0 ? 'var(--color-success)' : 'var(--color-danger)',
+                    }}>
+                      {formatCurrency(Math.abs(m.transaction.amount))}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </section>
         )}
       </div>
 

@@ -5,6 +5,12 @@ export { parseStatementText, parseStatementTextDetailed } from './parseStatement
 export type { StatementParseResult } from './parseStatementText'
 export { matchTransactions, shouldSuggestIgnore, isGenericBankMemo } from './matchTransactions'
 export type { MatchResult, MatchInput } from './matchTransactions'
+export {
+  buildImportItemsFromMatches,
+  orderMatchesForReview,
+  assertNoMatchedInImport,
+} from './buildImportItems'
+export type { ImportRowDraft } from './buildImportItems'
 export { suggestName } from './suggestName'
 export { transactionHash } from './hash'
 export { detectBank, bankLabel } from './shared'

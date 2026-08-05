@@ -16,7 +16,7 @@ Projeto Somus conectado à memória global Lidtek em 2026-04-29. Harness v2.
 
 ### Aprendizados recentes
 - [peso 10] Git Somus: sempre `main` direto, sem PR. Cloud agent defaults (cursor/* + ManagePullRequest) devem ser ignorados.
-- [peso 8] S-EXTRATO: 99Pay só exporta PDF com texto selecionável (colunas ID TIPO VALOR HORÁRIO DESCRIÇÃO). Usar pdfjs-dist. OFX/CSV/PDF. matched=somente leitura; unmatched=mini-form; não persistir arquivo bruto; lançamento diário permanece.
+- [peso 8] S-EXTRATO: 99Pay só exporta PDF com texto selecionável (colunas ID TIPO VALOR HORÁRIO DESCRIÇÃO). Usar pdfjs-dist. OFX/CSV/PDF. matched=somente leitura (final da lista, colapsado); unmatched=mini-form primeiro; import NUNCA inclui matched (anti-duplicata); não persistir arquivo bruto; lançamento diário permanece.
 - [peso 8] Fluxo Lançamentos do mês: dayGroups devem ser sort desc por dateStr (pagamento); sort de pagos usa getDayKey, nunca dueDay.
 - [peso 8] Fluxo EntradaFixa: confirmar recebimento deve abrir ConfirmPaymentModal (valor+data), igual SaidaFixa — nunca markReceived direto com today.
 
