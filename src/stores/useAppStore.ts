@@ -14,7 +14,10 @@ import type {
   ObjetivoMovement,
   UserContext,
   DivisaoDistributionItem,
+  StatementReconciliation,
+  StatementImportItem,
 } from '../types'
+import { calculateDistribution } from '../lib/calculations'
 import { DIVISAO_ORDER, DIVISAO_INFO } from '../lib/divisoes'
 import { DIVISAO_ICONS } from '../lib/icons'
 import { todayBR, currentYM } from '../lib/months'
@@ -88,6 +91,10 @@ interface AppActions {
   // Partner
   setPartner: (partner: { id: string; name: string; partnerCode: string; avatar?: string } | null) => void
 
+  // Extrato / conciliação
+  addStatementReconciliation: (rec: Omit<StatementReconciliation, 'id'>) => void
+  importStatementTransactions: (items: StatementImportItem[]) => void
+
   // Reset
   resetAll: () => void
 }
@@ -106,6 +113,7 @@ const getInitialState = (): AppState => ({
   saidasFixas: [],
   saidasVariaveis: [],
   objetivos: [],
+  statementReconciliations: [],
 })
 
 const roundCents = (value: number): number => Math.round((value + Number.EPSILON) * 100) / 100
@@ -1390,11 +1398,68 @@ export const useAppStore = create<AppState & AppActions>()(
 
       setPartner: (partner) => set({ partner: partner as AppState['partner'] }),
 
+      addStatementReconciliation: (rec) =>
+        set((state) => ({
+          statementReconciliations: [
+            ...(state.statementReconciliations ?? []),
+            { ...rec, id: `rec-${Date.now()}` },
+          ],
+        })),
+
+      importStatementTransactions: (items) => {
+        const userId = useAppStore.getState().currentUser?.id ?? ''
+        const toImport = items.filter(i => !i.ignored)
+
+        for (const item of toImport) {
+          if (item.direction === 'income') {
+            if (item.incomeKind === 'direct' && item.divisaoId) {
+              useAppStore.getState().addEntrada({
+                userId,
+                sourceId: '',
+                sourceName: item.name,
+                amount: Math.abs(item.amount),
+                date: item.date,
+                distribution: [],
+                kind: 'direct',
+                targetDivisaoId: item.divisaoId,
+              })
+            } else {
+              const state = useAppStore.getState()
+              const userDivisoes = state.divisoes.filter(d => !userId || d.userId === userId)
+              const amount = Math.abs(item.amount)
+              const distribution = calculateDistribution(
+                amount,
+                userDivisoes.length ? userDivisoes : state.divisoes,
+              )
+              useAppStore.getState().addEntrada({
+                userId,
+                sourceId: '',
+                sourceName: item.name,
+                amount,
+                date: item.date,
+                distribution,
+                kind: 'distributable',
+              })
+            }
+          } else if (item.divisaoId) {
+            useAppStore.getState().addSaidaVariavel({
+              userId,
+              divisaoId: item.divisaoId,
+              amount: Math.abs(item.amount),
+              description: item.name,
+              category: 'Extrato',
+              paymentMethod: 'pix',
+              date: item.date,
+            })
+          }
+        }
+      },
+
       resetAll: () => set(getInitialState()),
     }),
     {
       name: 'somus-state',
-      version: 16,
+      version: 17,
       migrate: (_persisted: unknown, version: number) => {
         const state = _persisted as Record<string, unknown>
 
@@ -1598,6 +1663,14 @@ export const useAppStore = create<AppState & AppActions>()(
           }
         }
 
+        // v17: statementReconciliations for monthly bank statement import
+        if (version < 17) {
+          const s = state as Record<string, unknown>
+          if (!Array.isArray(s.statementReconciliations)) {
+            s.statementReconciliations = []
+          }
+        }
+
         return state as unknown as AppState & AppActions
       },
       partialize: (state) => ({
@@ -1612,6 +1685,7 @@ export const useAppStore = create<AppState & AppActions>()(
         saidasFixas: state.saidasFixas,
         saidasVariaveis: state.saidasVariaveis,
         objetivos: state.objetivos,
+        statementReconciliations: state.statementReconciliations ?? [],
       }),
     }
   )

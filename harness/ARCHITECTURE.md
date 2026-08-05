@@ -33,6 +33,7 @@ src/
     migrationService.ts   # Estratégia de merge local↔Firestore; debounce; flush
     haptic.ts             # Vibration API — feedback tátil (selection 10ms / impact [15,30,10])
     utils.ts              # Utilitários genéricos: formatCurrency, formatDate, generateId, clamp
+    statement/            # Extrato: parseOfx, parseCsv, matchTransactions, suggestName
   stores/
     useAppStore.ts        # Zustand store principal (persist localStorage + versioning)
     useNavStore.ts        # Zustand store leve para cross-component nav state (sem persist)
@@ -106,6 +107,8 @@ src/
 | < 12 | Encurta `partnerCode`: 'SOMUS-XXXXXXXX' → 4 chars |
 | < 13 | `monthlyAmountOverrides` em SaidaFixa — no-op (campo opcional) |
 | < 15 | `paidDates[]` → `payments Record<string,string>` + `startDate` |
+| < 16 | `entradasFixas` array |
+| < 17 | `statementReconciliations` (conciliação mensal via extrato) |
 
 ---
 
@@ -147,9 +150,13 @@ useFirebaseSync (Provider)
 /objetivos/:id     → ObjetivoDetalhe
 /convite/:code     → InviteAccept (link de parceiro)
 /perfil            → Perfil
+/extrato           → ExtratoUpload (S-EXTRATO)
+/extrato/revisao   → ExtratoRevisao (S-EXTRATO)
 ```
 
 **Guard de onboarding:** `App.tsx` redireciona para `/` se `!isOnboarded` em qualquer rota protegida.
+
+> **S-EXTRATO:** ver `harness/plans/extrato-bancario.md`. Persist version **17** (`statementReconciliations`).
 
 ---
 

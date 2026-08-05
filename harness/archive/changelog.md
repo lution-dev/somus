@@ -1,5 +1,20 @@
 # Changelog — Somus
 
+## [2026-08-05] S-EXTRATO — PDF 99Pay via pdfjs-dist
+**Autor:** IA (Cloud Agent)
+**Tasks:**
+- T-EXTRATO-14: Parser PDF (pdfjs-dist) + layout 99Pay calibrado ✅
+**Notas:** 99Pay só exporta PDF com texto; OFX/CSV continuam. Push direto em `main`.
+**Sensores:** `npx tsc --noEmit` ✅ · `npm run build` ✅
+
+## [2026-08-05] S-EXTRATO — conciliação mensal via extrato
+**Autor:** IA (Cloud Agent)
+**Tasks:**
+- T-EXTRATO-01…12: tipos v17, banner Home, parsers OFX/CSV, matching, upload/revisão, import via store ✅
+- T-EXTRATO-13: docs harness ✅
+**Notas:** Parsers genéricos BR. Banner dismiss 3 dias. Copy sem travessão.
+**Sensores:** `npx tsc --noEmit` ✅ · `npm run build` ✅
+
 ## [2026-08-05] Git — push direto em main
 **Autor:** IA (Cloud Agent)
 **Tasks:**

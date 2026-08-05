@@ -19,6 +19,7 @@ import UserMenu from '../components/ui/UserMenu'
 import LancarEntradaModal from '../components/features/LancarEntradaModal'
 import LancarDespesaModal from '../components/features/LancarDespesaModal'
 import ConfirmPaymentModal from '../components/features/ConfirmPaymentModal'
+import ExtratoReminderBanner from '../components/features/ExtratoReminderBanner'
 import { useNavStore } from '../stores/useNavStore'
 import {
   Plus,
@@ -1555,6 +1556,9 @@ export default function Home() {
           onEntradaPendingClick={setConfirmPayEntradaId}
         />
       )}
+
+      {/* Extrato mensal (pré-Open Finance) */}
+      <ExtratoReminderBanner />
 
       {/* Progressive Onboarding — sem wrapper com margin fixo para nao criar espaco morto quando null */}
       <ProgressiveOnboardingBanner onLancar={() => setLancarOpen(true)} />

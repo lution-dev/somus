@@ -110,6 +110,53 @@
 |----|--------|-----------|---------|
 | T-TZ-01 | 🔄 doing | Substituir `new Date().toISOString()` por `todayBR()`/`currentYM()` em 10 arquivos para corrigir virada de dia às 21h (UTC-3) | ConfirmPaymentModal, LancarDespesaModal, LancarEntradaModal, AddObjetivoModal, LancarObjetivoModal, UsarObjetivoModal, DivisaoDetalhe, Home, ObjetivoDetalhe, Fluxo |
 
+## Sprint Atual — Extrato Bancário / Conciliação Mensal (S-EXTRATO)
+> Status: **🔄 em implementação** · Plano: [`harness/plans/extrato-bancario.md`](./plans/extrato-bancario.md)  
+> Piloto: **99Pay** (PDF com texto) · Formatos: **PDF + OFX/CSV** · Banner dismiss 3 dias  
+> Lib PDF: `pdfjs-dist` (gratuita). Layout 99Pay calibrado com amostra real (anonimizada).
+
+### Sprint A — Fundação + lembrete
+| ID | Status | Descrição | Arquivo |
+|----|--------|-----------|---------|
+| T-EXTRATO-01 | ✅ done | Tipos + AppState + migrate persist v17 + Firestore | types, useAppStore, firestoreService, migrationService |
+| T-EXTRATO-02 | ✅ done | Helpers `previousYM()` / `monthNameLong()` | lib/months.ts |
+| T-EXTRATO-03 | ✅ done | Banner Home (copy Brand Book sem travessão, PDF/OFX/CSV, dismiss 3 dias) | ExtratoReminderBanner.tsx, Home.tsx |
+| T-EXTRATO-04 | ✅ done | Rotas `/extrato` e `/extrato/revisao` | App.tsx, ExtratoUpload.tsx |
+
+### Sprint B — Parsers
+| ID | Status | Descrição | Arquivo |
+|----|--------|-----------|---------|
+| T-EXTRATO-05 | ✅ done | Parser OFX/OFC | lib/statement/parseOfx.ts |
+| T-EXTRATO-06 | ✅ done | Parser CSV BR genérico + fixture sample | lib/statement/parseCsv.ts, fixtures/ |
+| T-EXTRATO-07 | ✅ done | Upload UI → parse → revisão | ExtratoUpload.tsx |
+| T-EXTRATO-14 | ✅ done | Parser PDF via pdfjs-dist + layout 99Pay | parsePdf.ts, parseStatementText.ts |
+
+### Sprint C — Matching + import
+| ID | Status | Descrição | Arquivo |
+|----|--------|-----------|---------|
+| T-EXTRATO-08 | ✅ done | Matching puro | lib/statement/matchTransactions.ts |
+| T-EXTRATO-09 | ✅ done | Tela revisão matched / unmatched / ignore | ExtratoRevisao.tsx |
+| T-EXTRATO-10 | ✅ done | Mini-form: crédito→renda\|divisão · débito→divisão | ExtratoRevisao.tsx |
+| T-EXTRATO-11 | ✅ done | Action `importStatementTransactions` | useAppStore.ts |
+| T-EXTRATO-12 | ✅ done | Persistir reconciliation → banner some | useAppStore + ExtratoRevisao |
+| T-EXTRATO-13 | ✅ done | Atualizar SPEC/DESIGN/CONTEXT + changelog | harness/ |
+
+### Futuro (fora do v1)
+| ID | Prioridade | Descrição |
+|----|-----------|-----------|
+| T-EXTRATO-FUT-01 | média | E-mail lembrete início do mês |
+| T-EXTRATO-FUT-02 | baixa | Parser PDF (se 99Pay só oferecer PDF) |
+| T-EXTRATO-FUT-03 | baixa | Open Finance |
+| T-EXTRATO-FUT-04 | baixa | Sugestão vincular unmatched → saída fixa |
+
+**Dependências:** 01→02→03; 01→04; [amostra 99Pay]→06; 05+06→07→08→09→10→11→12→13
+
+**Decisões fechadas:** 99Pay · OFX+CSV · entrada/saída pelo sinal do extrato · pergunta renda|divisão / divisão · só corrente · lançamento diário permanece · banner dismiss 3 dias e volta · copy sem travessão  
+
+**Bloqueio suave:** amostra real CSV/OFX 99Pay (anonimizada) para T-EXTRATO-06
+
+---
+
 ## Próximas fases
 
 | ID | Prioridade | Descrição |

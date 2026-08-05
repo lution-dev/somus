@@ -17,7 +17,8 @@ function stateWeight(state: AppState): number {
     (state.saidasFixas?.length ?? 0) +
     (state.saidasVariaveis?.length ?? 0) +
     (state.objetivos?.length ?? 0) +
-    (state.incomeSources?.length ?? 0)
+    (state.incomeSources?.length ?? 0) +
+    (state.statementReconciliations?.length ?? 0)
   )
 }
 
@@ -127,6 +128,7 @@ function getResetState(): AppState {
     saidasFixas: [],
     saidasVariaveis: [],
     objetivos: [],
+    statementReconciliations: [],
   }
 }
 

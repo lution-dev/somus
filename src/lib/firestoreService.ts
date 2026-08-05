@@ -114,6 +114,7 @@ function migrateFirestoreData(raw: Record<string, any>): AppState {
     saidasFixas,
     saidasVariaveis,
     objetivos,
+    statementReconciliations: raw.statementReconciliations ?? [],
   }
 }
 
@@ -152,6 +153,7 @@ export async function saveStateToFirestore(
     saidasFixas: state.saidasFixas,
     saidasVariaveis: state.saidasVariaveis,
     objetivos: state.objetivos,
+    statementReconciliations: state.statementReconciliations ?? [],
     lastModified: serverTimestamp(),
   }
 
