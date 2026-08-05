@@ -2,7 +2,7 @@
 > Estado atual do projeto. Atualizado ao final de cada sessão.
 
 **Última atualização:** 2026-08-05
-**Status geral:** ⏳ Plano S-EXTRATO aguardando aprovação — importação de extrato bancário (OFX/CSV) + matching + lembrete Home
+**Status geral:** ✅ Plano S-EXTRATO aprovado (falta amostra 99Pay). Importação OFX/CSV + matching + lembrete Home
 
 ## O Que É
 App de planejamento financeiro para casais com renda variável. Mobile-first, dark mode only. Resolve o problema de apps que exigem renda fixa no início do mês — o Somus permite lançar entradas incrementais conforme caem e distribui automaticamente por divisões (método Nati Arcuri adaptado).
@@ -145,13 +145,13 @@ src/
 | 2026-07-14 | `fixEntradasMovements` antes de `fixPhantomBalances` | Recriar/corrigir histórico de Entradas realizadas antes de reconciliar `balance = sum(movements)`, evitando perda de saldo conciliado |
 | 2026-07-21 | EntradaFixa confirma via ConfirmPaymentModal | Parity com SaidaFixa: botão Confirmar e Action Sheet abrem modal de valor+data; `markEntradaFixaReceived` já aceitava overrideAmount |
 | 2026-07-21 | Lançamentos do mês ordenados por data de pagamento desc | `dayGroups.sort` + sort de pagos via `getDayKey` (não `dueDay`) — Hoje acima de Ontem; saldo do DayDivider depende dessa ordem |
-| 2026-08-05 | Conciliação mensal via extrato (pré-Open Finance) | Piloto 99Pay corrente; OFX+CSV; banner tom Brand Book; entrada/saída pelo sinal; mini-form renda\|divisão / divisão; lançamento diário permanece. |
+| 2026-08-05 | Conciliação mensal via extrato (pré-Open Finance) | Piloto 99Pay corrente; OFX+CSV; banner tom Brand Book sem travessão; dismiss 3 dias; entrada/saída pelo sinal; mini-form renda\|divisão / divisão; lançamento diário permanece. |
 
 ## Bloqueios
 Nenhum.
 
 ## Em planejamento
-- **S-EXTRATO** — Conciliação mensal 99Pay (OFX/CSV), banner Home (tom Brand Book), matching + mini-form. Decisões: só corrente, sem cartão, lançamento diário permanece, entrada/saída pelo sinal do extrato. Aberto: X do banner. Precisa amostra CSV/OFX 99Pay. Plano: [`harness/plans/extrato-bancario.md`](./plans/extrato-bancario.md).
+- **S-EXTRATO** — Conciliação mensal 99Pay (OFX/CSV), banner Home (tom Brand Book, sem travessão, dismiss 3 dias), matching + mini-form. Decisões fechadas. Precisa amostra CSV/OFX 99Pay. Plano: [`harness/plans/extrato-bancario.md`](./plans/extrato-bancario.md).
 
 ## Leitura Obrigatória
 - [harness/DATA_INTEGRITY.md](./DATA_INTEGRITY.md) — antes de mexer em qualquer função que toque em `balance`, `movements`, `saidasFixas` ou `saidasVariaveis`.

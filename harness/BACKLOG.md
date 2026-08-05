@@ -103,16 +103,16 @@
 | T-TZ-01 | 🔄 doing | Substituir `new Date().toISOString()` por `todayBR()`/`currentYM()` em 10 arquivos para corrigir virada de dia às 21h (UTC-3) | ConfirmPaymentModal, LancarDespesaModal, LancarEntradaModal, AddObjetivoModal, LancarObjetivoModal, UsarObjetivoModal, DivisaoDetalhe, Home, ObjetivoDetalhe, Fluxo |
 
 ## Sprint Proposto — Extrato Bancário / Conciliação Mensal (S-EXTRATO)
-> Status: **⏳ quase aprovado** · Plano: [`harness/plans/extrato-bancario.md`](./plans/extrato-bancario.md)  
-> Piloto: **99Pay** (corrente) · Formatos: **OFX/CSV** · Sem cartão · Lançamento diário permanece  
-> Objetivo: lembrete Home (tom Brand Book) + upload + matching + mini-form (entrada→renda|divisão · saída→divisão)
+> Status: **✅ aprovado pra implementar** (falta só amostra 99Pay pro parser) · Plano: [`harness/plans/extrato-bancario.md`](./plans/extrato-bancario.md)  
+> Piloto: **99Pay** (corrente) · Formatos: **OFX/CSV** · Sem cartão · Lançamento diário permanece · Banner dismiss 3 dias  
+> Objetivo: lembrete Home (tom Brand Book, sem travessão) + upload + matching + mini-form (entrada→renda|divisão · saída→divisão)
 
 ### Sprint A — Fundação + lembrete
 | ID | Status | Descrição | Arquivo |
 |----|--------|-----------|---------|
 | T-EXTRATO-01 | ⬜ pending | Tipos `BankTransaction` / `StatementReconciliation` (+ sourceBank 99pay, accountKind checking) + AppState + migrate v16 | types/index.ts, useAppStore.ts |
 | T-EXTRATO-02 | ⬜ pending | Helpers `previousYM()` / `hasReconciliation(ym)` | lib/calculations.ts ou lib/statement/ |
-| T-EXTRATO-03 | ⬜ pending | Banner Home — copy Brand Book, formatos OFX/CSV explícitos, sem urgência | ExtratoReminderBanner.tsx, Home.tsx |
+| T-EXTRATO-03 | ⬜ pending | Banner Home (copy Brand Book sem travessão, OFX/CSV explícitos, dismiss 3 dias) | ExtratoReminderBanner.tsx, Home.tsx |
 | T-EXTRATO-04 | ⬜ pending | Rotas stub `/extrato` e `/extrato/revisao` | App.tsx, ExtratoUpload.tsx |
 
 ### Sprint B — Parsers (99Pay)
@@ -142,9 +142,8 @@
 
 **Dependências:** 01→02→03; 01→04; [amostra 99Pay]→06; 05+06→07→08→09→10→11→12→13
 
-**Decisões fechadas:** 99Pay · OFX+CSV · entrada/saída pelo sinal do extrato · pergunta renda|divisão / divisão · só corrente · lançamento diário permanece  
+**Decisões fechadas:** 99Pay · OFX+CSV · entrada/saída pelo sinal do extrato · pergunta renda|divisão / divisão · só corrente · lançamento diário permanece · banner dismiss 3 dias e volta · copy sem travessão  
 
-**Aberto:** comportamento do X no banner (some até reconciliar / some alguns dias / sem X)  
 **Bloqueio suave:** amostra real CSV/OFX 99Pay (anonimizada) para T-EXTRATO-06
 
 ---

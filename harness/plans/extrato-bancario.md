@@ -1,6 +1,6 @@
 # Plano — Importação de Extrato Bancário (S-EXTRATO)
 
-> Status: **decisões fechadas · 1 ponto aberto** · Atualizado: 2026-08-05  
+> Status: **decisões fechadas** · Atualizado: 2026-08-05  
 > Tipo: SPRINT (feature complexa) · Pré-Open Finance  
 > Piloto: **99Pay** (conta corrente / carteira) · Sem fatura de cartão
 
@@ -15,19 +15,11 @@ Hoje cada compra/pagamento exige lançamento manual no momento. Sem Open Finance
 | 1 | Banco piloto | **99Pay** |
 | 2 | Formatos v1 | **OFX/OFC + CSV** (sem PDF). Banner e tela de upload deixam isso explícito |
 | 3 | Entrada vs saída | Vem do sinal do extrato (+ crédito / − débito). **Entrada** → pergunta renda ou divisão. **Saída** → pergunta qual divisão |
-| 4 | Dismiss do banner | ⏳ **ainda aberto** — ver pergunta simples abaixo |
+| 4 | Dismiss do banner | **Opção B:** some por **3 dias**, depois volta no mesmo mês até reconciliar |
 | 5 | Escopo conta | **Só corrente / carteira 99Pay**. Sem fatura de cartão |
 | 6 | Lançamento diário | **Permanece**. Extrato é atalho para facilitar, os dois coexistem |
-
-### Ponto aberto — X do banner (em português simples)
-
-Se a pessoa **fechar o banner sem enviar** o extrato:
-
-- **Opção A:** some e **só volta no mês seguinte** (se ainda não tiver enviado o do mês que falta, ou o novo)  
-- **Opção B:** some por **alguns dias** e **volta no mesmo mês** lembrando de novo  
-- **Opção C:** **não tem X** — só some depois de enviar/reconciliar  
-
-Qual prefere?
+| 7 | Copy UI | Sem travessão (—). Tom de conversa do dia a dia, alinhado ao Brand Book |
+| 8 | Fixture | Pedir 1 extrato 99Pay anonimizado (CSV ou OFX) antes de T-EXTRATO-06 |
 
 ## Visão do produto (v1)
 
@@ -54,7 +46,8 @@ Início do mês (se extrato do mês anterior ainda não reconciliado)
 
 ### Dentro (v1)
 - Lembrete na Home a partir do dia 1 se o mês anterior não foi reconciliado
-- Upload **CSV** e **OFX/OFC** — copy deixa claro; rejeita outros formatos com mensagem calma
+- Upload **CSV** e **OFX/OFC** (copy deixa claro; rejeita outros formatos com mensagem calma)
+- Dismiss do banner: esconde 3 dias, depois reaparece no mesmo mês até reconciliar
 - Parser → transações normalizadas do mês alvo (piloto 99Pay)
 - Matching com lançamentos já existentes
 - Tela de revisão: matched vs unmatched
@@ -76,16 +69,18 @@ Início do mês (se extrato do mês anterior ainda não reconciliado)
 
 | Formato | v1 | Nota |
 |--------|----|------|
-| **CSV** | ✅ P0 | Provável formato principal da 99Pay — **precisa de amostra real** para o parser |
+| **CSV** | ✅ P0 | Provável formato principal da 99Pay. Precisa de amostra real pro parser |
 | **OFX / OFC** | ✅ P0 | Aceito se a 99Pay (ou conversão) gerar; fixtures genéricas + ajuste com amostra |
 | **PDF** | ❌ | Fora do v1 |
 
-> Ação pré-código: usuário envia 1 extrato real 99Pay (CSV e/ou OFX), **anonimizado**, para fixtures. Sem isso o parser 99Pay é chute.
+> Antes de T-EXTRATO-06: enviar 1 extrato real 99Pay (CSV ou OFX), anonimizado (pode apagar CPF, conta, valores se quiser, desde que mantenha o layout das colunas). Sem isso o parser 99Pay vira chute.
 
 ## Copy do banner (tom Brand Book)
 
-Regras (`somus_complete_brand_book_master.md` §7–8):
-- tom **calm / intelligent / human** — sem urgência, sem hype fintech, sem “você precisa”
+Regras (`somus_complete_brand_book_master.md` §7-8):
+- tom calm, inteligente, humano
+- sem urgência, sem hype fintech, sem “você precisa”
+- **sem travessão (—)** na copy de produto (linguagem do dia a dia)
 - clareza antes de complexidade
 - organização sem pressão
 
@@ -94,15 +89,15 @@ Regras (`somus_complete_brand_book_master.md` §7–8):
 | Elemento | Texto |
 |----------|-------|
 | Título | Organizar o mês passado |
-| Corpo | Quando quiser, envie o extrato da 99Pay de {mês} — em **OFX ou CSV**. A Somus reconhece o que já está na sua base e ajuda a completar o resto. |
+| Corpo | Quando quiser, envie o extrato da 99Pay de {mês} em OFX ou CSV. A Somus reconhece o que já está na sua base e ajuda a completar o resto. |
 | CTA | Enviar extrato |
-| Hint formatos | Aceitos: OFX, OFC ou CSV · Conta corrente |
+| Hint formatos | Aceitos: OFX, OFC ou CSV. Conta corrente |
 
-**Evitar:** “Atenção!”, “Pendente!”, “Você ainda não enviou”, countdowns, vermelho de erro.
+**Evitar:** “Atenção!”, “Pendente!”, “Você ainda não enviou”, countdowns, vermelho de erro, travessões.
 
-**Tela de upload — microcopy:**
+**Tela de upload:**
 - Headline: `Trazer o extrato pra base`
-- Apoio: `Arquivo da 99Pay em OFX ou CSV. Só conta corrente — sem fatura de cartão.`
+- Apoio: `Arquivo da 99Pay em OFX ou CSV. Só conta corrente, sem fatura de cartão.`
 - Erro formato: `Esse arquivo ainda não encaixa. Use OFX, OFC ou CSV.`
 
 ## Classificação entrada / saída + mini-form
@@ -211,7 +206,7 @@ src/
 |----|------|
 | T-EXTRATO-01 | Tipos + `statementReconciliations` + migrate v16 |
 | T-EXTRATO-02 | Helpers `previousYM()` / `hasReconciliation(ym)` |
-| T-EXTRATO-03 | `ExtratoReminderBanner` — copy Brand Book + OFX/CSV explícitos |
+| T-EXTRATO-03 | `ExtratoReminderBanner` (copy Brand Book, OFX/CSV explícitos, dismiss 3 dias) |
 | T-EXTRATO-04 | Rotas stub `/extrato` |
 
 ### Sprint B — Parsers (99Pay)
@@ -260,11 +255,12 @@ src/
 
 ## Critérios de aceite (v1)
 
-1. Agosto sem extrato de julho → banner Home com tom Somus + “OFX ou CSV” + 99Pay  
-2. Upload OFX/CSV → lista créditos/débitos da conta corrente  
-3. Já lançado → “Já na sua base”, sem sobrescrever  
-4. Crédito novo → pergunta renda ou divisão; grava Entrada correta  
-5. Débito novo → pergunta divisão; grava SaidaVariavel  
-6. Após confirmar → reconciliation salva; banner some; sobrevive reload  
-7. Lançamento diário (modais atuais) continua funcionando  
-8. Sensores `tsc` + `build` verdes  
+1. Agosto sem extrato de julho → banner Home com tom Somus, “OFX ou CSV”, 99Pay, sem travessão  
+2. Fechar banner → some 3 dias e volta no mesmo mês se ainda não reconciliou  
+3. Upload OFX/CSV → lista créditos/débitos da conta corrente  
+4. Já lançado → “Já na sua base”, sem sobrescrever  
+5. Crédito novo → pergunta renda ou divisão; grava Entrada correta  
+6. Débito novo → pergunta divisão; grava SaidaVariavel  
+7. Após confirmar → reconciliation salva; banner some; sobrevive reload  
+8. Lançamento diário (modais atuais) continua funcionando  
+9. Sensores `tsc` + `build` verdes  
