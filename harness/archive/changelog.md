@@ -4,7 +4,7 @@
 **Autor:** IA (Cloud Agent)
 **Tasks:**
 - T-AD-17: Reforçar regra commit+push em `main` sem PR nos docs de agente ✅
-**Commits:** (este)
+**Commits:** f941972
 **Sensores:** docs-only (sem mudança de TS/build)
 
 ## [2026-07-21] Fluxo — ordem por data de pagamento
