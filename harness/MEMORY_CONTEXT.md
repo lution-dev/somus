@@ -1,5 +1,5 @@
 ## MEMÓRIA GLOBAL LIDTEK
-> Task: S-EXTRATO PDF 99Pay + push sempre em main
+> Task: S-EXTRATO multi-banco público (PDF/OFX/CSV)
 > Tokens injetados: ~220 de 900 máx
 > Nota: hook entrada.js indisponível neste ambiente cloud (path Windows); contexto atualizado manualmente.
 
