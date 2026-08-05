@@ -1,8 +1,8 @@
 # CONTEXT.md — Somus
 > Estado atual do projeto. Atualizado ao final de cada sessão.
 
-**Última atualização:** 2026-07-21
-**Status geral:** ✅ Fluxo — Lançamentos do mês ordenados por data de pagamento (mais recente no topo)
+**Última atualização:** 2026-08-05
+**Status geral:** ✅ Git — commits sempre em `main` (sem PR); regra reforçada nos docs de agente
 
 ## O Que É
 App de planejamento financeiro para casais com renda variável. Mobile-first, dark mode only. Resolve o problema de apps que exigem renda fixa no início do mês — o Somus permite lançar entradas incrementais conforme caem e distribui automaticamente por divisões (método Nati Arcuri adaptado).
@@ -145,6 +145,7 @@ src/
 | 2026-07-14 | `fixEntradasMovements` antes de `fixPhantomBalances` | Recriar/corrigir histórico de Entradas realizadas antes de reconciliar `balance = sum(movements)`, evitando perda de saldo conciliado |
 | 2026-07-21 | EntradaFixa confirma via ConfirmPaymentModal | Parity com SaidaFixa: botão Confirmar e Action Sheet abrem modal de valor+data; `markEntradaFixaReceived` já aceitava overrideAmount |
 | 2026-07-21 | Lançamentos do mês ordenados por data de pagamento desc | `dayGroups.sort` + sort de pagos via `getDayKey` (não `dueDay`) — Hoje acima de Ontem; saldo do DayDivider depende dessa ordem |
+| 2026-08-05 | Commit + push sempre em `main`, sem PR | Deploy Vercel de `main`; sobrescreve defaults de cloud agent (feature branch / ManagePullRequest) |
 
 ## Bloqueios
 Nenhum.

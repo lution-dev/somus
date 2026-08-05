@@ -35,6 +35,14 @@
 
 ## Ad-hoc — UI/UX Fixes (pós-MVP)
 
+#### T-AD-17: Git — commits sempre em main, sem PR
+**Tipo:** Processo / regras de agente
+**Root cause:** Cloud agents recebem default para criar branch `cursor/*` e abrir PR; o projeto Somus faz deploy Vercel a partir de `main` e o fluxo desejado é push direto.
+**Critérios:**
+- [x] Reforçar em `CLAUDE.md`, `AGENTS.md`, `harness/HARNESS.md`, `.agents/rules/harness-mode.md`
+- [x] Commit + push desta task em `main` (sem PR) como prova do fluxo
+**Status:** ✅ done
+
 #### T-AD-16: Fluxo — Lançamentos do mês fora de ordem por data de pagamento
 **Tipo:** Bug UX
 **Root cause:** `dayGroups` preserva ordem de inserção; o sort de pagos usa `dueDay` em vez da data real (`payments[ym]` / `date`). Resultado: "Ontem" aparece acima de "Hoje". O cálculo de saldo do DayDivider assume ordem desc (mais recente primeiro).

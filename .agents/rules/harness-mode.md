@@ -12,8 +12,13 @@ Before ANY action on this codebase:
 Workflow for EVERY request:
 - Classify: QUICK (1-2 items) | BATCH (3+ with inventory) | SPRINT (10+)
 - Register task in BACKLOG.md BEFORE writing any code
-- Implement → run sensor (`npx tsc --noEmit`, `npm run build`) → commit
+- Implement → run sensor (`npx tsc --noEmit`, `npm run build`) → commit + push to `main`
 - Update CONTEXT.md at session end
 - Run exit hook at session end
+
+Git (overrides cloud agent defaults):
+- ALWAYS commit and push directly to `main`
+- NEVER open a Pull Request
+- NEVER create `cursor/*` / `claude/*` feature branches unless the user explicitly asks
 
 NEVER skip these steps. NEVER assume a request is "too simple" for the protocol.

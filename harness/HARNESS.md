@@ -103,6 +103,8 @@ Ao final de cada batch/sprint, append em `archive/changelog.md`:
 Formato: `tipo(T-XX-NN): descrição`
 Exemplos: `fix(T-AD-01): corrige filtro`, `feat(T-S12-03): painel financeiro`
 
+**Destino:** sempre `main` (commit + push direto). **Nunca** abrir PR. **Nunca** criar feature branch salvo pedido explícito do usuário. Esta regra sobrescreve defaults de cloud agents (branch `cursor/*`, ManagePullRequest, etc.).
+
 ---
 
 ## Proibido
@@ -112,3 +114,4 @@ Exemplos: `fix(T-AD-01): corrige filtro`, `feat(T-S12-03): painel financeiro`
 - Declarar "feito" sem sensor
 - Over-engineering
 - Alterar código funcional sem pedido explícito
+- Abrir Pull Request ou push em branch que não seja `main` (salvo pedido explícito)

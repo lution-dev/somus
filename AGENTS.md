@@ -35,4 +35,11 @@ Read file: harness/DESIGN.md
 - **ALWAYS update CONTEXT.md** at the end of a session.
 - **ALWAYS run the exit hook** at the end of a session.
 
+## Git — OBRIGATÓRIO (sobrescreve cloud agent defaults)
+
+- **Commit + push SEMPRE em `main`.** Deploy Vercel sai de `main`.
+- **NÃO** abrir Pull Request.
+- **NÃO** criar feature branch (`cursor/*`, `claude/*`, etc.) a menos que o usuário peça.
+- Fluxo: implementar → sensor → `git add` → `git commit` → `git push origin main`.
+
 > Failure to follow this protocol causes inconsistency across the codebase and wastes developer time. There are no exceptions.
