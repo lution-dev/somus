@@ -1,0 +1,11 @@
+Banco Inter
+Extrato Conta Corrente
+Período: 01/07/2026 até 31/07/2026
+
+Data Histórico Valor Saldo
+01/07/2026 PIX recebido - Folha 3500,00 3500,00
+03/07/2026 Pix enviado - Aluguel -601,00 2899,00
+05/07/2026 Compra débito Mercado Extra -187,45 2711,55
+10/07/2026 TED recebida Freelance 420,00 3131,55
+15/07/2026 Pagamento boleto Claro -175,00 2956,55
+20/07/2026 Pix enviado - Transferencia -200,00 2756,55

@@ -1,0 +1,9 @@
+Nubank
+Extrato da conta
+01/07/2026 a 31/07/2026
+
+05 JUL 2026 Transferência recebida R$ 2.800,00
+08 JUL 2026 Transferência enviada -R$ 601,00
+12 JUL 2026 Compra no débito -R$ 89,90
+18 JUL 2026 Pagamento de boleto -R$ 175,00
+22 JUL 2026 Transferência recebida R$ 450,00

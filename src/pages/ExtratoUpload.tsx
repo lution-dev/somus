@@ -3,12 +3,14 @@ import { useLocation } from 'wouter'
 import { Upload, AlertCircle } from 'lucide-react'
 import { PageHeader } from '../components/ui'
 import {
-  parseCsv,
-  parseOfx,
-  parsePdf,
+  parseCsvDetailed,
+  parseOfxDetailed,
+  parsePdfDetailed,
   detectStatementFormat,
+  bankLabel,
   EXTRATO_DRAFT_KEY,
   type ExtratoDraft,
+  type DetectedBank,
 } from '../lib/statement'
 import { previousYM, monthNameLong } from '../lib/months'
 import type { BankTransaction } from '../types'
@@ -28,11 +30,15 @@ export default function ExtratoUpload() {
       const lower = file.name.toLowerCase()
       let format: ExtratoDraft['sourceFormat'] | null = null
       let transactions: BankTransaction[] = []
+      let detectedBank: DetectedBank = 'generic'
+      let sourceLabel: string | undefined
 
       if (lower.endsWith('.pdf') || file.type === 'application/pdf') {
         format = 'pdf'
-        const buffer = await file.arrayBuffer()
-        transactions = await parsePdf(buffer)
+        const detailed = await parsePdfDetailed(await file.arrayBuffer())
+        transactions = detailed.transactions
+        detectedBank = detailed.detectedBank
+        sourceLabel = bankLabel(detectedBank)
       } else {
         const content = await file.text()
         format = detectStatementFormat(file.name, content)
@@ -40,7 +46,17 @@ export default function ExtratoUpload() {
           setError('Esse arquivo ainda não encaixa. Use PDF, OFX, OFC ou CSV.')
           return
         }
-        transactions = format === 'ofx' ? parseOfx(content) : parseCsv(content)
+        if (format === 'ofx') {
+          const detailed = parseOfxDetailed(content)
+          transactions = detailed.transactions
+          detectedBank = detailed.detectedBank
+          sourceLabel = detailed.orgLabel || bankLabel(detectedBank)
+        } else {
+          const detailed = parseCsvDetailed(content)
+          transactions = detailed.transactions
+          detectedBank = detailed.detectedBank
+          sourceLabel = bankLabel(detectedBank)
+        }
       }
 
       const inMonth = transactions.filter(t => t.date.startsWith(yearMonth))
@@ -55,6 +71,8 @@ export default function ExtratoUpload() {
         yearMonth,
         sourceFormat: format,
         fileName: file.name,
+        sourceLabel,
+        detectedBank,
         transactions: list,
       }
       sessionStorage.setItem(EXTRATO_DRAFT_KEY, JSON.stringify(draft))
@@ -81,12 +99,12 @@ export default function ExtratoUpload() {
           fontSize: 14, color: 'var(--color-text-secondary)', lineHeight: 1.5,
           margin: '0 0 8px',
         }}>
-          Arquivo da conta corrente de {mesNome} em PDF, OFX ou CSV. Sem fatura de cartão.
+          Extrato da conta corrente de {mesNome}, de qualquer banco. Em PDF, OFX ou CSV. Sem fatura de cartão.
         </p>
         <p style={{
           fontSize: 12, color: 'var(--color-text-tertiary)', margin: '0 0 24px',
         }}>
-          Aceitos: PDF, OFX, OFC ou CSV.
+          Aceitos: PDF, OFX, OFC ou CSV. Ex.: 99Pay, Inter, Nubank, Itaú, Santander.
         </p>
 
         <input

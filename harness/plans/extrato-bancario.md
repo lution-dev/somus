@@ -1,8 +1,8 @@
 # Plano — Importação de Extrato Bancário (S-EXTRATO)
 
-> Status: **🔄 v1 com PDF** · Atualizado: 2026-08-05  
-> Tipo: SPRINT (feature complexa) · Pré-Open Finance  
-> Piloto: **99Pay** (PDF com texto selecionável) · Formatos: **PDF + OFX/CSV** · Sem fatura de cartão
+> Status: **✅ multi-banco** · Atualizado: 2026-08-05  
+> Tipo: SPRINT (feature complexa) · Pré-Open Finance · **produto público**  
+> Bancos: 99Pay, Inter, Nubank, Itaú, Santander + fallback genérico · Formatos: **PDF + OFX/CSV**
 
 ## Problema
 

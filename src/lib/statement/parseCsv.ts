@@ -1,38 +1,6 @@
 import type { BankTransaction } from '../../types'
 import { transactionHash } from './hash'
-
-function parseBRNumber(raw: string): number | null {
-  const s = raw.trim().replace(/R\$\s?/gi, '').replace(/\s/g, '')
-  if (!s) return null
-  // 1.234,56 ou -1.234,56
-  if (/^-?\d{1,3}(\.\d{3})*,\d{2}$/.test(s) || /^-?\d+,\d{2}$/.test(s)) {
-    return parseFloat(s.replace(/\./g, '').replace(',', '.'))
-  }
-  // 1234.56
-  if (/^-?\d+\.\d{2}$/.test(s) || /^-?\d+$/.test(s)) {
-    return parseFloat(s)
-  }
-  // 1,234.56 (US)
-  if (/^-?\d{1,3}(,\d{3})*\.\d{2}$/.test(s)) {
-    return parseFloat(s.replace(/,/g, ''))
-  }
-  const n = Number(s.replace(',', '.'))
-  return Number.isFinite(n) ? n : null
-}
-
-function parseBRDate(raw: string): string | null {
-  const s = raw.trim()
-  // YYYY-MM-DD
-  if (/^\d{4}-\d{2}-\d{2}/.test(s)) return s.slice(0, 10)
-  // DD/MM/YYYY or DD-MM-YYYY
-  const m = s.match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{2,4})/)
-  if (!m) return null
-  const d = m[1].padStart(2, '0')
-  const mo = m[2].padStart(2, '0')
-  let y = m[3]
-  if (y.length === 2) y = `20${y}`
-  return `${y}-${mo}-${d}`
-}
+import { parseBRNumber, parseBRDate, detectBank, type DetectedBank } from './shared'
 
 function detectDelimiter(headerLine: string): string {
   const semis = (headerLine.match(/;/g) || []).length
@@ -64,42 +32,97 @@ function splitLine(line: string, delim: string): string[] {
   return out
 }
 
-function scoreHeader(cells: string[]): { dateIdx: number; amountIdx: number; descIdx: number; debitIdx: number; creditIdx: number } {
-  const lower = cells.map(c => c.toLowerCase().normalize('NFD').replace(/\p{M}/gu, ''))
-  const find = (...keys: string[]) => lower.findIndex(c => keys.some(k => c.includes(k)))
-
-  const dateIdx = find('data', 'date', 'dt')
-  const amountIdx = find('valor', 'amount', 'montante', 'vlr')
-  const descIdx = find('descricao', 'descri', 'historico', 'histórico', 'memo', 'lancamento', 'lançamento', 'nome', 'estabelecimento')
-  const debitIdx = find('debito', 'débito', 'saida', 'saída')
-  const creditIdx = find('credito', 'crédito', 'entrada')
-
-  return { dateIdx, amountIdx, descIdx, debitIdx, creditIdx }
+function normHeader(c: string): string {
+  return c.toLowerCase().normalize('NFD').replace(/\p{M}/gu, '')
 }
 
 /**
- * Parser CSV genérico (pt-BR). Funciona com ; , ou tab.
- * Sem amostra do banco piloto ainda: heurística de colunas.
+ * Aliases de colunas usados por Inter, Nubank, Itaú, Santander, Conta Azul, etc.
+ */
+function scoreHeader(cells: string[]): {
+  dateIdx: number
+  amountIdx: number
+  descIdx: number
+  debitIdx: number
+  creditIdx: number
+  typeIdx: number
+} {
+  const lower = cells.map(normHeader)
+  const find = (...keys: string[]) =>
+    lower.findIndex(c => keys.some(k => c === k || c.includes(k)))
+
+  const dateIdx = find(
+    'data lancamento', 'data da transacao', 'data transacao', 'data',
+    'date', 'dt lancamento', 'dt.', 'dt ',
+  )
+  const amountIdx = find(
+    'valor (r$)', 'valor r$', 'valor', 'amount', 'montante', 'vlr', 'quantia',
+  )
+  const descIdx = find(
+    'descricao', 'descri', 'historico', 'titulo', 'titulo da transacao',
+    'memo', 'lancamento', 'nome', 'estabelecimento', 'detalhe', 'favorecido',
+    'identificador', 'origem/destino', 'categoria',
+  )
+  const debitIdx = find('debito', 'saida', 'valor debito')
+  const creditIdx = find('credito', 'entrada', 'valor credito')
+  const typeIdx = find('tipo', 'natureza', 'c/d', 'cd', 'entrada/saida')
+
+  return { dateIdx, amountIdx, descIdx, debitIdx, creditIdx, typeIdx }
+}
+
+export interface CsvParseResult {
+  transactions: BankTransaction[]
+  detectedBank: DetectedBank
+}
+
+/**
+ * Parser CSV multi-banco (pt-BR). ; , ou tab.
+ * Cobre exports típicos de Inter, Nubank, Itaú, Santander e planilhas genéricas.
  */
 export function parseCsv(content: string): BankTransaction[] {
+  return parseCsvDetailed(content).transactions
+}
+
+export function parseCsvDetailed(content: string): CsvParseResult {
   const text = content.replace(/^\uFEFF/, '').trim()
-  if (!text) return []
+  const detectedBank = detectBank(text)
+  if (!text) return { transactions: [], detectedBank }
 
   const lines = text.split(/\r?\n/).filter(l => l.trim().length > 0)
-  if (lines.length < 2) return []
-
-  const delim = detectDelimiter(lines[0])
-  const header = splitLine(lines[0], delim)
-  const { dateIdx, amountIdx, descIdx, debitIdx, creditIdx } = scoreHeader(header)
-
-  const hasSplitAmount = debitIdx >= 0 && creditIdx >= 0
-  if (dateIdx < 0 || descIdx < 0 || (amountIdx < 0 && !hasSplitAmount)) {
-    throw new Error('CSV sem colunas de data, valor ou descrição reconhecíveis.')
+  if (lines.length < 2) {
+    throw new Error('CSV sem linhas de lançamento. Confira se o arquivo está completo.')
   }
 
-  const txs: BankTransaction[] = []
+  // Alguns exports têm linhas de cabeçalho antes da tabela (Inter/Itaú)
+  let headerIdx = 0
+  for (let i = 0; i < Math.min(lines.length, 15); i++) {
+    const cells = splitLine(lines[i], detectDelimiter(lines[i]))
+    const score = scoreHeader(cells)
+    const hits =
+      (score.dateIdx >= 0 ? 1 : 0) +
+      (score.descIdx >= 0 ? 1 : 0) +
+      (score.amountIdx >= 0 || (score.debitIdx >= 0 && score.creditIdx >= 0) ? 1 : 0)
+    if (hits >= 2) {
+      headerIdx = i
+      break
+    }
+  }
 
-  for (let i = 1; i < lines.length; i++) {
+  const delim = detectDelimiter(lines[headerIdx])
+  const header = splitLine(lines[headerIdx], delim)
+  const { dateIdx, amountIdx, descIdx, debitIdx, creditIdx, typeIdx } = scoreHeader(header)
+
+  const hasSplitAmount = debitIdx >= 0 && creditIdx >= 0
+  if (dateIdx < 0 || (amountIdx < 0 && !hasSplitAmount)) {
+    throw new Error('CSV sem colunas de data ou valor reconhecíveis. Use um export do banco com essas colunas.')
+  }
+  // descrição pode faltar: usa outra coluna ou "Lançamento"
+  const effectiveDescIdx = descIdx >= 0 ? descIdx : header.findIndex((_, i) => i !== dateIdx && i !== amountIdx)
+
+  const txs: BankTransaction[] = []
+  const seen = new Set<string>()
+
+  for (let i = headerIdx + 1; i < lines.length; i++) {
     const cells = splitLine(lines[i], delim)
     const date = parseBRDate(cells[dateIdx] ?? '')
     if (!date) continue
@@ -112,11 +135,25 @@ export function parseCsv(content: string): BankTransaction[] {
       else if (debit && debit !== 0) amount = -Math.abs(debit)
     } else {
       amount = parseBRNumber(cells[amountIdx] ?? '')
+      if (amount !== null && typeIdx >= 0) {
+        const t = (cells[typeIdx] ?? '')
+          .toLowerCase()
+          .normalize('NFD')
+          .replace(/\p{M}/gu, '')
+          .trim()
+        if (/^(d|debito|saida|despesa|-)$/i.test(t) && amount > 0) amount = -amount
+        if (/^(c|credito|entrada|receita|\+)$/i.test(t) && amount < 0) amount = Math.abs(amount)
+      }
     }
     if (amount === null || amount === 0) continue
 
-    const description = (cells[descIdx] ?? '').trim() || 'Lançamento'
+    const description =
+      (effectiveDescIdx >= 0 ? cells[effectiveDescIdx] : '')?.trim() || 'Lançamento'
+    if (/^saldo/i.test(description)) continue
+
     const id = transactionHash(date, amount, description)
+    if (seen.has(id)) continue
+    seen.add(id)
     txs.push({
       id,
       date,
@@ -126,5 +163,9 @@ export function parseCsv(content: string): BankTransaction[] {
     })
   }
 
-  return txs
+  if (txs.length === 0) {
+    throw new Error('CSV lido, mas sem lançamentos reconhecíveis. Confira o formato do export.')
+  }
+
+  return { transactions: txs, detectedBank }
 }

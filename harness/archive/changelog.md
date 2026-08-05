@@ -1,5 +1,11 @@
 # Changelog — Somus
 
+## [2026-08-05] S-EXTRATO — parsers multi-banco (público)
+**Autor:** IA (Cloud Agent)
+**Tasks:**
+- T-EXTRATO-15: detectar banco + layouts PDF/CSV/OFX (99Pay, Inter, Nubank, Itaú, Santander, genérico) ✅
+**Sensores:** `npx tsc --noEmit` ✅ · `npm run build` ✅
+
 ## [2026-08-05] S-EXTRATO — PDF 99Pay via pdfjs-dist
 **Autor:** IA (Cloud Agent)
 **Tasks:**

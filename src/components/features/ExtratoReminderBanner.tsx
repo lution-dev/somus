@@ -89,7 +89,7 @@ export default function ExtratoReminderBanner() {
               fontSize: 13, color: 'var(--color-text-secondary)',
               margin: '0 0 12px', lineHeight: 1.5,
             }}>
-              Quando quiser, envie o extrato de {mesNome} em PDF, OFX ou CSV. A Somus reconhece o que já está na sua base e ajuda a completar o resto.
+              Quando quiser, envie o extrato de {mesNome} em PDF, OFX ou CSV. De qualquer banco. A Somus reconhece o que já está na sua base e ajuda a completar o resto.
             </p>
             <p style={{
               fontSize: 11, color: 'var(--color-text-tertiary)',

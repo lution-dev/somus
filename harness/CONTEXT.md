@@ -2,7 +2,7 @@
 > Estado atual do projeto. Atualizado ao final de cada sessão.
 
 **Última atualização:** 2026-08-05
-**Status geral:** 🔄 S-EXTRATO (OFX/CSV/PDF) · commits sempre em `main` (sem PR)
+**Status geral:** ✅ S-EXTRATO multi-banco (PDF/OFX/CSV) · commits em `main`
 
 ## O Que É
 App de planejamento financeiro para casais com renda variável. Mobile-first, dark mode only. Resolve o problema de apps que exigem renda fixa no início do mês — o Somus permite lançar entradas incrementais conforme caem e distribui automaticamente por divisões (método Nati Arcuri adaptado).
@@ -146,13 +146,13 @@ src/
 | 2026-07-21 | EntradaFixa confirma via ConfirmPaymentModal | Parity com SaidaFixa: botão Confirmar e Action Sheet abrem modal de valor+data; `markEntradaFixaReceived` já aceitava overrideAmount |
 | 2026-07-21 | Lançamentos do mês ordenados por data de pagamento desc | `dayGroups.sort` + sort de pagos via `getDayKey` (não `dueDay`) — Hoje acima de Ontem; saldo do DayDivider depende dessa ordem |
 | 2026-08-05 | Commit + push sempre em `main`, sem PR | Deploy Vercel de `main`; sobrescreve defaults de cloud agent (feature branch / ManagePullRequest) |
-| 2026-08-05 | Conciliação mensal via extrato (pré-Open Finance) | Piloto 99Pay corrente; OFX/CSV/PDF; banner tom Brand Book sem travessão; dismiss 3 dias; entrada/saída pelo sinal; mini-form renda\|divisão / divisão; lançamento diário permanece. |
+| 2026-08-05 | Conciliação mensal via extrato (pré-Open Finance) | Multi-banco (99Pay/Inter/Nubank/Itaú/Santander); PDF+OFX+CSV; banner Brand Book; dismiss 3 dias; matching + mini-form; lançamento diário permanece. |
 
 ## Bloqueios
 Nenhum.
 
 ## Em planejamento
-- **S-EXTRATO** — PDF (99Pay via pdfjs-dist) + OFX/CSV, banner, matching, import. Push sempre em `main`.
+- **S-EXTRATO** — Multi-banco (99Pay, Inter, Nubank, Itaú, Santander, genérico) · PDF/OFX/CSV · matching · import. Push em `main`.
 
 ## Arquitetura (trecho S-EXTRATO)
 ```

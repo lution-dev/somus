@@ -1,16 +1,11 @@
 import { getDocument, GlobalWorkerOptions } from 'pdfjs-dist'
 import pdfWorker from 'pdfjs-dist/build/pdf.worker.min.mjs?url'
 import type { BankTransaction } from '../../types'
-import { parseStatementText } from './parseStatementText'
+import { parseStatementTextDetailed, type StatementParseResult } from './parseStatementText'
 
 GlobalWorkerOptions.workerSrc = pdfWorker
 
-/**
- * Extrai texto de um PDF (pdfjs-dist, gratuita) e parseia lançamentos.
- * Funciona com PDFs com texto selecionável (ex: extrato 99Pay).
- * PDFs só-imagem (scan) não têm texto e vão falhar com mensagem clara.
- */
-export async function parsePdf(data: ArrayBuffer): Promise<BankTransaction[]> {
+async function extractPdfText(data: ArrayBuffer): Promise<string> {
   const loadingTask = getDocument({ data: new Uint8Array(data) })
   const pdf = await loadingTask.promise
 
@@ -33,15 +28,27 @@ export async function parsePdf(data: ArrayBuffer): Promise<BankTransaction[]> {
     if (line) chunks.push(line)
     chunks.push('\n')
   }
+  return chunks.join('\n')
+}
 
-  const text = chunks.join('\n')
+/**
+ * Extrai texto de um PDF (pdfjs-dist, gratuita) e parseia lançamentos multi-banco.
+ * Funciona com PDFs com texto selecionável (99Pay, Inter, Nubank, Itaú, Santander…).
+ * PDFs só-imagem (scan) não têm texto e vão falhar com mensagem clara.
+ */
+export async function parsePdf(data: ArrayBuffer): Promise<BankTransaction[]> {
+  return (await parsePdfDetailed(data)).transactions
+}
+
+export async function parsePdfDetailed(data: ArrayBuffer): Promise<StatementParseResult> {
+  const text = await extractPdfText(data)
   if (!text.replace(/\s/g, '')) {
     throw new Error('Esse PDF não tem texto pra ler (pode ser só imagem). Tente OFX, CSV ou um PDF com texto selecionável.')
   }
 
-  const txs = parseStatementText(text)
-  if (txs.length === 0) {
+  const result = parseStatementTextDetailed(text)
+  if (result.transactions.length === 0) {
     throw new Error('Li o PDF, mas não reconheci lançamentos. Se for outro banco, manda um exemplo pra calibrar.')
   }
-  return txs
+  return result
 }

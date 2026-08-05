@@ -111,9 +111,21 @@
 | T-TZ-01 | 🔄 doing | Substituir `new Date().toISOString()` por `todayBR()`/`currentYM()` em 10 arquivos para corrigir virada de dia às 21h (UTC-3) | ConfirmPaymentModal, LancarDespesaModal, LancarEntradaModal, AddObjetivoModal, LancarObjetivoModal, UsarObjetivoModal, DivisaoDetalhe, Home, ObjetivoDetalhe, Fluxo |
 
 ## Sprint Atual — Extrato Bancário / Conciliação Mensal (S-EXTRATO)
-> Status: **🔄 em implementação** · Plano: [`harness/plans/extrato-bancario.md`](./plans/extrato-bancario.md)  
-> Piloto: **99Pay** (PDF com texto) · Formatos: **PDF + OFX/CSV** · Banner dismiss 3 dias  
-> Lib PDF: `pdfjs-dist` (gratuita). Layout 99Pay calibrado com amostra real (anonimizada).
+> Status: **🔄 multi-banco** · Plano: [`harness/plans/extrato-bancario.md`](./plans/extrato-bancario.md)  
+> Público: qualquer banco (99Pay, Inter, Nubank, Itaú, Santander, genérico) · Formatos: **PDF + OFX/CSV**  
+> Lib PDF: `pdfjs-dist`. Estratégia: detectar banco → layouts específicos → fallback genérico.
+
+#### T-EXTRATO-15: Parsers multi-banco (público)
+**Tipo:** Feature
+**Critérios:**
+- [x] Detectar banco pelo texto/header (99Pay, Inter, Nubank, Itaú, Santander, genérico)
+- [x] PDF: vários layouts de linha + scoring do melhor parse
+- [x] CSV: aliases de colunas dos principais bancos BR + C/D
+- [x] OFX: cross-banco; capturar ORG/BANKID como rótulo
+- [x] Copy UI: “qualquer banco” + PDF/OFX/CSV
+- [x] Fixtures: 99Pay, Inter, Itaú, Nubank, Santander OFX
+- [x] Sensores `tsc` + `build`
+**Status:** ✅ done
 
 ### Sprint A — Fundação + lembrete
 | ID | Status | Descrição | Arquivo |

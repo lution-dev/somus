@@ -135,6 +135,7 @@ export default function ExtratoRevisao() {
       yearMonth: draft.yearMonth,
       uploadedAt: todayBR(),
       sourceFormat: draft.sourceFormat,
+      sourceLabel: draft.sourceLabel,
       accountKind: 'checking',
       transactionCount: draft.transactions.length,
       matchedCount: matched.length,
@@ -185,7 +186,10 @@ export default function ExtratoRevisao() {
 
       <div style={{ padding: '8px 16px 0' }}>
         <p style={{ fontSize: 13, color: 'var(--color-text-secondary)', margin: '0 0 4px' }}>
-          {mesNome} · {draft.fileName}
+          {mesNome}
+          {draft.sourceLabel ? ` · ${draft.sourceLabel}` : ''}
+          {' · '}
+          {draft.fileName}
         </p>
         <p style={{ fontSize: 14, color: 'var(--color-text-primary)', fontWeight: 500, margin: '0 0 20px' }}>
           {matched.length} já na base · {pendingCount} pra lançar
