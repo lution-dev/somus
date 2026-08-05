@@ -1,5 +1,11 @@
 # Changelog — Somus
 
+## [2026-08-05] S-EXTRATO — suite E2E das regras
+**Autor:** IA (Cloud Agent)
+**Tasks:**
+- T-EXTRATO-17: vitest `npm run test:extrato` (18 casos, PDF real incluso) ✅
+**Sensores:** `npm run test:extrato` ✅ · `npx tsc --noEmit` ✅ · `npm run build` ✅
+
 ## [2026-08-05] S-EXTRATO — parsers multi-banco (público)
 **Autor:** IA (Cloud Agent)
 **Tasks:**

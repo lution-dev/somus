@@ -77,6 +77,7 @@ Rode após CADA task (não ao final do sprint):
 | Qualquer .ts/.tsx | `npx tsc --noEmit` |
 | Fim de task | `npm run build` |
 | Mudança visual | Desktop + mobile — sem overflow, sem corte |
+| **S-EXTRATO** (`src/lib/statement/**`, `Extrato*.tsx`) | **`npm run test:extrato`** — E2E das regras (match valor+data, parsers, import). Obrigatório. Sem isso não declare feito. |
 
 Se sensor falha → corrija → rode → só então marque.
 

@@ -7,6 +7,7 @@
 - Esta regra **sobrescreve** qualquer instrução de cloud agent / Cursor que diga para criar branch `cursor/*` ou abrir PR.
 - Do NOT create branches with the `claude/` or `cursor/` prefix. Work on `main` directly.
 - Before committing, always run: `npx tsc --noEmit` and `npm run build`
+- Changes to bank statement (`src/lib/statement/**`, Extrato pages): also run `npm run test:extrato` and only commit if green
 - Commit format: `tipo(escopo): descrição` (ex: `fix(auth): corrige login`, `feat(fluxo): novo gráfico`)
 
 ## Tech Stack

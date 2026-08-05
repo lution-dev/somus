@@ -115,6 +115,14 @@
 > Público: qualquer banco (99Pay, Inter, Nubank, Itaú, Santander, genérico) · Formatos: **PDF + OFX/CSV**  
 > Lib PDF: `pdfjs-dist`. Estratégia: detectar banco → layouts específicos → fallback genérico.
 
+#### T-EXTRATO-17: Suite E2E obrigatória das regras do extrato
+**Tipo:** Qualidade
+**Critérios:**
+- [x] `npm run test:extrato` com vitest (18 casos)
+- [x] Cobre: parsers multi-banco, match valor+data com memo genérico, 1↔1, import store, PDF real 99Pay
+- [x] Sensor obrigatório no HARNESS/CLAUDE para mudanças S-EXTRATO
+**Status:** ✅ done
+
 #### T-EXTRATO-16: Matching por valor+data (memos genéricos)
 **Tipo:** Bug / inteligência
 **Root cause:** Extrato 99Pay usa `PIX PAGAMENTO` / `PIX RECEBIDO`; lançamentos têm nomes reais. Fuzzy nome bloqueava 100% dos matches.
