@@ -49,7 +49,8 @@ export default defineConfig({
   ],
   server: {
     port: 1619,
-    strictPort: true,
+    // free-port.mjs já libera 1619 no `npm run dev`; se ainda falhar, tenta a próxima
+    strictPort: false,
     host: true,
   },
   resolve: {

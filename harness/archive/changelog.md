@@ -1,5 +1,12 @@
 # Changelog — Somus
 
+## [2026-08-05] DX — free-port no npm run dev
+**Autor:** IA (Cloud Agent)
+**Tasks:**
+- T-AD-18: `scripts/free-port.mjs` + `strictPort: false` — evita Port 1619 already in use ✅
+**Commits:** (pendente)
+**Sensores:** `npx tsc --noEmit` ✅ · `npm run build` ✅
+
 ## [2026-08-05] S-EXTRATO — unmatched first / matched nunca relança
 **Autor:** IA (Cloud Agent)
 **Tasks:**

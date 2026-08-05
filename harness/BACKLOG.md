@@ -35,6 +35,16 @@
 
 ## Ad-hoc — UI/UX Fixes (pós-MVP)
 
+#### T-AD-18: Dev server — Port 1619 already in use
+**Tipo:** DX / tooling
+**Root cause:** `strictPort: true` + processo Vite residual (ex.: sessão anterior / agent) ocupa 1619 e `npm run dev` falha.
+**Critérios:**
+- [x] `scripts/free-port.mjs` libera 1619 antes do Vite
+- [x] `npm run dev` chama free-port + vite
+- [x] `strictPort: false` como fallback
+- [x] Sensores + push em `main`
+**Status:** ✅ done
+
 #### T-AD-17: Git — commits sempre em main, sem PR
 **Tipo:** Processo / regras de agente
 **Root cause:** Cloud agents recebem default para criar branch `cursor/*` e abrir PR; o projeto Somus faz deploy Vercel a partir de `main` e o fluxo desejado é push direto.
