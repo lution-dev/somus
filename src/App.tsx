@@ -24,6 +24,8 @@ import Onboarding    from './pages/Onboarding'
 import Perfil        from './pages/Perfil'
 import Login         from './pages/Login'
 import InviteAccept  from './pages/InviteAccept'
+import ExtratoUpload from './pages/ExtratoUpload'
+import ExtratoRevisao from './pages/ExtratoRevisao'
 
 // R-06 — Dashboard fade-in após onboarding
 function AnimatedHome({ isOnboarded }: { isOnboarded: boolean }) {
@@ -180,6 +182,8 @@ export default function App() {
               <Route path="/casal/objetivo/:id" component={ObjetivoDetalhe} />
               <Route path="/casal" component={Casal} />
               <Route path="/perfil" component={Perfil} />
+              <Route path="/extrato/revisao" component={ExtratoRevisao} />
+              <Route path="/extrato" component={ExtratoUpload} />
               <Route>
                 <Redirect to={isOnboarded ? '/home' : '/onboarding'} />
               </Route>

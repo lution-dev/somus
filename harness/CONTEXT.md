@@ -2,7 +2,7 @@
 > Estado atual do projeto. Atualizado ao final de cada sessão.
 
 **Última atualização:** 2026-08-05
-**Status geral:** ✅ Plano S-EXTRATO aprovado (falta amostra 99Pay). Importação OFX/CSV + matching + lembrete Home
+**Status geral:** 🔄 S-EXTRATO em implementação (upload OFX/CSV + matching + banner Home)
 
 ## O Que É
 App de planejamento financeiro para casais com renda variável. Mobile-first, dark mode only. Resolve o problema de apps que exigem renda fixa no início do mês — o Somus permite lançar entradas incrementais conforme caem e distribui automaticamente por divisões (método Nati Arcuri adaptado).
@@ -151,7 +151,15 @@ src/
 Nenhum.
 
 ## Em planejamento
-- **S-EXTRATO** — Conciliação mensal 99Pay (OFX/CSV), banner Home (tom Brand Book, sem travessão, dismiss 3 dias), matching + mini-form. Decisões fechadas. Precisa amostra CSV/OFX 99Pay. Plano: [`harness/plans/extrato-bancario.md`](./plans/extrato-bancario.md).
+- **S-EXTRATO** — Em implementação. Parsers genéricos OFX/CSV (99Pay export ainda em verificação pelo usuário). Banner, upload, revisão e import no store. Plano: [`harness/plans/extrato-bancario.md`](./plans/extrato-bancario.md).
+
+## Arquitetura (trecho S-EXTRATO)
+```
+src/lib/statement/     # parseOfx, parseCsv, matchTransactions, suggestName
+src/pages/ExtratoUpload.tsx
+src/pages/ExtratoRevisao.tsx
+src/components/features/ExtratoReminderBanner.tsx
+```
 
 ## Leitura Obrigatória
 - [harness/DATA_INTEGRITY.md](./DATA_INTEGRITY.md) — antes de mexer em qualquer função que toque em `balance`, `movements`, `saidasFixas` ou `saidasVariaveis`.

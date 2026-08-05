@@ -158,6 +158,54 @@ export interface Objetivo {
   originObjectiveName?: string // herança emocional: "Construído a partir de: Casamento ✨"
 }
 
+// ─── Extrato bancário (conciliação mensal) ───────────────────────────────────
+
+/** Transação normalizada após parse (arquivo bruto não é persistido) */
+export interface BankTransaction {
+  id: string
+  date: string            // YYYY-MM-DD
+  amount: number          // +crédito / -débito
+  description: string
+  rawType?: 'credit' | 'debit'
+}
+
+export type StatementMatchStatus = 'matched' | 'unmatched' | 'ignored'
+
+export interface StatementLinkedEntity {
+  kind: 'entrada' | 'entradaFixa' | 'saidaVariavel' | 'saidaFixa'
+  id: string
+  label: string
+}
+
+export interface StatementReconciliation {
+  id: string
+  userId: string
+  yearMonth: string           // mês do extrato, ex: '2026-07'
+  uploadedAt: string
+  sourceFormat: 'ofx' | 'csv'
+  /** Rótulo livre (ex: 99Pay, Inter). Piloto ainda em definição de export. */
+  sourceLabel?: string
+  accountKind: 'checking'
+  transactionCount: number
+  matchedCount: number
+  importedCount: number
+  ignoredCount: number
+  transactionHashes: string[]
+}
+
+/** Item confirmado na tela de revisão para gravar no store */
+export interface StatementImportItem {
+  transactionId: string
+  date: string
+  amount: number
+  name: string
+  /** crédito: renda distributable ou direto numa divisão */
+  direction: 'income' | 'expense'
+  incomeKind?: 'distributable' | 'direct'
+  divisaoId?: string
+  ignored?: boolean
+}
+
 // ─── App State ──────────────────────────────────────────────────────────────
 
 export interface AppState {
@@ -172,6 +220,7 @@ export interface AppState {
   saidasFixas: SaidaFixa[]
   saidasVariaveis: SaidaVariavel[]
   objetivos: Objetivo[]
+  statementReconciliations: StatementReconciliation[]
 }
 
 export interface MonthSummary {

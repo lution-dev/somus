@@ -1,8 +1,8 @@
 # Plano — Importação de Extrato Bancário (S-EXTRATO)
 
-> Status: **decisões fechadas** · Atualizado: 2026-08-05  
+> Status: **🔄 v1 implementado (parsers genéricos)** · Atualizado: 2026-08-05  
 > Tipo: SPRINT (feature complexa) · Pré-Open Finance  
-> Piloto: **99Pay** (conta corrente / carteira) · Sem fatura de cartão
+> Piloto: **conta corrente** (99Pay export ainda em verificação; parsers genéricos BR) · Sem fatura de cartão
 
 ## Problema
 
@@ -12,7 +12,7 @@ Hoje cada compra/pagamento exige lançamento manual no momento. Sem Open Finance
 
 | # | Pergunta | Decisão |
 |---|----------|--------|
-| 1 | Banco piloto | **99Pay** |
+| 1 | Banco piloto | **99Pay** (export ainda em verificação; UI bank-agnostic por enquanto) |
 | 2 | Formatos v1 | **OFX/OFC + CSV** (sem PDF). Banner e tela de upload deixam isso explícito |
 | 3 | Entrada vs saída | Vem do sinal do extrato (+ crédito / − débito). **Entrada** → pergunta renda ou divisão. **Saída** → pergunta qual divisão |
 | 4 | Dismiss do banner | **Opção B:** some por **3 dias**, depois volta no mesmo mês até reconciliar |

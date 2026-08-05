@@ -102,35 +102,35 @@
 |----|--------|-----------|---------|
 | T-TZ-01 | 🔄 doing | Substituir `new Date().toISOString()` por `todayBR()`/`currentYM()` em 10 arquivos para corrigir virada de dia às 21h (UTC-3) | ConfirmPaymentModal, LancarDespesaModal, LancarEntradaModal, AddObjetivoModal, LancarObjetivoModal, UsarObjetivoModal, DivisaoDetalhe, Home, ObjetivoDetalhe, Fluxo |
 
-## Sprint Proposto — Extrato Bancário / Conciliação Mensal (S-EXTRATO)
-> Status: **✅ aprovado pra implementar** (falta só amostra 99Pay pro parser) · Plano: [`harness/plans/extrato-bancario.md`](./plans/extrato-bancario.md)  
-> Piloto: **99Pay** (corrente) · Formatos: **OFX/CSV** · Sem cartão · Lançamento diário permanece · Banner dismiss 3 dias  
-> Objetivo: lembrete Home (tom Brand Book, sem travessão) + upload + matching + mini-form (entrada→renda|divisão · saída→divisão)
+## Sprint Atual — Extrato Bancário / Conciliação Mensal (S-EXTRATO)
+> Status: **🔄 em implementação** · Plano: [`harness/plans/extrato-bancario.md`](./plans/extrato-bancario.md)  
+> Piloto: conta corrente (export 99Pay ainda em verificação) · Formatos: **OFX/CSV** · Banner dismiss 3 dias  
+> Nota: 99Pay pode não exportar extrato; parsers genéricos BR + fixture sample-br.csv
 
 ### Sprint A — Fundação + lembrete
 | ID | Status | Descrição | Arquivo |
 |----|--------|-----------|---------|
-| T-EXTRATO-01 | ⬜ pending | Tipos `BankTransaction` / `StatementReconciliation` (+ sourceBank 99pay, accountKind checking) + AppState + migrate v16 | types/index.ts, useAppStore.ts |
-| T-EXTRATO-02 | ⬜ pending | Helpers `previousYM()` / `hasReconciliation(ym)` | lib/calculations.ts ou lib/statement/ |
-| T-EXTRATO-03 | ⬜ pending | Banner Home (copy Brand Book sem travessão, OFX/CSV explícitos, dismiss 3 dias) | ExtratoReminderBanner.tsx, Home.tsx |
-| T-EXTRATO-04 | ⬜ pending | Rotas stub `/extrato` e `/extrato/revisao` | App.tsx, ExtratoUpload.tsx |
+| T-EXTRATO-01 | ✅ done | Tipos + AppState + migrate persist v17 + Firestore | types, useAppStore, firestoreService, migrationService |
+| T-EXTRATO-02 | ✅ done | Helpers `previousYM()` / `monthNameLong()` | lib/months.ts |
+| T-EXTRATO-03 | ✅ done | Banner Home (copy Brand Book sem travessão, OFX/CSV, dismiss 3 dias) | ExtratoReminderBanner.tsx, Home.tsx |
+| T-EXTRATO-04 | ✅ done | Rotas `/extrato` e `/extrato/revisao` | App.tsx, ExtratoUpload.tsx |
 
-### Sprint B — Parsers (99Pay)
+### Sprint B — Parsers
 | ID | Status | Descrição | Arquivo |
 |----|--------|-----------|---------|
-| T-EXTRATO-05 | ⬜ pending | Parser OFX/OFC → `BankTransaction[]` | lib/statement/parseOfx.ts |
-| T-EXTRATO-06 | ⬜ pending | Parser CSV calibrado com **amostra 99Pay** (bloqueado até receber fixture) | lib/statement/parseCsv.ts |
-| T-EXTRATO-07 | ⬜ pending | Upload UI: só OFX/CSV; rejeita resto com copy calma → revisão | ExtratoUpload.tsx |
+| T-EXTRATO-05 | ✅ done | Parser OFX/OFC | lib/statement/parseOfx.ts |
+| T-EXTRATO-06 | ✅ done | Parser CSV BR genérico + fixture sample | lib/statement/parseCsv.ts, fixtures/ |
+| T-EXTRATO-07 | ✅ done | Upload UI → parse → revisão | ExtratoUpload.tsx |
 
 ### Sprint C — Matching + import
 | ID | Status | Descrição | Arquivo |
 |----|--------|-----------|---------|
-| T-EXTRATO-08 | ⬜ pending | Matching puro (fixa/EntradaFixa/Entrada/SV) | lib/statement/matchTransactions.ts |
-| T-EXTRATO-09 | ⬜ pending | Tela revisão: matched (badge) / unmatched / ignore | ExtratoRevisao.tsx |
-| T-EXTRATO-10 | ⬜ pending | Mini-form: crédito→renda\|divisão · débito→divisão · valor/nome/data | ExtratoImportForm.tsx |
-| T-EXTRATO-11 | ⬜ pending | Action `importStatementTransactions` (DATA_INTEGRITY) | useAppStore.ts |
-| T-EXTRATO-12 | ⬜ pending | Persistir reconciliation → banner some + sync Firestore | useAppStore.ts, Home |
-| T-EXTRATO-13 | ⬜ pending | Atualizar SPEC/DESIGN/CONTEXT + changelog | harness/ |
+| T-EXTRATO-08 | ✅ done | Matching puro | lib/statement/matchTransactions.ts |
+| T-EXTRATO-09 | ✅ done | Tela revisão matched / unmatched / ignore | ExtratoRevisao.tsx |
+| T-EXTRATO-10 | ✅ done | Mini-form: crédito→renda\|divisão · débito→divisão | ExtratoRevisao.tsx |
+| T-EXTRATO-11 | ✅ done | Action `importStatementTransactions` | useAppStore.ts |
+| T-EXTRATO-12 | ✅ done | Persistir reconciliation → banner some | useAppStore + ExtratoRevisao |
+| T-EXTRATO-13 | ✅ done | Atualizar SPEC/DESIGN/CONTEXT + changelog | harness/ |
 
 ### Futuro (fora do v1)
 | ID | Prioridade | Descrição |

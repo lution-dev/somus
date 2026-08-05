@@ -33,3 +33,14 @@ export function monthLabel(ym: string): string {
   const mesCapit = mes.replace('.', '')
   return `${mesCapit.charAt(0).toUpperCase() + mesCapit.slice(1)} ${y}`
 }
+
+/** Mês civil anterior ao atual (fuso local), ex: '2026-07' */
+export function previousYM(from?: string): string {
+  return shiftMonth(from ?? currentYM(), -1)
+}
+
+/** Nome do mês por extenso em pt-BR, ex: "julho" */
+export function monthNameLong(ym: string): string {
+  const [y, m] = ym.split('-').map(Number)
+  return new Date(y, m - 1, 1).toLocaleDateString('pt-BR', { month: 'long' })
+}
