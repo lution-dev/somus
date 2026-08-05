@@ -103,30 +103,31 @@
 | T-TZ-01 | 🔄 doing | Substituir `new Date().toISOString()` por `todayBR()`/`currentYM()` em 10 arquivos para corrigir virada de dia às 21h (UTC-3) | ConfirmPaymentModal, LancarDespesaModal, LancarEntradaModal, AddObjetivoModal, LancarObjetivoModal, UsarObjetivoModal, DivisaoDetalhe, Home, ObjetivoDetalhe, Fluxo |
 
 ## Sprint Proposto — Extrato Bancário / Conciliação Mensal (S-EXTRATO)
-> Status: **⏳ aguardando aprovação** · Plano completo: [`harness/plans/extrato-bancario.md`](./plans/extrato-bancario.md)  
-> Objetivo: lembrete mensal na Home + upload OFX/CSV + matching com lançamentos existentes + mini-form só para o que falta. PDF e e-mail ficam no futuro.
+> Status: **⏳ quase aprovado** · Plano: [`harness/plans/extrato-bancario.md`](./plans/extrato-bancario.md)  
+> Piloto: **99Pay** (corrente) · Formatos: **OFX/CSV** · Sem cartão · Lançamento diário permanece  
+> Objetivo: lembrete Home (tom Brand Book) + upload + matching + mini-form (entrada→renda|divisão · saída→divisão)
 
 ### Sprint A — Fundação + lembrete
 | ID | Status | Descrição | Arquivo |
 |----|--------|-----------|---------|
-| T-EXTRATO-01 | ⬜ pending | Tipos `BankTransaction` / `StatementReconciliation` + AppState + migrate persist v16 | types/index.ts, useAppStore.ts |
+| T-EXTRATO-01 | ⬜ pending | Tipos `BankTransaction` / `StatementReconciliation` (+ sourceBank 99pay, accountKind checking) + AppState + migrate v16 | types/index.ts, useAppStore.ts |
 | T-EXTRATO-02 | ⬜ pending | Helpers `previousYM()` / `hasReconciliation(ym)` | lib/calculations.ts ou lib/statement/ |
-| T-EXTRATO-03 | ⬜ pending | Banner Home: “Envie o extrato de {mês anterior}” | ExtratoReminderBanner.tsx, Home.tsx |
+| T-EXTRATO-03 | ⬜ pending | Banner Home — copy Brand Book, formatos OFX/CSV explícitos, sem urgência | ExtratoReminderBanner.tsx, Home.tsx |
 | T-EXTRATO-04 | ⬜ pending | Rotas stub `/extrato` e `/extrato/revisao` | App.tsx, ExtratoUpload.tsx |
 
-### Sprint B — Parsers
+### Sprint B — Parsers (99Pay)
 | ID | Status | Descrição | Arquivo |
 |----|--------|-----------|---------|
-| T-EXTRATO-05 | ⬜ pending | Parser OFX/OFC → `BankTransaction[]` + fixtures | lib/statement/parseOfx.ts |
-| T-EXTRATO-06 | ⬜ pending | Parser CSV BR (`;`/`,` + dd/mm/yyyy) | lib/statement/parseCsv.ts |
-| T-EXTRATO-07 | ⬜ pending | Upload UI → parse → navega revisão com state | ExtratoUpload.tsx |
+| T-EXTRATO-05 | ⬜ pending | Parser OFX/OFC → `BankTransaction[]` | lib/statement/parseOfx.ts |
+| T-EXTRATO-06 | ⬜ pending | Parser CSV calibrado com **amostra 99Pay** (bloqueado até receber fixture) | lib/statement/parseCsv.ts |
+| T-EXTRATO-07 | ⬜ pending | Upload UI: só OFX/CSV; rejeita resto com copy calma → revisão | ExtratoUpload.tsx |
 
 ### Sprint C — Matching + import
 | ID | Status | Descrição | Arquivo |
 |----|--------|-----------|---------|
 | T-EXTRATO-08 | ⬜ pending | Matching puro (fixa/EntradaFixa/Entrada/SV) | lib/statement/matchTransactions.ts |
 | T-EXTRATO-09 | ⬜ pending | Tela revisão: matched (badge) / unmatched / ignore | ExtratoRevisao.tsx |
-| T-EXTRATO-10 | ⬜ pending | Mini-form unmatched: valor, nome, divisão, data(auto) | ExtratoImportForm.tsx |
+| T-EXTRATO-10 | ⬜ pending | Mini-form: crédito→renda\|divisão · débito→divisão · valor/nome/data | ExtratoImportForm.tsx |
 | T-EXTRATO-11 | ⬜ pending | Action `importStatementTransactions` (DATA_INTEGRITY) | useAppStore.ts |
 | T-EXTRATO-12 | ⬜ pending | Persistir reconciliation → banner some + sync Firestore | useAppStore.ts, Home |
 | T-EXTRATO-13 | ⬜ pending | Atualizar SPEC/DESIGN/CONTEXT + changelog | harness/ |
@@ -135,13 +136,16 @@
 | ID | Prioridade | Descrição |
 |----|-----------|-----------|
 | T-EXTRATO-FUT-01 | média | E-mail lembrete início do mês |
-| T-EXTRATO-FUT-02 | baixa | Parser PDF piloto (banco a definir) |
+| T-EXTRATO-FUT-02 | baixa | Parser PDF (se 99Pay só oferecer PDF) |
 | T-EXTRATO-FUT-03 | baixa | Open Finance |
 | T-EXTRATO-FUT-04 | baixa | Sugestão vincular unmatched → saída fixa |
 
-**Dependências:** 01→02→03; 01→04; 05+06→07→08→09→10→11→12→13
+**Dependências:** 01→02→03; 01→04; [amostra 99Pay]→06; 05+06→07→08→09→10→11→12→13
 
-**Ambiguidades abertas (ver plano):** banco piloto · PDF no v1? · default de créditos · dismiss do banner · cartão vs CC · lançamento diário permanece (recomendado: sim)
+**Decisões fechadas:** 99Pay · OFX+CSV · entrada/saída pelo sinal do extrato · pergunta renda|divisão / divisão · só corrente · lançamento diário permanece  
+
+**Aberto:** comportamento do X no banner (some até reconciliar / some alguns dias / sem X)  
+**Bloqueio suave:** amostra real CSV/OFX 99Pay (anonimizada) para T-EXTRATO-06
 
 ---
 
