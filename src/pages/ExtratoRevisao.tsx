@@ -1,7 +1,7 @@
-import { useEffect, useMemo, useState, type CSSProperties, type ReactNode } from 'react'
+import { useEffect, useMemo, useState, type CSSProperties } from 'react'
 import { useLocation } from 'wouter'
 import { motion } from 'framer-motion'
-import { Check, EyeOff, ClipboardList, FileSpreadsheet, X } from 'lucide-react'
+import { Check, EyeOff } from 'lucide-react'
 import { useShallow } from 'zustand/react/shallow'
 import { PageHeader, Button, Breadcrumb, ConfirmDialog } from '../components/ui'
 import { useIsMobile } from '../hooks/useIsMobile'
@@ -222,6 +222,7 @@ export default function ExtratoRevisao() {
 
   const mesNome = monthNameLong(draft.yearMonth)
   const shortName = truncateFileName(draft.fileName)
+  const metaParts = [mesNome, draft.sourceLabel, shortName].filter(Boolean) as string[]
 
   return (
     <div style={{
@@ -234,9 +235,9 @@ export default function ExtratoRevisao() {
           aria-hidden
           style={{
             position: 'absolute',
-            top: 0, left: 0, right: 0, height: 420,
-            background: 'radial-gradient(circle at 42% -60px, #3B82F6 0%, transparent 62%)',
-            opacity: 0.12,
+            top: 0, left: 0, right: 0, height: 280,
+            background: 'radial-gradient(circle at 40% -80px, #3B82F6 0%, transparent 70%)',
+            opacity: 0.06,
             pointerEvents: 'none',
             zIndex: 0,
           }}
@@ -248,61 +249,52 @@ export default function ExtratoRevisao() {
           <PageHeader title="Revisar extrato" back backTo="/extrato" bg={HERO_BG} />
           <div style={{
             background: `linear-gradient(to bottom, ${HERO_BG} 0%, transparent 100%)`,
-            padding: '4px 16px 22px',
+            padding: '2px 16px 18px',
           }}>
-            <motion.div
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.35, ease }}
-              style={{
-                padding: '16px 16px 14px',
-                borderRadius: 16,
-                background: 'rgba(255,255,255,0.05)',
-                border: '1px solid rgba(255,255,255,0.10)',
-                backdropFilter: 'blur(16px)',
-                boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.08)',
-              }}
+            <p style={{
+              margin: '0 0 8px',
+              fontSize: 12,
+              color: 'rgba(148,163,184,0.85)',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
+            }}>
+              {metaParts.join(' · ')}
+            </p>
+            <p style={{
+              margin: '0 0 10px',
+              fontSize: 14,
+              color: 'rgba(226,232,240,0.78)',
+              lineHeight: 1.4,
+            }}>
+              <span style={{ color: '#93C5FD', fontWeight: 600 }}>{pendingCount}</span>
+              {' '}pra lançar
+              {matched.length > 0 && (
+                <>
+                  <span style={{ color: 'rgba(148,163,184,0.55)' }}> · </span>
+                  <span style={{ color: '#6EE7B7', fontWeight: 600 }}>{matched.length}</span>
+                  {' '}já na base
+                </>
+              )}
+            </p>
+            <button
+              type="button"
+              onClick={() => setConfirmDiscard(true)}
+              style={discardLinkStyle}
             >
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12, flexWrap: 'wrap' }}>
-                <MetaChip label={mesNome} />
-                {draft.sourceLabel && <MetaChip label={draft.sourceLabel} />}
-                <MetaChip label={shortName} muted />
-              </div>
-              <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, marginBottom: 6 }}>
-                <h1 style={{
-                  fontSize: 28, fontWeight: 700, letterSpacing: '-0.03em',
-                  color: 'var(--color-text-primary)', margin: 0,
-                  fontFamily: 'var(--font-display)', lineHeight: 1,
-                }}>
-                  {pendingCount}
-                </h1>
-                <span style={{
-                  fontSize: 15, fontWeight: 500, color: 'rgba(226,232,240,0.75)',
-                }}>
-                  pra lançar
-                </span>
-              </div>
-              <p style={{
-                fontSize: 13, color: 'rgba(226,232,240,0.62)', margin: '0 0 12px', lineHeight: 1.45,
-              }}>
-                {matched.length > 0
-                  ? `${matched.length} já na base ficam no final · sem relançar`
-                  : 'Só o que ainda não está no Somus'}
-              </p>
-              <button
-                type="button"
-                onClick={() => setConfirmDiscard(true)}
-                style={discardBtnStyle}
-              >
-                <X size={13} strokeWidth={2} />
-                Remover este extrato
-              </button>
-            </motion.div>
+              Remover este extrato
+            </button>
           </div>
         </>
       ) : (
-        <div style={{ paddingTop: 20, marginBottom: 4, position: 'relative', zIndex: 1 }}>
-          <div style={{ marginBottom: 14, opacity: 0.55 }}>
+        <div style={{
+          paddingTop: 24,
+          marginBottom: 4,
+          position: 'relative',
+          zIndex: 1,
+          maxWidth: 860,
+        }}>
+          <div style={{ marginBottom: 20, opacity: 0.5 }}>
             <Breadcrumb
               items={[
                 { label: 'Home', href: '/home' },
@@ -312,100 +304,67 @@ export default function ExtratoRevisao() {
             />
           </div>
 
-          {/* Hero glass — padrão Divisão/Relatórios */}
           <div style={{
-            padding: '22px 24px',
-            borderRadius: 'var(--radius-card, 16px)',
-            background:
-              'radial-gradient(ellipse at 6% -30%, rgba(59,130,246,0.22) 0%, transparent 52%), rgba(26,45,66,0.72)',
-            border: '1px solid rgba(59,130,246,0.20)',
-            boxShadow:
-              'inset 0 1px 0 rgba(255,255,255,0.07), 0 12px 40px rgba(0,0,0,0.22)',
-            backdropFilter: 'blur(20px) saturate(160%)',
-            WebkitBackdropFilter: 'blur(20px) saturate(160%)',
-            position: 'relative',
-            overflow: 'hidden',
             display: 'flex',
-            alignItems: 'center',
-            gap: 22,
-            maxWidth: 860,
+            alignItems: 'flex-start',
+            justifyContent: 'space-between',
+            gap: 24,
+            flexWrap: 'wrap',
           }}>
-            <div
-              aria-hidden
-              style={{
-                position: 'absolute', top: 0, left: 0,
-                width: 240, height: 140, pointerEvents: 'none',
-                background: 'radial-gradient(ellipse at 10% 0%, rgba(59,130,246,0.28) 0%, transparent 65%)',
-              }}
-            />
-
-            <div style={{
-              width: 56, height: 56, borderRadius: 18, flexShrink: 0,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              background: 'rgba(59,130,246,0.14)',
-              border: '1px solid rgba(59,130,246,0.28)',
-              position: 'relative', zIndex: 1,
-              boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.1)',
-            }}>
-              <ClipboardList size={26} color="#60A5FA" strokeWidth={1.6} />
-            </div>
-
-            <div style={{ flex: 1, minWidth: 0, position: 'relative', zIndex: 1 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10, flexWrap: 'wrap' }}>
-                <MetaChip label={mesNome} />
-                {draft.sourceLabel && <MetaChip label={draft.sourceLabel} accent />}
-                <MetaChip
-                  label={shortName}
-                  icon={<FileSpreadsheet size={11} color="#94A3B8" strokeWidth={2} />}
-                  muted
-                  onRemove={() => setConfirmDiscard(true)}
-                  removeLabel="Remover este extrato"
-                />
-              </div>
-
+            <div style={{ flex: 1, minWidth: 240 }}>
               <h1 style={{
-                fontSize: 24, fontWeight: 700, letterSpacing: '-0.025em',
-                color: 'var(--color-text-primary)', margin: '0 0 6px',
-                fontFamily: 'var(--font-display)', lineHeight: 1.15,
+                fontSize: 24,
+                fontWeight: 600,
+                letterSpacing: '-0.02em',
+                color: 'var(--color-text-primary)',
+                margin: '0 0 8px',
+                fontFamily: 'var(--font-display)',
+                lineHeight: 1.2,
               }}>
                 Revisar extrato
               </h1>
-              <p style={{
-                fontSize: 13.5, color: 'var(--color-text-secondary)', margin: '0 0 12px',
-                lineHeight: 1.5, maxWidth: 420,
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 12,
+                flexWrap: 'wrap',
+                marginBottom: 0,
               }}>
-                Em cima só o que ainda não está no Somus. O que já bateu fica no final, só pra conferir.
-              </p>
-              <button
-                type="button"
-                onClick={() => setConfirmDiscard(true)}
-                style={discardBtnStyle}
-              >
-                <X size={13} strokeWidth={2} />
-                Remover este extrato
-              </button>
+                <span style={{
+                  fontSize: 13,
+                  color: 'var(--color-text-tertiary)',
+                  lineHeight: 1.4,
+                }}>
+                  {metaParts.join(' · ')}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setConfirmDiscard(true)}
+                  style={discardLinkStyle}
+                >
+                  Remover este extrato
+                </button>
+              </div>
             </div>
 
-            {/* KPI strip */}
-            <div style={{
-              display: 'flex', gap: 10, flexShrink: 0,
-              position: 'relative', zIndex: 1,
+            <p style={{
+              margin: 0,
+              fontSize: 14,
+              color: 'var(--color-text-secondary)',
+              lineHeight: 1.5,
+              flexShrink: 0,
+              paddingTop: 4,
             }}>
-              <KpiTile
-                value={pendingCount}
-                label="pra lançar"
-                color="#60A5FA"
-                bg="rgba(59,130,246,0.12)"
-                border="rgba(59,130,246,0.28)"
-              />
-              <KpiTile
-                value={matched.length}
-                label="já na base"
-                color="#34D399"
-                bg="rgba(16,185,129,0.10)"
-                border="rgba(16,185,129,0.24)"
-              />
-            </div>
+              <span style={{ color: '#93C5FD', fontWeight: 600 }}>{pendingCount}</span>
+              {' '}pra lançar
+              {matched.length > 0 && (
+                <>
+                  <span style={{ color: 'var(--color-text-tertiary)' }}> · </span>
+                  <span style={{ color: '#6EE7B7', fontWeight: 600 }}>{matched.length}</span>
+                  {' '}já na base
+                </>
+              )}
+            </p>
           </div>
         </div>
       )}
@@ -413,7 +372,7 @@ export default function ExtratoRevisao() {
       <div style={{
         position: 'relative',
         zIndex: 1,
-        padding: isMobile ? '8px 16px 0' : '24px 0 0',
+        padding: isMobile ? '4px 16px 0' : '28px 0 0',
         maxWidth: isMobile ? undefined : 860,
         width: '100%',
       }}>
@@ -691,138 +650,18 @@ function truncateFileName(name: string, max = 28): string {
   return `${name.slice(0, keep)}…${ext}`
 }
 
-function MetaChip({
-  label,
-  muted,
-  accent,
-  icon,
-  onRemove,
-  removeLabel,
-}: {
-  label: string
-  muted?: boolean
-  accent?: boolean
-  icon?: ReactNode
-  onRemove?: () => void
-  removeLabel?: string
-}) {
-  return (
-    <span style={{
-      display: 'inline-flex',
-      alignItems: 'center',
-      gap: 5,
-      maxWidth: onRemove ? 260 : 220,
-      fontSize: 11,
-      fontWeight: 600,
-      letterSpacing: '0.02em',
-      padding: onRemove ? '4px 6px 4px 10px' : '4px 10px',
-      borderRadius: 8,
-      color: accent ? '#93C5FD' : muted ? 'var(--color-text-tertiary)' : 'var(--color-text-secondary)',
-      background: accent
-        ? 'rgba(59,130,246,0.12)'
-        : 'rgba(255,255,255,0.04)',
-      border: accent
-        ? '1px solid rgba(59,130,246,0.22)'
-        : '1px solid rgba(255,255,255,0.07)',
-    }}>
-      {icon}
-      <span style={{
-        overflow: 'hidden',
-        textOverflow: 'ellipsis',
-        whiteSpace: 'nowrap',
-        minWidth: 0,
-      }}>
-        {label}
-      </span>
-      {onRemove && (
-        <button
-          type="button"
-          onClick={onRemove}
-          aria-label={removeLabel ?? 'Remover'}
-          title={removeLabel ?? 'Remover'}
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            width: 18,
-            height: 18,
-            borderRadius: 5,
-            border: 'none',
-            background: 'rgba(255,255,255,0.06)',
-            color: 'var(--color-text-tertiary)',
-            cursor: 'pointer',
-            padding: 0,
-            flexShrink: 0,
-          }}
-        >
-          <X size={11} strokeWidth={2.5} />
-        </button>
-      )}
-    </span>
-  )
-}
-
-const discardBtnStyle: CSSProperties = {
-  display: 'inline-flex',
-  alignItems: 'center',
-  gap: 6,
-  background: 'rgba(255,255,255,0.04)',
-  border: '1px solid rgba(255,255,255,0.10)',
-  borderRadius: 9,
-  padding: '7px 12px',
+const discardLinkStyle: CSSProperties = {
+  background: 'none',
+  border: 'none',
+  padding: 0,
   fontSize: 12,
-  fontWeight: 600,
-  color: 'var(--color-text-secondary)',
+  fontWeight: 500,
+  color: 'var(--color-text-tertiary)',
   cursor: 'pointer',
   fontFamily: 'var(--font-sans)',
-}
-
-function KpiTile({
-  value,
-  label,
-  color,
-  bg,
-  border,
-}: {
-  value: number
-  label: string
-  color: string
-  bg: string
-  border: string
-}) {
-  return (
-    <div style={{
-      minWidth: 96,
-      padding: '14px 16px',
-      borderRadius: 14,
-      background: bg,
-      border: `1px solid ${border}`,
-      textAlign: 'center',
-      boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.06)',
-    }}>
-      <p style={{
-        margin: 0,
-        fontSize: 28,
-        fontWeight: 700,
-        letterSpacing: '-0.03em',
-        color,
-        fontFamily: 'var(--font-display)',
-        lineHeight: 1,
-      }}>
-        {value}
-      </p>
-      <p style={{
-        margin: '6px 0 0',
-        fontSize: 11,
-        fontWeight: 600,
-        letterSpacing: '0.03em',
-        textTransform: 'uppercase',
-        color: 'var(--color-text-tertiary)',
-      }}>
-        {label}
-      </p>
-    </div>
-  )
+  textDecoration: 'underline',
+  textUnderlineOffset: 3,
+  textDecorationColor: 'rgba(148,163,184,0.35)',
 }
 
 function Chip({ active, onClick, label }: { active: boolean; onClick: () => void; label: string }) {

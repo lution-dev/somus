@@ -125,6 +125,15 @@
 > Público: qualquer banco (99Pay, Inter, Nubank, Itaú, Santander, genérico) · Formatos: **PDF + OFX/CSV**  
 > Lib PDF: `pdfjs-dist`. Estratégia: detectar banco → layouts específicos → fallback genérico.
 
+#### T-EXTRATO-25: Hero revisão → barra de contexto (menos peso)
+**Tipo:** Design / UX
+**Root cause:** Banner glass + KPI tiles competiam com a lista “pra lançar”.
+**Critérios:**
+- [x] Desktop: título + meta inline + contadores texto + link Remover (sem card/KPIs)
+- [x] Mobile: header compacto sob PageHeader (mesmo espírito)
+- [x] Sensores `tsc` + `build`
+**Status:** ✅ done
+
 #### T-EXTRATO-24: Revisar — remover/trocar extrato carregado
 **Tipo:** UX
 **Root cause:** Na revisão, sem forma de descartar o arquivo já enviado e escolher outro.
