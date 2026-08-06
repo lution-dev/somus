@@ -1,7 +1,7 @@
-import { useEffect, useMemo, useState, type CSSProperties } from 'react'
+import { useEffect, useMemo, useState, type CSSProperties, type ReactNode } from 'react'
 import { useLocation } from 'wouter'
 import { motion } from 'framer-motion'
-import { Check, EyeOff } from 'lucide-react'
+import { Check, EyeOff, ClipboardList, FileSpreadsheet } from 'lucide-react'
 import { useShallow } from 'zustand/react/shallow'
 import { PageHeader, Button, Breadcrumb } from '../components/ui'
 import { useIsMobile } from '../hooks/useIsMobile'
@@ -214,11 +214,7 @@ export default function ExtratoRevisao() {
   }
 
   const mesNome = monthNameLong(draft.yearMonth)
-  const metaLine = [
-    mesNome,
-    draft.sourceLabel,
-    draft.fileName,
-  ].filter(Boolean).join(' · ')
+  const shortName = truncateFileName(draft.fileName)
 
   return (
     <div style={{
@@ -231,9 +227,9 @@ export default function ExtratoRevisao() {
           aria-hidden
           style={{
             position: 'absolute',
-            top: 0, left: 0, right: 0, height: 380,
-            background: 'radial-gradient(circle at 50% -40px, #3B82F6 0%, transparent 68%)',
-            opacity: 0.1,
+            top: 0, left: 0, right: 0, height: 420,
+            background: 'radial-gradient(circle at 42% -60px, #3B82F6 0%, transparent 62%)',
+            opacity: 0.12,
             pointerEvents: 'none',
             zIndex: 0,
           }}
@@ -245,74 +241,155 @@ export default function ExtratoRevisao() {
           <PageHeader title="Revisar extrato" back backTo="/extrato" bg={HERO_BG} />
           <div style={{
             background: `linear-gradient(to bottom, ${HERO_BG} 0%, transparent 100%)`,
-            padding: '4px 20px 20px',
+            padding: '4px 16px 22px',
           }}>
-            <p style={{
-              fontSize: 12, color: 'rgba(148,163,184,0.9)', margin: '0 0 8px',
-              overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-            }}>
-              {metaLine}
-            </p>
-            <h1 style={{
-              fontSize: 22, fontWeight: 600, letterSpacing: '-0.02em',
-              color: 'var(--color-text-primary)', margin: '0 0 6px',
-              fontFamily: 'var(--font-display)',
-            }}>
-              {pendingCount} pra lançar
-            </h1>
-            <p style={{
-              fontSize: 13, color: 'rgba(226,232,240,0.68)', margin: 0, lineHeight: 1.45,
-            }}>
-              {matched.length > 0
-                ? `${matched.length} já na base ficam no final. Sem relançar.`
-                : 'Só o que ainda não está no Somus.'}
-            </p>
+            <motion.div
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.35, ease }}
+              style={{
+                padding: '16px 16px 14px',
+                borderRadius: 16,
+                background: 'rgba(255,255,255,0.05)',
+                border: '1px solid rgba(255,255,255,0.10)',
+                backdropFilter: 'blur(16px)',
+                boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.08)',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12, flexWrap: 'wrap' }}>
+                <MetaChip label={mesNome} />
+                {draft.sourceLabel && <MetaChip label={draft.sourceLabel} />}
+                <MetaChip label={shortName} muted />
+              </div>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, marginBottom: 6 }}>
+                <h1 style={{
+                  fontSize: 28, fontWeight: 700, letterSpacing: '-0.03em',
+                  color: 'var(--color-text-primary)', margin: 0,
+                  fontFamily: 'var(--font-display)', lineHeight: 1,
+                }}>
+                  {pendingCount}
+                </h1>
+                <span style={{
+                  fontSize: 15, fontWeight: 500, color: 'rgba(226,232,240,0.75)',
+                }}>
+                  pra lançar
+                </span>
+              </div>
+              <p style={{
+                fontSize: 13, color: 'rgba(226,232,240,0.62)', margin: 0, lineHeight: 1.45,
+              }}>
+                {matched.length > 0
+                  ? `${matched.length} já na base ficam no final · sem relançar`
+                  : 'Só o que ainda não está no Somus'}
+              </p>
+            </motion.div>
           </div>
         </>
       ) : (
-        <div style={{ paddingTop: 28, marginBottom: 8, position: 'relative', zIndex: 1 }}>
-          <Breadcrumb
-            items={[
-              { label: 'Home', href: '/home' },
-              { label: 'Extrato', href: '/extrato' },
-              { label: 'Revisar' },
-            ]}
-            style={{ marginBottom: 24, opacity: 0.85 }}
-          />
-          <p style={{
-            fontSize: 13, color: 'var(--color-text-tertiary)', margin: '0 0 8px',
+        <div style={{ paddingTop: 20, marginBottom: 4, position: 'relative', zIndex: 1 }}>
+          <div style={{ marginBottom: 14, opacity: 0.55 }}>
+            <Breadcrumb
+              items={[
+                { label: 'Home', href: '/home' },
+                { label: 'Extrato', href: '/extrato' },
+                { label: 'Revisar' },
+              ]}
+            />
+          </div>
+
+          {/* Hero glass — padrão Divisão/Relatórios */}
+          <div style={{
+            padding: '22px 24px',
+            borderRadius: 'var(--radius-card, 16px)',
+            background:
+              'radial-gradient(ellipse at 6% -30%, rgba(59,130,246,0.22) 0%, transparent 52%), rgba(26,45,66,0.72)',
+            border: '1px solid rgba(59,130,246,0.20)',
+            boxShadow:
+              'inset 0 1px 0 rgba(255,255,255,0.07), 0 12px 40px rgba(0,0,0,0.22)',
+            backdropFilter: 'blur(20px) saturate(160%)',
+            WebkitBackdropFilter: 'blur(20px) saturate(160%)',
+            position: 'relative',
+            overflow: 'hidden',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 22,
+            maxWidth: 860,
           }}>
-            {metaLine}
-          </p>
-          <h1 style={{
-            fontSize: 28, fontWeight: 600, letterSpacing: '-0.025em',
-            color: 'var(--color-text-primary)', margin: '0 0 8px',
-            fontFamily: 'var(--font-display)',
-          }}>
-            {pendingCount} pra lançar
-            {matched.length > 0 ? (
-              <span style={{
-                fontWeight: 500, fontSize: 18, color: 'var(--color-text-tertiary)',
-                marginLeft: 12,
+            <div
+              aria-hidden
+              style={{
+                position: 'absolute', top: 0, left: 0,
+                width: 240, height: 140, pointerEvents: 'none',
+                background: 'radial-gradient(ellipse at 10% 0%, rgba(59,130,246,0.28) 0%, transparent 65%)',
+              }}
+            />
+
+            <div style={{
+              width: 56, height: 56, borderRadius: 18, flexShrink: 0,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              background: 'rgba(59,130,246,0.14)',
+              border: '1px solid rgba(59,130,246,0.28)',
+              position: 'relative', zIndex: 1,
+              boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.1)',
+            }}>
+              <ClipboardList size={26} color="#60A5FA" strokeWidth={1.6} />
+            </div>
+
+            <div style={{ flex: 1, minWidth: 0, position: 'relative', zIndex: 1 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10, flexWrap: 'wrap' }}>
+                <MetaChip label={mesNome} />
+                {draft.sourceLabel && <MetaChip label={draft.sourceLabel} accent />}
+                <MetaChip
+                  label={shortName}
+                  icon={<FileSpreadsheet size={11} color="#94A3B8" strokeWidth={2} />}
+                  muted
+                />
+              </div>
+
+              <h1 style={{
+                fontSize: 24, fontWeight: 700, letterSpacing: '-0.025em',
+                color: 'var(--color-text-primary)', margin: '0 0 6px',
+                fontFamily: 'var(--font-display)', lineHeight: 1.15,
               }}>
-                · {matched.length} já na base
-              </span>
-            ) : null}
-          </h1>
-          <p style={{
-            fontSize: 14, color: 'var(--color-text-secondary)', margin: 0, lineHeight: 1.5,
-            maxWidth: 480,
-          }}>
-            Em cima só o que ainda não está no Somus. O que já bateu fica no final, só pra conferir.
-          </p>
+                Revisar extrato
+              </h1>
+              <p style={{
+                fontSize: 13.5, color: 'var(--color-text-secondary)', margin: 0,
+                lineHeight: 1.5, maxWidth: 420,
+              }}>
+                Em cima só o que ainda não está no Somus. O que já bateu fica no final, só pra conferir.
+              </p>
+            </div>
+
+            {/* KPI strip */}
+            <div style={{
+              display: 'flex', gap: 10, flexShrink: 0,
+              position: 'relative', zIndex: 1,
+            }}>
+              <KpiTile
+                value={pendingCount}
+                label="pra lançar"
+                color="#60A5FA"
+                bg="rgba(59,130,246,0.12)"
+                border="rgba(59,130,246,0.28)"
+              />
+              <KpiTile
+                value={matched.length}
+                label="já na base"
+                color="#34D399"
+                bg="rgba(16,185,129,0.10)"
+                border="rgba(16,185,129,0.24)"
+              />
+            </div>
+          </div>
         </div>
       )}
 
       <div style={{
         position: 'relative',
         zIndex: 1,
-        padding: isMobile ? '8px 16px 0' : '20px 0 0',
-        maxWidth: isMobile ? undefined : 720,
+        padding: isMobile ? '8px 16px 0' : '24px 0 0',
+        maxWidth: isMobile ? undefined : 860,
         width: '100%',
       }}>
         {/* 1º: unmatched */}
@@ -567,6 +644,101 @@ export default function ExtratoRevisao() {
           </Button>
         </div>
       )}
+    </div>
+  )
+}
+
+function truncateFileName(name: string, max = 28): string {
+  if (name.length <= max) return name
+  const dot = name.lastIndexOf('.')
+  const ext = dot > 0 ? name.slice(dot) : ''
+  const keep = Math.max(8, max - ext.length - 1)
+  return `${name.slice(0, keep)}…${ext}`
+}
+
+function MetaChip({
+  label,
+  muted,
+  accent,
+  icon,
+}: {
+  label: string
+  muted?: boolean
+  accent?: boolean
+  icon?: ReactNode
+}) {
+  return (
+    <span style={{
+      display: 'inline-flex',
+      alignItems: 'center',
+      gap: 5,
+      maxWidth: 220,
+      fontSize: 11,
+      fontWeight: 600,
+      letterSpacing: '0.02em',
+      padding: '4px 10px',
+      borderRadius: 8,
+      color: accent ? '#93C5FD' : muted ? 'var(--color-text-tertiary)' : 'var(--color-text-secondary)',
+      background: accent
+        ? 'rgba(59,130,246,0.12)'
+        : 'rgba(255,255,255,0.04)',
+      border: accent
+        ? '1px solid rgba(59,130,246,0.22)'
+        : '1px solid rgba(255,255,255,0.07)',
+      overflow: 'hidden',
+      textOverflow: 'ellipsis',
+      whiteSpace: 'nowrap',
+    }}>
+      {icon}
+      {label}
+    </span>
+  )
+}
+
+function KpiTile({
+  value,
+  label,
+  color,
+  bg,
+  border,
+}: {
+  value: number
+  label: string
+  color: string
+  bg: string
+  border: string
+}) {
+  return (
+    <div style={{
+      minWidth: 96,
+      padding: '14px 16px',
+      borderRadius: 14,
+      background: bg,
+      border: `1px solid ${border}`,
+      textAlign: 'center',
+      boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.06)',
+    }}>
+      <p style={{
+        margin: 0,
+        fontSize: 28,
+        fontWeight: 700,
+        letterSpacing: '-0.03em',
+        color,
+        fontFamily: 'var(--font-display)',
+        lineHeight: 1,
+      }}>
+        {value}
+      </p>
+      <p style={{
+        margin: '6px 0 0',
+        fontSize: 11,
+        fontWeight: 600,
+        letterSpacing: '0.03em',
+        textTransform: 'uppercase',
+        color: 'var(--color-text-tertiary)',
+      }}>
+        {label}
+      </p>
     </div>
   )
 }

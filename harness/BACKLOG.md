@@ -125,6 +125,16 @@
 > Público: qualquer banco (99Pay, Inter, Nubank, Itaú, Santander, genérico) · Formatos: **PDF + OFX/CSV**  
 > Lib PDF: `pdfjs-dist`. Estratégia: detectar banco → layouts específicos → fallback genérico.
 
+#### T-EXTRATO-21: Hero da revisão Extrato (desktop)
+**Tipo:** Design / UX
+**Root cause:** Topo da revisão no desktop era texto solto (breadcrumb + filename longo + h1) — pobre vs hero glass das outras telas.
+**Critérios:**
+- [x] Hero glass com KPIs (pra lançar / já na base), meta em chips, filename truncado
+- [x] Breadcrumb discreto no padrão DivisaoDetalhe
+- [x] Mobile hero também mais rico (card glass no gradient)
+- [x] Sensores `tsc` + `build`
+**Status:** ✅ done
+
 #### T-EXTRATO-20: Polish desktop Extrato — breadcrumb, ícones, chips
 **Tipo:** Bug / UX polish
 **Root cause:** Voltar estilo mobile no desktop; chips PDF/OFX redundantes com o texto da dropzone; `FileText` com `var(--color-accent-blue-light)` inexistente → ícone vazio.

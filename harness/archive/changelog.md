@@ -1,5 +1,11 @@
 # Changelog — Somus
 
+## [2026-08-06] S-EXTRATO — hero glass na revisão
+**Autor:** IA (Cloud Agent)
+**Tasks:**
+- T-EXTRATO-21: topo da revisão com hero glass + KPIs (padrão Divisão) ✅
+**Sensores:** `npx tsc --noEmit` ✅ · `npm run build` ✅
+
 ## [2026-08-06] S-EXTRATO — polish desktop (breadcrumb / ícones / chips)
 **Autor:** IA (Cloud Agent)
 **Tasks:**
