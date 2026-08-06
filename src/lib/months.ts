@@ -39,8 +39,9 @@ export function previousYM(from?: string): string {
   return shiftMonth(from ?? currentYM(), -1)
 }
 
-/** Nome do mês por extenso em pt-BR, ex: "julho" */
+/** Nome do mês por extenso em pt-BR, ex: "Julho" */
 export function monthNameLong(ym: string): string {
   const [y, m] = ym.split('-').map(Number)
-  return new Date(y, m - 1, 1).toLocaleDateString('pt-BR', { month: 'long' })
+  const raw = new Date(y, m - 1, 1).toLocaleDateString('pt-BR', { month: 'long' })
+  return raw.charAt(0).toUpperCase() + raw.slice(1)
 }

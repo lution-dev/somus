@@ -125,6 +125,13 @@
 > Público: qualquer banco (99Pay, Inter, Nubank, Itaú, Santander, genérico) · Formatos: **PDF + OFX/CSV**  
 > Lib PDF: `pdfjs-dist`. Estratégia: detectar banco → layouts específicos → fallback genérico.
 
+#### T-EXTRATO-22: Mês com inicial maiúscula no Extrato
+**Tipo:** Polish copy
+**Critérios:**
+- [x] `monthNameLong` retorna "Julho" (não "julho")
+- [x] Sensores `tsc` + `build`
+**Status:** ✅ done
+
 #### T-EXTRATO-21: Hero da revisão Extrato (desktop)
 **Tipo:** Design / UX
 **Root cause:** Topo da revisão no desktop era texto solto (breadcrumb + filename longo + h1) — pobre vs hero glass das outras telas.
