@@ -354,6 +354,63 @@ describe('S-EXTRATO E2E — regras do produto', () => {
       const recs = useAppStore.getState().statementReconciliations
       expect(recs.some(r => r.yearMonth === '2026-07' && r.userId === 'u1')).toBe(true)
     })
+
+    it('removeStatementReconciliationForMonth libera o mês pra novo extrato', () => {
+      useAppStore.getState().addStatementReconciliation({
+        userId: 'u1',
+        yearMonth: '2026-07',
+        uploadedAt: '2026-08-05',
+        sourceFormat: 'pdf',
+        sourceLabel: '99Pay',
+        accountKind: 'checking',
+        transactionCount: 10,
+        matchedCount: 8,
+        importedCount: 2,
+        ignoredCount: 0,
+        transactionHashes: ['a'],
+      })
+      useAppStore.getState().removeStatementReconciliationForMonth('u1', '2026-07')
+      expect(
+        useAppStore.getState().statementReconciliations.some(
+          r => r.yearMonth === '2026-07' && r.userId === 'u1',
+        ),
+      ).toBe(false)
+    })
+
+    it('novo reconcile do mesmo mês substitui o anterior (não duplica)', () => {
+      useAppStore.getState().addStatementReconciliation({
+        userId: 'u1',
+        yearMonth: '2026-07',
+        uploadedAt: '2026-08-01',
+        sourceFormat: 'pdf',
+        sourceLabel: '99Pay',
+        accountKind: 'checking',
+        transactionCount: 5,
+        matchedCount: 5,
+        importedCount: 0,
+        ignoredCount: 0,
+        transactionHashes: ['old'],
+      })
+      useAppStore.getState().addStatementReconciliation({
+        userId: 'u1',
+        yearMonth: '2026-07',
+        uploadedAt: '2026-08-06',
+        sourceFormat: 'csv',
+        sourceLabel: 'Inter',
+        accountKind: 'checking',
+        transactionCount: 12,
+        matchedCount: 10,
+        importedCount: 2,
+        ignoredCount: 0,
+        transactionHashes: ['new'],
+      })
+      const recs = useAppStore.getState().statementReconciliations.filter(
+        r => r.yearMonth === '2026-07' && r.userId === 'u1',
+      )
+      expect(recs).toHaveLength(1)
+      expect(recs[0].sourceLabel).toBe('Inter')
+      expect(recs[0].importedCount).toBe(2)
+    })
   })
 
   describe('RN: matched só identifica — nunca relança (anti-duplicata)', () => {

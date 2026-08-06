@@ -1,5 +1,11 @@
 # Changelog — Somus
 
+## [2026-08-06] S-EXTRATO — remover conciliação / enviar outro
+**Autor:** IA (Cloud Agent)
+**Tasks:**
+- T-EXTRATO-23: `removeStatementReconciliationForMonth` + UI “Remover e enviar outro” no upload ✅
+**Sensores:** `npm run test:extrato` ✅ (22) · `tsc` ✅ · `build` ✅
+
 ## [2026-08-06] S-EXTRATO — hero glass na revisão
 **Autor:** IA (Cloud Agent)
 **Tasks:**

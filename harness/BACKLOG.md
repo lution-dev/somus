@@ -125,6 +125,17 @@
 > Público: qualquer banco (99Pay, Inter, Nubank, Itaú, Santander, genérico) · Formatos: **PDF + OFX/CSV**  
 > Lib PDF: `pdfjs-dist`. Estratégia: detectar banco → layouts específicos → fallback genérico.
 
+#### T-EXTRATO-23: Remover conciliação do mês (enviar outro extrato)
+**Tipo:** Feature
+**Root cause:** Depois de confirmar, o mês fica marcado e não há como limpar o estado pra subir outro extrato.
+**Critérios:**
+- [x] Action `removeStatementReconciliationForMonth` no store
+- [x] `addStatementReconciliation` substitui conciliação existente do mesmo mês/usuário
+- [x] UI em ExtratoUpload quando mês já organizado: ver resumo + “Remover e enviar outro”
+- [x] Limpa dismiss do banner ao remover
+- [x] E2E + sensores
+**Status:** ✅ done
+
 #### T-EXTRATO-22: Mês com inicial maiúscula no Extrato
 **Tipo:** Polish copy
 **Critérios:**

@@ -1,9 +1,10 @@
 import { useCallback, useRef, useState, type DragEvent, type ReactNode } from 'react'
 import { useLocation } from 'wouter'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Upload, AlertCircle, Landmark, ShieldCheck } from 'lucide-react'
-import { PageHeader, Breadcrumb } from '../components/ui'
+import { Upload, AlertCircle, Landmark, ShieldCheck, CheckCircle2 } from 'lucide-react'
+import { PageHeader, Breadcrumb, ConfirmDialog } from '../components/ui'
 import { useIsMobile } from '../hooks/useIsMobile'
+import { useAppStore } from '../stores/useAppStore'
 import {
   parseCsvDetailed,
   parseOfxDetailed,
@@ -11,6 +12,7 @@ import {
   detectStatementFormat,
   bankLabel,
   EXTRATO_DRAFT_KEY,
+  EXTRATO_DISMISS_PREFIX,
   type ExtratoDraft,
   type DetectedBank,
 } from '../lib/statement'
@@ -27,8 +29,30 @@ export default function ExtratoUpload() {
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [dragging, setDragging] = useState(false)
+  const [confirmRemove, setConfirmRemove] = useState(false)
   const yearMonth = previousYM()
   const mesNome = monthNameLong(yearMonth)
+
+  const userId = useAppStore(s => s.currentUser?.id ?? '')
+  const removeStatementReconciliationForMonth = useAppStore(s => s.removeStatementReconciliationForMonth)
+  const existingRec = useAppStore(s =>
+    (s.statementReconciliations ?? []).find(
+      r => r.userId === (s.currentUser?.id ?? '') && r.yearMonth === yearMonth,
+    ) ?? null,
+  )
+
+  function clearDismissForMonth() {
+    try {
+      localStorage.removeItem(`${EXTRATO_DISMISS_PREFIX}${yearMonth}`)
+    } catch { /* ignore */ }
+  }
+
+  function handleRemoveReconciliation() {
+    if (!userId) return
+    removeStatementReconciliationForMonth(userId, yearMonth)
+    clearDismissForMonth()
+    setConfirmRemove(false)
+  }
 
   async function handleFile(file: File) {
     setError(null)
@@ -205,6 +229,67 @@ export default function ExtratoUpload() {
         maxWidth: isMobile ? undefined : 640,
         width: '100%',
       }}>
+        {existingRec && (
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.35, ease }}
+            style={{
+              marginBottom: 20,
+              padding: isMobile ? '16px' : '18px 20px',
+              borderRadius: 16,
+              background: 'rgba(16,185,129,0.08)',
+              border: '1px solid rgba(16,185,129,0.22)',
+              boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.06)',
+            }}
+          >
+            <div style={{ display: 'flex', gap: 14, alignItems: 'flex-start' }}>
+              <div style={{
+                width: 40, height: 40, borderRadius: 12, flexShrink: 0,
+                background: 'rgba(16,185,129,0.14)',
+                border: '1px solid rgba(16,185,129,0.28)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}>
+                <CheckCircle2 size={20} color="#34D399" strokeWidth={1.75} />
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <p style={{
+                  margin: '0 0 4px', fontSize: 14, fontWeight: 600,
+                  color: 'var(--color-text-primary)',
+                }}>
+                  {mesNome} já está organizado
+                </p>
+                <p style={{
+                  margin: '0 0 14px', fontSize: 13, color: 'var(--color-text-secondary)',
+                  lineHeight: 1.5,
+                }}>
+                  {existingRec.sourceLabel ? `${existingRec.sourceLabel} · ` : ''}
+                  {existingRec.matchedCount} reconhecidos
+                  {existingRec.importedCount > 0 ? ` · ${existingRec.importedCount} lançados` : ''}
+                  . Os lançamentos na base continuam. Remover só libera o mês pra enviar outro extrato.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setConfirmRemove(true)}
+                  style={{
+                    background: 'rgba(255,255,255,0.04)',
+                    border: '1px solid rgba(255,255,255,0.12)',
+                    borderRadius: 10,
+                    padding: '8px 14px',
+                    fontSize: 13,
+                    fontWeight: 600,
+                    color: 'var(--color-text-secondary)',
+                    cursor: 'pointer',
+                    fontFamily: 'var(--font-sans)',
+                  }}
+                >
+                  Remover e enviar outro
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        )}
+
         <input
           ref={inputRef}
           type="file"
@@ -376,6 +461,16 @@ export default function ExtratoUpload() {
           </div>
         </motion.div>
       </div>
+
+      <ConfirmDialog
+        open={confirmRemove}
+        onClose={() => setConfirmRemove(false)}
+        onConfirm={handleRemoveReconciliation}
+        variant="warning"
+        title={`Remover organização de ${mesNome}?`}
+        description="Os lançamentos que já entraram na base continuam. Só some a marca de mês organizado, pra você poder enviar outro extrato."
+        confirmLabel="Remover e liberar mês"
+      />
     </div>
   )
 }

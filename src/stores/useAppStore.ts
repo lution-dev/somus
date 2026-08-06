@@ -93,6 +93,7 @@ interface AppActions {
 
   // Extrato / conciliação
   addStatementReconciliation: (rec: Omit<StatementReconciliation, 'id'>) => void
+  removeStatementReconciliationForMonth: (userId: string, yearMonth: string) => void
   importStatementTransactions: (items: StatementImportItem[]) => void
 
   // Reset
@@ -1399,11 +1400,23 @@ export const useAppStore = create<AppState & AppActions>()(
       setPartner: (partner) => set({ partner: partner as AppState['partner'] }),
 
       addStatementReconciliation: (rec) =>
+        set((state) => {
+          const prev = (state.statementReconciliations ?? []).filter(
+            r => !(r.userId === rec.userId && r.yearMonth === rec.yearMonth),
+          )
+          return {
+            statementReconciliations: [
+              ...prev,
+              { ...rec, id: `rec-${Date.now()}` },
+            ],
+          }
+        }),
+
+      removeStatementReconciliationForMonth: (userId, yearMonth) =>
         set((state) => ({
-          statementReconciliations: [
-            ...(state.statementReconciliations ?? []),
-            { ...rec, id: `rec-${Date.now()}` },
-          ],
+          statementReconciliations: (state.statementReconciliations ?? []).filter(
+            r => !(r.userId === userId && r.yearMonth === yearMonth),
+          ),
         })),
 
       importStatementTransactions: (items) => {
