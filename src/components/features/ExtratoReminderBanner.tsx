@@ -86,7 +86,7 @@ export default function ExtratoReminderBanner() {
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             flexShrink: 0,
           }}>
-            <FileText size={18} color="var(--color-accent-blue-light)" strokeWidth={1.75} />
+            <FileText size={18} color="#60A5FA" strokeWidth={1.75} />
           </div>
           <div style={{ flex: 1, minWidth: 0 }}>
             <p style={{
@@ -141,7 +141,7 @@ export default function ExtratoReminderBanner() {
 
 const ctaStyle: CSSProperties = {
   background: 'rgba(59,130,246,0.18)',
-  color: 'var(--color-accent-blue-light)',
+  color: '#60A5FA',
   border: '1px solid rgba(59,130,246,0.32)',
   borderRadius: 10,
   padding: '9px 16px',

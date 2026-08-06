@@ -1,8 +1,8 @@
 import { useCallback, useRef, useState, type DragEvent, type ReactNode } from 'react'
 import { useLocation } from 'wouter'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Upload, AlertCircle, FileText, CheckCircle2, ChevronLeft } from 'lucide-react'
-import { PageHeader } from '../components/ui'
+import { Upload, AlertCircle, Landmark, ShieldCheck } from 'lucide-react'
+import { PageHeader, Breadcrumb } from '../components/ui'
 import { useIsMobile } from '../hooks/useIsMobile'
 import {
   parseCsvDetailed,
@@ -18,8 +18,6 @@ import { previousYM, monthNameLong } from '../lib/months'
 import type { BankTransaction } from '../types'
 
 const HERO_BG = '#001442'
-const FORMATS = ['PDF', 'OFX', 'OFC', 'CSV'] as const
-
 const ease = [0.25, 0.46, 0.45, 0.94] as const
 
 export default function ExtratoUpload() {
@@ -127,7 +125,6 @@ export default function ExtratoUpload() {
       paddingBottom: isMobile ? 48 : 56,
       position: 'relative',
     }}>
-      {/* Desktop atmospheric glow */}
       {!isMobile && (
         <div
           aria-hidden
@@ -174,20 +171,14 @@ export default function ExtratoUpload() {
           </div>
         </>
       ) : (
-        <div style={{ paddingTop: 36, marginBottom: 8, position: 'relative', zIndex: 1 }}>
-          <button
-            type="button"
-            onClick={() => navigate('/home')}
-            style={{
-              display: 'inline-flex', alignItems: 'center', gap: 6,
-              background: 'none', border: 'none', cursor: 'pointer',
-              color: 'var(--color-text-tertiary)', fontSize: 13, fontWeight: 500,
-              fontFamily: 'var(--font-sans)', padding: 0, marginBottom: 20,
-            }}
-          >
-            <ChevronLeft size={16} strokeWidth={2} />
-            Home
-          </button>
+        <div style={{ paddingTop: 28, marginBottom: 8, position: 'relative', zIndex: 1 }}>
+          <Breadcrumb
+            items={[
+              { label: 'Home', href: '/home' },
+              { label: 'Extrato' },
+            ]}
+            style={{ marginBottom: 28, opacity: 0.85 }}
+          />
           <p className="section-label" style={{ margin: '0 0 10px' }}>
             Conta corrente · {mesNome}
           </p>
@@ -207,11 +198,10 @@ export default function ExtratoUpload() {
         </div>
       )}
 
-      {/* Focused column — never stretches full desktop width like a phone strip */}
       <div style={{
         position: 'relative',
         zIndex: 1,
-        padding: isMobile ? '0 16px' : '24px 0 0',
+        padding: isMobile ? '0 16px' : '28px 0 0',
         maxWidth: isMobile ? undefined : 640,
         width: '100%',
       }}>
@@ -286,11 +276,11 @@ export default function ExtratoUpload() {
                 style={{
                   width: 22, height: 22, borderRadius: '50%',
                   border: '2px solid rgba(59,130,246,0.25)',
-                  borderTopColor: 'var(--color-accent-primary)',
+                  borderTopColor: '#3B82F6',
                 }}
               />
             ) : (
-              <Upload size={isMobile ? 22 : 26} color="var(--color-accent-primary)" strokeWidth={1.75} />
+              <Upload size={isMobile ? 22 : 26} color="#3B82F6" strokeWidth={1.75} />
             )}
           </div>
 
@@ -326,33 +316,6 @@ export default function ExtratoUpload() {
           </div>
         </motion.button>
 
-        {/* Format chips — quiet, not a pill cluster of marketing */}
-        <div style={{
-          display: 'flex',
-          flexWrap: 'wrap',
-          gap: 8,
-          marginTop: 16,
-          justifyContent: isMobile ? 'center' : 'flex-start',
-        }}>
-          {FORMATS.map(f => (
-            <span
-              key={f}
-              style={{
-                fontSize: 11,
-                fontWeight: 600,
-                letterSpacing: '0.04em',
-                color: 'var(--color-text-tertiary)',
-                padding: '5px 10px',
-                borderRadius: 8,
-                background: 'rgba(255,255,255,0.03)',
-                border: '1px solid rgba(255,255,255,0.06)',
-              }}
-            >
-              {f}
-            </span>
-          ))}
-        </div>
-
         <AnimatePresence>
           {error && (
             <motion.div
@@ -368,7 +331,7 @@ export default function ExtratoUpload() {
                 backdropFilter: 'blur(8px)',
               }}
             >
-              <AlertCircle size={16} color="var(--color-danger)" style={{ flexShrink: 0, marginTop: 2 }} />
+              <AlertCircle size={16} color="#EF4444" style={{ flexShrink: 0, marginTop: 2 }} />
               <p style={{ margin: 0, fontSize: 13, color: 'var(--color-text-secondary)', lineHeight: 1.5 }}>
                 {error}
               </p>
@@ -376,7 +339,6 @@ export default function ExtratoUpload() {
           )}
         </AnimatePresence>
 
-        {/* What happens next — one calm section */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -402,12 +364,12 @@ export default function ExtratoUpload() {
             gap: isMobile ? 14 : 20,
           }}>
             <HintRow
-              icon={<FileText size={16} color="var(--color-accent-blue-light)" />}
+              icon={<Landmark size={16} color="#60A5FA" strokeWidth={1.75} />}
               title="De qualquer banco"
               body="99Pay, Inter, Nubank, Itaú, Santander e outros. Só conta corrente, sem fatura de cartão."
             />
             <HintRow
-              icon={<CheckCircle2 size={16} color="var(--color-success)" />}
+              icon={<ShieldCheck size={16} color="#10B981" strokeWidth={1.75} />}
               title="Sem duplicar"
               body="O que já está na base fica só pra conferir. Você lança apenas o que ainda falta."
             />

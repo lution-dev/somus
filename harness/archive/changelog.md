@@ -1,5 +1,11 @@
 # Changelog — Somus
 
+## [2026-08-06] S-EXTRATO — polish desktop (breadcrumb / ícones / chips)
+**Autor:** IA (Cloud Agent)
+**Tasks:**
+- T-EXTRATO-20: Breadcrumb desktop; remove chips redundantes; fix ícone quebrado (`--color-accent-blue-light`) ✅
+**Sensores:** `npx tsc --noEmit` ✅ · `npm run build` ✅
+
 ## [2026-08-05] S-EXTRATO — UX brand + responsive (upload/revisão)
 **Autor:** IA (Cloud Agent)
 **Tasks:**

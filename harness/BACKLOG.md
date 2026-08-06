@@ -125,6 +125,16 @@
 > Público: qualquer banco (99Pay, Inter, Nubank, Itaú, Santander, genérico) · Formatos: **PDF + OFX/CSV**  
 > Lib PDF: `pdfjs-dist`. Estratégia: detectar banco → layouts específicos → fallback genérico.
 
+#### T-EXTRATO-20: Polish desktop Extrato — breadcrumb, ícones, chips
+**Tipo:** Bug / UX polish
+**Root cause:** Voltar estilo mobile no desktop; chips PDF/OFX redundantes com o texto da dropzone; `FileText` com `var(--color-accent-blue-light)` inexistente → ícone vazio.
+**Critérios:**
+- [x] Desktop/tablet: Breadcrumb (Home → Extrato / Extrato → Revisar)
+- [x] Remover chips de formato abaixo da dropzone
+- [x] Ícones “Como funciona” visíveis (cor hex válida + token CSS)
+- [x] Sensores `tsc` + `build`
+**Status:** ✅ done
+
 #### T-EXTRATO-19: UX/UI Extrato — brand + responsive (upload + revisão)
 **Tipo:** Design / UX
 **Root cause:** Tela de upload (e revisão) esticavam layout mobile no desktop/tablet; sem hero atmosférico, drop zone pobre, footer fixo atravessando sidebar, hierarquia fraca vs Brand Book/DESIGN.

@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useState, type CSSProperties } from 'react'
 import { useLocation } from 'wouter'
 import { motion } from 'framer-motion'
-import { Check, EyeOff, ChevronLeft } from 'lucide-react'
+import { Check, EyeOff } from 'lucide-react'
 import { useShallow } from 'zustand/react/shallow'
-import { PageHeader, Button } from '../components/ui'
+import { PageHeader, Button, Breadcrumb } from '../components/ui'
 import { useIsMobile } from '../hooks/useIsMobile'
 import {
   useAppStore,
@@ -270,20 +270,15 @@ export default function ExtratoRevisao() {
           </div>
         </>
       ) : (
-        <div style={{ paddingTop: 36, marginBottom: 8, position: 'relative', zIndex: 1 }}>
-          <button
-            type="button"
-            onClick={() => navigate('/extrato')}
-            style={{
-              display: 'inline-flex', alignItems: 'center', gap: 6,
-              background: 'none', border: 'none', cursor: 'pointer',
-              color: 'var(--color-text-tertiary)', fontSize: 13, fontWeight: 500,
-              fontFamily: 'var(--font-sans)', padding: 0, marginBottom: 20,
-            }}
-          >
-            <ChevronLeft size={16} strokeWidth={2} />
-            Extrato
-          </button>
+        <div style={{ paddingTop: 28, marginBottom: 8, position: 'relative', zIndex: 1 }}>
+          <Breadcrumb
+            items={[
+              { label: 'Home', href: '/home' },
+              { label: 'Extrato', href: '/extrato' },
+              { label: 'Revisar' },
+            ]}
+            style={{ marginBottom: 24, opacity: 0.85 }}
+          />
           <p style={{
             fontSize: 13, color: 'var(--color-text-tertiary)', margin: '0 0 8px',
           }}>
