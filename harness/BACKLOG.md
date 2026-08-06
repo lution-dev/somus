@@ -125,6 +125,15 @@
 > Público: qualquer banco (99Pay, Inter, Nubank, Itaú, Santander, genérico) · Formatos: **PDF + OFX/CSV**  
 > Lib PDF: `pdfjs-dist`. Estratégia: detectar banco → layouts específicos → fallback genérico.
 
+#### T-EXTRATO-24: Revisar — remover/trocar extrato carregado
+**Tipo:** UX
+**Root cause:** Na revisão, sem forma de descartar o arquivo já enviado e escolher outro.
+**Critérios:**
+- [x] Ação “Remover este extrato” no hero da revisão (+ X no chip do arquivo)
+- [x] Limpa draft do sessionStorage e volta pra `/extrato`
+- [x] Sensores `tsc` + `build`
+**Status:** ✅ done
+
 #### T-EXTRATO-23: Remover conciliação do mês (enviar outro extrato)
 **Tipo:** Feature
 **Root cause:** Depois de confirmar, o mês fica marcado e não há como limpar o estado pra subir outro extrato.

@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useState, type CSSProperties, type ReactNode } from 'react'
 import { useLocation } from 'wouter'
 import { motion } from 'framer-motion'
-import { Check, EyeOff, ClipboardList, FileSpreadsheet } from 'lucide-react'
+import { Check, EyeOff, ClipboardList, FileSpreadsheet, X } from 'lucide-react'
 import { useShallow } from 'zustand/react/shallow'
-import { PageHeader, Button, Breadcrumb } from '../components/ui'
+import { PageHeader, Button, Breadcrumb, ConfirmDialog } from '../components/ui'
 import { useIsMobile } from '../hooks/useIsMobile'
 import {
   useAppStore,
@@ -46,6 +46,7 @@ export default function ExtratoRevisao() {
   const [saving, setSaving] = useState(false)
   const [done, setDone] = useState(false)
   const [showMatched, setShowMatched] = useState(false)
+  const [confirmDiscard, setConfirmDiscard] = useState(false)
 
   const currentUser = useAppStore(s => s.currentUser)
   const divisoes = useAppStore(useShallow(selectCurrentDivisoes))
@@ -114,6 +115,12 @@ export default function ExtratoRevisao() {
 
   function buildImportItems(): StatementImportItem[] {
     return buildImportItemsFromMatches(matches, rows)
+  }
+
+  function handleDiscardExtract() {
+    sessionStorage.removeItem(EXTRATO_DRAFT_KEY)
+    setConfirmDiscard(false)
+    navigate('/extrato')
   }
 
   function handleConfirm() {
@@ -276,12 +283,20 @@ export default function ExtratoRevisao() {
                 </span>
               </div>
               <p style={{
-                fontSize: 13, color: 'rgba(226,232,240,0.62)', margin: 0, lineHeight: 1.45,
+                fontSize: 13, color: 'rgba(226,232,240,0.62)', margin: '0 0 12px', lineHeight: 1.45,
               }}>
                 {matched.length > 0
                   ? `${matched.length} já na base ficam no final · sem relançar`
                   : 'Só o que ainda não está no Somus'}
               </p>
+              <button
+                type="button"
+                onClick={() => setConfirmDiscard(true)}
+                style={discardBtnStyle}
+              >
+                <X size={13} strokeWidth={2} />
+                Remover este extrato
+              </button>
             </motion.div>
           </div>
         </>
@@ -343,6 +358,8 @@ export default function ExtratoRevisao() {
                   label={shortName}
                   icon={<FileSpreadsheet size={11} color="#94A3B8" strokeWidth={2} />}
                   muted
+                  onRemove={() => setConfirmDiscard(true)}
+                  removeLabel="Remover este extrato"
                 />
               </div>
 
@@ -354,11 +371,19 @@ export default function ExtratoRevisao() {
                 Revisar extrato
               </h1>
               <p style={{
-                fontSize: 13.5, color: 'var(--color-text-secondary)', margin: 0,
+                fontSize: 13.5, color: 'var(--color-text-secondary)', margin: '0 0 12px',
                 lineHeight: 1.5, maxWidth: 420,
               }}>
                 Em cima só o que ainda não está no Somus. O que já bateu fica no final, só pra conferir.
               </p>
+              <button
+                type="button"
+                onClick={() => setConfirmDiscard(true)}
+                style={discardBtnStyle}
+              >
+                <X size={13} strokeWidth={2} />
+                Remover este extrato
+              </button>
             </div>
 
             {/* KPI strip */}
@@ -644,6 +669,16 @@ export default function ExtratoRevisao() {
           </Button>
         </div>
       )}
+
+      <ConfirmDialog
+        open={confirmDiscard}
+        onClose={() => setConfirmDiscard(false)}
+        onConfirm={handleDiscardExtract}
+        variant="warning"
+        title="Remover este extrato?"
+        description="Você volta pra tela de envio e pode escolher outro arquivo. Nada foi lançado ainda."
+        confirmLabel="Remover e trocar"
+      />
     </div>
   )
 }
@@ -661,22 +696,26 @@ function MetaChip({
   muted,
   accent,
   icon,
+  onRemove,
+  removeLabel,
 }: {
   label: string
   muted?: boolean
   accent?: boolean
   icon?: ReactNode
+  onRemove?: () => void
+  removeLabel?: string
 }) {
   return (
     <span style={{
       display: 'inline-flex',
       alignItems: 'center',
       gap: 5,
-      maxWidth: 220,
+      maxWidth: onRemove ? 260 : 220,
       fontSize: 11,
       fontWeight: 600,
       letterSpacing: '0.02em',
-      padding: '4px 10px',
+      padding: onRemove ? '4px 6px 4px 10px' : '4px 10px',
       borderRadius: 8,
       color: accent ? '#93C5FD' : muted ? 'var(--color-text-tertiary)' : 'var(--color-text-secondary)',
       background: accent
@@ -685,14 +724,57 @@ function MetaChip({
       border: accent
         ? '1px solid rgba(59,130,246,0.22)'
         : '1px solid rgba(255,255,255,0.07)',
-      overflow: 'hidden',
-      textOverflow: 'ellipsis',
-      whiteSpace: 'nowrap',
     }}>
       {icon}
-      {label}
+      <span style={{
+        overflow: 'hidden',
+        textOverflow: 'ellipsis',
+        whiteSpace: 'nowrap',
+        minWidth: 0,
+      }}>
+        {label}
+      </span>
+      {onRemove && (
+        <button
+          type="button"
+          onClick={onRemove}
+          aria-label={removeLabel ?? 'Remover'}
+          title={removeLabel ?? 'Remover'}
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: 18,
+            height: 18,
+            borderRadius: 5,
+            border: 'none',
+            background: 'rgba(255,255,255,0.06)',
+            color: 'var(--color-text-tertiary)',
+            cursor: 'pointer',
+            padding: 0,
+            flexShrink: 0,
+          }}
+        >
+          <X size={11} strokeWidth={2.5} />
+        </button>
+      )}
     </span>
   )
+}
+
+const discardBtnStyle: CSSProperties = {
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: 6,
+  background: 'rgba(255,255,255,0.04)',
+  border: '1px solid rgba(255,255,255,0.10)',
+  borderRadius: 9,
+  padding: '7px 12px',
+  fontSize: 12,
+  fontWeight: 600,
+  color: 'var(--color-text-secondary)',
+  cursor: 'pointer',
+  fontFamily: 'var(--font-sans)',
 }
 
 function KpiTile({
