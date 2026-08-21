@@ -5,6 +5,7 @@
 **Tasks:**
 - T-AD-19: Firebase config só via `VITE_FIREBASE_*`; scripts usam `load-firebase-env.mjs` ✅
 **Pendências humanas:** rotacionar key no Google Cloud + setar env no Vercel `somus`
+**Commits:** 017487c
 **Sensores:** `./node_modules/.bin/tsc --noEmit` ✅ · `npm run build` ✅
 
 ## [2026-08-06] S-EXTRATO — remover conciliação / enviar outro
