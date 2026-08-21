@@ -1,8 +1,8 @@
 # CONTEXT.md — Somus
 > Estado atual do projeto. Atualizado ao final de cada sessão.
 
-**Última atualização:** 2026-08-05
-**Status geral:** ✅ DX — `npm run dev` libera porta 1619 (T-AD-18) · S-EXTRATO multi-banco
+**Última atualização:** 2026-08-21
+**Status geral:** 🔐 T-AD-19 — API key Firebase removida do source (GitGuardian); pendente: rotacionar key + env no Vercel
 
 ## O Que É
 App de planejamento financeiro para casais com renda variável. Mobile-first, dark mode only. Resolve o problema de apps que exigem renda fixa no início do mês — o Somus permite lançar entradas incrementais conforme caem e distribui automaticamente por divisões (método Nati Arcuri adaptado).
@@ -150,9 +150,10 @@ src/
 | 2026-08-05 | Extrato: matched = só identifica, nunca relança | Unmatched primeiro na revisão; matched colapsado no fim; import payload só unmatched (anti-duplicata). |
 | 2026-08-05 | `npm run dev` libera 1619 antes do Vite | Evita "Port already in use" com processo residual; `strictPort: false` como fallback |
 | 2026-08-05 | Extrato UX brand + responsive | Upload/revisão com hero atmosférico, glass dropzone+drag&drop, layout desktop ≠ mobile; banner Home em tom calmo azul. |
+| 2026-08-21 | Firebase config só via env (sem fallback no source) | GitGuardian: Google API Key no repo. Remover hardcode; `.env.local` + Vercel env. Rotacionar key no Google Cloud. |
 
 ## Bloqueios
-Nenhum.
+- **T-AD-19 (humano):** Após o fix no source, configurar as 6 `VITE_FIREBASE_*` no Vercel do projeto `somus` (senão o próximo deploy quebra) e **rotacionar** a API key no Google Cloud Console (histórico do git ainda contém a key antiga).
 
 ## Em planejamento
 - **S-EXTRATO** — Multi-banco (99Pay, Inter, Nubank, Itaú, Santander, genérico) · PDF/OFX/CSV · matching · import. Push em `main`.

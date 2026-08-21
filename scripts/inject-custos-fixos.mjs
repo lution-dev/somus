@@ -14,10 +14,10 @@
  */
 
 import { randomUUID } from 'crypto'
+import { getFirebaseConfig } from './load-firebase-env.mjs'
 
-const PROJECT_ID = 'somus-3df33'
-const API_KEY    = 'AIzaSyDn93l6V6T_dAFdC0Ho-pewg7EVnKgiJeE'
-const USER_UID   = 'NShMgH1PjyXU6j7P74JntPjcuRX2'
+const { apiKey: API_KEY, projectId: PROJECT_ID } = getFirebaseConfig()
+const USER_UID   = process.env.SOMUS_SCRIPT_USER_UID || 'NShMgH1PjyXU6j7P74JntPjcuRX2'
 const CAIXINHA_ID = 'cx-essencial'
 
 // ── Os 7 custos corretos (substitui o array inteiro) ─────────────────────────

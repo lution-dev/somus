@@ -35,6 +35,17 @@
 
 ## Ad-hoc — UI/UX Fixes (pós-MVP)
 
+#### T-AD-19: GitGuardian — Google API Key no repositório
+**Tipo:** Segurança
+**Root cause:** Fallbacks hardcoded em `src/lib/firebase.ts` e scripts com Google API Key — GitGuardian detectou push em 2026-08-21.
+**Critérios:**
+- [x] Remover apiKey e config Firebase hardcoded de `firebase.ts` e scripts
+- [x] Config só via `VITE_FIREBASE_*` (`.env.local` / Vercel)
+- [x] `.env.example` sem valores reais
+- [x] Sensores + push em `main`
+- [ ] **Humano:** rotacionar a key no Google Cloud Console + garantir as 6 env vars no projeto Vercel `somus`
+**Status:** 🔄 code done — pendente rotação/env no Vercel
+
 #### T-AD-18: Dev server — Port 1619 already in use
 **Tipo:** DX / tooling
 **Root cause:** `strictPort: true` + processo Vite residual (ex.: sessão anterior / agent) ocupa 1619 e `npm run dev` falha.

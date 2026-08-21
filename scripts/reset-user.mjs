@@ -14,17 +14,9 @@
 
 import { initializeApp } from 'firebase/app'
 import { getFirestore, collection, query, where, getDocs, setDoc, doc } from 'firebase/firestore'
+import { getFirebaseConfig } from './load-firebase-env.mjs'
 
-const firebaseConfig = {
-  apiKey: 'AIzaSyDn93l6V6T_dAFdC0Ho-pewg7EVnKgiJeE',
-  authDomain: 'somus-3df33.firebaseapp.com',
-  projectId: 'somus-3df33',
-  storageBucket: 'somus-3df33.firebasestorage.app',
-  messagingSenderId: '463898313113',
-  appId: '1:463898313113:web:7dace9eefe22973d6bb168',
-}
-
-const app  = initializeApp(firebaseConfig)
+const app  = initializeApp(getFirebaseConfig())
 const db   = getFirestore(app)
 
 const email = process.argv[2]
